@@ -1,0 +1,2 @@
+2.0.0: New, streamlined syntax. Simpler and more user-oriented.
+2.0.0: Removed SBaGen old features.

@@ -1,0 +1,23 @@
+## Dynamic Focus - 30-minute session using spinning white noise
+## This sequence uses white noise with varying spin rates to enhance focus and alertness
+
+-SE
+
+# Define tone sets
+ts-warmup: wspin:200+8.0/30
+ts-focus: wspin:300+10.0/40
+ts-peak: wspin:400+12.0/40
+ts-cooldown: wspin:200+8.0/30
+off: -
+
+# Timeline
+00:00:00 off ->
+00:00:30 ts-warmup
+00:05:00 ts-warmup ->
+00:10:00 ts-focus
+00:15:00 ts-focus ->
+00:20:00 ts-peak
+00:25:00 ts-peak ->
+00:28:00 ts-cooldown
+00:29:30 ts-cooldown ->
+00:30:00 off 

@@ -1,0 +1,23 @@
+## Stress Relief - 30 minutes
+## Uses white noise and alpha frequencies
+
+-SE
+
+# Define tone sets
+ts-start: white/30 250+10/20
+ts-relax: white/30 250+9/25
+ts-deep-relax: white/30 250+8/20
+ts-return: white/30 250+10/15
+off: -
+
+# Timeline
+00:00:00 off ->
+00:00:15 ts-start
+00:04:00 ts-start ->
+00:05:00 ts-relax
+00:14:00 ts-relax ->
+00:15:00 ts-deep-relax
+00:24:00 ts-deep-relax ->
+00:25:00 ts-return
+00:29:00 ts-return ->
+00:30:00 off

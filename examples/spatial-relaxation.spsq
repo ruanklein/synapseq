@@ -1,0 +1,23 @@
+## Spatial Relaxation - 30-minute session using spinning brown noise
+## This sequence creates a deeply relaxing spatial experience using brown noise
+
+-SE
+
+# Define tone sets
+ts-intro: bspin:300+4.2/40
+ts-main: bspin:400+3.5/50
+ts-deep: bspin:500+2.8/60
+ts-return: bspin:300+4.2/40
+off: -
+
+# Timeline
+00:00:00 off ->
+00:00:30 ts-intro
+00:05:00 ts-intro ->
+00:10:00 ts-main
+00:15:00 ts-main ->
+00:20:00 ts-deep
+00:25:00 ts-deep ->
+00:28:00 ts-return
+00:29:30 ts-return ->
+00:30:00 off 

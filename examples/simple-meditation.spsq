@@ -1,0 +1,19 @@
+## Simple 30-minute meditation sequence
+
+-SE
+
+# Define tone sets
+ts-start: pink/40 200+10/15
+ts-deep: pink/40 200+6/20
+ts-end: pink/40 200+10/15
+off: -
+
+# Timeline
+00:00:00 off ->
+00:00:15 ts-start
+00:10:00 ts-start ->
+00:15:00 ts-deep
+00:20:00 ts-deep ->
+00:25:00 ts-end
+00:29:00 ts-end ->
+00:30:00 off

@@ -1,0 +1,7 @@
+SynapSeq is a command-line tool for generating binaural beats and isochronic tones,
+designed to assist with meditation, relaxation, and altering states of consciousness.
+
+The full source code is available at:
+https://github.com/ruanklein/synapseq
+
+For licensing information, see License.txt.

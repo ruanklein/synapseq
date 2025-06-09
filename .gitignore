@@ -1,0 +1,14 @@
+.DS_Store
+build
+dist
+libs/*.a
+synapseq-*
+*.exe
+*.spsq
+*.wav
+*.mp3
+*.ogg
+*.log
+*.tmp.c
+
+!/examples/**/*.spsq

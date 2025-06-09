@@ -1,0 +1,23 @@
+## Morning Energizer - 20 minutes
+## Uses beta isochronic tones to wake up and energize
+
+-SE
+
+# Define tone sets
+ts-wake: pink/30 300@10/20
+ts-energize: pink/30 300@14/25
+ts-alert: pink/30 300@18/20
+ts-balanced: pink/30 300@12/15
+off: -
+
+# Timeline
+00:00:00 off ->
+00:00:15 ts-wake
+00:04:00 ts-wake ->
+00:05:00 ts-energize
+00:09:00 ts-energize ->
+00:10:00 ts-alert
+00:14:00 ts-alert ->
+00:15:00 ts-balanced
+00:19:30 ts-balanced ->
+00:20:00 off

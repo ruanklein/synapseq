@@ -1,0 +1,194 @@
+name: Development Release
+
+on: workflow_dispatch
+
+permissions:
+  contents: write
+  actions: read
+  packages: write
+
+jobs:
+  build-linux-windows:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate development version
+        id: version
+        run: |
+          BASE_VERSION=$(cat VERSION | tr -d '\n')
+          DATE=$(date +'%Y%m%d')
+          SHORT_SHA=${GITHUB_SHA::7}
+          DEV_VERSION="${BASE_VERSION}-dev.${DATE}.${SHORT_SHA}"
+
+          echo "version=${DEV_VERSION}" >> $GITHUB_OUTPUT
+          echo "base_version=${BASE_VERSION}" >> $GITHUB_OUTPUT
+          echo "Generated version: ${DEV_VERSION}"
+          echo $DEV_VERSION > VERSION
+
+      - name: Build for Linux and Windows
+        run: |
+          mkdir -p artifacts
+
+          # Run build using docker compose
+          docker compose run --rm build
+
+          # Copy generated artifacts
+          if [ -f "dist/synapseq-linux64" ]; then
+            cp dist/synapseq-linux64 artifacts/synapseq-linux64
+          fi
+
+          if [ -f "dist/synapseq-linux32" ]; then
+            cp dist/synapseq-linux32 artifacts/synapseq-linux32
+          fi
+
+          if [ -f "dist/synapseq-windows-setup.exe" ]; then
+            cp dist/synapseq-windows-setup.exe artifacts/synapseq-windows-setup.exe
+          fi
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd artifacts
+          find . -type f -exec sha256sum {} \; | sort > ../checksums.txt
+          cat ../checksums.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: synapseq-${{ steps.version.outputs.version }}
+          path: |
+            artifacts/
+            checksums.txt
+          retention-days: 30
+
+  build-macos:
+    runs-on: macos-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          # Install required tools via Homebrew
+          brew install automake autoconf libtool pandoc create-dmg
+
+      - name: Generate development version
+        id: version
+        run: |
+          BASE_VERSION=$(cat VERSION | tr -d '\n')
+          DATE=$(date +'%Y%m%d')
+          SHORT_SHA=${GITHUB_SHA::7}
+          DEV_VERSION="${BASE_VERSION}-dev.${DATE}.${SHORT_SHA}"
+
+          echo "version=${DEV_VERSION}" >> $GITHUB_OUTPUT
+          echo "Generated version: ${DEV_VERSION}"
+          echo $DEV_VERSION > VERSION
+
+      - name: Build libraries for macOS
+        run: |
+          ./macos-build-libs.sh
+
+      - name: Build SynapSeq for macOS
+        run: |
+          ./macos-build-synapseq.sh
+
+      - name: Create macOS installer
+        run: |
+          ./macos-create-installer.sh
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p artifacts
+
+          # Copy DMG installer
+          if [ -f "dist/SynapSeq-Installer.dmg" ]; then
+            cp dist/SynapSeq-Installer.dmg artifacts/SynapSeq-Installer.dmg
+          fi
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd artifacts
+          find . -type f -exec shasum -a 256 {} \; | sort > ../checksums-macos.txt
+          cat ../checksums-macos.txt
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: synapseq-macos-${{ steps.version.outputs.version }}
+          path: |
+            artifacts/
+            checksums-macos.txt
+          retention-days: 30
+
+  create-release:
+    needs: [build-linux-windows, build-macos]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Linux/Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: synapseq-${{ needs.build-linux-windows.outputs.version }}
+          path: linux-windows/
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: synapseq-macos-${{ needs.build-macos.outputs.version }}
+          path: macos/
+
+      - name: Combine artifacts
+        run: |
+          mkdir -p all-artifacts
+
+          # Copy Linux/Windows artifacts
+          if [ -d "linux-windows/artifacts" ]; then
+            cp linux-windows/artifacts/* all-artifacts/ 2>/dev/null || true
+          fi
+
+          # Copy macOS artifacts
+          if [ -d "macos/artifacts" ]; then
+            cp macos/artifacts/* all-artifacts/ 2>/dev/null || true
+          fi
+
+          # Merge checksums
+          if [ -f "macos/checksums-macos.txt" ]; then
+            cat macos/checksums-macos.txt >> all-artifacts/checksums.txt
+            rm -f macos/checksums-macos.txt
+          fi
+
+      - name: Generate release body with checksums
+        run: |
+          echo "**This is a development version and may contain bugs or unstable features.**" > release_body.md
+
+      - name: Create Development Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.build-linux-windows.outputs.version }}
+          name: "Development Release v${{ needs.build-linux-windows.outputs.version }}"
+          body_path: release_body.md
+          files: |
+            all-artifacts/*
+          prerelease: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

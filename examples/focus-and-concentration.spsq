@@ -1,0 +1,21 @@
+## Focus and Concentration - 60 minutes
+## Uses beta isochronic tones to enhance focus
+
+# Define tone sets
+ts-start: pink/30 300@12/20
+ts-focus: pink/30 300@15/25
+ts-deep-focus: pink/30 300@18/20
+ts-wind-down: pink/30 300@12/20
+off: -
+
+# Timeline
+00:00:00 off
+00:00:15 ts-start 
+00:05:00 ts-start
+00:10:00 ts-focus
+00:20:00 ts-focus
+00:25:00 ts-deep-focus
+00:35:00 ts-deep-focus
+00:40:00 ts-wind-down
+00:50:00 ts-wind-down
+00:55:00 off

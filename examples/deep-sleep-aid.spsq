@@ -1,0 +1,23 @@
+## Deep Sleep Aid - 45 minutes
+## Gradually transitions from alpha to delta to help you fall asleep
+
+-SE
+
+# Define tone sets
+ts-relax: brown/60 300+10/15
+ts-drowsy: brown/60 200+7/20
+ts-sleep: brown/70 100+3/25
+ts-deep-sleep: brown/70 100+1.5/20
+off: -
+
+# Timeline
+00:00:00 off ->
+00:00:15 ts-relax
+00:09:00 ts-relax ->
+00:10:00 ts-drowsy
+00:19:00 ts-drowsy ->
+00:20:00 ts-sleep
+00:29:00 ts-sleep ->
+00:30:00 ts-deep-sleep
+00:44:00 ts-deep-sleep ->
+00:45:00 off
