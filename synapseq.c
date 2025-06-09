@@ -200,6 +200,7 @@ void find_wav_data_start(FILE *in);
 int raw_mix_in(int *dst, int dlen);
 int scanOptions(int *acp, char ***avp);
 void handleOptions(char *p);
+void handleOptionInSequence(char *p);
 void setupOptC(char *spec);
 extern int out_rate, out_rate_def;
 void create_drop(int ac, char **av);
@@ -207,7 +208,8 @@ void create_slide(int ac, char **av);
 void normalizeAmplitude(Voice *voices, int numChannels, const char *line,
                         int lineNum);
 void printSequenceDuration();
-void checkFileInSequence(NameDef *nd); // Check if file amplitude is specified
+void checkBackgroundInSequence(
+    NameDef *nd); // Check if background amplitude is specified
 void create_noise_spin_effect(int typ, int amp, int spin_position, int *left,
                               int *right); // Create a spin effect
 
@@ -962,6 +964,62 @@ int scanOptions(int *acp, char ***avp) {
   return rv;
 }
 
+void handleOptionInSequence(char *p) {
+  char *option = getWord();
+
+  if (strcmp(option, "@background") == 0) {
+    char *file_name = getWord();
+    if (file_name) {
+      opt_m = StrDup(file_name);
+    } else {
+      error("File name expected at line %d: %s", in_lin, lin_copy);
+    }
+  } else if (strcmp(option, "@volume") == 0) {
+    char *volume_str = getWord();
+    if (1 != sscanf(volume_str, "%d", &opt_V)) {
+      error("Invalid volume value at line %d: %s", in_lin, lin_copy);
+    }
+    if (opt_V < 0 || opt_V > 100) {
+      error("Volume value must be between 0 and 100 at line %d: %s", in_lin,
+            lin_copy);
+    }
+  } else if (strcmp(option, "@waveform") == 0) {
+    char *waveform_str = getWord();
+    if (!waveform_str) {
+      error("Waveform value expected at line %d: %s", in_lin, lin_copy);
+    }
+    if (strcmp(waveform_str, "sine") == 0) {
+      opt_w = 0;
+    } else if (strcmp(waveform_str, "square") == 0) {
+      opt_w = 1;
+    } else if (strcmp(waveform_str, "triangle") == 0) {
+      opt_w = 2;
+    } else if (strcmp(waveform_str, "sawtooth") == 0) {
+      opt_w = 3;
+    } else {
+      error("Invalid waveform value at line %d: %s", in_lin, lin_copy);
+    }
+  } else if (strcmp(option, "@samplerate") == 0) {
+    char *samplerate_str = getWord();
+    if (1 != sscanf(samplerate_str, "%d", &out_rate)) {
+      error("Invalid samplerate value at line %d: %s", in_lin, lin_copy);
+    }
+    out_rate_def = 0;
+  }
+  else if (strcmp(option, "@export") == 0) {
+    char *file_name = getWord();
+    if (!file_name) {
+      error("Output file name expected at line %d: %s", in_lin, lin_copy); 
+    }
+
+    opt_o = StrDup(file_name);
+    opt_W = 1;
+  }
+  else {
+    error("Invalid option at line %d: %s", in_lin, lin_copy);
+  }
+}
+
 //
 //	Handle an option string, breaking it into an (argc/argv) list
 //	for scanOptions.
@@ -1234,9 +1292,9 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
         vp->amp == dup->amp)
       return sprintf(p, "  ::");
     if (multiline) {
-      return sprintf(p, "\n\twaveform %s tone %.2f binaural %.2f amplitude %.2f",
-                     waveform_name[vp->waveform], vp->carr, vp->res,
-                     AMP_AD(vp->amp));
+      return sprintf(
+          p, "\n\twaveform %s tone %.2f binaural %.2f amplitude %.2f",
+          waveform_name[vp->waveform], vp->carr, vp->res, AMP_AD(vp->amp));
     } else {
       return sprintf(p, " (tone:%.2f binaural:%.2f amplitude:%.2f)", vp->carr,
                      vp->res, AMP_AD(vp->amp));
@@ -1270,16 +1328,19 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
         vp->amp == dup->amp)
       return sprintf(p, "  ::");
     if (multiline) {
-      return sprintf(p, "\n\twaveform %s spin pink width %.2f frequency %.2f amplitude %.2f", waveform_name[vp->waveform],
-                     vp->carr, vp->res, AMP_AD(vp->amp));
+      return sprintf(
+          p,
+          "\n\twaveform %s spin pink width %.2f frequency %.2f amplitude %.2f",
+          waveform_name[vp->waveform], vp->carr, vp->res, AMP_AD(vp->amp));
     } else {
-      return sprintf(p, " (width:%.2f frequency:%.2f amplitude:%.2f)", vp->carr, vp->res, AMP_AD(vp->amp));
+      return sprintf(p, " (width:%.2f frequency:%.2f amplitude:%.2f)", vp->carr,
+                     vp->res, AMP_AD(vp->amp));
     }
   case 5:
     if (dup && vp->amp == dup->amp)
       return sprintf(p, "  ::");
     if (multiline) {
-      return sprintf(p, "\n\tfile amplitude %.2f", AMP_AD(vp->amp));
+      return sprintf(p, "\n\tbackground amplitude %.2f", AMP_AD(vp->amp));
     } else {
       return sprintf(p, " (amplitude:%.2f)", AMP_AD(vp->amp));
     }
@@ -1288,48 +1349,61 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
         vp->amp == dup->amp)
       return sprintf(p, "  ::");
     if (multiline) {
-      return sprintf(p, "\n\twaveform %s tone %.2f isochronic %.2f amplitude %.2f", waveform_name[vp->waveform],
-                     vp->carr, vp->res, AMP_AD(vp->amp));
+      return sprintf(
+          p, "\n\twaveform %s tone %.2f isochronic %.2f amplitude %.2f",
+          waveform_name[vp->waveform], vp->carr, vp->res, AMP_AD(vp->amp));
     } else {
-      return sprintf(p, " (tone:%.2f isochronic:%.2f amplitude:%.2f)", vp->carr, vp->res, AMP_AD(vp->amp));
+      return sprintf(p, " (tone:%.2f isochronic:%.2f amplitude:%.2f)", vp->carr,
+                     vp->res, AMP_AD(vp->amp));
     }
   case 6: // Mixspin - spinning mix stream
     if (dup && vp->carr == dup->carr && vp->res == dup->res &&
         vp->amp == dup->amp)
       return sprintf(p, "  ::");
     if (multiline) {
-      return sprintf(p, "\n\twaveform %s effect spin width %.2f frequency %.2f intensity %.2f", waveform_name[vp->waveform],
-                     vp->carr, vp->res, AMP_AD(vp->amp));
+      return sprintf(p,
+                     "\n\twaveform %s effect spin width %.2f frequency %.2f "
+                     "intensity %.2f",
+                     waveform_name[vp->waveform], vp->carr, vp->res,
+                     AMP_AD(vp->amp));
     } else {
-      return sprintf(p, " (width:%.2f frequency:%.2f intensity:%.2f)", vp->carr, vp->res, AMP_AD(vp->amp));
+      return sprintf(p, " (width:%.2f frequency:%.2f intensity:%.2f)", vp->carr,
+                     vp->res, AMP_AD(vp->amp));
     }
   case 7: // Mixpulse - mix stream with pulse effect
     if (dup && vp->res == dup->res && vp->amp == dup->amp)
       return sprintf(p, "  ::");
     if (multiline) {
-      return sprintf(p, "\n\twaveform %s effect pulse %.2f intensity %.2f", waveform_name[vp->waveform],
-                     vp->res, AMP_AD(vp->amp));
+      return sprintf(p, "\n\twaveform %s effect pulse %.2f intensity %.2f",
+                     waveform_name[vp->waveform], vp->res, AMP_AD(vp->amp));
     } else {
-      return sprintf(p, " (pulse:%.2f intensity:%.2f)", vp->res, AMP_AD(vp->amp));
+      return sprintf(p, " (pulse:%.2f intensity:%.2f)", vp->res,
+                     AMP_AD(vp->amp));
     }
   case 11: // Bspin - spinning brown noise
     if (dup && vp->carr == dup->carr && vp->res == dup->res &&
         vp->amp == dup->amp)
       return sprintf(p, "  ::");
     if (multiline) {
-      return sprintf(p, "\n\twaveform %s spin brown width %.2f frequency %.2f amplitude %.2f", waveform_name[vp->waveform],
-                     vp->carr, vp->res, AMP_AD(vp->amp));
+      return sprintf(
+          p,
+          "\n\twaveform %s spin brown width %.2f frequency %.2f amplitude %.2f",
+          waveform_name[vp->waveform], vp->carr, vp->res, AMP_AD(vp->amp));
     } else {
-      return sprintf(p, " (width:%.2f frequency:%.2f amplitude:%.2f)", vp->carr, vp->res, AMP_AD(vp->amp));
+      return sprintf(p, " (width:%.2f frequency:%.2f amplitude:%.2f)", vp->carr,
+                     vp->res, AMP_AD(vp->amp));
     }
   case 12: // Wspin - spinning white noise
     if (dup && vp->amp == dup->amp)
       return sprintf(p, "  ::");
     if (multiline) {
-      return sprintf(p, "\n\twaveform %s spin white width %.2f frequency %.2f amplitude %.2f", waveform_name[vp->waveform],
-                     vp->carr, vp->res, AMP_AD(vp->amp));
+      return sprintf(
+          p,
+          "\n\twaveform %s spin white width %.2f frequency %.2f amplitude %.2f",
+          waveform_name[vp->waveform], vp->carr, vp->res, AMP_AD(vp->amp));
     } else {
-      return sprintf(p, " (width:%.2f frequency:%.2f amplitude:%.2f)", vp->carr, vp->res, AMP_AD(vp->amp));
+      return sprintf(p, " (width:%.2f frequency:%.2f amplitude:%.2f)", vp->carr,
+                     vp->res, AMP_AD(vp->amp));
     }
   default:
     return sprintf(p, " ???");
@@ -3082,11 +3156,12 @@ void readSeq(int ac, char **av) {
         continue;
 
       // Look for options
-      if (*p == '-') {
-        if (!start)
+      if (*p == '@') {
+        if (!start) {
           error("Options are only permitted at start of sequence file:\n  %s",
                 p);
-        handleOptions(p);
+        }
+        handleOptionInSequence(p);
         continue;
       }
 
@@ -3520,7 +3595,9 @@ void readNameDef() {
     if (!fgets(buf, sizeof(buf), in)) {
       // End of file - check if we processed any lines
       if (lines_processed == 0) {
-        error("Empty definition for '%s' at end of file. Name definitions must have at least one indented line.\n", nd->name);
+        error("Empty definition for '%s' at end of file. Name definitions must "
+              "have at least one indented line.\n",
+              nd->name);
       }
       break; // End of file
     }
@@ -3547,11 +3624,13 @@ void readNameDef() {
       // Line starts with space - validate indentation
       if (buf[1] != ' ') {
         error("Invalid indentation at line %d. Definition lines must have "
-              "exactly 2 spaces.\n", in_lin);
+              "exactly 2 spaces.\n",
+              in_lin);
       }
       if (buf[2] == ' ') {
         error("Invalid indentation at line %d. Definition lines must have "
-              "exactly 2 spaces.\n", in_lin);
+              "exactly 2 spaces.\n",
+              in_lin);
       }
       // Valid 2-space indentation - continue processing below
     } else if (buf[0] != ' ') {
@@ -3616,7 +3695,9 @@ void readNameDef() {
       // Check if there are extra words after the command
       char *next_word = getWord();
       if (next_word) {
-        error("Invalid syntax at line %d. Expected: noise <type> amplitude <value>\n  %s", in_lin, lin_copy);
+        error("Invalid syntax at line %d. Expected: noise <type> amplitude "
+              "<value>\n  %s",
+              in_lin, lin_copy);
         free(next_word);
       }
 
@@ -3655,14 +3736,16 @@ void readNameDef() {
         nd->vv[ch].carr = freq;
         nd->vv[ch].res = value;
       } else {
-        error("Unknown tone type '%s' at line %d. Use: binaural/bin, isochronic/iso", type,
-              in_lin);
+        error("Unknown tone type '%s' at line %d. Use: binaural/bin, "
+              "isochronic/iso",
+              type, in_lin);
       }
 
       char *next_word = getWord();
       if (next_word) {
         error("Invalid syntax at line %d. Expected: tone <freq> <type> "
-              "<value> amplitude <amp>\n  %s", in_lin, lin_copy);
+              "<value> amplitude <amp>\n  %s",
+              in_lin, lin_copy);
         free(next_word);
       }
 
@@ -3713,20 +3796,23 @@ void readNameDef() {
           nd->vv[ch].typ = 1;
           nd->vv[ch].carr = freq;
           nd->vv[ch].res = value;
-        } else if (strcmp(type, "isochronic") == 0 || strcmp(type, "iso") == 0) {
+        } else if (strcmp(type, "isochronic") == 0 ||
+                   strcmp(type, "iso") == 0) {
           // Isochronic pulse: freq@value/amp
           nd->vv[ch].typ = 8;
           nd->vv[ch].carr = freq;
           nd->vv[ch].res = value;
         } else {
-          error("Unknown tone type '%s' at line %d. Use: binaural/bin, isochronic/iso", type,
-                in_lin);
+          error("Unknown tone type '%s' at line %d. Use: binaural/bin, "
+                "isochronic/iso",
+                type, in_lin);
         }
 
         char *next_word = getWord();
         if (next_word) {
           error("Invalid syntax at line %d. Expected: tone <freq> <type> "
-                "<value> amplitude <amp>\n  %s", in_lin, lin_copy);
+                "<value> amplitude <amp>\n  %s",
+                in_lin, lin_copy);
           free(next_word);
         }
 
@@ -3743,7 +3829,8 @@ void readNameDef() {
         char *amp_word = getWord();
         char *amp_value = getWord();
 
-        if (!type || !width_str || !width_value || !frequency_str || !frequency_value || !amp_word || !amp_value || 
+        if (!type || !width_str || !width_value || !frequency_str ||
+            !frequency_value || !amp_word || !amp_value ||
             strcmp(amp_word, "amplitude") != 0) {
           error("Invalid spin syntax at line %d. Expected: spin <type> width "
                 "<width> frequency <frequency> amplitude <amp>",
@@ -3768,7 +3855,8 @@ void readNameDef() {
         char *next_word = getWord();
         if (next_word) {
           error("Invalid syntax at line %d. Expected: spin <type> width "
-                "<width> frequency <frequency> amplitude <amp>\n  %s", in_lin, lin_copy);
+                "<width> frequency <frequency> amplitude <amp>\n  %s",
+                in_lin, lin_copy);
           free(next_word);
         }
 
@@ -3778,7 +3866,7 @@ void readNameDef() {
         ch++;
         lines_processed++; // Increment count of processed lines
       } else if (strcmp(typ_nxt, "effect") == 0) {
-        checkFileInSequence(nd);
+        checkBackgroundInSequence(nd);
 
         char *effect_type = getWord();
         if (strcmp(effect_type, "pulse") == 0) {
@@ -3800,7 +3888,8 @@ void readNameDef() {
           char *next_word = getWord();
           if (next_word) {
             error("Invalid syntax at line %d. Expected: pulse <pulse> "
-                  "intensity <intensity>\n  %s", in_lin, lin_copy);
+                  "intensity <intensity>\n  %s",
+                  in_lin, lin_copy);
             free(next_word);
           }
 
@@ -3819,7 +3908,8 @@ void readNameDef() {
           char *intensity_str = getWord();
           char *intensity_value = getWord();
 
-          if (!width_str || !width_value || !frequency_str || !frequency_value || !intensity_str || !intensity_value ||
+          if (!width_str || !width_value || !frequency_str ||
+              !frequency_value || !intensity_str || !intensity_value ||
               strcmp(intensity_str, "intensity") != 0) {
             error("Invalid spin syntax at line %d. Expected: spin width "
                   "<width> frequency <frequency> intensity <intensity>",
@@ -3833,7 +3923,8 @@ void readNameDef() {
           char *next_word = getWord();
           if (next_word) {
             error("Invalid syntax at line %d. Expected: effect spin width "
-                  "<width> frequency <frequency> intensity <intensity>\n  %s", in_lin, lin_copy);
+                  "<width> frequency <frequency> intensity <intensity>\n  %s",
+                  in_lin, lin_copy);
             free(next_word);
           }
 
@@ -3844,19 +3935,20 @@ void readNameDef() {
           ch++;
           lines_processed++; // Increment count of processed lines
         } else {
-          error("Unknown effect type '%s' at line %d. Use: pulse, spin", effect_type, in_lin);
+          error("Unknown effect type '%s' at line %d. Use: pulse, spin",
+                effect_type, in_lin);
         }
       } else {
-        error("Waveform not valid for '%s' at line %d. Use: tone", typ_nxt, in_lin);
+        error("Waveform not valid for '%s' at line %d. Use: tone", typ_nxt,
+              in_lin);
       }
-    } else if (strcmp(cmd, "file") == 0) {
+    } else if (strcmp(cmd, "background") == 0) {
       // Parse: file <file> amplitude <amp>
       char *amp_word = getWord();
       char *amp_value = getWord();
 
-      if (!amp_word || !amp_value ||
-          strcmp(amp_word, "amplitude") != 0) {
-        error("Invalid file syntax at line %d. Expected: file "
+      if (!amp_word || !amp_value || strcmp(amp_word, "amplitude") != 0) {
+        error("Invalid background syntax at line %d. Expected: background "
               "amplitude <amp>",
               in_lin);
       }
@@ -3865,7 +3957,9 @@ void readNameDef() {
 
       char *next_word = getWord();
       if (next_word) {
-        error("Invalid syntax at line %d. Expected: file amplitude <amp>\n  %s", in_lin, lin_copy);
+        error("Invalid syntax at line %d. Expected: background amplitude "
+              "<amp>\n  %s",
+              in_lin, lin_copy);
         free(next_word);
       }
 
@@ -3884,7 +3978,8 @@ void readNameDef() {
       char *amp_word = getWord();
       char *amp_value = getWord();
 
-      if (!type || !width_str || !width_value || !frequency_str || !frequency_value || !amp_word || !amp_value || 
+      if (!type || !width_str || !width_value || !frequency_str ||
+          !frequency_value || !amp_word || !amp_value ||
           strcmp(amp_word, "amplitude") != 0) {
         error("Invalid spin syntax at line %d. Expected: spin <type> width "
               "<width> frequency <frequency> amplitude <amp>",
@@ -3909,7 +4004,8 @@ void readNameDef() {
       char *next_word = getWord();
       if (next_word) {
         error("Invalid syntax at line %d. Expected: spin <type> width "
-              "<width> frequency <frequency> amplitude <amp>\n  %s", in_lin, lin_copy);
+              "<width> frequency <frequency> amplitude <amp>\n  %s",
+              in_lin, lin_copy);
         free(next_word);
       }
 
@@ -3919,11 +4015,10 @@ void readNameDef() {
       nd->vv[ch].amp = AMP_DA(amp);
       ch++;
       lines_processed++; // Increment count of processed lines
-    }
-    else if (strcmp(cmd, "effect") == 0) {
+    } else if (strcmp(cmd, "effect") == 0) {
       // Parse: effect <type> <value> amplitude <amp>
       char *type = getWord();
-      
+
       if (strcmp(type, "pulse") == 0) {
         // Pulse: <pulse> intensity <intensity>
         char *pulse_value = getWord();
@@ -3943,7 +4038,8 @@ void readNameDef() {
         char *next_word = getWord();
         if (next_word) {
           error("Invalid syntax at line %d. Expected: effect pulse <pulse> "
-                "intensity <intensity>\n  %s", in_lin, lin_copy);
+                "intensity <intensity>\n  %s",
+                in_lin, lin_copy);
           free(next_word);
         }
 
@@ -3962,7 +4058,8 @@ void readNameDef() {
         char *intensity_str = getWord();
         char *intensity_value = getWord();
 
-        if (!width_str || !width_value || !beat_str || !beat_value || !intensity_str || !intensity_value ||
+        if (!width_str || !width_value || !beat_str || !beat_value ||
+            !intensity_str || !intensity_value ||
             strcmp(intensity_str, "intensity") != 0) {
           error("Invalid spin syntax at line %d. Expected: spin width "
                 "<width> beat <beat> intensity <intensity>",
@@ -3976,7 +4073,8 @@ void readNameDef() {
         char *next_word = getWord();
         if (next_word) {
           error("Invalid syntax at line %d. Expected: effect spin width "
-                "<width> beat <beat> intensity <intensity>\n  %s", in_lin, lin_copy);
+                "<width> beat <beat> intensity <intensity>\n  %s",
+                in_lin, lin_copy);
           free(next_word);
         }
 
@@ -3987,9 +4085,10 @@ void readNameDef() {
         ch++;
         lines_processed++; // Increment count of processed lines
       }
-    }
-    else {
-      error("Unknown command '%s' at line %d. Use: noise, tone, waveform, spin, effect, file", cmd, in_lin);
+    } else {
+      error("Unknown command '%s' at line %d. Use: noise, tone, waveform, "
+            "spin, effect, background",
+            cmd, in_lin);
     }
   }
 
@@ -4562,7 +4661,7 @@ void normalizeAmplitude(Voice *voices, int numChannels, const char *line,
         error("Total amplitude exceed 100%% (%.2f%%) at line %d:\n  %s",
               ampPercentage, lineNum, line);
       }
-      
+
       totalAmplitude += ampPercentage;
     }
   }
@@ -4600,11 +4699,11 @@ void printSequenceDuration() {
           duration / 3600000, (duration / 60000) % 60, (duration / 1000) % 60);
 }
 
-void checkFileInSequence(NameDef *nd) {
+void checkBackgroundInSequence(NameDef *nd) {
   int mix_exists = 0;
 
   for (int ch = 0; ch < N_CH; ch++) {
-    if (nd->vv[ch].typ == 5) { // file
+    if (nd->vv[ch].typ == 5) { // background
       mix_exists = 1;
       break;
     }
