@@ -3725,6 +3725,8 @@ void readNameDef() {
       double value = atof(value_str);
       double amp = atof(amp_value);
 
+      
+
       if (strcmp(type, "binaural") == 0 || strcmp(type, "bin") == 0) {
         // Binaural beat: freq+value/amp
         nd->vv[ch].typ = 1;
@@ -3747,6 +3749,16 @@ void readNameDef() {
               "<value> amplitude <amp>\n  %s",
               in_lin, lin_copy);
         free(next_word);
+      }
+
+      if (freq < 20 || freq > 20000) {
+        error("Invalid tone frequency at line %d.\nSupported range: 20 Hz to 20.000 Hz.\n  %s", in_lin, lin_copy);
+      }
+      if (value < 0.5 || value > 40.0) {
+        error("Invalid tone value at line %d.\nSupported range: 0.5 Hz to 40.0 Hz.\n  %s", in_lin, lin_copy);
+      }
+      if (amp < 0 || amp > 100) {
+        error("Invalid tone amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
       }
 
       nd->vv[ch].waveform = opt_w;
@@ -3816,6 +3828,16 @@ void readNameDef() {
           free(next_word);
         }
 
+        if (freq < 20 || freq > 20000) {
+          error("Invalid tone frequency at line %d.\nSupported range: 20 Hz to 20.000 Hz.\n  %s", in_lin, lin_copy);
+        }
+        if (value < 0.5 || value > 40.0) {
+          error("Invalid tone value at line %d.\nSupported range: 0.5 Hz to 40.0 Hz.\n  %s", in_lin, lin_copy);
+        }
+        if (amp < 0 || amp > 100) {
+          error("Invalid tone amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
+        }
+
         nd->vv[ch].amp = AMP_DA(amp);
         ch++;
         lines_processed++; // Increment count of processed lines
@@ -3860,6 +3882,16 @@ void readNameDef() {
           free(next_word);
         }
 
+        if (width < 0 || width > 1000.0) {
+          error("Invalid spin width at line %d.\nSupported range: 0 to 1000.0.\n  %s", in_lin, lin_copy);
+        }
+        if (frequency < 0.5 || frequency > 40.0) {
+          error("Invalid spin frequency at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+        }
+        if (amp < 0 || amp > 100) {
+          error("Invalid spin amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
+        }
+
         nd->vv[ch].carr = width;
         nd->vv[ch].res = frequency;
         nd->vv[ch].amp = AMP_DA(amp);
@@ -3891,6 +3923,13 @@ void readNameDef() {
                   "intensity <intensity>\n  %s",
                   in_lin, lin_copy);
             free(next_word);
+          }
+
+          if (pulse < 0.5 || pulse > 40.0) {
+            error("Invalid pulse at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+          }
+          if (intensity < 0 || intensity > 100) {
+            error("Invalid intensity at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
           }
 
           nd->vv[ch].typ = 7;
@@ -3928,6 +3967,16 @@ void readNameDef() {
             free(next_word);
           }
 
+          if (width < 0 || width > 1000.0) {
+            error("Invalid spin width at line %d.\nSupported range: 0 to 1000.0.\n  %s", in_lin, lin_copy);
+          }
+          if (frequency < 0.5 || frequency > 40.0) {
+            error("Invalid spin frequency at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+          }
+          if (intensity < 0 || intensity > 100) {
+            error("Invalid intensity at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
+          }
+
           nd->vv[ch].typ = 6;
           nd->vv[ch].carr = width;
           nd->vv[ch].res = frequency;
@@ -3961,6 +4010,10 @@ void readNameDef() {
               "<amp>\n  %s",
               in_lin, lin_copy);
         free(next_word);
+      }
+
+      if (amp < 0 || amp > 100) {
+        error("Invalid background amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
       }
 
       nd->vv[ch].typ = 5;
@@ -4009,6 +4062,17 @@ void readNameDef() {
         free(next_word);
       }
 
+      if (width < 0 || width > 1000.0) {
+        error("Invalid spin width at line %d.\nSupported range: 0 to 1000.0.\n  %s", in_lin, lin_copy);
+      }
+
+      if (frequency < 0.5 || frequency > 40.0) {
+        error("Invalid spin frequency at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+      }
+      if (amp < 0 || amp > 100) {
+        error("Invalid spin amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
+      }
+
       nd->vv[ch].carr = width;
       nd->vv[ch].waveform = opt_w;
       nd->vv[ch].res = frequency;
@@ -4041,6 +4105,14 @@ void readNameDef() {
                 "intensity <intensity>\n  %s",
                 in_lin, lin_copy);
           free(next_word);
+        }
+
+        if (pulse < 0.5 || pulse > 40.0) {
+          error("Invalid pulse at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+        }
+
+        if (intensity < 0 || intensity > 100) {
+          error("Invalid intensity at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
         }
 
         nd->vv[ch].typ = 7;
@@ -4076,6 +4148,18 @@ void readNameDef() {
                 "<width> beat <beat> intensity <intensity>\n  %s",
                 in_lin, lin_copy);
           free(next_word);
+        }
+
+        if (width < 0 || width > 1000.0) {
+          error("Invalid spin width at line %d.\nSupported range: 0 to 1000.0.\n  %s", in_lin, lin_copy);
+        }
+
+        if (beat < 0.5 || beat > 40.0) {
+          error("Invalid spin frequency at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+        }
+
+        if (intensity < 0 || intensity > 100) {
+          error("Invalid intensity at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
         }
 
         nd->vv[ch].typ = 6;
@@ -4640,56 +4724,23 @@ void normalizeAmplitude(Voice *voices, int numChannels, const char *line,
                         int lineNum) {
   double totalAmplitude = 0.0;
 
-  // First, check mixspin/mixpulse separately (these have different logic)
-  for (int ch = 0; ch < numChannels; ch++) {
-    if (voices[ch].typ == 6 || voices[ch].typ == 7) {
-      double ampPercentage = voices[ch].amp / 40.96;
-      if (ampPercentage > 100.0) {
-        error("Total intensity of mixspin/mixpulse exceeds 100%% (%.2f%%) at "
-              "line %d:\n  %s",
-              ampPercentage, lineNum, line);
-      }
-    }
-  }
-
   // Calculate the total amplitude of all voices (excluding mixspin/mixpulse)
   for (int ch = 0; ch < numChannels; ch++) {
     if (voices[ch].typ != 0 && voices[ch].typ != 6 && voices[ch].typ != 7) {
       double ampPercentage = voices[ch].amp / 40.96;
-
-      if (ampPercentage > 100.0) {
-        error("Total amplitude exceed 100%% (%.2f%%) at line %d:\n  %s",
-              ampPercentage, lineNum, line);
-      }
-
       totalAmplitude += ampPercentage;
     }
   }
 
-  // If total amplitude exceeds 100%, normalize all active voices (except
-  // mixspin/mixpulse)
-  if (opt_N && totalAmplitude > 100.0) {
+  // If total amplitude exceeds 100%, normalize all active voices
+  if (totalAmplitude > 100.0) {
     double normalizationFactor = 100.0 / totalAmplitude;
-
-    if (!opt_Q) {
-      warn("Total amplitude %.2f%% exceeds 100%% at line %d, auto-normalizing "
-           "by factor %.3f",
-           totalAmplitude, lineNum, normalizationFactor);
-    }
-
     // Apply normalization to all active voices (except mixspin/mixpulse)
     for (int ch = 0; ch < numChannels; ch++) {
       if (voices[ch].typ != 0 && voices[ch].typ != 6 && voices[ch].typ != 7) {
         voices[ch].amp *= normalizationFactor;
       }
     }
-  }
-
-  // If total amplitude exceeds 100%, warn the user
-  if (!opt_N && !opt_Q && totalAmplitude > 100.0) {
-    warn("*** WARNING: Total amplitude %.2f%% exceeds 100%% at line %d, "
-         "distortion may occur ***",
-         totalAmplitude, lineNum);
   }
 }
 
