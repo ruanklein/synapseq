@@ -1330,10 +1330,10 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
     if (multiline) {
       return sprintf(
           p,
-          "\n\twaveform %s spin pink width %.2f frequency %.2f amplitude %.2f",
+          "\n\twaveform %s spin pink width %.2f rate %.2f amplitude %.2f",
           waveform_name[vp->waveform], vp->carr, vp->res, AMP_AD(vp->amp));
     } else {
-      return sprintf(p, " (width:%.2f frequency:%.2f amplitude:%.2f)", vp->carr,
+      return sprintf(p, " (width:%.2f rate:%.2f amplitude:%.2f)", vp->carr,
                      vp->res, AMP_AD(vp->amp));
     }
   case 5:
@@ -1362,12 +1362,12 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
       return sprintf(p, "  ::");
     if (multiline) {
       return sprintf(p,
-                     "\n\twaveform %s effect spin width %.2f frequency %.2f "
+                     "\n\twaveform %s effect spin width %.2f rate %.2f "
                      "intensity %.2f",
                      waveform_name[vp->waveform], vp->carr, vp->res,
                      AMP_AD(vp->amp));
     } else {
-      return sprintf(p, " (width:%.2f frequency:%.2f intensity:%.2f)", vp->carr,
+      return sprintf(p, " (width:%.2f rate:%.2f intensity:%.2f)", vp->carr,
                      vp->res, AMP_AD(vp->amp));
     }
   case 7: // Mixpulse - mix stream with pulse effect
@@ -1387,10 +1387,10 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
     if (multiline) {
       return sprintf(
           p,
-          "\n\twaveform %s spin brown width %.2f frequency %.2f amplitude %.2f",
+          "\n\twaveform %s spin brown width %.2f rate %.2f amplitude %.2f",
           waveform_name[vp->waveform], vp->carr, vp->res, AMP_AD(vp->amp));
     } else {
-      return sprintf(p, " (width:%.2f frequency:%.2f amplitude:%.2f)", vp->carr,
+      return sprintf(p, " (width:%.2f rate:%.2f amplitude:%.2f)", vp->carr,
                      vp->res, AMP_AD(vp->amp));
     }
   case 12: // Wspin - spinning white noise
@@ -1399,10 +1399,10 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
     if (multiline) {
       return sprintf(
           p,
-          "\n\twaveform %s spin white width %.2f frequency %.2f amplitude %.2f",
+          "\n\twaveform %s spin white width %.2f rate %.2f amplitude %.2f",
           waveform_name[vp->waveform], vp->carr, vp->res, AMP_AD(vp->amp));
     } else {
-      return sprintf(p, " (width:%.2f frequency:%.2f amplitude:%.2f)", vp->carr,
+      return sprintf(p, " (width:%.2f rate:%.2f amplitude:%.2f)", vp->carr,
                      vp->res, AMP_AD(vp->amp));
     }
   default:
@@ -1712,30 +1712,6 @@ void create_noise_spin_effect(int typ, int amp, int spin_position, int *left,
   *left = amp * noise_l;
   *right = amp * noise_r;
 }
-
-//	//
-//	//	Generate next sample for simulated pink noise, scaled the same
-//	//	as the sin_table[].  This version uses a library random number
-//	//	generator, and no smoothing.
-//	//
-//
-//	inline double
-//	noise() {
-//	  int tot= 0;
-//	  int bit= ~0;
-//	  int a;
-//	  int off;
-//
-//	  ns_tbl[ns_off]= (rand() - (RAND_MAX / 2)) / (NS_BIT + 1);
-//	  off= ns_off;
-//	  for (a= 0; a<=NS_BIT; a++, bit <<= 1) {
-//	    off &= bit;
-//	    tot += ns_tbl[off];
-//	  }
-//	  ns_off= (ns_off + 1) & ((1<<NS_BIT) - 1);
-//
-//	  return tot * (ST_AMP / (RAND_MAX * 0.5));
-//	}
 
 //
 //	Play loop
@@ -3669,14 +3645,14 @@ void readNameDef() {
     if (strcmp(cmd, "noise") == 0) {
       // Parse: noise <type> amplitude <value>
       char *type = getWord();
-      char *amp_word = getWord();
+      char *amp_str = getWord();
       char *amp_value = getWord();
 
-      if (!type || !amp_word || !amp_value ||
-          strcmp(amp_word, "amplitude") != 0) {
+      if (!type || !amp_str || !amp_value ||
+          strcmp(amp_str, "amplitude") != 0) {
         error("Invalid noise syntax at line %d. Expected: noise <type> "
-              "amplitude <value>",
-              in_lin);
+              "amplitude <value>\n  %s",
+              in_lin, lin_copy);
       }
 
       double amp = atof(amp_value);
@@ -3701,6 +3677,10 @@ void readNameDef() {
         free(next_word);
       }
 
+      if (amp < 0 || amp > 100) {
+        error("Invalid noise amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
+      }
+
       nd->vv[ch].waveform = opt_w;
       nd->vv[ch].amp = AMP_DA(amp);
       ch++;
@@ -3711,21 +3691,19 @@ void readNameDef() {
       char *freq_str = getWord();
       char *type = getWord();
       char *value_str = getWord();
-      char *amp_word = getWord();
+      char *amp_str = getWord();
       char *amp_value = getWord();
 
-      if (!freq_str || !type || !value_str || !amp_word || !amp_value ||
-          strcmp(amp_word, "amplitude") != 0) {
+      if (!freq_str || !type || !value_str || !amp_str || !amp_value ||
+          strcmp(amp_str, "amplitude") != 0) {
         error("Invalid tone syntax at line %d. Expected: tone <freq> <type> "
-              "<value> amplitude <amp>",
-              in_lin);
+              "<value> amplitude <amp>\n  %s",
+              in_lin, lin_copy);
       }
 
       double freq = atof(freq_str);
       double value = atof(value_str);
       double amp = atof(amp_value);
-
-      
 
       if (strcmp(type, "binaural") == 0 || strcmp(type, "bin") == 0) {
         // Binaural beat: freq+value/amp
@@ -3751,11 +3729,11 @@ void readNameDef() {
         free(next_word);
       }
 
-      if (freq < 20 || freq > 20000) {
-        error("Invalid tone frequency at line %d.\nSupported range: 20 Hz to 20.000 Hz.\n  %s", in_lin, lin_copy);
+      if (freq < 0) {
+        error("Invalid tone frequency at line %d.\n  %s", in_lin, lin_copy);
       }
-      if (value < 0.5 || value > 40.0) {
-        error("Invalid tone value at line %d.\nSupported range: 0.5 Hz to 40.0 Hz.\n  %s", in_lin, lin_copy);
+      if (value < 0) {
+        error("Invalid tone value at line %d.\n  %s", in_lin, lin_copy);
       }
       if (amp < 0 || amp > 100) {
         error("Invalid tone amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
@@ -3789,14 +3767,14 @@ void readNameDef() {
         char *freq_str = getWord();
         char *type = getWord();
         char *value_str = getWord();
-        char *amp_word = getWord();
+        char *amp_str = getWord();
         char *amp_value = getWord();
 
-        if (!freq_str || !type || !value_str || !amp_word || !amp_value ||
-            strcmp(amp_word, "amplitude") != 0) {
+        if (!freq_str || !type || !value_str || !amp_str || !amp_value ||
+            strcmp(amp_str, "amplitude") != 0) {
           error("Invalid tone syntax at line %d. Expected: tone <freq> <type> "
-                "<value> amplitude <amp>",
-                in_lin);
+                "<value> amplitude <amp>\n  %s",
+                in_lin, lin_copy);
         }
 
         double freq = atof(freq_str);
@@ -3828,11 +3806,11 @@ void readNameDef() {
           free(next_word);
         }
 
-        if (freq < 20 || freq > 20000) {
-          error("Invalid tone frequency at line %d.\nSupported range: 20 Hz to 20.000 Hz.\n  %s", in_lin, lin_copy);
+        if (freq < 0) {
+          error("Invalid tone frequency at line %d.\n  %s", in_lin, lin_copy);
         }
-        if (value < 0.5 || value > 40.0) {
-          error("Invalid tone value at line %d.\nSupported range: 0.5 Hz to 40.0 Hz.\n  %s", in_lin, lin_copy);
+        if (value < 0) {
+          error("Invalid tone value at line %d.\n  %s", in_lin, lin_copy);
         }
         if (amp < 0 || amp > 100) {
           error("Invalid tone amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
@@ -3846,21 +3824,22 @@ void readNameDef() {
         char *type = getWord();
         char *width_str = getWord();
         char *width_value = getWord();
-        char *frequency_str = getWord();
-        char *frequency_value = getWord();
-        char *amp_word = getWord();
+        char *rate_str = getWord();
+        char *rate_value = getWord();
+        char *amp_str = getWord();
         char *amp_value = getWord();
 
-        if (!type || !width_str || !width_value || !frequency_str ||
-            !frequency_value || !amp_word || !amp_value ||
-            strcmp(amp_word, "amplitude") != 0) {
+        if (!type || !width_str || !width_value || !rate_str || !rate_value || !amp_str || !amp_value ||
+            strcmp(amp_str, "amplitude") != 0 ||
+            strcmp(rate_str, "rate") != 0 ||
+            strcmp(width_str, "width") != 0) {
           error("Invalid spin syntax at line %d. Expected: spin <type> width "
-                "<width> frequency <frequency> amplitude <amp>",
-                in_lin);
+                "<width> rate <rate> amplitude <amp>\n  %s",
+                in_lin, lin_copy);
         }
 
         double width = atof(width_value);
-        double frequency = atof(frequency_value);
+        double rate = atof(rate_value);
         double amp = atof(amp_value);
 
         if (strcmp(type, "pink") == 0) {
@@ -3877,23 +3856,23 @@ void readNameDef() {
         char *next_word = getWord();
         if (next_word) {
           error("Invalid syntax at line %d. Expected: spin <type> width "
-                "<width> frequency <frequency> amplitude <amp>\n  %s",
+                "<width> rate <rate> amplitude <amp>\n  %s",
                 in_lin, lin_copy);
           free(next_word);
         }
 
-        if (width < 0 || width > 1000.0) {
-          error("Invalid spin width at line %d.\nSupported range: 0 to 1000.0.\n  %s", in_lin, lin_copy);
+        if (width < 0) {
+          error("Invalid spin width at line %d.\n  %s", in_lin, lin_copy);
         }
-        if (frequency < 0.5 || frequency > 40.0) {
-          error("Invalid spin frequency at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+        if (rate < 0) {
+          error("Invalid spin rate at line %d.\n  %s", in_lin, lin_copy);
         }
         if (amp < 0 || amp > 100) {
           error("Invalid spin amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
         }
 
         nd->vv[ch].carr = width;
-        nd->vv[ch].res = frequency;
+        nd->vv[ch].res = rate;
         nd->vv[ch].amp = AMP_DA(amp);
         ch++;
         lines_processed++; // Increment count of processed lines
@@ -3925,8 +3904,8 @@ void readNameDef() {
             free(next_word);
           }
 
-          if (pulse < 0.5 || pulse > 40.0) {
-            error("Invalid pulse at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+          if (pulse < 0) {
+            error("Invalid pulse at line %d.\n  %s", in_lin, lin_copy);
           }
           if (intensity < 0 || intensity > 100) {
             error("Invalid intensity at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
@@ -3942,36 +3921,38 @@ void readNameDef() {
           // Spin: width <width> frequency <frequency> intensity <intensity>
           char *width_str = getWord();
           char *width_value = getWord();
-          char *frequency_str = getWord();
-          char *frequency_value = getWord();
+          char *rate_str = getWord();
+          char *rate_value = getWord();
           char *intensity_str = getWord();
           char *intensity_value = getWord();
 
-          if (!width_str || !width_value || !frequency_str ||
-              !frequency_value || !intensity_str || !intensity_value ||
-              strcmp(intensity_str, "intensity") != 0) {
+          if (!width_str || !width_value || !rate_str ||
+              !rate_value || !intensity_str || !intensity_value ||
+              strcmp(intensity_str, "intensity") != 0 ||
+              strcmp(rate_str, "rate") != 0 ||
+              strcmp(width_str, "width") != 0) {
             error("Invalid spin syntax at line %d. Expected: spin width "
-                  "<width> frequency <frequency> intensity <intensity>",
-                  in_lin);
+                  "<width> rate <rate> intensity <intensity>\n  %s",
+                  in_lin, lin_copy);
           }
 
           double width = atof(width_value);
-          double frequency = atof(frequency_value);
+          double rate = atof(rate_value);
           double intensity = atof(intensity_value);
 
           char *next_word = getWord();
           if (next_word) {
             error("Invalid syntax at line %d. Expected: effect spin width "
-                  "<width> frequency <frequency> intensity <intensity>\n  %s",
+                  "<width> rate <rate> intensity <intensity>\n  %s",
                   in_lin, lin_copy);
             free(next_word);
           }
 
-          if (width < 0 || width > 1000.0) {
-            error("Invalid spin width at line %d.\nSupported range: 0 to 1000.0.\n  %s", in_lin, lin_copy);
+          if (width < 0) {
+            error("Invalid spin width at line %d.\n  %s", in_lin, lin_copy);
           }
-          if (frequency < 0.5 || frequency > 40.0) {
-            error("Invalid spin frequency at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+          if (rate < 0) {
+            error("Invalid spin rate at line %d.\n  %s", in_lin, lin_copy);
           }
           if (intensity < 0 || intensity > 100) {
             error("Invalid intensity at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
@@ -3979,7 +3960,7 @@ void readNameDef() {
 
           nd->vv[ch].typ = 6;
           nd->vv[ch].carr = width;
-          nd->vv[ch].res = frequency;
+          nd->vv[ch].res = rate;
           nd->vv[ch].amp = AMP_DA(intensity);
           ch++;
           lines_processed++; // Increment count of processed lines
@@ -3992,14 +3973,14 @@ void readNameDef() {
               in_lin);
       }
     } else if (strcmp(cmd, "background") == 0) {
-      // Parse: file <file> amplitude <amp>
-      char *amp_word = getWord();
+      // Parse: background amplitude <amp>
+      char *amp_str = getWord();
       char *amp_value = getWord();
 
-      if (!amp_word || !amp_value || strcmp(amp_word, "amplitude") != 0) {
+      if (!amp_str || !amp_value || strcmp(amp_str, "amplitude") != 0) {
         error("Invalid background syntax at line %d. Expected: background "
-              "amplitude <amp>",
-              in_lin);
+              "amplitude <amp>\n  %s",
+              in_lin, lin_copy);
       }
 
       double amp = atof(amp_value);
@@ -4026,21 +4007,23 @@ void readNameDef() {
       char *type = getWord();
       char *width_str = getWord();
       char *width_value = getWord();
-      char *frequency_str = getWord();
-      char *frequency_value = getWord();
-      char *amp_word = getWord();
+      char *rate_str = getWord();
+      char *rate_value = getWord();
+      char *amp_str = getWord();
       char *amp_value = getWord();
 
-      if (!type || !width_str || !width_value || !frequency_str ||
-          !frequency_value || !amp_word || !amp_value ||
-          strcmp(amp_word, "amplitude") != 0) {
+      if (!type || !width_str || !width_value || !rate_str ||
+          !rate_value || !amp_str || !amp_value ||
+          strcmp(amp_str, "amplitude") != 0 ||
+          strcmp(rate_str, "rate") != 0 ||
+          strcmp(width_str, "width") != 0) {
         error("Invalid spin syntax at line %d. Expected: spin <type> width "
-              "<width> frequency <frequency> amplitude <amp>",
-              in_lin);
+              "<width> rate <rate> amplitude <amp>\n  %s",
+              in_lin, lin_copy);
       }
 
       double width = atof(width_value);
-      double frequency = atof(frequency_value);
+      double rate = atof(rate_value);
       double amp = atof(amp_value);
 
       if (strcmp(type, "pink") == 0) {
@@ -4057,17 +4040,17 @@ void readNameDef() {
       char *next_word = getWord();
       if (next_word) {
         error("Invalid syntax at line %d. Expected: spin <type> width "
-              "<width> frequency <frequency> amplitude <amp>\n  %s",
+              "<width> rate <rate> amplitude <amp>\n  %s",
               in_lin, lin_copy);
         free(next_word);
       }
 
-      if (width < 0 || width > 1000.0) {
-        error("Invalid spin width at line %d.\nSupported range: 0 to 1000.0.\n  %s", in_lin, lin_copy);
+      if (width < 0) {
+        error("Invalid spin width at line %d.\n  %s", in_lin, lin_copy);
       }
 
-      if (frequency < 0.5 || frequency > 40.0) {
-        error("Invalid spin frequency at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+      if (rate < 0) {
+        error("Invalid spin rate at line %d.\n  %s", in_lin, lin_copy);
       }
       if (amp < 0 || amp > 100) {
         error("Invalid spin amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
@@ -4075,7 +4058,7 @@ void readNameDef() {
 
       nd->vv[ch].carr = width;
       nd->vv[ch].waveform = opt_w;
-      nd->vv[ch].res = frequency;
+      nd->vv[ch].res = rate;
       nd->vv[ch].amp = AMP_DA(amp);
       ch++;
       lines_processed++; // Increment count of processed lines
@@ -4107,8 +4090,8 @@ void readNameDef() {
           free(next_word);
         }
 
-        if (pulse < 0.5 || pulse > 40.0) {
-          error("Invalid pulse at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+        if (pulse < 0) {
+          error("Invalid pulse at line %d.\n  %s", in_lin, lin_copy);
         }
 
         if (intensity < 0 || intensity > 100) {
@@ -4122,40 +4105,42 @@ void readNameDef() {
         ch++;
         lines_processed++; // Increment count of processed lines
       } else if (strcmp(type, "spin") == 0) {
-        // Spin: width <width> beat <beat> intensity <intensity>
+        // Spin: width <width> rate <rate> intensity <intensity>
         char *width_str = getWord();
         char *width_value = getWord();
-        char *beat_str = getWord();
-        char *beat_value = getWord();
+        char *rate_str = getWord();
+        char *rate_value = getWord();
         char *intensity_str = getWord();
         char *intensity_value = getWord();
 
-        if (!width_str || !width_value || !beat_str || !beat_value ||
+        if (!width_str || !width_value || !rate_str || !rate_value ||
             !intensity_str || !intensity_value ||
-            strcmp(intensity_str, "intensity") != 0) {
+            strcmp(intensity_str, "intensity") != 0 ||
+            strcmp(rate_str, "rate") != 0 ||
+            strcmp(width_str, "width") != 0) {
           error("Invalid spin syntax at line %d. Expected: spin width "
-                "<width> beat <beat> intensity <intensity>",
-                in_lin);
+                "<width> rate <rate> intensity <intensity>\n  %s",
+                in_lin, lin_copy);
         }
 
         double width = atof(width_value);
-        double beat = atof(beat_value);
+        double rate = atof(rate_value);
         double intensity = atof(intensity_value);
 
         char *next_word = getWord();
         if (next_word) {
           error("Invalid syntax at line %d. Expected: effect spin width "
-                "<width> beat <beat> intensity <intensity>\n  %s",
+                "<width> rate <rate> intensity <intensity>\n  %s",
                 in_lin, lin_copy);
           free(next_word);
         }
 
-        if (width < 0 || width > 1000.0) {
-          error("Invalid spin width at line %d.\nSupported range: 0 to 1000.0.\n  %s", in_lin, lin_copy);
+        if (width < 0) {
+          error("Invalid spin width at line %d.\n  %s", in_lin, lin_copy);
         }
 
-        if (beat < 0.5 || beat > 40.0) {
-          error("Invalid spin frequency at line %d.\nSupported range: 0.5 to 40.0.\n  %s", in_lin, lin_copy);
+        if (rate < 0) {
+          error("Invalid spin rate at line %d.\n  %s", in_lin, lin_copy);
         }
 
         if (intensity < 0 || intensity > 100) {
@@ -4164,7 +4149,7 @@ void readNameDef() {
 
         nd->vv[ch].typ = 6;
         nd->vv[ch].carr = width;
-        nd->vv[ch].res = beat;
+        nd->vv[ch].res = rate;
         nd->vv[ch].amp = AMP_DA(intensity);
         ch++;
         lines_processed++; // Increment count of processed lines
