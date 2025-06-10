@@ -293,18 +293,18 @@ void usage() {
 #define N_CH 16            // Number of channels
 
 struct Voice {
-  int typ; // Voice type: 0 off, 1 binaural, 2 pink noise, 3 bell, 4 spin, 5
+  int typ; // Voice type: 0 off, 1 binaural, 2 pink noise, 3 monaural beats, 4 spin, 5
            // mix, 6 mixspin, 7 mixpulse, 8 isochronic, 9 white noise, 10 brown
            // noise, 11 bspin, 12 wspin, 13 mixbeat, -1 to -100 wave00 to wave99
   double amp;   // Amplitude level (0-4096 for 0-100%)
-  double carr;  // Carrier freq (for binaural/bell/isochronic), width (for spin)
+  double carr;  // Carrier freq (for binaural/monaural/isochronic), width (for spin)
   double res;   // Resonance freq (-ve or +ve) (for binaural/spin/isochronic)
   int waveform; // 0=sine, 1=square, 2=triangle, 3=sawtooth
 };
 
 struct Channel {
   Voice v; // Current voice setting (updated from current period)
-  int typ; // Current type: 0 off, 1 binaural, 2 pink noise, 3 bell, 4 spin, 5
+  int typ; // Current type: 0 off, 1 binaural, 2 pink noise, 3 monaural, 4 spin, 5
            // mix, 6 mixspin, 7 mixpulse, 8 isochronic, 9 white noise, 10 brown
            // noise, 11 bspin, 12 wspin, 13 mixbeat, -1 to -100 wave00 to wave99
   int amp, amp2;  // Current state, according to current type
@@ -881,6 +881,10 @@ void scanOptions(int *acp, char ***avp) {
   *avp = argv;
 }
 
+//
+// Handle options in the sequence file
+//
+
 void handleOptionInSequence(char *p) {
   char *option = getWord();
 
@@ -1182,6 +1186,18 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
       return sprintf(p, "\n\tnoise pink amplitude %.2f", AMP_AD(vp->amp));
     } else {
       return sprintf(p, " (noise:%.2f)", AMP_AD(vp->amp));
+    }
+  case 3:
+    if (dup && vp->carr == dup->carr && vp->res == dup->res &&
+        vp->amp == dup->amp)
+      return sprintf(p, "  ::");
+    if (multiline) {
+      return sprintf(p, "\n\twaveform %s tone %.2f monaural %.2f amplitude %.2f",
+                     waveform_name[vp->waveform], vp->carr, vp->res,
+                     AMP_AD(vp->amp));
+    } else {
+      return sprintf(p, " (tone:%.2f monaural:%.2f amplitude:%.2f)", vp->carr,
+                     vp->res, AMP_AD(vp->amp));
     }
   case 9:
     if (dup && vp->amp == dup->amp)
@@ -1751,18 +1767,30 @@ void outChunk() {
         tot1 += val;
         tot2 += val;
         break;
-      case 3: // Bell
-        if (ch->off2) {
+      case 3: // Monaural beats (traditional crossover method)
+        {
+          // Advance phases for both frequency components
           ch->off1 += ch->inc1;
           ch->off1 &= (ST_SIZ << 16) - 1;
-          // val= ch->off2 * sin_table[ch->off1 >> 16];
-          val = ch->off2 * sin_tables[ch->v.waveform][ch->off1 >> 16];
-          tot1 += val;
-          tot2 += val;
-          if (--ch->inc2 < 0) {
-            ch->inc2 = out_rate / 20;
-            ch->off2 -= 1 + ch->off2 / 12; // Knock off 10% each 50 ms
-          }
+          ch->off2 += ch->inc2;
+          ch->off2 &= (ST_SIZ << 16) - 1;
+          
+          // Generate the two frequency components
+          int freq_high = sin_tables[ch->v.waveform][ch->off1 >> 16]; // carr + res/2
+          int freq_low = sin_tables[ch->v.waveform][ch->off2 >> 16];  // carr - res/2
+          
+          // Traditional monaural: opposite phase mixing
+          // Left channel: high + low frequencies 
+          // Right channel: low + high frequencies (same content, creates monaural effect)
+          int left_mix = freq_high + freq_low;
+          int right_mix = freq_low + freq_high; // Same as left, but keeping structure clear
+          
+          // Apply amplitude and divide by 2 to prevent clipping (only for audio output)
+          // User still sees the full amplitude value in sprintVoice
+          int half_amp = ch->amp / 2;
+          
+          tot1 += half_amp * left_mix;
+          tot2 += half_amp * right_mix;
         }
         break;
       case 4: // Spinning pink noise
@@ -2136,7 +2164,6 @@ void corrVal(int running) {
   Channel *ch;
   Voice *v0, *v1, *vv;
   double rat0, rat1;
-  int trigger = 0;
 
   // Move to the correct period
   while ((now >= t0) ^ (now >= t1) ^ (t1 > t0)) {
@@ -2155,7 +2182,6 @@ void corrVal(int running) {
       dispCurrPer(stderr);
       status(0);
     }
-    trigger = 1; // Trigger bells or whatever
   }
 
   // Run through to calculate voice settings for current time
@@ -2178,7 +2204,7 @@ void corrVal(int running) {
         break;
       case 2:
         break;
-      case 3:
+      case 3: // Monaural beats (AM)
         ch->off1 = ch->off2 = 0;
         break;
       case 4:
@@ -2220,8 +2246,9 @@ void corrVal(int running) {
       vv->waveform = v0->waveform;
       break;
     case 3:
-      vv->amp = v0->amp; // No need to slide, as bell only rings briefly
-      vv->carr = v0->carr;
+      vv->amp = rat0 * v0->amp + rat1 * v1->amp;
+      vv->carr = rat0 * v0->carr + rat1 * v1->carr;
+      vv->res = rat0 * v0->res + rat1 * v1->res;
       vv->waveform = v0->waveform;
       break;
     case 4:
@@ -2345,11 +2372,8 @@ void corrVal(int running) {
       break;
     case 3:
       ch->amp = (int)vv->amp;
-      ch->inc1 = (int)(vv->carr / out_rate * ST_SIZ * 65536);
-      if (trigger) { // Trigger the bell only on entering the period
-        ch->off2 = ch->amp;
-        ch->inc2 = out_rate / 20;
-      }
+      ch->inc1 = (int)((vv->carr + vv->res / 2) / out_rate * ST_SIZ * 65536); // freq high
+      ch->inc2 = (int)((vv->carr - vv->res / 2) / out_rate * ST_SIZ * 65536); // freq low
       break;
     case 4:
       ch->amp = (int)vv->amp;
@@ -3050,15 +3074,6 @@ void correctPeriods() {
         memcpy(pp->v0, pp->prv->v1, sizeof(pp->v0));
         memcpy(qq->v1, qq->nxt->v0, sizeof(qq->v1));
 
-        // Special handling for bells
-        for (a = 0; a < N_CH; a++) {
-          if (pp->v0[a].typ == 3 && pp->fi != -3)
-            pp->v0[a].typ = 0;
-
-          if (qq->v1[a].typ == 3 && pp->fi == -3)
-            qq->v1[a].typ = 0;
-        }
-
         fo = pp->prv->fo;
         fi = qq->nxt->fi;
 
@@ -3069,7 +3084,7 @@ void correctPeriods() {
           for (a = 0; a < N_CH; a++) {
             Voice *vp = &pp->v0[a];
             Voice *vq = &qq->v1[a];
-            if (vp->typ == 0 && vq->typ != 0 && vq->typ != 3) {
+            if (vp->typ == 0 && vq->typ != 0) {
               memcpy(vp, vq, sizeof(*vp));
               vp->amp = 0;
             } else if (vp->typ != 0 && vq->typ == 0) {
@@ -3093,14 +3108,6 @@ void correctPeriods() {
                (vp->carr != vq->carr || vp->res != vq->res))) {
             vp->amp = vq->amp = 0; // To silence
             midpt = 1;             // Definitely need the mid-point
-
-            if (vq->typ == 3) { // Special handling for bells
-              vq->amp = qq->v1[a].amp;
-              qq->nxt->v0[a].typ = qq->nxt->v1[a].typ = 0;
-            }
-          } else if (vp->typ ==
-                     3) { // Else smooth transition - for bells not so smooth
-            qq->v0[a].typ = qq->v1[a].typ = 0;
           } else { // Else smooth transition
             vp->amp = vq->amp = (vp->amp + vq->amp) / 2;
             if (vp->typ == 1 || vp->typ == 4 || vp->typ < 0) {
@@ -3316,10 +3323,6 @@ int voicesEq(Voice *v0, Voice *v1) {
       if (v0->amp != v1->amp)
         return 0;
       break;
-    case 3:
-      if (v0->amp != v1->amp || v0->carr != v1->carr)
-        return 0;
-      break;
     }
     v0++;
     v1++;
@@ -3463,7 +3466,11 @@ void readNameDef() {
               in_lin, lin_copy);
       }
 
-      double amp = atof(amp_value);
+      double amp;
+
+      if (sscanf(amp_value, "%lf", &amp) != 1) {
+        error("Invalid noise amplitude at line %d.\n  %s", in_lin, lin_copy);
+      }
 
       if (strcmp(type, "pink") == 0) {
         nd->vv[ch].typ = 2;
@@ -3509,9 +3516,17 @@ void readNameDef() {
               in_lin, lin_copy);
       }
 
-      double freq = atof(freq_str);
-      double value = atof(value_str);
-      double amp = atof(amp_value);
+      double freq, value, amp;
+
+      if (sscanf(freq_str, "%lf", &freq) != 1) {
+        error("Invalid tone frequency at line %d.\n  %s", in_lin, lin_copy);
+      }
+      if (sscanf(value_str, "%lf", &value) != 1) {
+        error("Invalid tone value at line %d.\n  %s", in_lin, lin_copy);
+      }
+      if (sscanf(amp_value, "%lf", &amp) != 1) {
+        error("Invalid tone amplitude at line %d.\n  %s", in_lin, lin_copy);
+      }
 
       if (strcmp(type, "binaural") == 0 || strcmp(type, "bin") == 0) {
         // Binaural beat: freq+value/amp
@@ -3523,9 +3538,14 @@ void readNameDef() {
         nd->vv[ch].typ = 8;
         nd->vv[ch].carr = freq;
         nd->vv[ch].res = value;
-      } else {
+      } else if (strcmp(type, "monaural") == 0 || strcmp(type, "mon") == 0) {
+        nd->vv[ch].typ = 3;
+        nd->vv[ch].carr = freq;
+        nd->vv[ch].res = value;
+      }
+      else {
         error("Unknown tone type '%s' at line %d. Use: binaural/bin, "
-              "isochronic/iso",
+              "isochronic/iso, monaural/mon",
               type, in_lin);
       }
 
@@ -3585,10 +3605,17 @@ void readNameDef() {
                 in_lin, lin_copy);
         }
 
-        double freq = atof(freq_str);
-        double value = atof(value_str);
-        double amp = atof(amp_value);
+        double freq, value, amp;
 
+        if (sscanf(freq_str, "%lf", &freq) != 1) {
+          error("Invalid tone frequency at line %d.\n  %s", in_lin, lin_copy);
+        }
+        if (sscanf(value_str, "%lf", &value) != 1) {
+          error("Invalid tone value at line %d.\n  %s", in_lin, lin_copy);
+        }
+        if (sscanf(amp_value, "%lf", &amp) != 1) {
+          error("Invalid tone amplitude at line %d.\n  %s", in_lin, lin_copy);
+        }
         if (strcmp(type, "binaural") == 0 || strcmp(type, "bin") == 0) {
           // Binaural beat: freq+value/amp
           nd->vv[ch].typ = 1;
@@ -3600,9 +3627,13 @@ void readNameDef() {
           nd->vv[ch].typ = 8;
           nd->vv[ch].carr = freq;
           nd->vv[ch].res = value;
+        } else if (strcmp(type, "monaural") == 0 || strcmp(type, "mon") == 0) {
+          nd->vv[ch].typ = 3;
+          nd->vv[ch].carr = freq;
+          nd->vv[ch].res = value;
         } else {
           error("Unknown tone type '%s' at line %d. Use: binaural/bin, "
-                "isochronic/iso",
+                "isochronic/iso, monaural/mon",
                 type, in_lin);
         }
 
@@ -3646,9 +3677,17 @@ void readNameDef() {
                 in_lin, lin_copy);
         }
 
-        double width = atof(width_value);
-        double rate = atof(rate_value);
-        double amp = atof(amp_value);
+        double width, rate, amp;
+
+        if (sscanf(width_value, "%lf", &width) != 1) {
+          error("Invalid spin width at line %d.\n  %s", in_lin, lin_copy);
+        }
+        if (sscanf(rate_value, "%lf", &rate) != 1) {
+          error("Invalid spin rate at line %d.\n  %s", in_lin, lin_copy);
+        }
+        if (sscanf(amp_value, "%lf", &amp) != 1) {
+          error("Invalid spin amplitude at line %d.\n  %s", in_lin, lin_copy);
+        }
 
         if (strcmp(type, "pink") == 0) {
           nd->vv[ch].typ = 4; // Spin
@@ -3701,8 +3740,13 @@ void readNameDef() {
                   in_lin);
           }
 
-          double pulse = atof(pulse_value);
-          double intensity = atof(intensity_value);
+          double pulse, intensity;
+          if (sscanf(pulse_value, "%lf", &pulse) != 1) {
+            error("Invalid pulse at line %d.\n  %s", in_lin, lin_copy);
+          }
+          if (sscanf(intensity_value, "%lf", &intensity) != 1) {
+            error("Invalid intensity at line %d.\n  %s", in_lin, lin_copy);
+          }
 
           char *next_word = getWord();
           if (next_word) {
@@ -3744,9 +3788,16 @@ void readNameDef() {
                   in_lin, lin_copy);
           }
 
-          double width = atof(width_value);
-          double rate = atof(rate_value);
-          double intensity = atof(intensity_value);
+          double width, rate, intensity;
+          if (sscanf(width_value, "%lf", &width) != 1) {
+            error("Invalid spin width at line %d.\n  %s", in_lin, lin_copy);
+          }
+          if (sscanf(rate_value, "%lf", &rate) != 1) {
+            error("Invalid spin rate at line %d.\n  %s", in_lin, lin_copy);
+          }
+          if (sscanf(intensity_value, "%lf", &intensity) != 1) {
+            error("Invalid intensity at line %d.\n  %s", in_lin, lin_copy);
+          }
 
           char *next_word = getWord();
           if (next_word) {
@@ -3791,7 +3842,10 @@ void readNameDef() {
               in_lin, lin_copy);
       }
 
-      double amp = atof(amp_value);
+      double amp;
+      if (sscanf(amp_value, "%lf", &amp) != 1) {
+        error("Invalid background amplitude at line %d.\n  %s", in_lin, lin_copy);
+      }
 
       char *next_word = getWord();
       if (next_word) {
@@ -3830,9 +3884,16 @@ void readNameDef() {
               in_lin, lin_copy);
       }
 
-      double width = atof(width_value);
-      double rate = atof(rate_value);
-      double amp = atof(amp_value);
+      double width, rate, amp;
+      if (sscanf(width_value, "%lf", &width) != 1) {
+        error("Invalid spin width at line %d.\n  %s", in_lin, lin_copy);
+      }
+      if (sscanf(rate_value, "%lf", &rate) != 1) {
+        error("Invalid spin rate at line %d.\n  %s", in_lin, lin_copy);
+      }
+      if (sscanf(amp_value, "%lf", &amp) != 1) {
+        error("Invalid spin amplitude at line %d.\n  %s", in_lin, lin_copy);
+      }
 
       if (strcmp(type, "pink") == 0) {
         nd->vv[ch].typ = 4;
@@ -3887,8 +3948,13 @@ void readNameDef() {
                 in_lin);
         }
 
-        double pulse = atof(pulse_value);
-        double intensity = atof(intensity_value);
+        double pulse, intensity;
+        if (sscanf(pulse_value, "%lf", &pulse) != 1) {
+          error("Invalid pulse at line %d.\n  %s", in_lin, lin_copy);
+        }
+        if (sscanf(intensity_value, "%lf", &intensity) != 1) {
+          error("Invalid intensity at line %d.\n  %s", in_lin, lin_copy);
+        }
 
         char *next_word = getWord();
         if (next_word) {
@@ -3931,9 +3997,16 @@ void readNameDef() {
                 in_lin, lin_copy);
         }
 
-        double width = atof(width_value);
-        double rate = atof(rate_value);
-        double intensity = atof(intensity_value);
+        double width, rate, intensity;
+        if (sscanf(width_value, "%lf", &width) != 1) {
+          error("Invalid spin width at line %d.\n  %s", in_lin, lin_copy);
+        }
+        if (sscanf(rate_value, "%lf", &rate) != 1) {
+          error("Invalid spin rate at line %d.\n  %s", in_lin, lin_copy);
+        }
+        if (sscanf(intensity_value, "%lf", &intensity) != 1) {
+          error("Invalid intensity at line %d.\n  %s", in_lin, lin_copy);
+        }
 
         char *next_word = getWord();
         if (next_word) {
@@ -3968,6 +4041,10 @@ void readNameDef() {
             cmd, in_lin);
     }
   }
+
+  
+
+  fprintf(stderr, "DEBUG: %s\n", lin_copy);
 
   // Normalize total amplitude
   normalizeAmplitude(nd->vv, N_CH, lin_copy, in_lin);
