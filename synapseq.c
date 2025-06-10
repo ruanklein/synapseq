@@ -2292,6 +2292,12 @@ void corrVal(int running) {
     double tot_beat = 0, tot_other = 0;
     for (a = 0; a < N_CH; a++) {
       vv = &chan[a].v;
+
+      if (vv->waveform != 0) {
+        // Skip non-sine waveforms
+        continue;
+      }
+
       if (vv->typ == 1) {
         double adj1 = ampAdjust(vv->carr + vv->res / 2);
         double adj2 = ampAdjust(vv->carr - vv->res / 2);
