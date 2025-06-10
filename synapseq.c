@@ -943,6 +943,10 @@ void handleOptionInSequence(char *p) {
 
     opt_o = StrDup(file_name);
     opt_W = 1;
+  } else if (strcmp(option, "@quiet") == 0) {
+    opt_Q = 1;
+  } else if (strcmp(option, "@debug") == 0) {
+    opt_D = 1;
   }
   else {
     error("Invalid option at line %d: %s", in_lin, lin_copy);
