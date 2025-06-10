@@ -200,7 +200,6 @@ void handleOptionInSequence(char *p);
 void setupOptC(char *spec);
 extern int out_rate, out_rate_def;
 void normalizeAmplitude(Voice *voices, int numChannels, const char *line, int lineNum);
-void printSequenceDuration();
 void checkBackgroundInSequence(NameDef *nd); // Check if background amplitude is specified
 void create_noise_spin_effect(int typ, int amp, int spin_position, int *left, int *right); // Create a spin effect
 
@@ -257,6 +256,7 @@ void help() {
       "default device" NL
       "          -O        Output raw data to the standard output" NL
       "          -W        Output a WAV-format file instead of raw data" NL
+      "          -v        Verbose mode" NL
       "          Legacy options:" NL
       "          -R rate   Select rate in Hz that frequency "
       "changes are recalculated" NL
@@ -382,6 +382,7 @@ int tty_erase;       // Chars to erase from current line (for ESC[K emulation)
 
 int opt_Q; // Quiet mode
 int opt_D;
+int opt_v = 0; // Verbose mode
 // int opt_M;
 char *opt_o, *opt_m;
 int opt_O;
@@ -806,6 +807,9 @@ void scanOptions(int *acp, char ***avp) {
           error("-V expects volume level in percent (0-100)");
         if (opt_V < 0 || opt_V > 100)
           error("Volume level must be between 0 and 100");
+        break;
+      case 'v':
+        opt_v = 1;
         break;
       case 'w':
         if (argc-- < 1)
@@ -1611,17 +1615,11 @@ void loop() {
   //   file int duration = t_per0(fast_tim0, fast_tim1); byte_count= out_bps *
   //   (S64)(duration * 0.001 * out_rate /
   //               (fast ? fast_mult : 1));
-  //   if (!opt_Q) {
-  //     printSequenceDuration();
-  //   }
   // }
   // Calculate the correct duration based on the last time in the sequence file
   int duration = t_per0(fast_tim0, fast_tim1);
   byte_count =
       out_bps * (S64)(duration * 0.001 * out_rate / (fast ? fast_mult : 1));
-  if (!opt_Q) {
-    printSequenceDuration();
-  }
 
   // Do byte-swapping if bigendian and outputting to a file or stream
   if ((opt_O || opt_o) && out_mode == 1 && bigendian)
@@ -2434,10 +2432,8 @@ void setup_device(void) {
     out_buf_lo &= 0xFFFF;
     tmp_buf = (int *)Alloc(out_blen * sizeof(int));
 
-    if (!opt_Q && !opt_W) // Informational message for opt_W is written later
-      warn("Outputting %d-bit raw audio data at %d Hz with %d-sample blocks, "
-           "%d ms per block",
-           out_mode ? 16 : 8, out_rate, out_blen / 2, out_buf_ms);
+    if (!opt_Q && !opt_W && opt_v) // Informational message for opt_W is written later
+      warn("Audio: %d-bit @ %d Hz -> raw data", out_mode ? 16 : 8, out_rate);
     return;
   }
 
@@ -2525,14 +2521,9 @@ void setup_device(void) {
     // Mark that we are using ALSA
     out_fd = -9998; // Special value for ALSA
 
-    if (!opt_Q) {
-      if (rate != out_rate && out_rate_def)
-        warn("*** WARNING: Device output rate is %d Hz, but SynapSeq is "
-             "configured for %d Hz ***",
-             rate, out_rate);
-      warn("ALSA audio output %d-bit at %d Hz with period of %lu samples, %d "
-           "ms per period",
-           out_mode ? 16 : 8, out_rate, period_size, out_buf_ms);
+    if (!opt_Q && opt_v) {
+      warn("Audio: %d-bit @ %d Hz -> ALSA | %d×%d samples (%d ms latency)",
+           out_mode ? 16 : 8, out_rate, period_size, out_blen / 2, out_buf_ms);
     }
     return;
   }
@@ -2611,10 +2602,9 @@ void setup_device(void) {
     out_fd = -9999;
     tmp_buf = (int *)Alloc(out_blen * sizeof(int));
 
-    if (!opt_Q)
-      warn("Outputting %d-bit audio at %d Hz with %d %d-sample fragments, "
-           "%d ms per fragment",
-           out_mode ? 16 : 8, out_rate, BUFFER_COUNT, out_blen / 2, out_buf_ms);
+    if (!opt_Q && opt_v)
+      warn("Audio: %d-bit @ %d Hz -> \"default\" | %d×%d samples (%d ms latency)",
+           (int)fmt.wBitsPerSample, out_rate, BUFFER_COUNT, out_blen / 2, out_buf_ms);
   }
 #endif
 #ifdef MAC_AUDIO
@@ -2717,13 +2707,8 @@ void setup_device(void) {
     }
 
     // Report settings
-    if (!opt_Q) {
-      if (device_out_rate != out_rate && out_rate_def)
-        warn("*** WARNING: Device output rate is %d Hz, but SynapSeq is "
-             "configured for %d Hz ***",
-             device_out_rate, out_rate);
-      warn("Outputting %d-bit audio at %d Hz to \"%s\",\n"
-           "  using %d %d-sample fragments, %d ms per fragment",
+    if (!opt_Q && opt_v) {
+      warn("Audio: %d-bit @ %d Hz -> \"%s\" | %d×%d samples (%d ms latency)",
            (int)streamDesc.mBitsPerChannel, out_rate, deviceName, BUFFER_COUNT,
            out_blen / 2, out_buf_ms);
     }
@@ -2846,8 +2831,8 @@ void writeWAV() {
   addU4(byte_count);
   writeOut(buf, 44);
 
-  if (!opt_Q)
-    warn("Outputting %d-bit WAV data at %d Hz, file size %d bytes",
+  if (!opt_Q && opt_v)
+    warn("Audio: %d-bit @ %d Hz -> WAV file (%d bytes)",
          out_mode ? 16 : 8, out_rate, byte_count + 44);
 }
 
@@ -3300,10 +3285,6 @@ void correctPeriods() {
         per = per->nxt;
 
     pp = per;
-
-    if (!opt_Q) {
-      printSequenceDuration();
-    }
 
     do {
       dispCurrPer(stdout);
@@ -4170,12 +4151,6 @@ normalizeAmplitude(Voice *voices, int numChannels, const char *line,
       }
     }
   }
-}
-
-void printSequenceDuration() {
-  int duration = t_per0(fast_tim0, fast_tim1);
-  fprintf(stdout, "\n*** Sequence duration: %02d:%02d:%02d (hh:mm:ss) ***\n\n",
-          duration / 3600000, (duration / 60000) % 60, (duration / 1000) % 60);
 }
 
 void checkBackgroundInSequence(NameDef *nd) {
