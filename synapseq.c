@@ -180,9 +180,7 @@ void corrVal(int);
 int readLine();
 char *getWord();
 void badSeq();
-void readSeqImm(int ac, char **av);
 void readSeq(int ac, char **av);
-void readPreProg(int ac, char **av);
 void correctPeriods();
 void setup_device(void);
 void readNameDef();
@@ -194,24 +192,17 @@ int sprintVoice(char *, Voice *, Voice *, int);
 int readTime(char *, int *);
 void writeWAV();
 void writeOut(char *, int);
-void sinc_interpolate(double *, int, int *);
 inline int userTime();
 void find_wav_data_start(FILE *in);
 int raw_mix_in(int *dst, int dlen);
-int scanOptions(int *acp, char ***avp);
-void handleOptions(char *p);
+void scanOptions(int *acp, char ***avp);
 void handleOptionInSequence(char *p);
 void setupOptC(char *spec);
 extern int out_rate, out_rate_def;
-void create_drop(int ac, char **av);
-void create_slide(int ac, char **av);
-void normalizeAmplitude(Voice *voices, int numChannels, const char *line,
-                        int lineNum);
+void normalizeAmplitude(Voice *voices, int numChannels, const char *line, int lineNum);
 void printSequenceDuration();
-void checkBackgroundInSequence(
-    NameDef *nd); // Check if background amplitude is specified
-void create_noise_spin_effect(int typ, int amp, int spin_position, int *left,
-                              int *right); // Create a spin effect
+void checkBackgroundInSequence(NameDef *nd); // Check if background amplitude is specified
+void create_noise_spin_effect(int typ, int amp, int spin_position, int *left, int *right); // Create a spin effect
 
 #define ALLOC_ARR(cnt, type) ((type *)Alloc((cnt) * sizeof(type)))
 #define uint unsigned int
@@ -242,36 +233,26 @@ void help() {
       "SynapSeq - Synapse-Sequenced Brainwave Generator, version " VERSION NL
       "(c) 2025 Ruan, https://ruan.sh/" NL
       "Released under the GNU GPL v2. See file COPYING." NL NL
-      "Usage: synapseq [options] seq-file ..." NL
-      "       synapseq [options] -i tone-specs ..." NL
-      "       synapseq [options] -p pre-programmed-sequence-specs ..." NL NL
+      "Usage: synapseq [options] sequence-file ..." NL NL
       "Options:  -h        Display this help-text" NL
       "          -Q        Quiet - don't display running status" NL
       "          -D        Display the full interpreted sequence instead of "
-      "playing it" NL "          -i        Immediate.  Take the remainder of "
-      "the command line to be" NL
-      "                     tone-specifications, and play them continuously" NL
-      "          -p        Pre-programmed sequence.  Take the remainder of the "
-      "command" NL "                     line to be a type and arguments, e.g. "
-      "\"drop 00ds+\"" NL
-      "          -q mult   Quick.  Run through quickly (real time x 'mult') "
-      "from the" NL "                     start time, rather than wait for "
-      "real time to pass" NL NL
+      "playing it" NL
       "          -r rate   Select the output rate (default is 44100 Hz, or "
       "from -m)"
-#ifndef MAC_AUDIO
-      NL "          -b bits   Select the number bits for output (8 or 16, "
-      "default 16)"
-#else
+#ifdef ALSA_AUDIO
+      NL
+      "          -d dev    Select a different ALSA device instead of 'default'"
+#endif
+#ifdef MAC_AUDIO
       NL
       "          -B size   Force buffer size (in samples) for audio output." NL
       "                     (e.g. 1024, 2048, 4096, etc.)"
 #endif
-      NL "          -N        Disable automatic amplitude normalization (allow "
-      "clipping)" NL "          -V        Set the global volume level (Min "
-      "1, Max 100. Default 100)" NL
+      NL "          -V        Set the global volume level (Min 1, Max 100. "
+      "Default 100)" NL
       "          -w type   Set the global waveform type (sine, square, "
-      "triangle, sawtooth; default sine)" NL NL
+      "triangle, sawtooth; default sine)" NL
       "          -o file   Output raw data to the given file instead of "
       "default device" NL
       "          -O        Output raw data to the standard output" NL
@@ -284,17 +265,11 @@ void help() {
 #ifdef MP3_DECODE
       "mp3/"
 #endif
-      "wav/raw format" NL "          -M        Read raw audio data from the "
-      "standard input and mix it" NL
-      "                      with the generated brainwave tones (raw "
-      "only)" NL NL "          -R rate   Select rate in Hz that frequency "
+      "wav/raw format" NL NL
+      "          Legacy options:" NL NL
+      "          -R rate   Select rate in Hz that frequency "
       "changes are recalculated" NL
       "                     (for file/pipe output only, default is 10Hz)" NL
-      "          -F fms    Fade in/out time in ms (default 60000ms, or 1min)"
-#ifdef ALSA_AUDIO
-      NL
-      "          -d dev    Select a different ALSA device instead of 'default'"
-#endif
       NL "          -c spec   Compensate for low-frequency headphone roll-off; "
       "see docs" NL);
   exit(0);
@@ -304,9 +279,7 @@ void usage() {
   error("SynapSeq - Synapse-Sequenced Brainwave Generator, version " VERSION NL
         "(c) 2025 Ruan, https://ruan.sh/" NL
         "Released under the GNU GPL v2. See file COPYING." NL NL
-        "Usage: synapseq [options] seq-file ..." NL
-        "       synapseq [options] -i tone-specs ..." NL
-        "       synapseq [options] -p pre-programmed-sequence-specs ..." NL NL
+        "Usage: synapseq [options] seq-file ..." NL NL
         "For full usage help, type 'synapseq -h'."
 #ifdef EXIT_KEY
         NL NL "Windows users please note that this utility is designed to be "
@@ -387,8 +360,7 @@ int out_buf_lo;       // Time to output a buffer-ful, fine-tuning in ms/0x10000
 int out_fd;           // Output file descriptor
 int out_rate = 44100; // Sample rate
 int out_rate_def = 1; // Sample rate is default value, not set by user
-int out_mode =
-    1; // Output mode: 0 unsigned char[2], 1 short[2], 2 swapped short[2]
+int out_mode = 1; // Output mode: 0 unsigned char[2], 1 short[2], 2 swapped short[2]
 int out_prate = 10; // Rate of parameter change (for file and pipe output only)
 int fade_int = 60000;      // Fade interval (ms)
 FILE *in;                  // Input sequence file
@@ -419,7 +391,7 @@ int tty_erase;       // Chars to erase from current line (for ESC[K emulation)
 
 int opt_Q; // Quiet mode
 int opt_D;
-int opt_M;
+// int opt_M;
 char *opt_o, *opt_m;
 int opt_O;
 int opt_W;
@@ -431,7 +403,6 @@ char *opt_d = "default"; // Output device to ALSA
 #ifdef MAC_AUDIO
 int opt_B = -1; // Buffer size override (-1 = auto)
 #endif
-int opt_N = 1;   // Enable automatic amplitude normalization (default)
 int opt_V = 100; // Global volume level (default 100%)
 int opt_w =
     0; // Waveform type (0 = sine, 1 = square, 2 = triangle, 3 = sawtooth)
@@ -698,7 +669,6 @@ int t_mid(int t0, int t1) { // Midpoint of period from t0 to t1
 
 int main(int argc, char **argv) {
   short test = 0x1100;
-  int rv;
   char *p;
 
   pdir = StrDup(argv[0]);
@@ -711,41 +681,27 @@ int main(int argc, char **argv) {
   bigendian = ((char *)&test)[0] != 0;
 
   // Process all the options
-  rv = scanOptions(&argc, &argv);
+  scanOptions(&argc, &argv);
 
-  if (argc < 1)
-    usage();
+  if (argc < 1) usage();
 
   init_builtin_namedefs();
-
-  if (rv == 'i') {
-    // Immediate mode
-    readSeqImm(argc, argv);
-  } else if (rv == 'p') {
-    // Pre-programmed sequence
-    readPreProg(argc, argv);
-  } else {
-    // Sequenced mode -- sequence may include options, so options
-    // are not settled until below this point
-    if (argc < 1)
-      usage();
-    readSeq(argc, argv);
-  }
-
+  readSeq(argc, argv);
   init_sin_table();
 
   if (opt_W && !opt_o && !opt_O)
     error("Use -o or -O with the -W option");
 
   mix_in = 0;
-  if (opt_M || opt_m) {
+  // if (opt_M || opt_m) {
+  if (opt_m) {
     char *p;
     char tmp[4];
     int raw = 1;
-    if (opt_M) {
-      mix_in = stdin;
-      tmp[0] = 0;
-    }
+    // if (opt_M) {
+    //   mix_in = stdin;
+    //   tmp[0] = 0;
+    // }
     if (opt_m) {
       // Pick up #<digits> on end of filename
       p = strchr(opt_m, 0);
@@ -826,12 +782,10 @@ int main(int argc, char **argv) {
 //	(-i option), 'p' -p option.
 //
 
-int scanOptions(int *acp, char ***avp) {
+void scanOptions(int *acp, char ***avp) {
   int argc = *acp;
   char **argv = *avp;
-  int val;
   char dmy;
-  int rv = 0;
 
   // Scan options
   while (argc > 0 && argv[0][0] == '-' && argv[0][1]) {
@@ -850,10 +804,6 @@ int scanOptions(int *acp, char ***avp) {
         if (!opt_m)
           opt_m = *argv++;
         break;
-      case 'F':
-        if (argc-- < 1 || 1 != sscanf(*argv++, "%d %c", &fade_int, &dmy))
-          error("-F expects fade-time in ms");
-        break;
 #ifdef MAC_AUDIO
       case 'B':
         if (argc-- < 1 || 1 != sscanf(*argv++, "%d %c", &opt_B, &dmy))
@@ -867,9 +817,6 @@ int scanOptions(int *acp, char ***avp) {
         opt_B *= 2;
         break;
 #endif
-      case 'N':
-        opt_N = 0;
-        break;
       case 'V':
         if (argc-- < 1 || 1 != sscanf(*argv++, "%d %c", &opt_V, &dmy))
           error("-V expects volume level in percent (0-100)");
@@ -897,20 +844,11 @@ int scanOptions(int *acp, char ***avp) {
           error("-c expects argument");
         setupOptC(*argv++);
         break;
-      case 'i':
-        rv = 'i';
-        break;
-      case 'p':
-        rv = 'p';
-        break;
       case 'h':
         help();
         break;
       case 'D':
         opt_D = 1;
-        break;
-      case 'M':
-        opt_M = 1;
         break;
       case 'O':
         opt_O = 1;
@@ -927,14 +865,6 @@ int scanOptions(int *acp, char ***avp) {
           error("Expecting an integer after -r");
         out_rate_def = 0;
         break;
-#ifndef MAC_AUDIO
-      case 'b':
-        if (argc-- < 1 || 1 != sscanf(*argv++, "%d %c", &val, &dmy) ||
-            !(val == 8 || val == 16))
-          error("Expecting -b 8 or -b 16");
-        out_mode = (val == 8) ? 0 : 1;
-        break;
-#endif
       case 'o':
         if (argc-- < 1)
           error("Expecting filename after -o");
@@ -961,7 +891,6 @@ int scanOptions(int *acp, char ***avp) {
 
   *acp = argc;
   *avp = argv;
-  return rv;
 }
 
 void handleOptionInSequence(char *p) {
@@ -1017,53 +946,6 @@ void handleOptionInSequence(char *p) {
   }
   else {
     error("Invalid option at line %d: %s", in_lin, lin_copy);
-  }
-}
-
-//
-//	Handle an option string, breaking it into an (argc/argv) list
-//	for scanOptions.
-//
-
-void handleOptions(char *str0) {
-  // Always StrDup() string and don't bother to free(), as normal
-  // argv[] strings stick around for the life of the program
-  char *str = StrDup(str0);
-  int const max_argc = 32;
-  char *argv[max_argc + 1];
-  int argc = 0;
-
-  while (*str) {
-    if (argc >= max_argc)
-      error("Too many options at line: %d\n  %s", in_lin, lin_copy);
-    argv[argc++] = str;
-    while (*str && !isspace(*str))
-      str++;
-    if (!*str)
-      continue;
-    *str++ = 0; // NUL-term this word
-    while (isspace(*str))
-      str++;
-  }
-  argv[argc] = 0; // Terminate argv list with a NULL
-
-  // Process the options
-  {
-    char **av = argv;
-    int ac = argc;
-    int rv;
-
-    rv = scanOptions(&ac, &av);
-
-    if (rv == 'i') {
-      // Immediate mode
-      readSeqImm(ac, av);
-    } else if (rv == 'p') {
-      // Pre-programmed sequence
-      readPreProg(ac, av);
-    } else if (ac)
-      error("Trailing garbage after options at line: %d\n  %s", in_lin,
-            lin_copy);
   }
 }
 
@@ -3054,57 +2936,6 @@ void badSeq() {
   error("Bad sequence file content at line: %d\n  %s", in_lin, lin_copy);
 }
 
-// Convenience for situations where buffer is being filled by
-// something other than readLine()
-void readNameDef2() {
-  lin = buf;
-  lin_copy = buf_copy;
-  strcpy(lin_copy, lin);
-  readNameDef();
-}
-void readTimeLine2() {
-  lin = buf;
-  lin_copy = buf_copy;
-  strcpy(lin_copy, lin);
-  readTimeLine();
-}
-
-// Convenience for creating sequences on the fly
-void formatNameDef(char *fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-  vsnprintf(buf, sizeof(buf), fmt, ap);
-  readNameDef2();
-}
-void formatTimeLine(int tim, char *fmt, ...) {
-  va_list ap;
-  char *p = buf + sprintf(buf, "%02d:%02d:%02d ", tim / 3600, tim / 60 % 60,
-                          tim % 60);
-  va_start(ap, fmt);
-  vsnprintf(p, buf + sizeof(buf) - p, fmt, ap);
-  readTimeLine2();
-}
-
-//
-//	Generate a list of Period structures, based on the tone-specs
-//	passed in (ac,av)
-//
-
-void readSeqImm(int ac, char **av) {
-  char *p = buf;
-
-  in_lin = 0;
-  p += sprintf(p, "immediate:");
-  while (ac-- > 0)
-    p += sprintf(p, " %s", *av++);
-  readNameDef2();
-
-  strcpy(buf, "00:00 immediate");
-  readTimeLine2();
-
-  correctPeriods();
-}
-
 //
 //	Read a list of sequence files, and generate a list of Period
 //	structures
@@ -4320,392 +4151,10 @@ int readTime(char *p, int *timp) { // Rets chars consumed, or 0 error
 }
 
 //
-//	Takes a set of points and repeats them twice, inverting the
-//	second set, and then interpolates them using a periodic sinc
-//	function (see http://www-ccrma.stanford.edu/~jos/resample/)
-//	and writes them to arr[] in the same format as the sin_table[].
-//
-
-void sinc_interpolate(double *dp, int np, int *arr) {
-  double *sinc; // Temporary sinc-table
-  double *out;  // Temporary output table
-  int a, b;
-  double dmax, dmin;
-  double adj, off;
-
-  // Generate a modified periodic sin(x)/x function to be used for
-  // each of the points.  Really this should be sin(x)/x modified
-  // by the sum of an endless series.  However, this doesn't
-  // converge very quickly, so to save time I'm approximating this
-  // series by 1-4*t*t where t ranges from 0 to 0.5 over the first
-  // half of the periodic cycle.  If you do the maths, this is at
-  // most 5% out.  This will have to do - it's smooth, and I don't
-  // know enough maths to make this series converge quicker.
-  sinc = (double *)Alloc(ST_SIZ * sizeof(double));
-  sinc[0] = 1.0;
-  for (a = ST_SIZ / 2; a > 0; a--) {
-    double tt = a * 1.0 / ST_SIZ;
-    double t2 = tt * tt;
-    double adj = 1 - 4 * t2;
-    double xx = 2 * np * 3.14159265358979323846 * tt;
-    double vv = adj * sin(xx) / xx;
-    sinc[a] = vv;
-    sinc[ST_SIZ - a] = vv;
-  }
-
-  // Build waveform into buffer
-  out = (double *)Alloc(ST_SIZ * sizeof(double));
-  for (b = 0; b < np; b++) {
-    int off = b * ST_SIZ / np / 2;
-    double val = dp[b];
-    for (a = 0; a < ST_SIZ; a++) {
-      out[(a + off) & (ST_SIZ - 1)] += sinc[a] * val;
-      out[(a + off + ST_SIZ / 2) & (ST_SIZ - 1)] -= sinc[a] * val;
-    }
-  }
-
-  // Look for maximum for normalization
-  dmax = dmin = 0;
-  for (a = 0; a < ST_SIZ; a++) {
-    if (out[a] > dmax)
-      dmax = out[a];
-    if (out[a] < dmin)
-      dmin = out[a];
-  }
-
-  // Write out to output buffer
-  off = -0.5 * (dmax + dmin);
-  adj = ST_AMP / ((dmax - dmin) / 2);
-  for (a = 0; a < ST_SIZ; a++)
-    arr[a] = (int)((out[a] + off) * adj);
-
-  free(sinc);
-  free(out);
-}
-
-//
-//	Handling pre-programmed sequences
-//
-
-void readPreProg(int ac, char **av) {
-  if (ac < 1)
-    error("Expecting a pre-programmed sequence description.  Examples:" NL
-          "  drop 25ds+ pink/30" NL "  drop 25gs+/2 mix/60");
-
-  // Handle 'drop'
-  if (0 == strcmp(av[0], "drop")) {
-    ac--;
-    av++;
-    create_drop(ac, av);
-    return;
-  }
-
-  // Handle 'slide'
-  if (0 == strcmp(av[0], "slide")) {
-    ac--;
-    av++;
-    create_slide(ac, av);
-    return;
-  }
-
-  error("Unknown pre-programmed sequence type: %s", av[0]);
-}
-
-//
-//	Error for bad p-drop args
-//
-
-void bad_drop() {
-  error("Bad arguments: expecting -p drop [<time-spec>] <drop-spec> "
-        "[<tone-specs...>]" NL
-        "<drop-spec> is <digit><digit>[.<digit>...]<a-l>[s|k][+][^][/<amp>]" NL
-        "The optional <time-spec> is t<drop-time>,<hold-time>,<wake-time>, all "
-        "times" NL "  in minutes (the default is equivalent to 't30,30,3')." NL
-        "The optional <tone-specs...> let you mix other stuff with the drop" NL
-        "  sequence like pink noise or a mix soundtrack, e.g 'pink/20' or "
-        "'mix/60'");
-}
-
-//
-//	Generate a p-drop sequence
-//
-//	Credits: Jonathan Bisson created the first version of this C
-//	code.  This is a rewrite to make it fit with the rest of the
-//	code better.
-//
-
-void create_drop(int ac, char **av) {
-  char *fmt;
-  char *p, *q;
-  char signal;
-  int a;
-  int slide, n_step, islong, wakeup, isisochronic;
-  double carr, amp, c0, c2;
-  double beat_target;
-  double beat[40];
-  static double beat_targets[] = {4.4, 3.7, 3.1, 2.5, 2.0, 1.5,
-                                  1.2, 0.9, 0.7, 0.5, 0.4, 0.3};
-  char extra[256];
-  int len, len0 = 1800, len1 = 1800, len2 = 180;
-  int steplen, end;
-
-#define BAD bad_drop()
-
-  // Pick up optional time-spec
-  if (ac < 1)
-    BAD;
-  if (av[0][0] == 't') {
-    double v0, v1, v2;
-    char dmy;
-    if (3 != sscanf(av[0] + 1, "%lf,%lf,%lf %c", &v0, &v1, &v2, &dmy))
-      BAD;
-    len0 = 60 * (int)v0; // Whole minutes only
-    len1 = 60 * (int)v1;
-    len2 = 60 * (int)v2;
-    ac--;
-    av++;
-  }
-
-  // Handle argument list
-  if (ac < 1)
-    BAD;
-  fmt = *av++;
-  ac--;
-  p = extra;
-  *p = 0;
-  while (ac > 0) {
-    if (p + strlen(av[0]) + 2 > extra + sizeof(extra))
-      error("Too many extra tone-specs after -p drop");
-    p += sprintf(p, " %s", av[0]);
-    ac--;
-    av++;
-  }
-
-  // Scan the format
-  carr = 200 - 2 * strtod(fmt, &p);
-  if (p == fmt || carr < 0)
-    BAD;
-
-  a = tolower(*p) - 'a';
-  p++;
-  if (a < 0 || a >= sizeof(beat_targets) / sizeof(beat_targets[0]))
-    BAD;
-  beat_target = beat_targets[a];
-
-  slide = 0;
-  steplen = 180;
-  if (*p == 's') {
-    p++;
-    slide = 1;
-    steplen = 60;
-  } else if (*p == 'k') {
-    p++;
-    steplen = 60;
-  }
-  n_step = 1 + (len0 - 1) / steplen; // Round up
-  len0 = n_step * steplen;
-  if (!slide)
-    len1 = (1 + (len1 - 1) / steplen) * steplen;
-
-  islong = 0;
-  if (*p == '+') {
-    islong = 1;
-    p++;
-  }
-
-  wakeup = 0;
-  if (*p == '^') {
-    wakeup = 1;
-    p++;
-  }
-
-  isisochronic = 0;
-  if (*p == '@') {
-    isisochronic = 1;
-    p++;
-  }
-
-  amp = 1.0;
-  if (*p == '/') {
-    p++;
-    q = p;
-    amp = strtod(p, &p);
-    if (p == q)
-      BAD;
-  }
-
-  while (isspace(*p))
-    p++;
-  if (*p)
-    error("Trailing rubbish after -p drop spec: \"%s\"", p);
-
-#undef BAD
-
-  // Sort out carriers
-  len = islong ? len0 + len1 : len0;
-  c0 = carr + 5.0;
-  c2 = carr;
-
-  // Calculate beats
-  for (a = 0; a < n_step; a++)
-    beat[a] = 10 * exp(log(beat_target / 10) * a / (n_step - 1));
-
-  // Display summary
-  warn("DROP summary:");
-  if (slide) {
-    warn(" Carrier slides from %gHz to %gHz over %d minutes", c0, c2, len / 60);
-    warn(" %s frequency slides from %gHz to %gHz over %d minutes",
-         isisochronic ? "Pulse" : "Beat", beat[0], beat[n_step - 1], len0 / 60);
-  } else {
-    warn(" Carrier steps from %gHz to %gHz over %d minutes", c0, c2, len / 60);
-    warn(" %s frequency steps from %gHz to %gHz over %d minutes:",
-         isisochronic ? "Pulse" : "Beat", beat[0], beat[n_step - 1], len0 / 60);
-    fprintf(stderr, "   ");
-    for (a = 0; a < n_step; a++)
-      fprintf(stderr, " %.2f", beat[a]);
-    fprintf(stderr, "\n");
-  }
-  if (wakeup) {
-    warn(" Final wake-up of %d minutes, to return to initial frequencies",
-         len2 / 60);
-  }
-
-  // Start generating sequence
-  handleOptions("-SE");
-  in_lin = 0;
-
-  formatNameDef("off: -");
-  formatTimeLine(86395, "== off ->"); // 23:59:55
-
-  signal = isisochronic ? '@' : '+';
-  if (slide) {
-    // Slide version
-    for (a = 0; a < n_step; a++) {
-      int tim = a * len0 / (n_step - 1);
-      formatNameDef("ts%02d: %g%c%g/%g %s", a, c0 + (c2 - c0) * tim * 1.0 / len,
-                    signal, beat[a], amp, extra);
-      formatTimeLine(tim, "== ts%02d ->", a);
-    }
-
-    if (islong) {
-      formatNameDef("tsend: %g%c%g/%g %s", c2, signal, beat[n_step - 1], amp,
-                    extra);
-      formatTimeLine(len, "== tsend ->");
-    }
-    end = len;
-  } else {
-    // Step version
-    int lim = len / steplen;
-    int stepslide = steplen < 90 ? 5 : 10; // Seconds slide between steps
-    for (a = 0; a < lim; a++) {
-      int tim0 = a * steplen;
-      int tim1 = (a + 1) * steplen;
-      formatNameDef("ts%02d: %g%c%g/%g %s", a, c0 + (c2 - c0) * tim1 / len,
-                    signal, beat[(a >= n_step) ? n_step - 1 : a], amp, extra);
-      formatTimeLine(tim0, "== ts%02d ->", a);
-      formatTimeLine(tim1 - stepslide, "== ts%02d ->", a);
-    }
-    end = len - stepslide;
-  }
-
-  // Wake-up and ending
-  if (wakeup) {
-    formatNameDef("tswake: %g%c%g/%g %s", c0, signal, beat[0], amp, extra);
-    formatTimeLine(end + len2, "== tswake ->");
-    end += len2;
-  }
-  formatTimeLine(end + 10, "== off");
-
-  correctPeriods();
-}
-
-//
-//	Generate a -p slide sequence
-//
-//	The idea of this is to hold the beat frequency constant, but
-//	to slide down through the carrier frequencies from about 200Hz.
-//
-//	-p slide [t<duration-minutes>] <carr>+<beat>/<amp> [extra tone-sets]
-
-void bad_slide() {
-  error("Bad arguments: expecting -p slide [<time-spec>] <slide-spec> "
-        "[<tone-specs...>]" NL
-        "<slide-spec> is just like a tone-spec: <carrier><sign><beat>/<amp>" NL
-        "The optional <time-spec> is t<slide-time>, giving length of session "
-        "in" NL "  minutes (the default is equivalent to 't30')." NL
-        "The optional <tone-specs...> let you mix other stuff with the drop" NL
-        "  sequence like white/pink/brown noise or a mix soundtrack, e.g "
-        "'pink/20', 'white/20', 'brown/20', or 'mix/60'");
-}
-
-void create_slide(int ac, char **av) {
-  int len = 1800;
-  char *p, dmy, signal;
-  double val, c0, c1, beat, amp;
-  char extra[256];
-
-#define BAD bad_slide()
-
-  // Handle arguments
-  if (ac < 1)
-    BAD;
-  if (av[0][0] == 't') {
-    val = strtod(av[0] + 1, &p);
-    if (p == av[0] + 1 || *p)
-      BAD;
-    len = 60.0 * val;
-    ac--;
-    av++;
-  }
-
-  if (ac < 1)
-    BAD;
-  if (4 != sscanf(av[0], "%lf%c%lf/%lf %c", &c0, &signal, &beat, &amp, &dmy))
-    BAD;
-
-  if (signal != '+' && signal != '-' && signal != '@')
-    BAD;
-
-  c1 = beat / 2;
-  ac--;
-  av++;
-
-#undef BAD
-
-  // Gather 'extra'
-  p = extra;
-  *p = 0;
-  while (ac > 0) {
-    if (p + strlen(av[0]) + 2 > extra + sizeof(extra))
-      error("Too many extra tone-specs after -p slide");
-    p += sprintf(p, " %s", av[0]);
-    ac--;
-    av++;
-  }
-
-  // Summary
-  warn("SLIDE summary:");
-  warn(" Sliding carrier from %gHz to %gHz over %g minutes", c0, c1,
-       len / 60.0);
-  warn(" Holding %s constant at %gHz", signal == '@' ? "pulse" : "beat", beat);
-
-  // Generate sequence
-  handleOptions("-SE");
-  in_lin = 0;
-
-  formatNameDef("off: -");
-  formatTimeLine(86395, "== off ->"); // 23:59:55
-  formatNameDef("ts0: %g%c%g/%g %s", c0, signal, beat, amp, extra);
-  formatTimeLine(0, "== ts0 ->");
-  formatNameDef("ts1: %g%c%g/%g %s", c1, signal, beat, amp, extra);
-  formatTimeLine(len, "== ts1 ->");
-  formatTimeLine(len + 10, "== off");
-
-  correctPeriods();
-}
-
 // Function to normalize the total amplitude of voices
-void normalizeAmplitude(Voice *voices, int numChannels, const char *line,
+//
+void
+normalizeAmplitude(Voice *voices, int numChannels, const char *line,
                         int lineNum) {
   double totalAmplitude = 0.0;
 
