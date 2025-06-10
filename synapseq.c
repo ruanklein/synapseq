@@ -257,16 +257,7 @@ void help() {
       "default device" NL
       "          -O        Output raw data to the standard output" NL
       "          -W        Output a WAV-format file instead of raw data" NL
-      "          -m file   Read audio data from the given file and mix it "
-      "with" NL "                      generated brainwave tones; may be "
-#ifdef OGG_DECODE
-      "ogg/"
-#endif
-#ifdef MP3_DECODE
-      "mp3/"
-#endif
-      "wav/raw format" NL NL
-      "          Legacy options:" NL NL
+      "          Legacy options:" NL
       "          -R rate   Select rate in Hz that frequency "
       "changes are recalculated" NL
       "                     (for file/pipe output only, default is 10Hz)" NL
@@ -796,13 +787,6 @@ void scanOptions(int *acp, char ***avp) {
       switch (opt) {
       case 'Q':
         opt_Q = 1;
-        break;
-      case 'm':
-        if (argc-- < 1)
-          error("-m option expects filename");
-        // Earliest takes precedence, so command-line overrides sequence file
-        if (!opt_m)
-          opt_m = *argv++;
         break;
 #ifdef MAC_AUDIO
       case 'B':
