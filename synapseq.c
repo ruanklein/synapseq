@@ -237,8 +237,7 @@ void help() {
       "          -Q        Quiet - don't display running status" NL
       "          -D        Display the full interpreted sequence instead of "
       "playing it" NL
-      "          -r rate   Select the output rate (default is 44100 Hz, or "
-      "from -m)"
+      "          -r rate   Select the output rate (default is 44100 Hz)"
 #ifdef ALSA_AUDIO
       NL
       "          -d dev    Select a different ALSA device instead of 'default'"
@@ -256,7 +255,7 @@ void help() {
       "default device" NL
       "          -O        Output raw data to the standard output" NL
       "          -W        Output a WAV-format file instead of raw data" NL
-      "          -v        Verbose mode" NL
+      "          -v        Verbose mode" NL NL
       "          Legacy options:" NL
       "          -R rate   Select rate in Hz that frequency "
       "changes are recalculated" NL
@@ -270,7 +269,7 @@ void usage() {
   error("SynapSeq - Synapse-Sequenced Brainwave Generator, version " VERSION NL
         "(c) 2025 Ruan, https://ruan.sh/" NL
         "Released under the GNU GPL v2. See file COPYING." NL NL
-        "Usage: synapseq [options] seq-file ..." NL NL
+        "Usage: synapseq [options] seq-file ..." NL
         "For full usage help, type 'synapseq -h'."
 #ifdef EXIT_KEY
         NL NL "Windows users please note that this utility is designed to be "
@@ -284,7 +283,7 @@ void usage() {
         "effort of figuring" NL
         "all this out.  See SYNAPSEQ.TXT for the full documentation."
 #endif
-        NL);
+      );
 }
 
 #define DEBUG_CHK_UTIME 0  // Check how much user time is being consumed
@@ -578,8 +577,8 @@ void inbuf_start(int (*rout)(int *, int), int len) {
   ib_rd = 0;
   ib_wr = 0;
   ib_eof = 0;
-  if (!opt_Q)
-    warn("Initialising %d-sample buffer for mix stream", ib_len / 2);
+  if (!opt_Q && opt_v)
+    warn("Background sound: %d samples", ib_len / 2);
 
   // Preload 75% of the buffer -- or at least attempt to do so;
   // errors/eof/etc will be picked up in the inbuf_loop() routine
@@ -1724,8 +1723,8 @@ void outChunk() {
   if (mix_in) {
     int rv = inbuf_read(tmp_buf, out_blen);
     if (rv == 0) {
-      if (!opt_Q)
-        warn("\nEnd of mix input audio stream");
+      if (!opt_Q && opt_v)
+        warn("\nBackground sound: end of input audio stream");
       exit(0);
     }
     while (rv < out_blen)
@@ -2486,15 +2485,6 @@ void corrVal(int running) {
 //
 
 void setup_device(void) {
-
-  if (!opt_Q && opt_V != 100) {
-    warn("Global volume level set to %d%%", opt_V);
-  }
-
-  if (!opt_Q && opt_w != 0) {
-    warn("Using global %s waveform for brainwave tones", waveform_name[opt_w]);
-  }
-
   // Handle output to files and pipes
   if (opt_O || opt_o) {
     if (opt_O)
