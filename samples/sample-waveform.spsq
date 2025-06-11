@@ -1,0 +1,113 @@
+## WAVEFORM DEMONSTRATION SEQUENCE
+## This sample demonstrates the four main waveform types available in SynapSeq
+## using isochronic tones at 250Hz carrier with 8Hz entrainment frequency.
+##
+## AVAILABLE WAVEFORMS:
+## SynapSeq supports four fundamental waveform types that can be applied to
+## various entrainment methods, each with distinct sonic characteristics and
+## therapeutic applications.
+##
+## 1. SINE WAVE (Default):
+## - Pure, smooth, fundamental frequency without harmonics
+## - Most natural and gentle sound, easiest on the ears
+## - Ideal for: Relaxation, meditation, sleep induction, sensitive users
+## - Best for: Long sessions, high amplitudes, general therapeutic use
+## - Characteristics: Clean, soft, non-fatiguing, mathematically pure
+##
+## 2. SQUARE WAVE:
+## - Sharp on/off transitions creating rich harmonic content
+## - Contains odd harmonics (3rd, 5th, 7th, etc.) at decreasing amplitudes
+## - More intense and penetrating than sine waves
+## - Ideal for: Focus enhancement, alertness, cognitive stimulation
+## - CAUTION: Use lower amplitudes (<10) - can be harsh at high volumes
+## - Characteristics: Sharp, digital-like, attention-grabbing, potentially fatiguing
+##
+## 3. TRIANGLE WAVE:
+## - Gradual rise and fall creating softer harmonic content than square
+## - Contains odd harmonics but at much lower amplitudes than square
+## - Balanced between sine smoothness and square intensity
+## - Ideal for: Balanced entrainment, creative work, moderate stimulation
+## - Characteristics: Warm, musical, less harsh than square, more complex than sine
+##
+## 4. SAWTOOTH WAVE:
+## - Linear rise with sharp drop, creating rich harmonic spectrum
+## - Contains both odd and even harmonics at decreasing amplitudes
+## - Most complex harmonic content of all waveforms
+## - Ideal for: Deep entrainment, complex brainwave patterns, advanced users
+## - Characteristics: Bright, buzzy, harmonically rich, can be intense
+##
+## WAVEFORM COMPATIBILITY:
+## All waveforms can be used with:
+## - TONE METHODS: binaural, monaural, isochronic, harmonicbox
+## - SPIN EFFECTS: brown noise spin, pink noise spin, white noise spin
+## - EFFECT TYPES: spin effects, pulse effects
+##
+## USAGE GUIDELINES BY CONTEXT:
+##
+## RELAXATION & SLEEP:
+## - Primary: Sine wave (gentle, non-stimulating)
+## - Alternative: Triangle wave (warm, musical)
+## - Avoid: Square and sawtooth (too stimulating)
+##
+## FOCUS & CONCENTRATION:
+## - Primary: Square wave (alerting, cognitive stimulation)
+## - Alternative: Sawtooth wave (complex, engaging)
+## - Moderate: Triangle wave (balanced stimulation)
+##
+## MEDITATION & MINDFULNESS:
+## - Primary: Sine wave (pure, non-distracting)
+## - Alternative: Triangle wave (harmonious, balanced)
+## - Advanced: Sawtooth wave (complex, deep states)
+##
+## CREATIVE WORK:
+## - Primary: Triangle wave (inspiring, balanced)
+## - Alternative: Sawtooth wave (complex, innovative thinking)
+## - Support: Sine wave (background, non-intrusive)
+##
+## THERAPEUTIC APPLICATIONS:
+## - Anxiety/Stress: Sine wave (calming, gentle)
+## - ADHD/Focus: Square wave (alerting, structured)
+## - Depression: Triangle wave (uplifting, warm)
+## - Insomnia: Sine wave (soothing, sleep-inducing)
+##
+## AMPLITUDE RECOMMENDATIONS:
+## - Sine Wave: 15-20 (can handle higher amplitudes)
+## - Triangle Wave: 12-18 (moderate amplitudes)
+## - Square Wave: 5-10 (IMPORTANT: keep lower to avoid harshness)
+## - Sawtooth Wave: 10-15 (moderate to avoid fatigue)
+##
+## TEMPORAL SEQUENCE BREAKDOWN:
+## 00:00-00:15: Initial silence
+## 00:15-00:30: SINE WAVE - pure 250Hz with 8Hz isochronic pulsing
+## 00:30-00:45: SQUARE WAVE - sharp 250Hz with harmonic content (lower amplitude)
+## 00:45-01:00: TRIANGLE WAVE - warm 250Hz with moderate harmonic complexity
+## 01:00-01:15: SAWTOOTH WAVE - bright 250Hz with full harmonic spectrum
+## 01:15+: End of sequence
+##
+## LISTENING TIPS:
+## - Start with sine wave to establish baseline comfort
+## - Notice the harmonic richness progression from sine to sawtooth
+## - Pay attention to how each waveform affects your mental state differently
+## - Square wave demonstrates why amplitude control is crucial
+## - Use this sequence to determine your preferred waveform for different activities
+## - Each waveform creates different subjective experiences despite same frequencies
+
+# A sample waveform sequence
+
+# Tone sets
+waveform-one
+  waveform sine tone 250 isochronic 8 amplitude 15
+waveform-two
+  waveform square tone 250 isochronic 8 amplitude 5
+waveform-three
+  waveform triangle tone 250 isochronic 8 amplitude 10
+waveform-four
+  waveform sawtooth tone 250 isochronic 8 amplitude 10
+
+# Timeline sequence
+00:00:00 silence
+00:00:15 waveform-one
+00:00:30 waveform-two
+00:00:45 waveform-three
+00:01:00 waveform-four
+00:01:15 silence

@@ -1,3 +1,40 @@
+## NOISE TYPES DEMONSTRATION SEQUENCE
+## This sample demonstrates the three main types of noise used in audio processing
+## and brainwave entrainment: brown, pink, and white noise.
+##
+## NOISE CHARACTERISTICS:
+## Each noise type has different frequency distribution properties that create
+## distinct auditory experiences and psychological effects.
+##
+## BROWN NOISE (Red Noise):
+## - More energy in lower frequencies, drops off at 6dB per octave
+## - Creates a warmer, deeper sound similar to distant thunder or heavy rainfall
+## - Often preferred for sleep, relaxation, and masking low-frequency sounds
+## - Can help with focus by reducing distracting environmental noises
+##
+## PINK NOISE:
+## - Equal energy per octave, drops off at 3dB per octave
+## - Creates a balanced, natural sound similar to steady rainfall or ocean waves
+## - Found naturally in many biological systems and environmental sounds
+## - Excellent for general relaxation, meditation, and improving sleep quality
+##
+## WHITE NOISE:
+## - Equal energy at all frequencies across the audible spectrum
+## - Creates a brighter, sharper sound similar to static or hissing
+## - Effective for masking sudden sounds and improving concentration
+## - Commonly used in offices and study environments
+##
+## TEMPORAL SEQUENCE BREAKDOWN:
+## 00:00-00:15: Initial silence
+## 00:15-00:30: BROWN NOISE - experience the warm, deep low-frequency richness
+## 00:30-00:45: PINK NOISE - notice the balanced, natural sound quality
+## 00:45-01:00: WHITE NOISE - observe the bright, crisp high-frequency content
+## 01:00+: End of sequence
+##
+## USAGE TIP:
+## This comparison sequence helps you identify which noise type works best for your
+## specific needs: relaxation, focus, sleep, or sound masking.
+
 # A sample noise sequence
 
 # Tone sets
