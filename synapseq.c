@@ -295,7 +295,7 @@ void usage() {
 struct Voice {
   int typ; // Voice type: 0 off, 1 binaural, 2 pink noise, 3 monaural beats, 4 spin, 5
            // mix, 6 mixspin, 7 mixpulse, 8 isochronic, 9 white noise, 10 brown
-           // noise, 11 bspin, 12 wspin, 13 mixbeat, -1 to -100 wave00 to wave99
+           // noise, 11 bspin, 12 wspin, 13 mixbeat, 14 harmonic box x, -1 to -100 wave00 to wave99
   double amp;   // Amplitude level (0-4096 for 0-100%)
   double carr;  // Carrier freq (for binaural/monaural/isochronic), width (for spin)
   double res;   // Resonance freq (-ve or +ve) (for binaural/spin/isochronic)
@@ -306,10 +306,13 @@ struct Channel {
   Voice v; // Current voice setting (updated from current period)
   int typ; // Current type: 0 off, 1 binaural, 2 pink noise, 3 monaural, 4 spin, 5
            // mix, 6 mixspin, 7 mixpulse, 8 isochronic, 9 white noise, 10 brown
-           // noise, 11 bspin, 12 wspin, 13 mixbeat, -1 to -100 wave00 to wave99
+           // noise, 11 bspin, 12 wspin, 13 mixbeat, 14 harmonic box x, -1 to -100 wave00 to wave99
   int amp, amp2;  // Current state, according to current type
   int inc1, off1; //  ::  (for binaural tones, offset + increment into sine
   int inc2, off2; //  ::   table * 65536)
+  // For Harmonic Box X
+  int inc3, off3; // 3rd oscillator
+  int inc4, off4; // 4th oscillator
 };
 
 struct Period {
@@ -1297,6 +1300,17 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
       return sprintf(p, " (width:%.2f rate:%.2f amplitude:%.2f)", vp->carr,
                      vp->res, AMP_AD(vp->amp));
     }
+  case 14: // Harmonic Box X
+    if (dup && vp->carr == dup->carr && vp->res == dup->res &&
+        vp->amp == dup->amp)
+      return sprintf(p, "  ::");
+    if (multiline) {
+      return sprintf(p, "\n\twaveform %s tone %.2f harmonicbox %.2f amplitude %.2f",
+                     waveform_name[vp->waveform], vp->carr, vp->res, AMP_AD(vp->amp));
+    } else {
+      return sprintf(p, " (tone:%.2f harmonicbox:%.2f amplitude:%.2f)", vp->carr,
+                     vp->res, AMP_AD(vp->amp));
+    }
   default:
     return sprintf(p, " ???");
   }
@@ -1953,14 +1967,32 @@ void outChunk() {
           tot2 += spin_right;
         }
         break;
-      default: // Waveform-based binaural tones
-        tab = waves[-1 - ch->typ];
-        ch->off1 += ch->inc1;
-        ch->off1 &= (ST_SIZ << 16) - 1;
-        tot1 += ch->amp * tab[ch->off1 >> 16];
-        ch->off2 += ch->inc2;
-        ch->off2 &= (ST_SIZ << 16) - 1;
-        tot2 += ch->amp * tab[ch->off2 >> 16];
+      case 14: // Harmonic Box X
+        {
+          // Advance all 4 phases
+          ch->off1 += ch->inc1; ch->off1 &= (ST_SIZ << 16) - 1; // OSC1
+          ch->off2 += ch->inc2; ch->off2 &= (ST_SIZ << 16) - 1; // OSC2  
+          ch->off3 += ch->inc3; ch->off3 &= (ST_SIZ << 16) - 1; // OSC3
+          ch->off4 += ch->inc4; ch->off4 &= (ST_SIZ << 16) - 1; // OSC4
+          
+          // Generate 4 components
+          int osc1 = sin_tables[ch->v.waveform][ch->off1 >> 16]; // F + B/2
+          int osc2 = sin_tables[ch->v.waveform][ch->off2 >> 16]; // F - B/2
+          int osc3 = sin_tables[ch->v.waveform][ch->off3 >> 16]; // F + B  
+          int osc4 = sin_tables[ch->v.waveform][ch->off4 >> 16]; // F - B
+          
+          // Harmonic Box X mixing pattern
+          int left_mix  = osc1 + osc4;  // (F + B/2) + (F - B)
+          int right_mix = osc2 + osc3;  // (F - B/2) + (F + B)
+          
+          // Division by 2 to avoid clipping (4 oscillators = too much volume)
+          int quarter_amp = ch->amp / 4;
+          
+          tot1 += quarter_amp * left_mix;
+          tot2 += quarter_amp * right_mix;
+        }
+        break;
+      default:
         break;
       }
 
@@ -2227,6 +2259,9 @@ void corrVal(int running) {
       case 12: // Wspin - spinning white noise
         ch->off1 = ch->off2 = 0;
         break;
+      case 14: // Harmonic Box X
+        ch->off1 = ch->off2 = ch->off3 = ch->off4 = 0;
+        break;
       default:
         ch->off1 = ch->off2 = 0;
         break;
@@ -2306,6 +2341,12 @@ void corrVal(int running) {
         vv->carr = -spin_carr_max;
       vv->waveform = v0->waveform;
       break;
+    case 14: // Harmonic Box X
+      vv->amp = rat0 * v0->amp + rat1 * v1->amp;
+      vv->carr = rat0 * v0->carr + rat1 * v1->carr;
+      vv->res = rat0 * v0->res + rat1 * v1->res;
+      vv->waveform = v0->waveform;
+      break;
     default: // Waveform based binaural
       vv->amp = rat0 * v0->amp + rat1 * v1->amp;
       vv->carr = rat0 * v0->carr + rat1 * v1->carr;
@@ -2331,7 +2372,20 @@ void corrVal(int running) {
         if (adj2 > adj1)
           adj1 = adj2;
         tot_beat += vv->amp * adj1;
-      } else if (vv->typ) {
+      } else if (vv->typ == 14) {
+        // 4 frequencies: F±B/2 and F±B
+        double adj1 = ampAdjust(vv->carr + vv->res / 2);
+        double adj2 = ampAdjust(vv->carr - vv->res / 2);
+        double adj3 = ampAdjust(vv->carr - vv->res * 2.5);
+        double adj4 = ampAdjust(vv->carr - vv->res * 1.5);
+        // Use the highest adjustment of the 4 frequencies
+        double max_adj = adj1;
+        if (adj2 > max_adj) max_adj = adj2;
+        if (adj3 > max_adj) max_adj = adj3;
+        if (adj4 > max_adj) max_adj = adj4;
+        tot_beat += vv->amp * max_adj;
+      }
+      else if (vv->typ) {
         tot_other += vv->amp;
       }
     }
@@ -2410,14 +2464,18 @@ void corrVal(int running) {
       ch->inc1 = (int)(vv->res / out_rate * ST_SIZ * 65536);
       ch->inc2 = (int)(vv->carr * 1E-6 * out_rate * (1 << 24) / ST_AMP);
       break;
-    default: // Waveform based binaural
+    case 14: // Harmonic Box X
       ch->amp = (int)vv->amp;
+      // OSC1: F + B/2 (freq high for primary beat)
       ch->inc1 = (int)((vv->carr + vv->res / 2) / out_rate * ST_SIZ * 65536);
+      // OSC2: F - B/2 (freq low for primary beat)  
       ch->inc2 = (int)((vv->carr - vv->res / 2) / out_rate * ST_SIZ * 65536);
-      if (ch->inc1 > ch->inc2)
-        ch->inc2 = -ch->inc2;
-      else
-        ch->inc1 = -ch->inc1;
+      // OSC3: F - 2.5×B (low freq for complex harmonics)
+      ch->inc3 = (int)((vv->carr - vv->res * 2.5) / out_rate * ST_SIZ * 65536);
+      // OSC4: F - 1.5×B (mid freq for complex harmonics)
+      ch->inc4 = (int)((vv->carr - vv->res * 1.5) / out_rate * ST_SIZ * 65536);
+      break;
+    default:
       break;
     }
   }
@@ -3542,6 +3600,10 @@ void readNameDef() {
         nd->vv[ch].typ = 3;
         nd->vv[ch].carr = freq;
         nd->vv[ch].res = value;
+      } else if (strcmp(type, "harmonicbox") == 0 || strcmp(type, "box") == 0) {
+        nd->vv[ch].typ = 14;
+        nd->vv[ch].carr = freq;
+        nd->vv[ch].res = value;
       }
       else {
         error("Unknown tone type '%s' at line %d. Use: binaural/bin, "
@@ -3571,7 +3633,6 @@ void readNameDef() {
       nd->vv[ch].amp = AMP_DA(amp);
       ch++;
       lines_processed++; // Increment count of processed lines
-
     } else if (strcmp(cmd, "waveform") == 0) {
       // Parse: waveform <type> <value> amplitude <amp>
       char *waveform_type = getWord();
@@ -3631,7 +3692,12 @@ void readNameDef() {
           nd->vv[ch].typ = 3;
           nd->vv[ch].carr = freq;
           nd->vv[ch].res = value;
-        } else {
+        } else if (strcmp(type, "harmonicbox") == 0 || strcmp(type, "box") == 0) {
+          nd->vv[ch].typ = 14;
+          nd->vv[ch].carr = freq;
+          nd->vv[ch].res = value;
+        }
+        else {
           error("Unknown tone type '%s' at line %d. Use: binaural/bin, "
                 "isochronic/iso, monaural/mon",
                 type, in_lin);
