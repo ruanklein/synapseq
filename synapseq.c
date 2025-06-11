@@ -2948,7 +2948,7 @@ int readLine() {
       lin++;
     p = strchr(lin, '#');
     if (p && p[1] == '#')
-      fprintf(stderr, "%s", p);
+      fprintf(stderr, "> %s", p + 2);
     p = p ? p : strchr(lin, 0);
     while (p > lin && isspace(p[-1]))
       p--;
