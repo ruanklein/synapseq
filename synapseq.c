@@ -1133,7 +1133,7 @@ dispCurrPer(FILE *fp) {
   p0 = buf;
   p1 = buf_copy;
 
-  p0 += sprintf(p0, "* ");
+  p0 += sprintf(p0, "- ");
   p0 += sprintTime(p0, per->tim);
   p1 += sprintf(p1, "  ");
   p1 += sprintTime(p1, per->nxt->tim);
@@ -1172,7 +1172,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
   case 1:
     if (dup && vp->carr == dup->carr && vp->res == dup->res &&
         vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(
           p, "\n\twaveform %s tone %.2f binaural %.2f amplitude %.2f",
@@ -1183,7 +1183,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
     }
   case 2:
     if (dup && vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(p, "\n\tnoise pink amplitude %.2f", AMP_AD(vp->amp));
     } else {
@@ -1192,7 +1192,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
   case 3:
     if (dup && vp->carr == dup->carr && vp->res == dup->res &&
         vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(p, "\n\twaveform %s tone %.2f monaural %.2f amplitude %.2f",
                      waveform_name[vp->waveform], vp->carr, vp->res,
@@ -1203,7 +1203,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
     }
   case 9:
     if (dup && vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(p, "\n\tnoise white amplitude %.2f", AMP_AD(vp->amp));
     } else {
@@ -1211,7 +1211,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
     }
   case 10:
     if (dup && vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(p, "\n\tnoise brown amplitude %.2f", AMP_AD(vp->amp));
     } else {
@@ -1220,7 +1220,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
   case 4:
     if (dup && vp->carr == dup->carr && vp->res == dup->res &&
         vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(
           p,
@@ -1232,7 +1232,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
     }
   case 5:
     if (dup && vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(p, "\n\tbackground amplitude %.2f", AMP_AD(vp->amp));
     } else {
@@ -1241,7 +1241,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
   case 8: // Isochronic tones
     if (dup && vp->carr == dup->carr && vp->res == dup->res &&
         vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(
           p, "\n\twaveform %s tone %.2f isochronic %.2f amplitude %.2f",
@@ -1253,7 +1253,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
   case 6: // Mixspin - spinning mix stream
     if (dup && vp->carr == dup->carr && vp->res == dup->res &&
         vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(p,
                      "\n\twaveform %s effect spin width %.2f rate %.2f "
@@ -1266,7 +1266,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
     }
   case 7: // Mixpulse - mix stream with pulse effect
     if (dup && vp->res == dup->res && vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(p, "\n\twaveform %s effect pulse %.2f intensity %.2f",
                      waveform_name[vp->waveform], vp->res, AMP_AD(vp->amp));
@@ -1277,7 +1277,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
   case 11: // Bspin - spinning brown noise
     if (dup && vp->carr == dup->carr && vp->res == dup->res &&
         vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(
           p,
@@ -1289,7 +1289,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
     }
   case 12: // Wspin - spinning white noise
     if (dup && vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(
           p,
@@ -1302,7 +1302,7 @@ int sprintVoice(char *p, Voice *vp, Voice *dup, int multiline) {
   case 14: // Harmonic Box X
     if (dup && vp->carr == dup->carr && vp->res == dup->res &&
         vp->amp == dup->amp)
-      return sprintf(p, "  ::");
+      return sprintf(p, "  --");
     if (multiline) {
       return sprintf(p, "\n\twaveform %s tone %.2f harmonicbox %.2f amplitude %.2f",
                      waveform_name[vp->waveform], vp->carr, vp->res, AMP_AD(vp->amp));
