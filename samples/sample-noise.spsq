@@ -1,0 +1,16 @@
+# A sample noise sequence
+
+# Tone sets
+noise-one
+  noise brown amplitude 15
+noise-two
+  noise pink amplitude 15
+noise-three
+  noise white amplitude 15
+
+# Timeline sequence
+00:00:00 silence
+00:00:15 noise-one
+00:00:30 noise-two
+00:00:45 noise-three
+00:01:00 silence
