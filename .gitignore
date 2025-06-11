@@ -11,4 +11,4 @@ synapseq-*
 *.log
 *.tmp.c
 
-!/examples/**/*.spsq
+!/samples/**/*.spsq
