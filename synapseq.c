@@ -2421,6 +2421,8 @@ void corrVal(int running) {
       ch->inc2 = (int)(freq2 / out_rate * ST_SIZ * 65536);
       break;
     case 2:
+    case 9:
+    case 10:
       ch->amp = (int)vv->amp;
       break;
     case 3:
