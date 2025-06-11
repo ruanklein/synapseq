@@ -1,0 +1,27 @@
+# A sample binaural sequence
+
+# Tone sets
+alpha-one
+  noise pink amplitude 30
+  tone 250 binaural 8 amplitude 15
+
+alpha-two
+  noise pink amplitude 25
+  tone 250 binaural 9 amplitude 15
+
+alpha-three
+  noise pink amplitude 20
+  tone 250 binaural 10 amplitude 15
+
+alpha-four
+  noise pink amplitude 15
+  tone 250 binaural 11 amplitude 15
+
+# Timeline sequence
+00:00:00 silence
+00:00:15 alpha-one
+00:01:00 alpha-one
+00:02:30 alpha-two
+00:04:00 alpha-three
+00:05:30 alpha-four
+00:07:00 silence
