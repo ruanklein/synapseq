@@ -202,6 +202,7 @@ extern int out_rate, out_rate_def;
 void normalizeAmplitude(Voice *voices, int numChannels, const char *line, int lineNum);
 void checkBackgroundInSequence(NameDef *nd); // Check if background amplitude is specified
 void create_noise_spin_effect(int typ, int amp, int spin_position, int *left, int *right); // Create a spin effect
+int restart_background_file();
 
 #define ALLOC_ARR(cnt, type) ((type *)Alloc((cnt) * sizeof(type)))
 #define uint unsigned int
@@ -494,8 +495,21 @@ int inbuf_loop(void *vp) {
     rv = ib_read(inbuf + wr, cnt);
     // debug("ib_read %d-%d (%d) -> %d", wr, wr+cnt-1, cnt, rv);
     if (rv != cnt) {
-      ib_eof = 1;
-      return 0;
+      // Instead of immediately setting EOF, try restarting
+      if (restart_background_file()) {
+        // Try reading again after restarting
+        int remaining = cnt - rv;
+        int new_rv = ib_read(inbuf + wr + rv, remaining);
+        rv += new_rv;
+        
+        if (rv != cnt) {
+          ib_eof = 1;
+          return 0;
+        }
+      } else {
+        ib_eof = 1;
+        return 0;
+      }
     }
 
     ib_wr = (wr + rv) & (ib_len - 1);
@@ -657,6 +671,38 @@ int t_mid(int t0, int t1) { // Midpoint of period from t0 to t1
   return ((t1 < t0) ? (H24 + t0 + t1) / 2 : (t0 + t1) / 2) % H24;
 }
 
+int restart_background_file() {
+  if (!mix_in) return 0;
+  
+  // Go back to the beginning of the file
+  if (fseek(mix_in, 0, SEEK_SET) != 0) {
+    if (!opt_Q && opt_v)
+      warn("Warning: Could not seek to beginning of background file for loop");
+    return 0;
+  }
+  
+  // If it's a WAV file, skip the header again
+  if (opt_m) {
+    char *p = strchr(opt_m, 0);
+    if (p - opt_m >= 4 && p[-4] == '.') {
+      char tmp[4];
+      tmp[0] = tolower(p[-3]);
+      tmp[1] = tolower(p[-2]);
+      tmp[2] = tolower(p[-1]);
+      tmp[3] = 0;
+      
+      if (0 == strcmp(tmp, "wav")) {
+        find_wav_data_start(mix_in);
+      }
+    }
+  }
+  
+  // Reset input buffer flags
+  ib_eof = 0;
+    
+  return 1;
+}
+
 //
 //	M A I N
 //
@@ -724,7 +770,7 @@ int main(int argc, char **argv) {
         free(tmp);
       }
       if (!mix_in)
-        error("Can't open -m option mix input file: %s", opt_m);
+        error("Can't open background input file: %s", opt_m);
 
       // Pick up extension
       if (p - opt_m >= 4 && p[-4] == '.') {
@@ -891,6 +937,9 @@ void handleOptionInSequence(char *p) {
   char *option = getWord();
 
   if (strcmp(option, "@background") == 0) {
+    if (opt_m) {
+      error("Background file already set at line %d: %s", in_lin, lin_copy);
+    }
     char *file_name = getWord();
     if (file_name) {
       opt_m = StrDup(file_name);
@@ -1723,9 +1772,28 @@ void outChunk() {
   if (mix_in) {
     int rv = inbuf_read(tmp_buf, out_blen);
     if (rv == 0) {
-      if (!opt_Q && opt_v)
-        warn("\nBackground sound: end of input audio stream");
-      exit(0);
+      // Instead of ending, restart the background file
+      if (mix_in && !feof(mix_in)) {
+        // If it's not really EOF, it might be an error
+        if (!opt_Q && opt_v)
+          warn("\nBackground sound: end of input audio stream");
+        exit(0);
+      }
+      
+      // Restart the background file for loop
+      if (restart_background_file()) {
+        // Try reading again after restarting
+        rv = inbuf_read(tmp_buf, out_blen);
+        if (rv == 0) {
+          // If still can't read, fill with silence
+          memset(tmp_buf, 0, out_blen * sizeof(int));
+          rv = out_blen;
+        }
+      } else {
+        // If can't restart, fill with silence
+        memset(tmp_buf, 0, out_blen * sizeof(int));
+        rv = out_blen;
+      }
     }
     while (rv < out_blen)
       tmp_buf[rv++] = 0;
