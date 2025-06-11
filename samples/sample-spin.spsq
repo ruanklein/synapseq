@@ -1,0 +1,16 @@
+# A sample spin sequence
+
+# Tone sets
+spin-one
+  spin brown width 300 rate 1.5 amplitude 15
+spin-two
+  spin pink width 300 rate 1.5 amplitude 15
+spin-three
+  spin white width 300 rate 1.5 amplitude 15
+
+# Timeline sequence
+00:00:00 silence
+00:00:15 spin-one
+00:00:30 spin-two
+00:00:45 spin-three
+00:01:00 silence
