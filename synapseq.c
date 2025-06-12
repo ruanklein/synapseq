@@ -202,7 +202,8 @@ extern int out_rate, out_rate_def;
 void normalizeAmplitude(Voice *voices, int numChannels, const char *line, int lineNum);
 void checkBackgroundInSequence(NameDef *nd); // Check if background amplitude is specified
 void create_noise_spin_effect(int typ, int amp, int spin_position, int *left, int *right); // Create a spin effect
-int restart_background_file();
+int restart_background_file(); // Restart the background file for loop
+void calculate_bg_gain_factor(); // Calculate the background gain factor
 
 #define ALLOC_ARR(cnt, type) ((type *)Alloc((cnt) * sizeof(type)))
 #define uint unsigned int
@@ -416,7 +417,11 @@ struct AmpAdj {
   double freq, adj;
 } ampadj[16]; // List of maximum 16 (freq,adj) pairs, freq-increasing order
 
-char *pdir; // Program directory (used as second place to look for -m files)
+char *pdir; // Program directory (used as second place to look for background files)
+double opt_bg_reduction_db = 12.0; // Default background reduction in 12dB
+double bg_gain_factor = 0.25; // Background gain factor (0.0-1.0)
+static int wav_bits_per_sample = 16;  // Default 16-bit
+static int wav_channels = 2;  // Default 2 channels
 
 #ifdef WIN_AUDIO
 #define BUFFER_COUNT 8
@@ -591,8 +596,6 @@ void inbuf_start(int (*rout)(int *, int), int len) {
   ib_rd = 0;
   ib_wr = 0;
   ib_eof = 0;
-  if (!opt_Q && opt_v)
-    warn("Background sound: %d samples", ib_len / 2);
 
   // Preload 75% of the buffer -- or at least attempt to do so;
   // errors/eof/etc will be picked up in the inbuf_loop() routine
@@ -703,6 +706,11 @@ int restart_background_file() {
   return 1;
 }
 
+// Calculate the background gain factor based on the reduction in dB
+void calculate_bg_gain_factor() {
+  bg_gain_factor = pow(10.0, -opt_bg_reduction_db / 20.0);
+}
+
 //
 //	M A I N
 //
@@ -722,6 +730,8 @@ int main(int argc, char **argv) {
 
   // Process all the options
   scanOptions(&argc, &argv);
+
+  calculate_bg_gain_factor();
 
   if (argc < 1) usage();
 
@@ -946,7 +956,27 @@ void handleOptionInSequence(char *p) {
     } else {
       error("File name expected at line %d: %s", in_lin, lin_copy);
     }
-  } else if (strcmp(option, "@volume") == 0) {
+  } else if (strcmp(option, "@backgroundgain") == 0) {
+    char *gain_level = getWord();
+    if (!gain_level) {
+      error("Gain level expected at line %d: %s", in_lin, lin_copy);
+    }
+    if (strcmp(gain_level, "verylow") == 0) {
+      opt_bg_reduction_db = 20.0;
+    } else if (strcmp(gain_level, "low") == 0) {
+      opt_bg_reduction_db = -16.0;
+    } else if (strcmp(gain_level, "medium") == 0) {
+      opt_bg_reduction_db = -12.0;
+    } else if (strcmp(gain_level, "high") == 0) {
+      opt_bg_reduction_db = -6.0;
+    } else if (strcmp(gain_level, "veryhigh") == 0) {
+      opt_bg_reduction_db = 0.0;
+    } else {
+      error("Invalid gain level at line %d: %s", in_lin, lin_copy);
+    }
+    calculate_bg_gain_factor();
+  } 
+  else if (strcmp(option, "@volume") == 0) {
     char *volume_str = getWord();
     if (1 != sscanf(volume_str, "%d", &opt_V)) {
       error("Invalid volume value at line %d: %s", in_lin, lin_copy);
@@ -1054,8 +1084,8 @@ bad:
 //
 
 void find_wav_data_start(FILE *in) {
-  unsigned char buf[16];
-
+  unsigned char buf[32];
+  
   if (1 != fread(buf, 12, 1, in))
     goto bad;
   if (0 != memcmp(buf, "RIFF", 4))
@@ -1067,26 +1097,35 @@ void find_wav_data_start(FILE *in) {
     int len;
     if (1 != fread(buf, 8, 1, in))
       goto bad;
-    if (0 == memcmp(buf, "data", 4))
-      return; // We're in the right place!
+    if (0 == memcmp(buf, "data", 4)) {
+      return;
+    }
+    
     len = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
     if (len & 1)
       len++;
+      
     if (out_rate_def && 0 == memcmp(buf, "fmt ", 4)) {
-      // Grab the sample rate to use as the default if available
-      if (1 != fread(buf, 8, 1, in))
+      if (1 != fread(buf, len > 24 ? 24 : len, 1, in))
         goto bad;
-      len -= 8;
+      wav_channels = buf[2] + (buf[3] << 8);
       out_rate = buf[4] + (buf[5] << 8) + (buf[6] << 16) + (buf[7] << 24);
+      wav_bits_per_sample = buf[14] + (buf[15] << 8);
       out_rate_def = 0;
+      
+      if (len > 24 && 0 != fseek(in, len - 24, SEEK_CUR))
+        goto bad;
+    } else {
+      if (0 != fseek(in, len, SEEK_CUR))
+        goto bad;
     }
-    if (0 != fseek(in, len, SEEK_CUR))
-      goto bad;
   }
 
 bad:
   warn("WARNING: Not a valid WAV file, treating as RAW");
   rewind(in);
+  wav_bits_per_sample = 16;
+  wav_channels = 2;
 }
 
 //
@@ -1098,24 +1137,42 @@ int raw_mix_in(int *dst, int dlen) {
   short *tmp = (short *)(dst + dlen / 2);
   int a, rv;
 
-  rv = fread(tmp, 2, dlen, mix_in);
-  if (rv == 0) {
-    if (feof(mix_in))
-      return 0;
-    error("Read error on mix input:\n  %s", strerror(errno));
-  }
-
-  // Now convert 16-bit little-endian input data into 20-bit native
-  // int values
-  if (bigendian) {
-    char *rd = (char *)tmp;
-    for (a = 0; a < rv; a++) {
-      *dst++ = ((rd[0] & 255) + (rd[1] << 8)) << 4;
-      rd += 2;
+   if (wav_bits_per_sample == 16) {
+    short *tmp = (short *)(dst + dlen / 2);
+    rv = fread(tmp, 2, dlen, mix_in);
+    if (rv == 0) {
+      if (feof(mix_in)) return 0;
+      error("Read error on mix input:\n  %s", strerror(errno));
     }
+    
+    for (a = 0; a < rv; a++) {
+      int sample = *tmp++;
+      *dst++ = sample << 4;  // 16-bit → 20-bit
+    }
+    
+  } else if (wav_bits_per_sample == 24) {
+    unsigned char *tmp = (unsigned char *)Alloc(dlen * 3);
+    rv = fread(tmp, 3, dlen, mix_in);
+    if (rv == 0) {
+      if (feof(mix_in)) {
+        free(tmp);
+        return 0;
+      }
+      error("Read error on mix input:\n  %s", strerror(errno));
+    }
+    
+    unsigned char *ptr = tmp;
+    for (a = 0; a < rv; a++) {
+      int sample = ptr[0] + (ptr[1] << 8) + (ptr[2] << 16);
+      if (sample & 0x800000) sample |= 0xFF000000;
+      *dst++ = sample >> 4;
+      ptr += 3;
+    }
+    
+    free(tmp);
+    
   } else {
-    for (a = 0; a < rv; a++)
-      *dst++ = *tmp++ << 4;
+    error("Unsupported WAV format: %d bits per sample", wav_bits_per_sample);
   }
 
   return rv;
@@ -1812,8 +1869,10 @@ void outChunk() {
 
     // Do default mixing at 100% if no mix/* stuff is present
     if (!mix_flag) {
-      tot1 = mix1 << 12;
-      tot2 = mix2 << 12;
+      // tot1 = mix1 << 12;
+      // tot2 = mix2 << 12;
+      tot1 = (int)(mix1 * bg_gain_factor) << 12;
+      tot2 = (int)(mix2 * bg_gain_factor) << 12;
     } else {
       tot1 = tot2 = 0;
     }
@@ -1887,8 +1946,13 @@ void outChunk() {
         }
         break;
       case 5: // Mix level
-        tot1 += mix1 * ch->amp;
-        tot2 += mix2 * ch->amp;
+        // tot1 += mix1 * ch->amp;
+        // tot2 += mix2 * ch->amp;
+        {
+          int bg_amp = (int)(ch->amp * bg_gain_factor);
+          tot1 += mix1 * bg_amp;
+          tot2 += mix2 * bg_amp;
+        }
         break;
       case 6: // Mixspin - spinning mix stream
         ch->off1 += ch->inc1;
@@ -1930,10 +1994,13 @@ void outChunk() {
             mix_r = (mix2 * (128 - pos_val)) >> 7;
           }
 
+          int bg_mix_l = (int)(mix_l * bg_gain_factor);
+          int bg_mix_r = (int)(mix_r * bg_gain_factor);
+
           // Apply base volume (using 70% of amplitude for volume)
-          int base_amp = (int)(mix_amp != NULL ? *mix_amp : 4096.0) * 0.7;
-          tot1 += base_amp * mix_l;
-          tot2 += base_amp * mix_r;
+          int base_amp = (int)(mix_amp != NULL ? *mix_amp : 4096.0) * 0.7 * bg_gain_factor;
+          tot1 += base_amp * bg_mix_l;
+          tot2 += base_amp * bg_mix_r;
         }
         break;
       case 7:                 // Mixpulse - mix stream with pulse effect
@@ -1956,9 +2023,12 @@ void outChunk() {
                          (3 - 2 * mod_factor); // Cubic smoothing
           }
 
+          int bg_mix_1 = (int)(mix1 * bg_gain_factor);
+          int bg_mix_2 = (int)(mix2 * bg_gain_factor);
+
           // Apply the modulation factor to the audio stream
           // Use base_amp as in mixspin (70% of amplitude for volume)
-          int base_amp = (int)(mix_amp != NULL ? *mix_amp : 4096.0) * 0.7;
+          int base_amp = (int)((mix_amp != NULL ? *mix_amp : 4096.0) * 0.7 * bg_gain_factor);
 
           // Calculate the intensity of the effect based on amplitude (ch->amp)
           // When ch->amp is 0, there is no effect (only the original audio)
@@ -1971,8 +2041,8 @@ void outChunk() {
           // pulse
           double gain =
               (1.0 - effect_intensity) + (effect_intensity * mod_factor);
-          tot1 += base_amp * mix1 * gain;
-          tot2 += base_amp * mix2 * gain;
+          tot1 += base_amp * bg_mix_1 * gain;
+          tot2 += base_amp * bg_mix_2 * gain;
         }
         break;
       case 8:                 // Isochronic tones
