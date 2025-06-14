@@ -8,6 +8,10 @@ RUN apt-get update && apt-get install -y \
     libmad0-dev \
     libvorbis-dev \
     libogg-dev \
+    curl \
+    automake \
+    autoconf \
+    libtool \
     # For Windows
     mingw-w64 \
     wine \

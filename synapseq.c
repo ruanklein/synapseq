@@ -137,8 +137,8 @@ typedef long long S64;
 #include <alsa/asoundlib.h>
 #endif
 #ifdef WIN_AUDIO
-#include <mmsystem.h>
 #include <windows.h>
+#include <mmsystem.h>
 #endif
 #ifdef MAC_AUDIO
 #include <CoreAudio/CoreAudio.h>

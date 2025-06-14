@@ -1,5 +1,5 @@
 services:
-  build-x86-64:
+  build-linuxx86-64:
     build: .
     container_name: build-synapseq-x86-64
     platform: linux/amd64
@@ -12,7 +12,7 @@ services:
       - |
         ./linux-build-synapseq.sh
 
-  build-arm64:
+  build-linux-arm64:
     build: .
     container_name: build-synapseq-arm64
     platform: linux/arm64
@@ -24,3 +24,16 @@ services:
       - -c
       - |
         ./linux-build-synapseq.sh
+
+  build-windows-x86-64:
+    build: .
+    container_name: build-synapseq-windows-x86-64
+    platform: linux/amd64
+    volumes:
+      - .:/synapseq
+    working_dir: /synapseq
+    command:
+      - /bin/sh
+      - -c
+      - |
+        ./windows-build-synapseq.sh
