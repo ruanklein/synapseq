@@ -1150,7 +1150,6 @@ bad:
 //
 
 int raw_mix_in(int *dst, int dlen) {
-  short *tmp = (short *)(dst + dlen / 2);
   int a, rv;
 
    if (wav_bits_per_sample == 16) {
@@ -1878,7 +1877,6 @@ void outChunk() {
     int mix1, mix2;    // Incoming mix signals
     int val, a;
     Channel *ch;
-    int *tab;
 
     mix1 = tmp_buf[off];
     mix2 = tmp_buf[off + 1];
@@ -3184,7 +3182,6 @@ void readSeq(int ac, char **av) {
       // Check if it's a name definition (no colon, just name)
       start = 0;
       if (isalpha(*p)) { // new syntax
-        char *name_start = p;
         while (isalnum(*p) || *p == '_' || *p == '-')
           p++;
         // If line ends with just the name (no colon), it's a new syntax
@@ -3575,10 +3572,6 @@ void readNameDef() {
 
   // Read multi-line definition in new syntax
   // Use a special version of readLine that preserves indentation
-  char original_buf[4096];
-  char original_buf_copy[4096];
-  char *original_lin;
-  char *original_lin_copy;
   int lines_processed = 0; // Count of indented lines processed
 
   while (1) {
@@ -3597,7 +3590,7 @@ void readNameDef() {
     // Remove trailing whitespace and comments
     char *p = strchr(buf, '#');
     if (p && p[1] == '#')
-      fprintf(stderr, "%s", p);
+      fprintf(stderr, "> %s", p + 2);
     p = p ? p : strchr(buf, 0);
     while (p > buf && isspace(p[-1]))
       p--;
@@ -4280,7 +4273,6 @@ void readTimeLine() {
   int fo, fi;
   Period *pp;
   NameDef *nd;
-  static int last_abs_time = -1;
   int tim, rtim = 0;
 
   if (!(p = getWord()))
@@ -4289,22 +4281,8 @@ void readTimeLine() {
 
   // Read the time represented
   tim = -1;
-  // if (0 == memcmp(p, "NOW", 3)) {
-  //   last_abs_time= tim= now;
-  //   p += 3;
-  // }
 
   while (*p) {
-    //   if (*p == '+') {
-    //     if (tim < 0) {
-    // if (last_abs_time < 0)
-    //   error("Relative time without previous absolute time, line %d:\n  %s",
-    //   in_lin, lin_copy);
-    // tim= last_abs_time;
-    //     }
-    //     p++;
-    //   }
-    //   else if (tim != -1) badTime(tim_p);
     if (tim != -1)
       badTime(tim_p);
 
@@ -4312,10 +4290,7 @@ void readTimeLine() {
       badTime(tim_p);
     p += nn;
 
-    if (tim == -1)
-      last_abs_time = tim = rtim;
-    else
-      tim = (tim + rtim) % H24;
+    tim = (tim == -1) ? rtim : (tim + rtim) % H24;
   }
 
   if (fast_tim0 < 0)
@@ -4326,44 +4301,11 @@ void readTimeLine() {
     badSeq();
 
   fi = fo = 1;
-  // if (!isalpha(*p)) {
-  //   switch (p[0]) {
-  //    case '<': fi= 0; break;
-  //    case '-': fi= 1; break;
-  //    case '=': fi= 2; break;
-  //    default: badSeq();
-  //   }
-  //   switch (p[1]) {
-  //    case '>': fo= 0; break;
-  //    case '-': fo= 1; break;
-  //    case '=': fo= 2; break;
-  //    default: badSeq();
-  //   }
-  //   if (p[2]) badSeq();
-
-  //   if (!(p= getWord())) badSeq();
-  // }
 
   for (nd = nlist; nd && 0 != strcmp(p, nd->name); nd = nd->nxt)
     ;
   if (!nd)
     error("Name \"%s\" not defined, line %d:\n  %s", p, in_lin, lin_copy);
-
-  // Check for block name-def
-  // if (nd->blk) {
-  //   char *prep= StrDup(tim_p);		// Put this at the start of each
-  //   line BlockDef *bd= nd->blk;
-
-  //   while (bd) {
-  //     lin= buf; lin_copy= buf_copy;
-  //     sprintf(lin, "%s%s", prep, bd->lin);
-  //     strcpy(lin_copy, lin);
-  //     readTimeLine();		// This may recurse, and that's why
-  //     we're StrDuping the string bd= bd->nxt;
-  //   }
-  //   free(prep);
-  //   return;
-  // }
 
   // Normal name-def
   pp = (Period *)Alloc(sizeof(*pp));
@@ -4389,11 +4331,6 @@ void readTimeLine() {
   pp->prv = per->prv;
   pp->prv->nxt = pp->nxt->prv = pp;
 
-  // if (0 != (p= getWord())) {
-  //   if (0 != strcmp(p, "->")) badSeq();
-  //   pp->fi= -3;		// Special '->' transition
-  //   pp->tim= tim;
-  // }
   if (0 != (p = getWord()))
     badSeq();
 
@@ -4406,7 +4343,6 @@ int readTime(char *p, int *timp) { // Rets chars consumed, or 0 error
 
   if (3 > sscanf(p, "%2d:%2d:%2d%n", &hh, &mm, &ss, &nn)) {
     ss = 0;
-    // if (2 > sscanf(p, "%2d:%2d%n", &hh, &mm, &nn)) return 0;
   }
 
   if (hh < 0 || hh >= 24 || mm < 0 || mm >= 60 || ss < 0 || ss >= 60)
