@@ -204,6 +204,7 @@ void checkBackgroundInSequence(NameDef *nd); // Check if background amplitude is
 void create_noise_spin_effect(int typ, int amp, int spin_position, int *left, int *right); // Create a spin effect
 int restart_background_file(); // Restart the background file for loop
 void calculate_bg_gain_factor(); // Calculate the background gain factor
+char *get_file_extension(const char *filename);
 
 #define ALLOC_ARR(cnt, type) ((type *)Alloc((cnt) * sizeof(type)))
 #define uint unsigned int
@@ -674,35 +675,50 @@ int t_mid(int t0, int t1) { // Midpoint of period from t0 to t1
   return ((t1 < t0) ? (H24 + t0 + t1) / 2 : (t0 + t1) / 2) % H24;
 }
 
+//
+//	Get the extension of a file
+
+char *get_file_extension(const char *filename) {
+  char *p = strrchr(filename, '.');
+  if (p) return p + 1;
+  return NULL;
+}
+
 int restart_background_file() {
   if (!mix_in) return 0;
-  
+
+  char *ext = get_file_extension(opt_m);
+
+  if (!ext) {
+    warn("No extension found in background file: %s", opt_m);
+    return 0;
+  }
+
+#ifdef OGG_DECODE
+  if (opt_m && 0 == strcmp(ext, "ogg")) {
+    if (ov_raw_seek(&oggfile, 0) != 0) {
+      warn("Could not seek to beginning of Ogg file");
+      return 0;
+    }
+
+    ogg_rd = ogg_end = ogg_buf0;
+    ib_eof = 0;
+    return 1;
+  }
+#endif
   // Go back to the beginning of the file
   if (fseek(mix_in, 0, SEEK_SET) != 0) {
     if (!opt_Q && opt_v)
       warn("Warning: Could not seek to beginning of background file for loop");
     return 0;
   }
-  
-  // If it's a WAV file, skip the header again
-  if (opt_m) {
-    char *p = strchr(opt_m, 0);
-    if (p - opt_m >= 4 && p[-4] == '.') {
-      char tmp[4];
-      tmp[0] = tolower(p[-3]);
-      tmp[1] = tolower(p[-2]);
-      tmp[2] = tolower(p[-1]);
-      tmp[3] = 0;
-      
-      if (0 == strcmp(tmp, "wav")) {
-        find_wav_data_start(mix_in);
-      }
-    }
+
+  if (opt_m && 0 == strcmp(ext, "wav")) {
+    find_wav_data_start(mix_in);
   }
   
   // Reset input buffer flags
   ib_eof = 0;
-    
   return 1;
 }
 
@@ -2854,7 +2870,7 @@ void setup_device(void) {
     propertySize = sizeof(aud_dev);
     AudioObjectPropertyAddress propertyAddress = {
         kAudioHardwarePropertyDefaultOutputDevice,
-        kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster};
+        kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain};
     if ((err = AudioObjectGetPropertyData(kAudioObjectSystemObject,
                                           &propertyAddress, 0, NULL,
                                           &propertySize, &aud_dev))) {
@@ -2868,7 +2884,7 @@ void setup_device(void) {
     propertySize = sizeof(deviceName);
     propertyAddress.mSelector = kAudioDevicePropertyDeviceName;
     propertyAddress.mScope = kAudioObjectPropertyScopeGlobal;
-    propertyAddress.mElement = kAudioObjectPropertyElementMaster;
+    propertyAddress.mElement = kAudioObjectPropertyElementMain;
     if ((err = AudioObjectGetPropertyData(aud_dev, &propertyAddress, 0, NULL,
                                           &propertySize, deviceName))) {
       error("Get audio device name failed, status = %d", (int)err);
@@ -2879,7 +2895,7 @@ void setup_device(void) {
     propertyAddress.mSelector = kAudioDevicePropertyStreamFormat;
     propertyAddress.mScope =
         kAudioObjectPropertyScopeOutput; // Adjusted for output
-    propertyAddress.mElement = kAudioObjectPropertyElementMaster;
+    propertyAddress.mElement = kAudioObjectPropertyElementMain;
     if ((err = AudioObjectGetPropertyData(aud_dev, &propertyAddress, 0, NULL,
                                           &propertySize, &streamDesc))) {
       error("Get audio device properties failed, status = %d", (int)err);
@@ -2902,7 +2918,7 @@ void setup_device(void) {
     propertySize = sizeof(bufferByteCount);
     propertyAddress.mSelector = kAudioDevicePropertyBufferSize;
     propertyAddress.mScope = kAudioObjectPropertyScopeGlobal;
-    propertyAddress.mElement = kAudioObjectPropertyElementMaster;
+    propertyAddress.mElement = kAudioObjectPropertyElementMain;
     if ((err = AudioObjectSetPropertyData(aud_dev, &propertyAddress, 0, NULL,
                                           propertySize, &bufferByteCount))) {
       error("Set audio output buffer size failed, status = %d", (int)err);
