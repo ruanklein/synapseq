@@ -30,11 +30,17 @@
 
 // This file is a fork of the original mp3dec.c file from SBaGen.
 
-#include "libs/mad.h"
+#include <mad.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 extern FILE *mix_in;
 extern void *Alloc(size_t);
 extern void error(char *fmt, ...);
+extern void warn(char *fmt, ...);
+extern void inbuf_start(int (*rout)(int *, int), int len);
 
 int mp3_read(int *dst, int dlen);
 
