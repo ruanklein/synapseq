@@ -21,7 +21,7 @@
 //
 //  See the file COPYING.txt for the full license text.
 //
-//	OGG decoding using Tremor (libvorbisidec), with optional
+//	OGG decoding using libvorbis, with optional
 //	looping.
 //
 //        (c) 1999-2004 Jim Peters <jim@uazu.net>.  All Rights Reserved.
@@ -33,15 +33,32 @@
 
 // This file is a fork of the original oggdec.c file from SBaGen.
 // SBAGEN_LOOPER is replaced with SYNAPSEQ_LOOPER.
+// Migrated from libvorbisidec (Tremor) to libvorbis.
 
-#include "libs/ivorbiscodec.h"
-#include "libs/ivorbisfile.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <errno.h>
+#include <time.h>
+#include <math.h>
+#include <ctype.h>
+#include <sys/time.h>
+
+#include <vorbis/codec.h>
+#include <vorbis/vorbisfile.h>
 
 extern FILE *mix_in;
 extern int mix_cnt;
 extern void *Alloc(size_t);
 extern void error(char *fmt, ...);
+extern void warn(char *fmt, ...);
+extern void debug(char *fmt, ...);
 extern int out_rate, out_rate_def;
+extern void inbuf_start(int (*rout)(int *, int), int len);
+
+#define ALLOC_ARR(cnt, type) ((type *)Alloc((cnt) * sizeof(type)))
+#define uint unsigned int
 
 void ogg_init() ;
 void ogg_term() ;
@@ -131,24 +148,39 @@ ogg_read(int *dst, int dlen) {
 
       // Copy data from buffer
       if (ogg_rd != ogg_end) {
-	 while (ogg_rd != ogg_end && dst != dst1)
-	    *dst++= *ogg_rd++ * ogg_mult;
-	 continue;
+         while (ogg_rd != ogg_end && dst != dst1)
+            *dst++= *ogg_rd++ * ogg_mult;
+         continue;
       }
 
-      // Refill buffer
-      rv= ov_read(&oggfile, (char*)ogg_buf0, (ogg_buf1-ogg_buf0)*sizeof(short), &sect);
-      //debug("ov_read %d/%d", rv, (ogg_buf1-ogg_buf0)*sizeof(short));
+      int samples_available = ogg_buf1 - ogg_buf0;
+      int bytes_to_read = samples_available * sizeof(short);
+      
+      rv= ov_read(&oggfile, (char*)ogg_buf0, bytes_to_read, 0, 2, 1, &sect);
+      
       if (rv < 0) {
-	 warn("Recoverable error in Ogg stream  ");
-	 continue;
+         if (rv == OV_HOLE) {
+            warn("Recoverable gap in Ogg stream");
+            continue;
+         } else if (rv == OV_EREAD) {
+            warn("Read error in Ogg stream - possible file corruption");
+            continue;
+         } else {
+            warn("Recoverable error in Ogg stream (code: %d)", rv);
+            continue;
+         }
       }
-      if (rv == 0) 	// EOF
-	 return dst-dst0;
-      if (rv & 3)
-	 error("UNEXPECTED: ov_read() returned a partial sample count: %d", rv);
+      
+      if (rv == 0) // EOF
+         return dst-dst0;
+         
+      if (rv % sizeof(short) != 0) {
+         warn("UNEXPECTED: ov_read() returned unaligned byte count: %d", rv);
+         rv = (rv / sizeof(short)) * sizeof(short);
+      }
+      
       ogg_rd= ogg_buf0;
-      ogg_end= ogg_buf0 + (rv/2);
+      ogg_end= ogg_buf0 + (rv / sizeof(short));
    }
    return dst-dst0;
 }
@@ -531,7 +563,7 @@ looper_read(int *dst, int dlen) {
 	       int sect;
 	       char *buf= (char*)aa->buf0;	
 	       int len= (aa->buf1-aa->buf0)*sizeof(aa->buf0[0]);
-	       int rv= ov_read(&aa->ogg, buf, len, &sect);
+	       int rv= ov_read(&aa->ogg, buf, len, 0, 2, 1, &sect);
 	       if (rv < 0) {
 		  warn("Recoverable error in Ogg stream  ");
 		  continue;
