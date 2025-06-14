@@ -1,174 +1,94 @@
 #!/bin/bash
 
 # SynapSeq Linux build script
-# Builds 32-bit and 64-bit binaries with MP3, OGG and ALSA support on x86_64
-# Builds only ARM64 binary on aarch64 platforms
+# Builds native binary with MP3, OGG and ALSA support
 
 # Source common library
 . ./lib.sh
 
-section_header "Building SynapSeq for Linux with MP3, OGG and ALSA support..."
+# Get Architecture
+ARCH=$(uname -m)
 
-# Check for required tools
-check_required_tools gcc
+section_header "Building SynapSeq native binary ($ARCH)..."
+
+if [ ! "$(which pkg-config)" 2> /dev/null ]; then
+    error "pkg-config is not installed"
+    error "Please install pkg-config using your package manager:"
+    error "  Ubuntu/Debian: sudo apt install pkg-config"
+    error "  CentOS/RHEL:   sudo yum install pkgconfig"
+    error "  Fedora:        sudo dnf install pkgconfig"
+    error "  Arch:          sudo pacman -S pkgconf"
+    exit 1
+fi
 
 # Check distribution directory
 create_dir_if_not_exists "dist"
 
-# Detect host architecture
-HOST_ARCH=$(uname -m)
-info "Detected host architecture: $HOST_ARCH"
-
-# Define paths for libraries
-LIB_PATH_32="libs/linux-x86-libmad.a"
-LIB_PATH_64="libs/linux-x86_64-libmad.a"
-LIB_PATH_ARM64="libs/linux-arm64-libmad.a"
-OGG_LIB_PATH_32="libs/linux-x86-libogg.a"
-OGG_LIB_PATH_64="libs/linux-x86_64-libogg.a"
-OGG_LIB_PATH_ARM64="libs/linux-arm64-libogg.a"
-TREMOR_LIB_PATH_32="libs/linux-x86-libvorbisidec.a"
-TREMOR_LIB_PATH_64="libs/linux-x86_64-libvorbisidec.a"
-TREMOR_LIB_PATH_ARM64="libs/linux-arm64-libvorbisidec.a"
+# Define base compilation flags
+CFLAGS="-DT_LINUX -Wall -O3 -I."
+LIBS="-lm -lpthread -lasound"
 
 # Get the version number from the VERSION file
 VERSION=$(cat VERSION)
 
-# Skip 32-bit build on ARM64
-SKIP_32BIT=0
-if [ "$HOST_ARCH" = "aarch64" ]; then
-    SKIP_32BIT=1
-    warning "32-bit compilation is not supported on ARM64, skipping..."
-fi
-
-# Build 32-bit version
-if [ $SKIP_32BIT = 0 ]; then
-    section_header "Building 32-bit version..."
-
-    # Set up compilation flags for 32-bit
-    CFLAGS_32="-DT_LINUX -m32 -Wall -O3 -I."
-    LIBS_32="-lm -lpthread -lasound"
-
-    # Check for MP3 support (32-bit)
-    if [ -f "$LIB_PATH_32" ]; then
-        info "Including MP3 support for 32-bit using: $LIB_PATH_32"
-        CFLAGS_32="$CFLAGS_32 -DMP3_DECODE"
-        LIBS_32="$LIBS_32 $LIB_PATH_32"
-    else
-        warning "MP3 library not found at $LIB_PATH_32"
-        warning "MP3 support will not be included in 32-bit build"
-        warning "Run ./linux-build-libs.sh to build the required libraries"
-    fi
-
-    # Check for OGG support (32-bit)
-    if [ -f "$OGG_LIB_PATH_32" ] && [ -f "$TREMOR_LIB_PATH_32" ]; then
-        info "Including OGG support for 32-bit using: $OGG_LIB_PATH_32 and $TREMOR_LIB_PATH_32"
-        CFLAGS_32="$CFLAGS_32 -DOGG_DECODE"
-        # Order is important: first tremor, then ogg
-        LIBS_32="$LIBS_32 $TREMOR_LIB_PATH_32 $OGG_LIB_PATH_32"
-    else
-        warning "OGG libraries not found at $OGG_LIB_PATH_32 or $TREMOR_LIB_PATH_32"
-        warning "OGG support will not be included in 32-bit build"
-        warning "Run ./linux-build-libs.sh to build the required libraries"
-    fi
-
-    # Compile 32-bit version
-    info "Compiling 32-bit version with flags: $CFLAGS_32"
-    info "Libraries: $LIBS_32"
-
-    # Try to compile with 32-bit support
-    gcc $CFLAGS_32 synapseq.c -o dist/synapseq-linux32 $LIBS_32
-
-    if [ $? -eq 0 ]; then
-        success "32-bit compilation successful! Binary created: synapseq-linux32"
-    else
-        error "32-bit compilation failed! You may need to install 32-bit development libraries."
-    fi
+# Check for MP3 support using pkg-config
+if pkg-config --exists mad; then
+    info "Including MP3 support using pkg-config (libmad)"
+    CFLAGS="$CFLAGS -DMP3_DECODE $(pkg-config --cflags mad)"
+    LIBS="$LIBS $(pkg-config --libs mad)"
 else
-    warning "Skipping 32-bit build..."
+    warning "libmad not found via pkg-config"
+    warning "MP3 support will not be included"
+    warning "Install libmad using your package manager:"
+    warning "  Ubuntu/Debian: sudo apt install libmad0-dev"
+    warning "  CentOS/RHEL:   sudo yum install libmad-devel"
+    warning "  Fedora:        sudo dnf install libmad-devel"
+    warning "  Arch:          sudo pacman -S libmad"
 fi
 
-# Build 64-bit version
-section_header "Building 64-bit version..."
-
-# Set up compilation flags for 64-bit
-if [ "$HOST_ARCH" = "aarch64" ]; then
-    # On ARM64, don't use -m64 flag as it's not supported
-    CFLAGS_64="-DT_LINUX -Wall -O3 -I."
-    info "Running on ARM64, using native gcc for 64-bit compilation"
+# Check for OGG support using pkg-config
+if pkg-config --exists vorbis vorbisfile ogg; then
+    info "Including OGG support using pkg-config (libvorbis + libogg)"
+    CFLAGS="$CFLAGS -DOGG_DECODE $(pkg-config --cflags vorbis vorbisfile ogg)"
+    LIBS="$LIBS $(pkg-config --libs vorbis vorbisfile ogg)"
 else
-    CFLAGS_64="-DT_LINUX -m64 -Wall -O3 -I."
-fi
-LIBS_64="-lm -lpthread -lasound"
-
-# Check for MP3 support for 64-bit or ARM64
-if [ "$HOST_ARCH" = "aarch64" ]; then
-    if [ -f "$LIB_PATH_ARM64" ]; then
-        info "Including MP3 support for ARM64 using: $LIB_PATH_ARM64"
-        CFLAGS_64="$CFLAGS_64 -DMP3_DECODE"
-        LIBS_64="$LIBS_64 $LIB_PATH_ARM64"
-    else
-        warning "MP3 library not found at $LIB_PATH_ARM64"
-        warning "MP3 support will not be included in ARM64 build"
-        warning "Run ./linux-build-libs.sh to build the required libraries"
-    fi
-else
-    if [ -f "$LIB_PATH_64" ]; then
-        info "Including MP3 support for 64-bit using: $LIB_PATH_64"
-        CFLAGS_64="$CFLAGS_64 -DMP3_DECODE"
-        LIBS_64="$LIBS_64 $LIB_PATH_64"
-    else
-        warning "MP3 library not found at $LIB_PATH_64"
-        warning "MP3 support will not be included in 64-bit build"
-        warning "Run ./linux-build-libs.sh to build the required libraries"
-    fi
+    warning "libvorbis/libogg not found via pkg-config"
+    warning "OGG support will not be included"
+    warning "Install vorbis libraries using your package manager:"
+    warning "  Ubuntu/Debian: sudo apt install libvorbis-dev libogg-dev"
+    warning "  CentOS/RHEL:   sudo yum install libvorbis-devel libogg-devel"
+    warning "  Fedora:        sudo dnf install libvorbis-devel libogg-devel"
+    warning "  Arch:          sudo pacman -S libvorbis libogg"
 fi
 
-# Check for OGG support for 64-bit or ARM64
-if [ "$HOST_ARCH" = "aarch64" ]; then
-    if [ -f "$OGG_LIB_PATH_ARM64" ] && [ -f "$TREMOR_LIB_PATH_ARM64" ]; then
-        info "Including OGG support for ARM64 using: $OGG_LIB_PATH_ARM64 and $TREMOR_LIB_PATH_ARM64"
-        CFLAGS_64="$CFLAGS_64 -DOGG_DECODE"
-        # Order is important: first tremor, then ogg
-        LIBS_64="$LIBS_64 $TREMOR_LIB_PATH_ARM64 $OGG_LIB_PATH_ARM64"
-    else
-        warning "OGG libraries not found at $OGG_LIB_PATH_ARM64 or $TREMOR_LIB_PATH_ARM64"
-        warning "OGG support will not be included in ARM64 build"
-        warning "Run ./linux-build-libs.sh to build the required libraries"
-    fi
-else
-    if [ -f "$OGG_LIB_PATH_64" ] && [ -f "$TREMOR_LIB_PATH_64" ]; then
-        info "Including OGG support for 64-bit using: $OGG_LIB_PATH_64 and $TREMOR_LIB_PATH_64"
-        CFLAGS_64="$CFLAGS_64 -DOGG_DECODE"
-        # Order is important: first tremor, then ogg
-        LIBS_64="$LIBS_64 $TREMOR_LIB_PATH_64 $OGG_LIB_PATH_64"
-    else
-        warning "OGG libraries not found at $OGG_LIB_PATH_64 or $TREMOR_LIB_PATH_64"
-        warning "OGG support will not be included in 64-bit build"
-        warning "Run ./linux-build-libs.sh to build the required libraries"
-    fi
-fi
-
-# Compile 64-bit version
-info "Compiling 64-bit version with flags: $CFLAGS_64"
-info "Libraries: $LIBS_64"
+# Compile synapseq
+section_header "Starting synapseq compilation..."
+info "Compilation flags: $CFLAGS"
+info "Libraries: $LIBS"
 
 # Replace VERSION with the actual version number
 sed "s/__VERSION__/\"$VERSION\"/" synapseq.c > synapseq.tmp.c
 
-if [ "$HOST_ARCH" = "aarch64" ]; then
-    gcc $CFLAGS_64 synapseq.tmp.c -o dist/synapseq-linux-arm64 $LIBS_64
+# Determine output binary name based on architecture
+OUTPUT_BINARY=synapseq-linux
+if [ "$ARCH" = "aarch64" ]; then
+    OUTPUT_BINARY="dist/${OUTPUT_BINARY}-arm64"
+elif [ "$ARCH" = "x86_64" ]; then
+    OUTPUT_BINARY="dist/${OUTPUT_BINARY}-x86_64"
 else
-    gcc $CFLAGS_64 synapseq.tmp.c -o dist/synapseq-linux64 $LIBS_64
+    OUTPUT_BINARY="dist/${OUTPUT_BINARY}-$ARCH"
+    warning "Unknown architecture $ARCH, using generic binary name"
 fi
 
+gcc $CFLAGS synapseq.tmp.c -o $OUTPUT_BINARY $LIBS
+
 if [ $? -eq 0 ]; then
-    if [ "$HOST_ARCH" = "aarch64" ]; then
-        success "64-bit compilation successful! Created ARM64 binary: synapseq-linux-arm64"
-    else
-        success "64-bit compilation successful! Created 64-bit binary: synapseq-linux64"
-    fi
+    success "Compilation successful! Binary created: $(basename $OUTPUT_BINARY)"
+    info "Architecture: $ARCH"
+    # Strip the binary
+    strip $OUTPUT_BINARY
 else
-    error "64-bit compilation failed!"
+    error "Compilation failed!"
 fi
 
 # Remove the temporary file
