@@ -6,15 +6,14 @@ SynapSeq is a text-based tool for generating tones to stimulate the brainwave to
 
 - [💡 Example](#-example)
 - [📥 Installation](#-installation)
-  - [🪟 Installing on Windows](#🪟Windows-Installation)
+  - [🪟 Installing on Windows](#-installing-on-windows)
   - [🍎 Installing on macOS](#-installing-on-macos)
-- [🚀 Basic Usage](#-basic-usage)
+- [🛠️ Compilation](#️-compilation)
+  - [🍎 For macOS ](#-for-macos)
+  - [🐧 For Linux](#-for-linux)
+  - [🪟 For Windows](#-for-windows)
 - [📚 Documentation](#-documentation)
 - [🔍 Research](#-research)
-- [🛠️ Compilation](#️-compilation)
-  - [📁 Build Scripts Structure](#-build-scripts-structure)
-  - [🐳 Building with Docker](#-option-1-using-docker-compose-simplest-method)
-  - [💻 Building Natively](#-option-2-building-natively)
 - [⚖️ License](#️-license)
 - [👏 Credits](#-credits)
 
@@ -65,7 +64,7 @@ Phases:
 
 You can download pre-built binaries on Windows (only 64-bit) and macOS (only Apple Silicon for macOS 15+) from the [releases page](https://github.com/ruanklein/synapseq/releases).
 
-### 🪟 Windows Installation
+### 🪟 Installing on Windows
 
 1. Download the installer:
 
@@ -100,10 +99,6 @@ This happens because the executable is **not digitally signed**, and as a comman
 5. Click in the .spsq file to play, edit or convert it. Also, you can drop spsq files on the `SynapSeq` application icon to open them.
 
 **Important:** The `SynapSeq` application is not digitally signed, so you may need to add an exception on the `System Settings -> Security & Privacy -> General tab`.
-
-### 🐧 Linux Installation
-
-In Linux, you need build SynapSeq from source. See [Compilation](#-compilation) section for more details.
 
 ## 🛠️ Compilation
 
@@ -141,7 +136,7 @@ If you want to create a installer DMG file, run the following script to create t
 
 The installer DMG file will be created in the `build/dist` folder.
 
-### 🐧 For GNU/Linux
+### 🐧 For Linux
 
 In Ubuntu/Debian based distributions, install dependencies:
 
@@ -173,10 +168,6 @@ docker compose -f build/compose.yml up build-windows-installer-x86-64 # Optional
 ```
 
 The `.exe` will be created in the `build/dist` folder.
-
-## 🚀 Basic Usage
-
-See [USAGE.md](USAGE.md) for more information on how to use SynapSeq.
 
 ## 📚 Documentation
 
