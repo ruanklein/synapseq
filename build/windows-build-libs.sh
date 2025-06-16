@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# Source common library
-. ./lib.sh
+# Build directory
+BUILD_DIR="$PWD/build"
 
-# Store the original directory
-ORIGINAL_DIR="$PWD"
+# Source common library
+. $BUILD_DIR/lib.sh
 
 # Define variables for temporary paths
 TEMP_DIR="/tmp/cross_compile"
 INSTALL_DIR_WIN64="$TEMP_DIR/win64"
-SRC_DIR="$PWD/build"
+SRC_DIR="$BUILD_DIR/downloaded-libs"
 OUTPUT_DIR="$TEMP_DIR/windows"
 LIBOGG_VERSION="1.3.5"
 LIBVORBIS_VERSION="1.3.7"
@@ -22,7 +22,7 @@ create_dir_if_not_exists "$SRC_DIR"
 create_dir_if_not_exists "$OUTPUT_DIR"
 
 # Create libs directory if it doesn't exist
-create_dir_if_not_exists "libs"
+create_dir_if_not_exists "$BUILD_DIR/libs"
 
 # Download libraries if not present
 cd "$SRC_DIR"
@@ -134,8 +134,7 @@ check_error "Failed to copy libraries and headers to output directory"
 
 # Copy libraries to the project's libs directory
 section_header "Copying libraries and headers to project's libs directory..."
-cd "$ORIGINAL_DIR"
-cp -R $OUTPUT_DIR/* $ORIGINAL_DIR/libs
+cp -R $OUTPUT_DIR/* $BUILD_DIR/libs
 
 # Cleanup: Remove temporary directories and logs, keeping only the libraries
 section_header "Cleaning up temporary directories and logs..."

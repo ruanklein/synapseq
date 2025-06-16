@@ -3,8 +3,14 @@
 # SynapSeq macOS build script
 # Builds a native binary with MP3 and OGG support
 
+# Build directory
+BUILD_DIR="$PWD/build"
+
 # Source common library
-. ./lib.sh
+. $BUILD_DIR/lib.sh
+
+# Source directory
+SRC_DIR="$PWD/src"
 
 # Get Architecture
 ARCH=$(uname -m)
@@ -17,7 +23,7 @@ CFLAGS="-DT_MACOSX -arch $ARCH -mmacosx-version-min=$MACOS_MIN_VERSION -I."
 LIBS="-framework CoreAudio"
 
 # Get the version number from the VERSION file
-VERSION=$(cat VERSION)
+VERSION=$(cat $BUILD_DIR/VERSION)
 
 section_header "Building SynapSeq native binary ($ARCH) for macOS $MACOS_MIN_VERSION..."
 
@@ -34,7 +40,7 @@ if [ -z $HOMEBREW_PREFIX ]; then
 fi
 
 # Check distribution directory
-create_dir_if_not_exists "dist"
+create_dir_if_not_exists "$BUILD_DIR/dist"
 
 # Check for MP3 support - FORCE STATIC LINKING
 if pkg-config --exists mad; then
@@ -85,22 +91,20 @@ info "Compilation flags: $CFLAGS"
 info "Libraries: $LIBS"
 
 # Replace VERSION with the actual version number
-sed "s/__VERSION__/\"$VERSION\"/" synapseq.c > synapseq.tmp.c
+sed "s/__VERSION__/\"$VERSION\"/" $SRC_DIR/synapseq.c > $SRC_DIR/synapseq.tmp.c
 
-gcc $CFLAGS synapseq.tmp.c -o dist/synapseq-macos-universal $LIBS
+gcc $CFLAGS $SRC_DIR/synapseq.tmp.c -o $BUILD_DIR/dist/synapseq-macos-universal $LIBS
 
 if [ $? -eq 0 ]; then
     success "Compilation successful! Universal binary created: dist/synapseq-macos-universal"
     # Strip the binary
-    strip dist/synapseq-macos-universal
-    #info "Supported architectures:"
-    #lipo -info dist/synapseq-macos-universal
+    strip $BUILD_DIR/dist/synapseq-macos-universal
 else
     error "Compilation failed!"
 fi
 
 # Remove the temporary file
-rm -f synapseq.tmp.c
+rm -f $SRC_DIR/synapseq.tmp.c
 
 
 

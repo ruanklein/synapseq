@@ -1,18 +1,27 @@
 #!/bin/bash
 
-# Source common library
-. ./lib.sh
+# Build directory
+BUILD_DIR="$PWD/build"
 
-# Check if 32-bit executable exists
-if [ ! -f dist/synapseq-win32.exe ]; then
-    error "32-bit executable not found. Run ./windows-build-synapseq.sh first."
+# Installer directory
+INSTALLER_DIR="$BUILD_DIR/windows-installer"
+
+# Documentation directory
+DOC_DIR="$PWD/docs"
+
+# Source common library
+. $BUILD_DIR/lib.sh
+
+# Check if 64-bit executable exists
+if [ ! -f $BUILD_DIR/dist/synapseq-win64.exe ]; then
+    error "64-bit executable not found. Run ./windows-build-synapseq.sh first."
     exit 1
 fi
 
 SETUP_NAME="synapseq-windows-setup.exe"
 
 # Remove the existing installer if it exists
-rm -f dist/${SETUP_NAME}
+rm -rf "$BUILD_DIR/dist/${SETUP_NAME}" "$INSTALLER_DIR"
 
 section_header "Creating Windows Installer..."
 
@@ -26,6 +35,9 @@ export DISPLAY=:99
 # Increase Wine memory limits
 export WINE_LARGE_ADDRESS_AWARE=1
 export WINE_HEAP_MAXRESERVE=4096
+
+# Clean wine prefix
+rm -rf "$WINEPREFIX"
 
 # Get Xvfb PID
 XVFB_PID=$(pgrep -f "Xvfb $DISPLAY -screen 0 1024x768x16")
@@ -90,22 +102,19 @@ info "Creating installer..."
 wineserver -k
 
 # For convert *.md to *.txt
-create_dir_if_not_exists "build"
-
-# Convert README.md to README.txt
-pandoc -f markdown -t plain README.md -o build/README.txt 
+create_dir_if_not_exists "$INSTALLER_DIR"
 
 # Convert USAGE.md to USAGE.txt
-pandoc -f markdown -t plain USAGE.md -o build/USAGE.txt
+pandoc -f markdown -t plain "$DOC_DIR/USAGE.md" -o "$INSTALLER_DIR/USAGE.txt"
 
 # Convert RESEARCH.md to RESEARCH.txt
-pandoc -f markdown -t plain RESEARCH.md -o build/RESEARCH.txt
+pandoc -f markdown -t plain "$DOC_DIR/RESEARCH.md" -o "$INSTALLER_DIR/RESEARCH.txt"
 
 # Run ISCC with increased memory limits and in silent mode
-wine "$ISCC" /O+ /Q setup.iss
+wine "$ISCC" /O+ /Q "build/setup.iss"
 
 # Check if the installer was created successfully
-if [ ! -f "dist/${SETUP_NAME}" ]; then
+if [ ! -f "$BUILD_DIR/dist/${SETUP_NAME}" ]; then
     error "Failed to create installer"
 
     # Kill any hanging processes
@@ -114,11 +123,11 @@ if [ ! -f "dist/${SETUP_NAME}" ]; then
     exit 1
 fi
 
-success "Installer created successfully at dist/${SETUP_NAME}"
+success "Installer created successfully at $BUILD_DIR/dist/${SETUP_NAME}"
 
 # Final cleanup
 wineserver -w
-rm -rf "$WINEPREFIX" build
+rm -rf "$WINEPREFIX" "$INSTALLER_DIR"
 
 # Kill Xvfb
 kill $XVFB_PID

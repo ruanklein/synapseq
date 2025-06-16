@@ -3,8 +3,14 @@
 # SynapSeq Linux build script
 # Builds native binary with MP3, OGG and ALSA support
 
+# Build directory
+BUILD_DIR="$PWD/build"
+
 # Source common library
-. ./lib.sh
+. $BUILD_DIR/lib.sh
+
+# Source directory
+SRC_DIR="$PWD/src"
 
 # Get Architecture
 ARCH=$(uname -m)
@@ -22,14 +28,14 @@ if [ ! "$(which pkg-config)" 2> /dev/null ]; then
 fi
 
 # Check distribution directory
-create_dir_if_not_exists "dist"
+create_dir_if_not_exists "$BUILD_DIR/dist"
 
 # Define base compilation flags
 CFLAGS="-DT_LINUX -Wall -O3 -I."
 LIBS="-lm -lpthread -lasound"
 
 # Get the version number from the VERSION file
-VERSION=$(cat VERSION)
+VERSION=$(cat $BUILD_DIR/VERSION)
 
 # Check for MP3 support using pkg-config
 if pkg-config --exists mad; then
@@ -67,20 +73,20 @@ info "Compilation flags: $CFLAGS"
 info "Libraries: $LIBS"
 
 # Replace VERSION with the actual version number
-sed "s/__VERSION__/\"$VERSION\"/" synapseq.c > synapseq.tmp.c
+sed "s/__VERSION__/\"$VERSION\"/" $SRC_DIR/synapseq.c > $SRC_DIR/synapseq.tmp.c
 
 # Determine output binary name based on architecture
 OUTPUT_BINARY=synapseq-linux
 if [ "$ARCH" = "aarch64" ]; then
-    OUTPUT_BINARY="dist/${OUTPUT_BINARY}-arm64"
+    OUTPUT_BINARY="$BUILD_DIR/dist/${OUTPUT_BINARY}-arm64"
 elif [ "$ARCH" = "x86_64" ]; then
-    OUTPUT_BINARY="dist/${OUTPUT_BINARY}-x86_64"
+    OUTPUT_BINARY="$BUILD_DIR/dist/${OUTPUT_BINARY}-x86_64"
 else
-    OUTPUT_BINARY="dist/${OUTPUT_BINARY}-$ARCH"
+    OUTPUT_BINARY="$BUILD_DIR/dist/${OUTPUT_BINARY}-$ARCH"
     warning "Unknown architecture $ARCH, using generic binary name"
 fi
 
-gcc $CFLAGS synapseq.tmp.c -o $OUTPUT_BINARY $LIBS
+gcc $CFLAGS $SRC_DIR/synapseq.tmp.c -o $OUTPUT_BINARY $LIBS
 
 if [ $? -eq 0 ]; then
     success "Compilation successful! Binary created: $(basename $OUTPUT_BINARY)"
@@ -92,6 +98,6 @@ else
 fi
 
 # Remove the temporary file
-rm -f synapseq.tmp.c
+rm -f $SRC_DIR/synapseq.tmp.c
 
 section_header "Build process completed!" 

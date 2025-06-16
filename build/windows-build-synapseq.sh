@@ -3,8 +3,14 @@
 # SynapSeq Windows build script
 # Builds 64-bit Windows binaries with MP3 and OGG support using MinGW
 
+# Build directory
+BUILD_DIR="$PWD/build"
+
 # Source common library
-. ./lib.sh
+. $BUILD_DIR/lib.sh
+
+# Source directory
+SRC_DIR="$PWD/src"
 
 section_header "Building SynapSeq for Windows (64-bit)..."
 
@@ -18,10 +24,10 @@ if ! command -v x86_64-w64-mingw32-gcc &> /dev/null; then
 fi
 
 # Check distribution directory
-create_dir_if_not_exists "dist"
+create_dir_if_not_exists "$BUILD_DIR/dist"
 
 # Get version from VERSION file
-VERSION=$(cat VERSION)
+VERSION=$(cat $BUILD_DIR/VERSION)
 
 # Extract numeric version and build number for RC file
 NUMERIC_VERSION=$(echo $VERSION | sed 's/-.*$//')
@@ -41,7 +47,7 @@ cat > /tmp/synapseq.rc << EOF
 #include <windows.h>
 
 // Include icon
-1 ICON "assets/synapseq.ico"
+1 ICON "$BUILD_DIR/assets/synapseq.ico"
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION     $VERSION_RC
@@ -77,10 +83,10 @@ EOF
 x86_64-w64-mingw32-windres /tmp/synapseq.rc -O coff -o /tmp/synapseq64.res
 
 # Define paths for libraries. Change it to the correct path for your system.
-LIBMAD_PATH_64="libs/libmad-win64.a"
-LIBOGG_PATH_64="libs/libogg-win64.a"
-LIBVORBIS_PATH_64="libs/libvorbis-win64.a"
-LIBVORBISFILE_PATH_64="libs/libvorbisfile-win64.a"
+LIBMAD_PATH_64="$BUILD_DIR/libs/libmad-win64.a"
+LIBOGG_PATH_64="$BUILD_DIR/libs/libogg-win64.a"
+LIBVORBIS_PATH_64="$BUILD_DIR/libs/libvorbis-win64.a"
+LIBVORBISFILE_PATH_64="$BUILD_DIR/libs/libvorbisfile-win64.a"
 
 # Build 64-bit version
 section_header "Building 64-bit version..."
@@ -103,7 +109,7 @@ fi
 # Check for OGG support (64-bit)
 if [ -f "$LIBOGG_PATH_64" ] && [ -f "$LIBVORBIS_PATH_64" ] && [ -f "$LIBVORBISFILE_PATH_64" ]; then
     info "Including OGG support for 64-bit using: $LIBOGG_PATH_64 and $LIBVORBIS_PATH_64 and $LIBVORBISFILE_PATH_64"
-    CFLAGS_64="$CFLAGS_64 -DOGG_DECODE -Ilibs/include"
+    CFLAGS_64="$CFLAGS_64 -DOGG_DECODE -I$BUILD_DIR/libs/include"
     # Order is important: first tremor, then ogg
     LIBS_64="$LIBS_64 $LIBVORBISFILE_PATH_64 $LIBVORBIS_PATH_64 $LIBOGG_PATH_64"
 else
@@ -117,17 +123,17 @@ info "Compiling 64-bit version with flags: $CFLAGS_64"
 info "Libraries: $LIBS_64"
 
 # Replace VERSION with the actual version number
-sed "s/__VERSION__/\"$VERSION\"/" synapseq.c > synapseq.tmp.c
+sed "s/__VERSION__/\"$VERSION\"/" $SRC_DIR/synapseq.c > $SRC_DIR/synapseq.tmp.c
 
-x86_64-w64-mingw32-gcc $CFLAGS_64 synapseq.tmp.c /tmp/synapseq64.res -o dist/synapseq-win64.exe $LIBS_64
+x86_64-w64-mingw32-gcc $CFLAGS_64 $SRC_DIR/synapseq.tmp.c /tmp/synapseq64.res -o $BUILD_DIR/dist/synapseq-win64.exe $LIBS_64
 
 if [ $? -eq 0 ]; then
-    success "64-bit compilation successful! Created 64-bit binary: dist/synapseq-win64.exe"
+    success "64-bit compilation successful! Created 64-bit binary: $BUILD_DIR/dist/synapseq-win64.exe"
 else
     error "64-bit compilation failed!"
 fi
 
 # Clean up temporary files
-rm -f /tmp/synapseq.rc /tmp/synapseq64.res synapseq.tmp.c
+rm -f /tmp/synapseq.rc /tmp/synapseq64.res $SRC_DIR/synapseq.tmp.c
 
 section_header "Build process completed!" 

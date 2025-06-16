@@ -1,14 +1,16 @@
 .DS_Store
-build
-dist
-libs/*
-synapseq-*
+
+build/downloaded-libs/*
+build/dist/*
+build/libs/*
+build/macos-installer/*
+build/windows-installer/*
+
 *.exe
 *.spsq
 *.wav
 *.mp3
 *.ogg
 *.log
-*.tmp.c
 
 !/samples/**/*.spsq

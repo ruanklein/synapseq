@@ -11,7 +11,7 @@
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
-AppId={{F4E7F182-5437-4F54-A4FE-B8F2891AE7E2}
+AppId={{1B19F3D2-612C-4908-816C-C54FBAB61C87}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
@@ -27,14 +27,14 @@ Compression=lzma2/fast
 LZMAUseSeparateProcess=yes
 LZMANumBlockThreads=1
 SolidCompression=yes
-ArchitecturesAllowed=x86 x64 arm64
+ArchitecturesAllowed=x64 arm64
 MinVersion=6.1.7601
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=commandline
 SetupIconFile={#MyAppIcon}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 WizardStyle=modern
-LicenseFile=COPYING.txt
+LicenseFile=..\COPYING.txt
 DisableWelcomePage=no
 ChangesAssociations=yes
 
@@ -64,30 +64,24 @@ Name: "associatewithfiles"; Description: "Associate .spsq files with {#MyAppName
 Name: "addtopath"; Description: "Add {#MyAppName} to PATH environment variable"; GroupDescription: "System integration:"; Flags: unchecked
 
 [Files]
-; Include both 32-bit and 64-bit versions
-Source: "dist\synapseq-win32.exe"; DestDir: "{app}"; DestName: "synapseq-win32.exe"; Flags: ignoreversion
+; Include 64-bit version
 Source: "dist\synapseq-win64.exe"; DestDir: "{app}"; DestName: "synapseq-win64.exe"; Flags: ignoreversion
-; Documentation
-Source: "COPYING.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "NOTICE.txt"; DestDir: "{app}"; Flags: ignoreversion dontcopy
-Source: "SYNAPSEQ.txt"; DestDir: "{app}\docs"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Basic Documentation
+Source: "..\COPYING.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\NOTICE.txt"; DestDir: "{app}"; Flags: ignoreversion dontcopy
 ; Example files
-Source: "examples\*"; DestDir: "{app}\examples"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Scripts directory
-Source: "scripts\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\samples\*"; DestDir: "{app}\samples"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Changelog
-Source: "ChangeLog.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\ChangeLog.txt"; DestDir: "{app}"; Flags: ignoreversion
 ; USAGE.txt
-Source: "build\USAGE.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "windows-installer\USAGE.txt"; DestDir: "{app}\docs"; Flags: ignoreversion
 ; RESEARCH.txt
-Source: "build\RESEARCH.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "windows-installer\RESEARCH.txt"; DestDir: "{app}\docs"; Flags: ignoreversion
 ; Documentation files in user's Documents folder
-Source: "docs\*"; DestDir: "{#MyAppUserDocsDir}\Documentation"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "examples\*"; DestDir: "{#MyAppUserDocsDir}\Examples"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "COPYING.txt"; DestDir: "{#MyAppUserDocsDir}"; DestName: "License.txt"; Flags: ignoreversion
-Source: "NOTICE.txt"; DestDir: "{#MyAppUserDocsDir}"; DestName: "Notice.txt"; Flags: ignoreversion
-Source: "build\USAGE.txt"; DestDir: "{#MyAppUserDocsDir}"; DestName: "Usage.txt"; Flags: ignoreversion
-Source: "build\RESEARCH.txt"; DestDir: "{#MyAppUserDocsDir}"; DestName: "Research.txt"; Flags: ignoreversion
+Source: "..\samples\*"; DestDir: "{#MyAppUserDocsDir}\Samples"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "windows-installer\*"; DestDir: "{#MyAppUserDocsDir}\Documentation"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\COPYING.txt"; DestDir: "{#MyAppUserDocsDir}"; DestName: "License.txt"; Flags: ignoreversion
+Source: "..\NOTICE.txt"; DestDir: "{#MyAppUserDocsDir}"; DestName: "Notice.txt"; Flags: ignoreversion
 
 [Dirs]
 Name: "{#MyAppUserDocsDir}"; Flags: uninsalwaysuninstall
@@ -115,11 +109,6 @@ Root: HKCU; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\edit\command"; Valu
 Root: HKCU; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\writetoWAV"; ValueType: string; ValueName: ""; ValueData: "Write file to WAV"; Flags: uninsdeletekey; Tasks: associatewithfiles
 Root: HKCU; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\writetoWAV"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Tasks: associatewithfiles
 Root: HKCU; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\writetoWAV\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" -Wo ""output.wav"" ""%1"""; Flags: uninsdeletekey; Tasks: associatewithfiles
-
-; Context menu for .spsq files - Write to WAV option (30 minutes)
-Root: HKCU; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\writetoWAV30"; ValueType: string; ValueName: ""; ValueData: "Write file to WAV (30 minutes)"; Flags: uninsdeletekey; Tasks: associatewithfiles
-Root: HKCU; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\writetoWAV30"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Tasks: associatewithfiles
-Root: HKCU; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\writetoWAV30\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" -L 00:30:00 -Wo ""output.wav"" ""%1"""; Flags: uninsdeletekey; Tasks: associatewithfiles
 
 ; Force Windows to refresh shell icons
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\{#MyAppAssocExt}"; ValueType: none; ValueName: ""; Flags: deletekey; Tasks: associatewithfiles
@@ -242,18 +231,12 @@ begin
     begin
       SourceFile := ExpandConstant('{app}\synapseq-win64.exe');
       DestFile := ExpandConstant('{app}\synapseq.exe');
-    end
-    else
-    begin
-      SourceFile := ExpandConstant('{app}\synapseq-win32.exe');
-      DestFile := ExpandConstant('{app}\synapseq.exe');
     end;
     
     { Copy the appropriate executable }
     if FileCopy(SourceFile, DestFile, False) then
     begin
       { Delete the original files }
-      DeleteFile(ExpandConstant('{app}\synapseq-win32.exe'));
       DeleteFile(ExpandConstant('{app}\synapseq-win64.exe'));
     end;
     

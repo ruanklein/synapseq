@@ -1,18 +1,27 @@
 #!/bin/bash
 
+# Build directory
+BUILD_DIR="$PWD/build"
+
+# Installer directory
+INSTALLER_DIR="$BUILD_DIR/macos-installer"
+
+# Documentation directory
+DOC_DIR="$PWD/docs"
+
 # Source common library
-. ./lib.sh
+. $BUILD_DIR/lib.sh
 
 APP_NAME="SynapSeq"
-SYNAPSEQ_BINARY="dist/synapseq-macos-universal"
-PNG_SOURCE="assets/mac-icon.png"
+SYNAPSEQ_BINARY="$BUILD_DIR/dist/synapseq-macos-universal"
+PNG_SOURCE="$BUILD_DIR/assets/mac-icon.png"
 ICON_NAME="app_icon"
 DMG_NAME="SynapSeq-Installer.dmg"
 
 section_header "Creating macOS Application Bundle..."
 
 # Clean build directory
-rm -rf build
+rm -rf $INSTALLER_DIR
 
 # Check if the binary exists
 if [ ! -f "$SYNAPSEQ_BINARY" ]; then
@@ -27,11 +36,11 @@ if [ ! -f "$PNG_SOURCE" ]; then
 fi
 
 # Create build directory if it doesn't exist
-create_dir_if_not_exists "build"
+create_dir_if_not_exists "$INSTALLER_DIR"
 
 # Create temporary AppleScript with the dialog
 info "Creating AppleScript handler..."
-cat > build/synapseq.applescript <<EOF
+cat > $INSTALLER_DIR/synapseq.applescript <<EOF
 on showAppNotInstalledAlert()
     set appPath to POSIX path of (path to me)
 
@@ -74,11 +83,9 @@ on initialize()
 
 	set fileMap to {¬
 	    {"Documentation", appBase & "/docs"}, ¬
-	    {"Examples", appBase & "/examples"}, ¬
+	    {"Samples", appBase & "/samples"}, ¬
 	    {"License.txt", appBase & "/COPYING.txt"}, ¬
         {"Notice.txt", appBase & "/NOTICE.txt"}, ¬
-	    {"Research.txt", appBase & "/RESEARCH.txt"}, ¬
-	    {"Usage.txt", appBase & "/USAGE.txt"}, ¬
 	    {"ChangeLog.txt", appBase & "/ChangeLog.txt"}}
 
 	repeat with pair in fileMap
@@ -167,20 +174,11 @@ on open theFiles
             open (POSIX file filePath as alias)
         end tell
     else if mainChoice is "More..." then
-        set convertChoice to button returned of (display dialog "Conversion options:" buttons {"Convert to WAV", "Convert to WAV (30 min)", "Cancel"} default button "Convert to WAV" with title "$APP_NAME" with icon POSIX file ((POSIX path of (path to me)) & "Contents/Resources/app_icon.icns"))
+        set convertChoice to button returned of (display dialog "Conversion options:" buttons {"Convert to WAV", "Cancel"} default button "Convert to WAV" with title "$APP_NAME" with icon POSIX file ((POSIX path of (path to me)) & "Contents/Resources/app_icon.icns"))
         if convertChoice is "Convert to WAV" then
             tell application "Terminal"
                 activate
                 set terminalWindow to do script ("cd " & quoted form of dirPath & "; " & synapseqPath & " -Wo " & outputFilePath & " " & quoted form of filePath & "; exit")
-                repeat while busy of terminalWindow is true
-                    delay 0.5
-                end repeat
-                tell terminalWindow to close
-            end tell
-        else if convertChoice is "Convert to WAV (30 min)" then
-            tell application "Terminal"
-                activate
-                set terminalWindow to do script ("cd " & quoted form of dirPath & "; " & synapseqPath & " -L 00:30:00 -Wo " & outputFilePath & " " & quoted form of filePath & "; exit")
                 repeat while busy of terminalWindow is true
                     delay 0.5
                 end repeat
@@ -193,7 +191,7 @@ EOF
 
 # Compile the AppleScript into an .app
 info "Compiling AppleScript into application bundle..."
-osacompile -o "build/$APP_NAME.app" build/synapseq.applescript > /dev/null
+osacompile -o "$INSTALLER_DIR/$APP_NAME.app" $INSTALLER_DIR/synapseq.applescript > /dev/null
 
 if [ $? -ne 0 ]; then
     error "Failed to compile AppleScript into application bundle!"
@@ -202,59 +200,55 @@ fi
 
 # Copy documentation
 info "Copying documentation to application bundle..."
-create_dir_if_not_exists "build/$APP_NAME.app/Contents/Resources/docs"
-cp SYNAPSEQ.txt "build/$APP_NAME.app/Contents/Resources/docs/SYNAPSEQ.txt"
+create_dir_if_not_exists "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/docs"
+cp "$PWD/ChangeLog.txt" "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/ChangeLog.txt"
 
 # Copy COPYING.txt
 info "Copying COPYING.txt to application bundle..."
-cp COPYING.txt "build/$APP_NAME.app/Contents/Resources/COPYING.txt"
+cp "$PWD/COPYING.txt" "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/COPYING.txt"
 
 # Copy NOTICE.txt
 info "Copying NOTICE.txt to application bundle..."
-cp NOTICE.txt "build/$APP_NAME.app/Contents/Resources/NOTICE.txt"
-
-# Copy ChangeLog.txt
-info "Copying ChangeLog.txt to application bundle..."
-cp ChangeLog.txt "build/$APP_NAME.app/Contents/Resources/ChangeLog.txt"
+cp "$PWD/NOTICE.txt" "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/NOTICE.txt"
 
 # Convert *.md to *.txt
-pandoc -f markdown -t plain USAGE.md -o build/$APP_NAME.app/Contents/Resources/docs/USAGE.txt
-pandoc -f markdown -t plain RESEARCH.md -o build/$APP_NAME.app/Contents/Resources/docs/RESEARCH.txt
+pandoc -f markdown -t plain "$DOC_DIR/USAGE.md" -o "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/docs/USAGE.txt"
+pandoc -f markdown -t plain "$DOC_DIR/RESEARCH.md" -o "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/docs/RESEARCH.txt"
 
 # Copy examples
 info "Copying examples to application bundle..."
-create_dir_if_not_exists "build/$APP_NAME.app/Contents/Resources/examples"
-cp -R examples/* "build/$APP_NAME.app/Contents/Resources/examples"
+create_dir_if_not_exists "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/samples"
+cp -R "$PWD/samples"/* "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/samples"
 
 # Copy the binary
 info "Copying binary to application bundle..."
-create_dir_if_not_exists "build/$APP_NAME.app/Contents/Resources/bin"
-cp "$SYNAPSEQ_BINARY" "build/$APP_NAME.app/Contents/Resources/bin/synapseq"
-chmod +x "build/$APP_NAME.app/Contents/Resources/bin/synapseq"
+create_dir_if_not_exists "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/bin"
+cp "$SYNAPSEQ_BINARY" "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/bin/synapseq"
+chmod +x "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/bin/synapseq"
 
 # Generate the icon from the PNG file
 section_header "Generating application icon..."
-create_dir_if_not_exists "build/iconset"
-sips -z 16 16 "$PNG_SOURCE" --out "build/iconset/icon_16x16.png" > /dev/null
-sips -z 32 32 "$PNG_SOURCE" --out "build/iconset/icon_16x16@2x.png" > /dev/null
-sips -z 32 32 "$PNG_SOURCE" --out "build/iconset/icon_32x32.png" > /dev/null
-sips -z 64 64 "$PNG_SOURCE" --out "build/iconset/icon_32x32@2x.png" > /dev/null
-sips -z 128 128 "$PNG_SOURCE" --out "build/iconset/icon_128x128.png" > /dev/null
-sips -z 256 256 "$PNG_SOURCE" --out "build/iconset/icon_128x128@2x.png" > /dev/null
-sips -z 256 256 "$PNG_SOURCE" --out "build/iconset/icon_256x256.png" > /dev/null
-sips -z 512 512 "$PNG_SOURCE" --out "build/iconset/icon_512x512.png" > /dev/null
-sips -z 1024 1024 "$PNG_SOURCE" --out "build/iconset/icon_512x512@2x.png" > /dev/null
+create_dir_if_not_exists "$INSTALLER_DIR/iconset"
+sips -z 16 16 "$PNG_SOURCE" --out "$INSTALLER_DIR/iconset/icon_16x16.png" > /dev/null
+sips -z 32 32 "$PNG_SOURCE" --out "$INSTALLER_DIR/iconset/icon_16x16@2x.png" > /dev/null
+sips -z 32 32 "$PNG_SOURCE" --out "$INSTALLER_DIR/iconset/icon_32x32.png" > /dev/null
+sips -z 64 64 "$PNG_SOURCE" --out "$INSTALLER_DIR/iconset/icon_32x32@2x.png" > /dev/null
+sips -z 128 128 "$PNG_SOURCE" --out "$INSTALLER_DIR/iconset/icon_128x128.png" > /dev/null
+sips -z 256 256 "$PNG_SOURCE" --out "$INSTALLER_DIR/iconset/icon_128x128@2x.png" > /dev/null
+sips -z 256 256 "$PNG_SOURCE" --out "$INSTALLER_DIR/iconset/icon_256x256.png" > /dev/null
+sips -z 512 512 "$PNG_SOURCE" --out "$INSTALLER_DIR/iconset/icon_512x512.png" > /dev/null
+sips -z 1024 1024 "$PNG_SOURCE" --out "$INSTALLER_DIR/iconset/icon_512x512@2x.png" > /dev/null
 
 # Convert the .iconset to .icns
-mv build/iconset "build/$ICON_NAME.iconset"
-iconutil -c icns "build/$ICON_NAME.iconset"
+mv "$INSTALLER_DIR/iconset" "$INSTALLER_DIR/$ICON_NAME.iconset"
+iconutil -c icns "$INSTALLER_DIR/$ICON_NAME.iconset"
 
 # Move the .icns to Resources
-mv "build/$ICON_NAME.icns" "build/$APP_NAME.app/Contents/Resources/"
+mv "$INSTALLER_DIR/$ICON_NAME.icns" "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/"
 
 # Add file association and icon reference to Info.plist
 info "Configuring application bundle Info.plist..."
-cat > "build/$APP_NAME.app/Contents/Info.plist" <<EOF
+cat > "$INSTALLER_DIR/$APP_NAME.app/Contents/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -357,7 +351,7 @@ cat > "build/$APP_NAME.app/Contents/Info.plist" <<EOF
 EOF
 
 # Create an entitlements file to allow Apple Events
-cat > build/entitlements.plist <<EOF
+cat > "$INSTALLER_DIR/entitlements.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -369,15 +363,15 @@ cat > build/entitlements.plist <<EOF
 EOF
 
 # Sign the application with ad-hoc signing
-codesign --force --deep --sign - "build/$APP_NAME.app" --entitlements build/entitlements.plist > /dev/null 2>&1
+codesign --force --deep --sign - "$INSTALLER_DIR/$APP_NAME.app" --entitlements "$INSTALLER_DIR/entitlements.plist" > /dev/null 2>&1
 
 # Create a temporary folder for the DMG content
 section_header "Creating DMG installer..."
-create_dir_if_not_exists "build/dmg"
-mv "build/$APP_NAME.app" "build/dmg/"
+create_dir_if_not_exists "$INSTALLER_DIR/dmg"
+mv "$INSTALLER_DIR/$APP_NAME.app" "$INSTALLER_DIR/dmg/"
 
 # Clean all dmg files in dist
-rm -f dist/*.dmg
+rm -f $BUILD_DIR/dist/*.dmg
 
 # Create the DMG with background using create-dmg
 create-dmg \
@@ -388,9 +382,9 @@ create-dmg \
   --icon "$APP_NAME.app" 200 190 \
   --hide-extension "$APP_NAME.app" \
   --app-drop-link 600 185 \
-  --background "assets/dmg-background.png" \
-  "dist/$DMG_NAME" \
-  "build/dmg" > /dev/null
+  --background "$BUILD_DIR/assets/dmg-background.png" \
+  "$BUILD_DIR/dist/$DMG_NAME" \
+  "$INSTALLER_DIR/dmg" > /dev/null
 
 if [ $? -ne 0 ]; then
     error "Failed to create DMG!"
@@ -398,14 +392,14 @@ if [ $? -ne 0 ]; then
 fi
 
 # Configure the DMG icon
-DeRez -only icns "assets/VolumeIcon.icns" > "build/icns.rsrc"
-Rez -append "build/icns.rsrc" -o "dist/$DMG_NAME"
+DeRez -only icns "$BUILD_DIR/assets/VolumeIcon.icns" > "$INSTALLER_DIR/icns.rsrc"
+Rez -append "$INSTALLER_DIR/icns.rsrc" -o "$BUILD_DIR/dist/$DMG_NAME"
 
 # Set the DMG icon
-SetFile -a C "dist/$DMG_NAME"
+SetFile -a C "$BUILD_DIR/dist/$DMG_NAME"
 
 # Remove temporary files
 info "Cleaning up temporary files..."
-rm -rf build
+rm -rf $INSTALLER_DIR
 
-success "Application bundle created and packaged in dist/$DMG_NAME successfully!"
+success "Application bundle created and packaged in $BUILD_DIR/dist/$DMG_NAME successfully!"
