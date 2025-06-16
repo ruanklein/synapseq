@@ -204,7 +204,8 @@ void checkBackgroundInSequence(NameDef *nd); // Check if background amplitude is
 void create_noise_spin_effect(int typ, int amp, int spin_position, int *left, int *right); // Create a spin effect
 int restart_background_file(); // Restart the background file for loop
 void calculate_bg_gain_factor(); // Calculate the background gain factor
-char *get_file_extension(const char *filename);
+char *get_file_extension(const char *filename); // Get the file extension
+void verbose_mode(); // Print the verbose mode
 
 #define ALLOC_ARR(cnt, type) ((type *)Alloc((cnt) * sizeof(type)))
 #define uint unsigned int
@@ -272,7 +273,7 @@ void usage() {
   error("SynapSeq - Synapse-Sequenced Brainwave Generator, version " VERSION NL
         "(c) 2025 Ruan, https://ruan.sh/" NL
         "Released under the GNU GPL v2. See file COPYING." NL NL
-        "Usage: synapseq [options] seq-file ..." NL
+        "Usage: synapseq [options] sequence-file ..." NL
         "For full usage help, type 'synapseq -h'."
 #ifdef EXIT_KEY
         NL NL "Windows users please note that this utility is designed to be "
@@ -684,6 +685,85 @@ char *get_file_extension(const char *filename) {
   return NULL;
 }
 
+//
+//	Verbose mode
+//
+
+void verbose_mode() {
+  printf("\nConfiguration:\n");
+  
+  int has_background = (opt_m != NULL);
+  
+  // Background (se existir)
+  if (has_background) {
+    char truncated_filename[30];
+    
+    if (strlen(opt_m) > 25) {
+      strncpy(truncated_filename, opt_m, 22);
+      truncated_filename[22] = 0;
+      strcat(truncated_filename, "...");
+    } else {
+      strcpy(truncated_filename, opt_m);
+    }
+
+
+    char gain_level[10];
+    
+    if (opt_bg_reduction_db == 20.0) {
+      strcpy(gain_level, "very low");
+    } else if (opt_bg_reduction_db == 16.0) {
+      strcpy(gain_level, "low");
+    } else if (opt_bg_reduction_db == 12.0) {
+      strcpy(gain_level, "medium");
+    } else if (opt_bg_reduction_db == 6.0) {
+      strcpy(gain_level, "high");
+    } else if (opt_bg_reduction_db == 0.0) {
+      strcpy(gain_level, "very high");
+    }
+    
+    printf("├── Background\n");
+    printf("│   ├── File: %s\n", truncated_filename);
+    printf("│   └── Gain: %s\n", gain_level);
+  }
+  
+  // Audio output info - incluir informações sobre saída de arquivo
+  char device_info[128] = "Unknown";
+  char output_info[256] = "";
+  
+  if (opt_o && opt_W) {
+    strcpy(device_info, "WAV File Output");
+    snprintf(output_info, sizeof(output_info), " -> %s", opt_o);
+  } else if (opt_o) {
+    strcpy(device_info, "Raw Data Output");
+    snprintf(output_info, sizeof(output_info), " -> %s (%lld bytes)", opt_o ? opt_o : "stdout", (long long)(byte_count + 44));
+  } else {
+#ifdef ALSA_AUDIO
+    strcpy(device_info, "ALSA");
+#endif
+#ifdef WIN_AUDIO
+    strcpy(device_info, "Windows Default");
+#endif
+#ifdef MAC_AUDIO
+    strcpy(device_info, "Mac CoreAudio");
+#endif
+  }
+  
+  printf("%s── Audio\n", has_background ? "├" : "├");
+  printf("│   ├── Format: %d-bit @ %dHz\n", out_mode ? 16 : 8, out_rate);
+  printf("│   └── Output: %s%s\n", device_info, output_info);
+  
+  printf("├── Playback\n");
+  printf("│   ├── Volume: %d%%\n", opt_V);
+  printf("│   └── Waveform: %s\n", waveform_name[opt_w]);
+  
+  printf("└── Buffer\n");
+#ifdef ALSA_AUDIO
+  printf("    └── Size: %d samples (%d ms latency)\n", out_blen / 2, out_buf_ms);
+#else
+  printf("    └── Size: %dx%d samples (%d ms latency)\n", BUFFER_COUNT, out_blen / 2, out_buf_ms);
+#endif
+}
+
 int restart_background_file() {
   if (!mix_in) return 0;
 
@@ -972,7 +1052,7 @@ void handleOptionInSequence(char *p) {
     } else {
       error("File name expected at line %d: %s", in_lin, lin_copy);
     }
-  } else if (strcmp(option, "@backgroundgain") == 0) {
+  } else if (strcmp(option, "@gainlevel") == 0) {
     char *gain_level = getWord();
     if (!gain_level) {
       error("Gain level expected at line %d: %s", in_lin, lin_copy);
@@ -980,11 +1060,11 @@ void handleOptionInSequence(char *p) {
     if (strcmp(gain_level, "verylow") == 0) {
       opt_bg_reduction_db = 20.0;
     } else if (strcmp(gain_level, "low") == 0) {
-      opt_bg_reduction_db = -16.0;
+      opt_bg_reduction_db = 16.0;
     } else if (strcmp(gain_level, "medium") == 0) {
-      opt_bg_reduction_db = -12.0;
+      opt_bg_reduction_db = 12.0;
     } else if (strcmp(gain_level, "high") == 0) {
-      opt_bg_reduction_db = -6.0;
+      opt_bg_reduction_db = 6.0;
     } else if (strcmp(gain_level, "veryhigh") == 0) {
       opt_bg_reduction_db = 0.0;
     } else {
@@ -2661,7 +2741,10 @@ void setup_device(void) {
     tmp_buf = (int *)Alloc(out_blen * sizeof(int));
 
     if (!opt_Q && !opt_W && opt_v) // Informational message for opt_W is written later
-      warn("Audio: %d-bit @ %d Hz -> raw data", out_mode ? 16 : 8, out_rate);
+    {
+      //warn("Audio: %d-bit @ %d Hz -> raw data", out_mode ? 16 : 8, out_rate);
+      verbose_mode();
+    }
     return;
   }
 
@@ -2750,8 +2833,9 @@ void setup_device(void) {
     out_fd = -9998; // Special value for ALSA
 
     if (!opt_Q && opt_v) {
-      warn("Audio: %d-bit @ %d Hz -> ALSA | %d×%d samples (%d ms latency)",
-           out_mode ? 16 : 8, out_rate, period_size, out_blen / 2, out_buf_ms);
+      // warn("Audio: %d-bit @ %d Hz -> ALSA | %d×%d samples (%d ms latency)",
+      //      out_mode ? 16 : 8, out_rate, period_size, out_blen / 2, out_buf_ms);
+      verbose_mode();
     }
     return;
   }
@@ -2830,9 +2914,11 @@ void setup_device(void) {
     out_fd = -9999;
     tmp_buf = (int *)Alloc(out_blen * sizeof(int));
 
-    if (!opt_Q && opt_v)
-      warn("Audio: %d-bit @ %d Hz -> \"default\" | %d×%d samples (%d ms latency)",
-           (int)fmt.wBitsPerSample, out_rate, BUFFER_COUNT, out_blen / 2, out_buf_ms);
+    if (!opt_Q && opt_v) {
+      // warn("Audio: %d-bit @ %d Hz -> \"default\" | %d×%d samples (%d ms latency)",
+      //      (int)fmt.wBitsPerSample, out_rate, BUFFER_COUNT, out_blen / 2, out_buf_ms);
+      verbose_mode();
+    }
   }
 #endif
 #ifdef MAC_AUDIO
@@ -2936,9 +3022,10 @@ void setup_device(void) {
 
     // Report settings
     if (!opt_Q && opt_v) {
-      warn("Audio: %d-bit @ %d Hz -> \"%s\" | %d×%d samples (%d ms latency)",
-           (int)streamDesc.mBitsPerChannel, out_rate, deviceName, BUFFER_COUNT,
-           out_blen / 2, out_buf_ms);
+      // warn("Audio: %d-bit @ %d Hz -> \"%s\" | %d×%d samples (%d ms latency)",
+      //      (int)streamDesc.mBitsPerChannel, out_rate, deviceName, BUFFER_COUNT,
+      //      out_blen / 2, out_buf_ms);
+      verbose_mode();
     }
   }
 #endif
@@ -3060,8 +3147,9 @@ void writeWAV() {
   writeOut(buf, 44);
 
   if (!opt_Q && opt_v)
-    warn("Audio: %d-bit @ %d Hz -> WAV file (%d bytes)",
-         out_mode ? 16 : 8, out_rate, byte_count + 44);
+    //warn("Audio: %d-bit @ %d Hz -> WAV file (%d bytes)",
+    //     out_mode ? 16 : 8, out_rate, byte_count + 44);
+    verbose_mode();
 }
 
 //
