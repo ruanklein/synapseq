@@ -171,7 +171,7 @@ The `.exe` will be created in the `build/dist` folder.
 
 ## 📚 Documentation
 
-For detailed information on all features, see the [SYNAPSEQ.txt](docs/SYNAPSEQ.txt) file.
+For detailed information on all features, see the [USAGE.md](docs/USAGE.md) file.
 
 ## 🔍 Research
 
