@@ -12,28 +12,28 @@ services:
     <<: *common-settings
     container_name: build-synapseq-x86-64
     platform: linux/amd64
-    command:
-      - /bin/sh
-      - -c
-      - |
-        ./build/linux-build-synapseq.sh
+    command: ./build/linux-build-synapseq.sh
 
   build-linux-arm64:
     <<: *common-settings
     container_name: build-synapseq-arm64
     platform: linux/arm64
-    command:
-      - /bin/sh
-      - -c
-      - |
-        ./build/linux-build-synapseq.sh
+    command: ./build/linux-build-synapseq.sh
 
-  build-windows-x86-64:
+  build-windows-libs-x86-64:
     <<: *common-settings
-    container_name: build-synapseq-windows-x86-64
+    container_name: build-synapseq-windows-libs-x86-64
     platform: linux/amd64
-    command:
-      - /bin/sh
-      - -c
-      - |
-        ./build/windows-create-installer.sh
+    command: ./build/windows-build-libs.sh
+
+  build-windows-synapseq-x86-64:
+    <<: *common-settings
+    container_name: build-synapseq-windows-synapseq-x86-64
+    platform: linux/amd64
+    command: ./build/windows-build-synapseq.sh
+
+  build-windows-installer-x86-64:
+    <<: *common-settings
+    container_name: build-synapseq-windows-installer-x86-64
+    platform: linux/amd64
+    command: ./build/windows-create-installer.sh
