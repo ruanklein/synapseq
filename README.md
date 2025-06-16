@@ -1,16 +1,13 @@
-# <img src="assets/synapseq.png" alt="SynapSeq Logo" width="32" height="32"> SynapSeq - Synapse-Sequenced Brainwave Generator
+# <img style="border-radius: 15%;" src="build/assets/synapseq.png" alt="SynapSeq Logo" width="32" height="32"> SynapSeq - Synapse-Sequenced Brainwave Generator
 
-SynapSeq is a command-line tool for generating binaural beats and isochronic tones, designed to assist with meditation, relaxation, and altering states of consciousness.
+SynapSeq is a text-based tool for generating tones to stimulate the brainwave to help with meditation, relaxation, and altering states of consciousness.
 
 ## 📑 Table of Contents
 
-- [💡 About This Project](#-about-this-project)
+- [💡 Example](#-example)
 - [📥 Installation](#-installation)
-  - [🐳 Using SynapSeq with Docker](#-using-synapseq-with-docker)
-  - [⬇️ Download Pre-built Binaries](#️-download-pre-built-binaries)
-  - [🐧 Installing on Linux](#-installing-on-linux)
+  - [🪟 Installing on Windows](#🪟Windows-Installation)
   - [🍎 Installing on macOS](#-installing-on-macos)
-  - [🪟 Installing on Windows](#-installing-on-windows)
 - [🚀 Basic Usage](#-basic-usage)
 - [📚 Documentation](#-documentation)
 - [🔍 Research](#-research)
@@ -21,131 +18,60 @@ SynapSeq is a command-line tool for generating binaural beats and isochronic ton
 - [⚖️ License](#️-license)
 - [👏 Credits](#-credits)
 
-## 💡 About This Project
+## 💡 Example
 
-SynapSeq (formerly called SBaGen+) is a modern, open-source brainwave generator built to produce and sequence audio tones for brainwave entrainment. It supports both binaural beats and isochronic tones, allowing users to design precise audio sessions targeting relaxation, focus, meditation, and cognitive stimulation.
+To get started with SynapSeq, create a new text file called `Relax.spsq` with the following content and double click on the file to open it with SynapSeq (Windows/macOS) or run `synapseq Relax.spsq` on Terminal (all platforms).
 
-Originally based on the SBaGen, SynapSeq has evolved beyond its origins. With active development focused on usability, clarity, and compatibility with modern systems.
+```
+# Presets
+relax1
+  noise brown amplitude 40
+  tone 250 binaural 10.0 amplitude 10
+relax2
+  noise brown amplitude 40
+  tone 250 binaural 5.0 amplitude 10
 
-SynapSeq aims to be a reliable and scriptable tool for developers, researchers, and enthusiasts looking to generate customizable neural stimulation sessions through sound.
+# Timeline sequence
+00:00:00 silence
+00:00:15 relax1
+00:02:00 relax1
+00:03:00 relax2
+00:04:00 relax2
+00:05:00 relax1
+00:06:00 relax1
+00:07:00 relax2
+00:08:00 relax2
+00:09:00 relax1
+00:10:00 silence
+```
+
+When processing this file, SynapSeq will execute the following sequence of phases:
+
+```
+Phases:
+├─ 0:00-0:15: Fade-in of silence for relax1 (start of the sequence)
+├─ 0:15-2:00: relax1 (10Hz) - Brown noise + binaural tone
+├─ 2:00-3:00: Ramp: 10Hz -> 5Hz (relax1 -> relax2)
+├─ 3:00-4:00: relax2 (5Hz) - Brown noise + binaural tone
+├─ 4:00-5:00: Ramp: 5Hz -> 10Hz (relax2 -> relax1)
+├─ 5:00-6:00: relax1 (10Hz)
+├─ 6:00-7:00: Ramp: 10Hz -> 5Hz (relax1 -> relax2)
+├─ 7:00-8:00: relax2 (5Hz)
+├─ 8:00-9:00: Ramp: 5Hz -> 10Hz (relax2 -> relax1)
+├─ 9:00-10:00: Fade-out of relax1 for silence (end of the sequence)
+```
 
 ## 📥 Installation
 
-You can download pre-built binaries on Linux and installers for Windows and macOS from the [releases page](https://github.com/ruanklein/synapseq/releases).
+You can download pre-built binaries on Windows (only 64-bit) and macOS (only Apple Silicon for macOS 15+) from the [releases page](https://github.com/ruanklein/synapseq/releases).
 
-### 🐳 Using SynapSeq with Docker
-
-If you don’t want to install SynapSeq on your machine, there’s the option to use it via Docker.
-
-SynapSeq for Docker was compiled without support for directly playing .spsq files. Therefore, the way to use SynapSeq via Docker is by generating output files in RAW or WAV format.
-
-The default image uses scratch to offer a simplified usage for most cases. Use this image if you just want to generate WAV files from your .spsq files using SynapSeq, without having to install synapseq on your machine.
-
-To use .spsq files, you need to map the **/spsq** folder to your local spsq files directory, for example:
-
-```
-docker run --rm -v ./spsq:/spsq ruanklein/synapseq -m river1.ogg -Wo out.wav Sleep.spsq
-```
-
-This will generate a WAV file in your sbg directory.
-
-If you want to use media files (ogg/mp3/wav) with the -m parameter, make sure they are in the same folder as your .spsq file.
-
-### ⬇️ Download Pre-built Binaries
-
-The latest release (v2.0.0) can be downloaded directly from the following links:
-
-- Linux 32-bit: [synapseq-linux32](https://github.com/ruanklein/synapseq/releases/download/v2.0.0/synapseq-linux32)
-- Linux 64-bit: [synapseq-linux64](https://github.com/ruanklein/synapseq/releases/download/v2.0.0/synapseq-linux64)
-- macOS Installer: [SynapSeq Installer.dmg](https://github.com/ruanklein/synapseq/releases/download/v2.0.0/SynapSeq-Installer.dmg)
-- Windows x86/x86_64 and ARM64: [synapseq-windows-setup.exe](https://github.com/ruanklein/synapseq/releases/download/v2.0.0/synapseq-windows-setup.exe)
-
-  **Important**: Always verify the SHA256 checksum of downloaded binaries against those listed on the [releases page](https://github.com/ruanklein/synapseq/releases) to ensure file integrity and security.
-
-### 🐧 Installing on Linux
-
-1. Download the appropriate binary for your system:
-
-   ```bash
-   # For 64-bit systems
-   wget https://github.com/ruanklein/synapseq/releases/download/v2.0.0/synapseq-linux64
-
-   # For 32-bit systems
-   wget https://github.com/ruanklein/synapseq/releases/download/v2.0.0/synapseq-linux32
-
-   # For ARM64 systems
-   wget https://github.com/ruanklein/synapseq/releases/download/v2.0.0/synapseq-linux-arm64
-   ```
-
-2. Verify the SHA256 checksum:
-
-   ```bash
-   sha256sum synapseq-linux64  # Replace with your downloaded file
-   # Compare the output with the checksum on the releases page
-   ```
-
-3. Make the binary executable:
-
-   ```bash
-   chmod +x synapseq-linux64  # Replace with your downloaded file
-   ```
-
-4. Move the binary to a directory in your PATH:
-
-   ```bash
-   sudo mv synapseq-linux64 /usr/local/bin/synapseq  # Replace with your downloaded file
-   ```
-
-5. Verify the installation:
-
-   ```bash
-   synapseq -h
-   ```
-
-### 🍎 Installing on macOS
-
-1. Download the macOS Installer: [SynapSeq Installer.dmg](https://github.com/ruanklein/synapseq/releases/download/v2.0.0/SynapSeq-Installer.dmg)
-
-2. Verify the SHA256 checksum. You can use the `shasum` command on the terminal to verify the checksum:
-
-   ```bash
-   cd ~/Downloads
-   shasum -a 256 SynapSeq-Installer.dmg
-   # Compare the output with the checksum on the releases page
-   ```
-
-3. Open the DMG file and drag the `SynapSeq` application to the Applications folder.
-
-4. Run the `SynapSeq` application from the Applications folder, accept the license agreement and click the `View Examples` button to view examples of spsq files.
-
-5. Click in the .spsq file to play, edit or convert it. Also, you can drop spsq files on the `SynapSeq` application icon to open them.
-
-**Important:** The `SynapSeq` application is not digitally signed, so you may need to add an exception on the `System Settings -> Security & Privacy -> General tab`.
-
-If you want to use SynapSeq as a command-line tool, you can create a symlink to the `synapseq` binary in your PATH.
-
-```bash
-sudo ln -s /Applications/SynapSeq.app/Contents/Resources/bin/synapseq /usr/local/bin/synapseq
-```
-
-And you can see the usage with:
-
-```bash
-synapseq -h
-```
-
-### 🪟 Installing on Windows
+### 🪟 Windows Installation
 
 1. Download the installer:
 
    - [synapseq-windows-setup.exe](https://github.com/ruanklein/synapseq/releases/download/v2.0.0/synapseq-windows-setup.exe)
 
-2. Verify the SHA256 checksum of the installer. You can use PowerShell or Command Prompt to do this:
-
-   ```powershell
-   Get-FileHash -Algorithm SHA256 .\synapseq-windows-setup.exe
-   # Compare the output with the checksum on the releases page
-   ```
+2. Verify the SHA256 checksum of the installer with the checksum on the releases page.
 
 3. Run the installer and follow the instructions.
 
@@ -159,6 +85,95 @@ This happens because the executable is **not digitally signed**, and as a comman
 
 ✅ **Temporary solution:** if you trust the source of the executable, add an exception in your antivirus for the file or the folder where `SynapSeq` is installed.
 
+### 🍎 Installing on macOS
+
+1. Download the macOS Installer:
+
+   - [SynapSeq Installer.dmg](https://github.com/ruanklein/synapseq/releases/download/v2.0.0/SynapSeq-Installer.dmg)
+
+2. Verify the SHA256 checksum of the installer with the checksum on the releases page.
+
+3. Open the DMG file and drag the `SynapSeq` application to the Applications folder.
+
+4. Run the `SynapSeq` application from the Applications folder, accept the license agreement and click the `View Examples` button to view examples of spsq files.
+
+5. Click in the .spsq file to play, edit or convert it. Also, you can drop spsq files on the `SynapSeq` application icon to open them.
+
+**Important:** The `SynapSeq` application is not digitally signed, so you may need to add an exception on the `System Settings -> Security & Privacy -> General tab`.
+
+### 🐧 Linux Installation
+
+In Linux, you need build SynapSeq from source. See [Compilation](#-compilation) section for more details.
+
+## 🛠️ Compilation
+
+SynapSeq can be compiled for macOS, Linux and Windows.
+
+### 🍎 For macOS
+
+Install the "Xcode Command Line Tools" in your system.
+
+```bash
+xcode-select --install
+```
+
+Install [homebrew](https://brew.sh/) if you don't have it yet.
+
+Install dependencies:
+
+```bash
+brew install pkg-config libvorbis libmad create-dmg pandoc
+```
+
+Run the build script to create the binary:
+
+```bash
+./build/macos-build-synapseq.sh
+```
+
+The binary will be created in the `build/dist` folder.
+
+If you want to create a installer DMG file, run the following script to create the installer DMG file:
+
+```bash
+./build/macos-create-installer.sh
+```
+
+The installer DMG file will be created in the `build/dist` folder.
+
+### 🐧 For GNU/Linux
+
+In Ubuntu/Debian based distributions, install dependencies:
+
+```bash
+sudo apt-get install build-essential pkg-config libasound2-dev libvorbis-dev libogg-dev libmad0-dev
+```
+
+Run the build script to create the binary:
+
+```bash
+./build/linux-build-synapseq.sh
+```
+
+The binary will be created in the `build/dist` folder.
+
+### 🪟 For Windows
+
+In Windows, the best way to build SynapSeq is using [Docker](https://www.docker.com/) with WSL2.
+
+1. Install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
+2. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+Run this sequence of commands to build SynapSeq (only x86-64):
+
+```bash
+docker compose -f build/compose.yml up build-windows-libs-x86-64
+docker compose -f build/compose.yml up build-windows-synapseq-x86-64
+docker compose -f build/compose.yml up build-windows-installer-x86-64 # Optional, if you want to create a installer
+```
+
+The `.exe` will be created in the `build/dist` folder.
+
 ## 🚀 Basic Usage
 
 See [USAGE.md](USAGE.md) for more information on how to use SynapSeq.
@@ -170,58 +185,6 @@ For detailed information on all features, see the [SYNAPSEQ.txt](docs/SYNAPSEQ.t
 ## 🔍 Research
 
 For the scientific background behind SynapSeq, check out [RESEARCH.md](RESEARCH.md).
-
-## 🛠️ Compilation
-
-SynapSeq can be compiled for macOS, Linux and Windows. The build process is divided into two steps:
-
-1. **Building the libraries**: This step is only necessary if you want MP3 and OGG support
-2. **Building the main program**: This step compiles SynapSeq using the libraries built in the previous step
-
-### 📁 Build Scripts Structure
-
-- **Library build scripts**:
-
-  - `macos-build-libs.sh`: Builds libraries for macOS (universal binary - ARM64 + x86_64)
-  - `linux-build-libs.sh`: Builds libraries for Linux (32-bit, 64-bit, ARM64 [if native])
-  - `windows-build-libs.sh`: Builds libraries for Windows using MinGW (cross-compilation)
-
-- **Main program build scripts**:
-  - `macos-build-synapseq.sh`: Builds SynapSeq for macOS (universal binary - ARM64 + x86_64)
-  - `linux-build-synapseq.sh`: Builds SynapSeq for Linux (32-bit, 64-bit, ARM64 [if native])
-  - `windows-build-synapseq.sh`: Builds SynapSeq for Windows using MinGW (cross-compilation)
-
-#### 🐳 Option 1: Using Docker Compose (Simplest Method)
-
-The easiest way to build SynapSeq for Linux and Windows is using Docker Compose:
-
-```bash
-# Build all Linux and Windows binaries with a single command
-docker compose up build
-
-# Build for Linux ARM64
-docker compose up build-arm64
-```
-
-This will automatically build the Docker image and run all necessary build scripts to generate the binaries for Linux and Windows. All compiled binaries will be placed in the `dist` directory.
-
-**For macOS**, you need compile natively. See next section for more details.
-
-#### 💻 Option 2: Building Natively
-
-If you prefer to build without Docker, you can use the build scripts directly on your system, provided you have all the necessary dependencies installed.
-
-You can see the dependencies in the [Dockerfile](Dockerfile). For macOS, you need the Xcode command line tools installed and home brew installed..
-
-The build scripts are:
-
-```
-<platform>-build-libs.sh # macOS, Linux, Windows
-<platform>-build-synapseq.sh # macOS, Linux, Windows
-<platform>-create-installer.sh # macOS, Windows
-```
-
-Run the script with the `platform` you use. This will create a installers and binaries in the `dist` directory.
 
 ## ⚖️ License
 
