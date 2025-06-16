@@ -84,7 +84,7 @@ void ogg_init() {
          else {
             val -= 3;		// Adjust vorbisgain's 89dB to 86dB
             ogg_mult = (int)(floor(0.5 + 16 * pow(10, val/20)));
-            warn("ReplayGain setting detected, Ogg scaling by %.2f", ogg_mult/16.0);
+            //warn("ReplayGain setting detected, Ogg scaling by %.2f", ogg_mult/16.0);
          }
       }
    }
