@@ -8,7 +8,7 @@ permissions:
   packages: write
 
 jobs:
-  build-linux-windows:
+  build-windows:
     runs-on: ubuntu-latest
 
     outputs:
@@ -26,7 +26,7 @@ jobs:
       - name: Generate development version
         id: version
         run: |
-          BASE_VERSION=$(cat VERSION | tr -d '\n')
+          BASE_VERSION=$(cat build/VERSION | tr -d '\n')
           DATE=$(date +'%Y%m%d')
           SHORT_SHA=${GITHUB_SHA::7}
           DEV_VERSION="${BASE_VERSION}-dev.${DATE}.${SHORT_SHA}"
@@ -34,26 +34,24 @@ jobs:
           echo "version=${DEV_VERSION}" >> $GITHUB_OUTPUT
           echo "base_version=${BASE_VERSION}" >> $GITHUB_OUTPUT
           echo "Generated version: ${DEV_VERSION}"
-          echo $DEV_VERSION > VERSION
+          echo $DEV_VERSION > build/VERSION
 
-      - name: Build for Linux and Windows
+      - name: Build for Windows
         run: |
           mkdir -p artifacts
 
-          # Run build using docker compose
-          docker compose run --rm build
+          # Run build Windows libs
+          docker compose -f build/compose.yml run --rm build-windows-libs-x86-64
+
+          # Run build Windows SynapSeq
+          docker compose -f build/compose.yml run --rm build-windows-synapseq-x86-64
+
+          # Run build Windows Installer
+          docker compose -f build/compose.yml run --rm build-windows-installer-x86-64
 
           # Copy generated artifacts
-          if [ -f "dist/synapseq-linux64" ]; then
-            cp dist/synapseq-linux64 artifacts/synapseq-linux64
-          fi
-
-          if [ -f "dist/synapseq-linux32" ]; then
-            cp dist/synapseq-linux32 artifacts/synapseq-linux32
-          fi
-
-          if [ -f "dist/synapseq-windows-setup.exe" ]; then
-            cp dist/synapseq-windows-setup.exe artifacts/synapseq-windows-setup.exe
+          if [ -f "build/dist/synapseq-windows-setup.exe" ]; then
+            cp build/dist/synapseq-windows-setup.exe artifacts/synapseq-windows-setup.exe
           fi
 
       - name: Generate SHA256 checksums
@@ -86,39 +84,35 @@ jobs:
       - name: Install dependencies
         run: |
           # Install required tools via Homebrew
-          brew install automake autoconf libtool pandoc create-dmg
+          brew install pkg-config libvorbis libmad create-dmg pandoc
 
       - name: Generate development version
         id: version
         run: |
-          BASE_VERSION=$(cat VERSION | tr -d '\n')
+          BASE_VERSION=$(cat build/VERSION | tr -d '\n')
           DATE=$(date +'%Y%m%d')
           SHORT_SHA=${GITHUB_SHA::7}
           DEV_VERSION="${BASE_VERSION}-dev.${DATE}.${SHORT_SHA}"
 
           echo "version=${DEV_VERSION}" >> $GITHUB_OUTPUT
           echo "Generated version: ${DEV_VERSION}"
-          echo $DEV_VERSION > VERSION
-
-      - name: Build libraries for macOS
-        run: |
-          ./macos-build-libs.sh
+          echo $DEV_VERSION > build/VERSION
 
       - name: Build SynapSeq for macOS
         run: |
-          ./macos-build-synapseq.sh
+          ./build/macos-build-synapseq.sh
 
       - name: Create macOS installer
         run: |
-          ./macos-create-installer.sh
+          ./build/macos-create-installer.sh
 
       - name: Prepare artifacts
         run: |
           mkdir -p artifacts
 
           # Copy DMG installer
-          if [ -f "dist/SynapSeq-Installer.dmg" ]; then
-            cp dist/SynapSeq-Installer.dmg artifacts/SynapSeq-Installer.dmg
+          if [ -f "build/dist/SynapSeq-Installer.dmg" ]; then
+            cp build/dist/SynapSeq-Installer.dmg artifacts/SynapSeq-Installer.dmg
           fi
 
       - name: Generate SHA256 checksums
@@ -137,18 +131,18 @@ jobs:
           retention-days: 30
 
   create-release:
-    needs: [build-linux-windows, build-macos]
+    needs: [build-windows, build-macos]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Linux/Windows artifacts
+      - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
-          name: synapseq-${{ needs.build-linux-windows.outputs.version }}
-          path: linux-windows/
+          name: synapseq-${{ needs.build-windows.outputs.version }}
+          path: windows/
 
       - name: Download macOS artifacts
         uses: actions/download-artifact@v4
@@ -160,9 +154,9 @@ jobs:
         run: |
           mkdir -p all-artifacts
 
-          # Copy Linux/Windows artifacts
-          if [ -d "linux-windows/artifacts" ]; then
-            cp linux-windows/artifacts/* all-artifacts/ 2>/dev/null || true
+          # Copy Windows artifacts
+          if [ -d "windows/artifacts" ]; then
+            cp windows/artifacts/* all-artifacts/ 2>/dev/null || true
           fi
 
           # Copy macOS artifacts
@@ -183,8 +177,8 @@ jobs:
       - name: Create Development Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ needs.build-linux-windows.outputs.version }}
-          name: "Development Release v${{ needs.build-linux-windows.outputs.version }}"
+          tag_name: v${{ needs.build-windows.outputs.version }}
+          name: "Development Release v${{ needs.build-windows.outputs.version }}"
           body_path: release_body.md
           files: |
             all-artifacts/*
