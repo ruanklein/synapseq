@@ -8,18 +8,6 @@ x-common-settings: &common-settings
   working_dir: /synapseq
 
 services:
-  build-linux-x86-64:
-    <<: *common-settings
-    container_name: build-synapseq-x86-64
-    platform: linux/amd64
-    command: ./build/linux-build-synapseq.sh
-
-  build-linux-arm64:
-    <<: *common-settings
-    container_name: build-synapseq-arm64
-    platform: linux/arm64
-    command: ./build/linux-build-synapseq.sh
-
   build-windows-libs-x86-64:
     <<: *common-settings
     container_name: build-synapseq-windows-libs-x86-64

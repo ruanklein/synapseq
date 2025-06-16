@@ -1,18 +1,12 @@
-# Docker for building SynapSeq to Linux and Windows
+# Docker for building SynapSeq to Windows 64-bit
 FROM debian:bookworm
 
-# To Inno Setup
+# To work with Inno Setup
 RUN dpkg --add-architecture i386 \
     && apt-get update
 
 RUN apt-get install -y \
     build-essential \
-    pkg-config \
-    libasound2-dev \
-    libmad0-dev \
-    libvorbis-dev \
-    libogg-dev \
-    # For building Windows .exe and installer
     curl \
     automake \
     autoconf \
