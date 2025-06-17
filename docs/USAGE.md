@@ -1,26 +1,45 @@
-# <img src="assets/synapseq.png" alt="SynapSeq Logo" width="32" height="32"> SynapSeq Usage Guide
-
-This guide will help you get started with SynapSeq, a powerful tool for generating binaural beats and isochronic tones to assist with meditation, relaxation, and altering states of consciousness.
+# <img style="border-radius: 15%;" src="../build/assets/synapseq.png" alt="SynapSeq Logo" width="32" height="32"> SynapSeq Usage Guide
 
 ## 📑 Table of Contents
 
-1. [🧠 Introduction to Brainwave Entrainment](#-introduction-to-brainwave-entrainment)
-2. [💡 Basic Concepts](#-basic-concepts)
-3. [⌨️ Command Line Basics](#️-command-line-basics)
-4. [📝 Creating Simple Sequences](#-creating-simple-sequences)
-5. [📚 Example Sequences for Different Purposes](#-example-sequences-for-different-purposes)
-6. [🎵 Using Background Sounds](#-using-background-sounds)
-7. [🔍 Advanced Tips](#-advanced-tips)
+- [📑 Introduction to SynapSeq](#-introduction-to-synapseq)
+- [🧠 Introduction to Brainwave Entrainment](#-introduction-to-brainwave-entrainment)
+- [💡 Basic Concepts](#-basic-concepts)
+- [⌨️ Command Line Basics](#️-command-line-basics)
+- [📝 Creating Simple Sequences](#-creating-simple-sequences)
+- [📚 Example Sequences for Different Purposes](#-example-sequences-for-different-purposes)
+- [🎵 Using Background Sounds](#-using-background-sounds)
+- [🔍 Advanced Tips](#-advanced-tips)
+
+## 📑 Introduction to SynapSeq
+
+This guide will help you get started with SynapSeq, a text-based tool for generating tones to support meditation, relaxation, and altered states of consciousness.
+
+SynapSeq is built on the philosophy of doing one thing well. Providing a concise, human-readable syntax that lets you focus on what you want to achieve, not on how to express it.
+
+Instead of flexibility, it offers clarity. Instead of options, it offers direction.
+
+### 💡 Design Principles
+
+- One way to do it
+- Clarity over cleverness
+- Intention over syntax
+- Less options, more focus
+- You write tones, not code
 
 ## 🧠 Introduction to Brainwave Entrainment
 
 Brainwave entrainment is a method to stimulate the brain into entering a specific state by using a pulsing sound, light, or electromagnetic field. The pulses elicit the brain's 'frequency following' response, encouraging the brainwaves to align to the frequency of the given beat.
 
-SynapSeq supports two main types of brainwave entrainment:
+SynapSeq supports a few types of brainwave entrainment:
 
 1. **Binaural Beats**: When two slightly different frequencies are played in each ear, the brain perceives a third "beat" frequency equal to the difference between the two tones. For example, if 200Hz is played in one ear and 210Hz in the other, the brain perceives a 10Hz beat. Binaural beats **require headphones** to be effective.
 
-2. **Isochronic Tones**: These are single tones that are turned on and off at regular intervals. The brain responds to this rhythmic stimulation and begins to resonate with the frequency. Isochronic tones can be effective **with or without headphones**.
+2. **Monaural Beats**: In this mode, two binaural beats with mirrored frequency offsets are played in opposite channels. This configuration creates a perceived rhythmic pulse that can be effective even without headphones. The auditory system interprets the resulting interference as a monaural beat, promoting brainwave entrainment similarly to traditional methods. Monaural beats can be used with or without headphones.
+
+3. **Isochronic Tones**: These are single tones that are turned on and off at regular intervals. The brain responds to this rhythmic stimulation and begins to resonate with the frequency. Isochronic tones can be effective with or without headphones.
+
+4. **Harmonic Box X**: A powerful brainwave entrainment technique originally described by James Mann. It combines monaural and binaural beats in a harmonic configuration across four layered voices (two per stereo channel). The structure is based on a base frequency and its harmonics, with beats occurring at the fundamental frequency, double, and triple its value. This layered stimulation promotes broad-spectrum brainwave synchronization. Headphones are required for full stereo separation and effectiveness.
 
 ### 📊 Brainwave Frequency Bands
 
@@ -32,248 +51,285 @@ Different frequency ranges correspond to different mental states:
 - **Beta (13-30 Hz)**: Active thinking, focus, alertness
 - **Gamma (30+ Hz)**: Higher mental activity, peak concentration
 
-## 💡 Basic Concepts
-
 ### 📝 Understanding the Syntax
 
-SynapSeq uses a specific syntax to define tones:
+SynapSeq uses a specific syntax to create a sequence. The syntax is based on the following elements:
 
-- **Binaural beats**: `[carrier frequency]+[beat frequency]/[amplitude]`
+- **tone**: A `tone` is a single frequency (known as carrier frequency).
+- **noise**: A `noise` is a random signal and is used to create a background sound.
+- **background**: A `background` is a user-defined sound that is played in the background.
+- **effect**: A `effect` is a background effect that is applied to the background sound.
+- **spin**: A `spin` is a type of noise that creates a gentle, binaural-like pulsing between left and right ears.
+- **waveform**: A `waveform` is a shape of the tone.
+- **silence**: A `silence` is a period of time with no sound.
 
-  - Example: `200+10/20` - A 200Hz carrier with a 10Hz beat at 20% amplitude
+#### `tone`
 
-- **Isochronic tones**: `[carrier frequency]@[pulse frequency]/[amplitude]`
-
-  - Example: `300@10/20` - A 300Hz carrier pulsing at 10Hz at 20% amplitude
-
-- **Mix**: `mix/[amplitude]`
-
-  - Example: `mix/80` - A mix with 80% amplitude (requires a -m [file] option to be specified)
-
-- **Spin**: `spin:[width]+[frequency]/[amplitude]`
-
-  - Example: `spin:500+8.0/50` - A spinning effect with 500μs width, rotating at 8Hz with 50% amplitude
-  - Note: Uses pink noise as the base sound for a natural, balanced spatial effect
-
-- **Bspin**: `bspin:[width]+[frequency]/[amplitude]`
-
-  - Example: `bspin:500+8.0/50` - A spinning effect with 500μs width, rotating at 8Hz with 50% amplitude
-  - Note: Uses brown noise as the base sound for a deeper, more bass-heavy spatial effect
-
-- **Wspin**: `wspin:[width]+[frequency]/[amplitude]`
-
-  - Example: `wspin:500+8.0/50` - A spinning effect with 500μs width, rotating at 8Hz with 50% amplitude
-  - Note: Uses white noise as the base sound for a brighter, more present spatial effect
-
-- **Mixspin**: `mixspin:[width]+[frequency]/[intensity]`
-
-  - Example: `mixspin:500+8.0/50` - A spinning effect with 500μs width, rotating at 8Hz with 50% intensity
-  - Note: Requires `mix/<amplitude>` to be specified in the same tone set
-
-- **Mixpulse**: `mixpulse:[pulse]/[intensity]`
-
-  - Example: `mixpulse:10/50` - A pulse effect with a rate of 10Hz and 50% intensity
-  - Note: Requires `mix/<amplitude>` to be specified in the same tone set
-
-- **Noise**: `[type]/[amplitude]`
-
-  - Examples: `pink/40`, `white/30`, `brown/50`
-
-- **Waveform**: `[waveform]:...`
-  - Examples with binaural beats: `sine:200+10/20`, `square:200+10/20`, `sawtooth:200+10/20`, `triangle:200+10/20`
-  - Examples with isochronic tones: `sine:300@10/20`, `square:300@10/20`, `sawtooth:300@10/20`, `triangle:300@10/20`
-  - Examples with spins (valid with `spin`/`bspin`/`wspin`): `sine:spin:500+8.0/50`, `square:spin:500+8.0/50`, `sawtooth:spin:500+8.0/50`, `triangle:spin:500+8.0/50`
-  - Examples with mixspin: `sine:mixspin:500+8.0/50`, `square:mixspin:500+8.0/50`, `sawtooth:mixspin:500+8.0/50`, `triangle:mixspin:500+8.0/50`
-  - Examples with mixpulse: `sine:mixpulse:10/50`, `square:mixpulse:10/50`, `sawtooth:mixpulse:10/50`, `triangle:mixpulse:10/50`
-  - **Note**: The waveform type is optional and defaults to `sine` if not specified
-
-### Combining Elements
-
-You can combine multiple elements to create complex soundscapes:
+The `tone` syntax is:
 
 ```
-pink/40 200+10/20 300@8/15
+tone [carrier frequency] [type of brainwave entrainment] [frequency offset] amplitude [amplitude value]
 ```
 
-This combines pink noise at 40% amplitude, a binaural beat with a 200Hz carrier and 10Hz beat at 20% amplitude, and an isochronic tone with a 300Hz carrier pulsing at 8Hz at 15% amplitude.
+Examples:
 
 ```
-mix/80 mixspin:500+8.0/50
+tone 400 binaural 10 amplitude 10 # `bin` can be used as an alias for `binaural`
+tone 300 monaural 10 amplitude 10 # `mon` can be used as an alias for `monaural`
+tone 200 isochronic 10 amplitude 10 # `iso` can be used as an alias for `isochronic`
+tone 100 harmonicbox 10 amplitude 10 # `box` can be used as an alias for `harmonicbox`
 ```
 
-This creates a spinning effect on the audio input (mix) at 80% amplitude, with the spin rotating at 8Hz and an intensity of 50%.
+#### `noise`
+
+The `noise` syntax is:
 
 ```
-mix/80 mixpulse:10/50
+noise [type of noise] amplitude [amplitude value]
 ```
 
-This creates a pulse effect on the audio input (mix) at 80% amplitude, with the pulse rate of 10Hz and an intensity of 50%.
-
-## ⌨️ Command Line Basics
-
-Here are some basic commands to get started:
-
-```bash
-# Play a simple binaural beat in the alpha range (10Hz)
-synapseq -i pink/40 200+10/20
-
-# Play a simple isochronic tone in the theta range (6Hz)
-synapseq -i 300@6/20
-
-# Create a spinning effect with brown noise for deep relaxation
-synapseq -i bspin:300+4/50
-
-# Combine different spin effects for complex spatial experience
-synapseq -i wspin:300+8/40 bspin:300+4/40
-
-# Create a spinning effect on background music
-synapseq -m ambient-music.mp3 -i mix/80 mixspin:500+8.0/50
-
-# Play a sequence file
-synapseq my-sequence.spsq
-```
-
-### 🔧 Common Options
-
-- `-i [tones]`: Play the specified tones immediately
-- `-m [file]`: Mix with a background sound file (MP3, OGG, WAV)
-- `-Wo [file]`: Output to a WAV file instead of playing
-- `-L [time]`: Limit playback to the specified time (e.g., 00:30:00 for 30 minutes)
-- `-w [waveform]`: Specify the waveform type for the all tones (e.g., `sine`, `square`, `sawtooth`, `triangle`). Defaults to `sine`.
-- `-V [volume]`: Specify the volume for the all tones (Min: 0, Max: 100). Defaults to `100`.
-
-## 📝 Creating Simple Sequences
-
-Sequences allow you to program changes in tones over time. Here's how to create a simple sequence file:
-
-1. Create a text file with a `.sbg` extension
-2. Define your tone sets
-3. Specify when each tone set should play
-
-### Example: Simple Meditation Sequence
+Examples:
 
 ```
-## Simple 30-minute meditation sequence
-
--SE
-
-# Define tone sets
-ts-start: pink/40 200+10/15
-ts-deep: pink/40 200+6/20
-ts-end: pink/40 200+10/15
-off: -
-
-# Timeline
-00:00:00 off ->
-00:00:15 ts-start
-00:10:00 ts-start ->
-00:15:00 ts-deep
-00:20:00 ts-deep ->
-00:25:00 ts-end
-00:29:00 ts-end ->
-00:30:00 off
+noise white amplitude 5
+noise pink amplitude 15
+noise brown amplitude 30
 ```
 
-Save this as `meditation.spsq`:
+#### `background`
 
-For Windows and macOS users, you can run the sequence by double-clicking the file. For Linux users, you can run it from the command line:
-
-```bash
-synapseq meditation.spsq
-```
-
-This sequence will:
-
-1. Start with alpha waves (10Hz) for 10 minutes
-2. Transition to theta waves (6Hz) for 15 minutes
-3. Return to alpha waves (10Hz) for 5 minutes
-4. Turn off after 30 minutes
-
-## 📚 Example Sequences for Different Purposes
-
-Here are some example sequences for various purposes in the `examples/plus` directory. You can save these as `.spsq` files and run them with SynapSeq.
-
-- [Deep Sleep Aid](examples/plus/deep-sleep-aid.spsq) - Gradually transitions from alpha to delta to help you fall asleep
-- [Focus and Concentration (Using Isochronic Tones)](examples/plus/focus-and-concentration.spsq) - Helps you focus and concentrate
-- [Creativity Boost (Mixed Approach)](examples/plus/creativity-boost.spsq) - Helps you get creative
-- [Stress Relief with White Noise](examples/plus/stress-relief.spsq) - Helps you relax and reduce stress
-- [Morning Energizer with Isochronic Tones](examples/plus/morning-energizer.spsq) - Helps you wake up and get energized
-
-## 🎵 Using Background Sounds
-
-You can enhance your experience by adding background sounds like nature recordings or ambient music. SynapSeq supports MP3, OGG, and WAV files.
-
-### Command Line Example
-
-```bash
-synapseq -m forest-sounds.mp3 -i pink/20 200+8/15
-```
-
-### In Sequence Files
+The `background` syntax is:
 
 ```
-## Meditation with background sounds
-
--SE
--m river1.ogg
-
-# Define tone sets
-ts-start: mix/80 200+10/15
-ts-deep: mix/80 200+6/20
-ts-end: mix/80 200+10/15
-off: -
-
-# Timeline
-00:00:00 off ->
-00:00:15 ts-start
-00:10:00 ts-start ->
-00:15:00 ts-deep
-00:20:00 ts-deep ->
-00:25:00 ts-end
-00:29:00 ts-end ->
-00:30:00 off
+background amplitude [amplitude value]
 ```
 
-Note the use of `mix/80` instead of `pink/40`. This tells SynapSeq to mix the background sound at 80% amplitude.
+Examples:
 
-## 🔍 Advanced Tips
+```
+background amplitude 50
+```
 
-### 🎯 Finding Your Ideal Frequencies
+#### `effect`
 
-Everyone responds differently to brainwave entrainment. Experiment with different frequencies to find what works best for you:
+_Note_: The `effect` is only valid with the `background`.
 
-- If 10Hz alpha doesn't feel relaxing, try 9Hz or 11Hz
-- If you're not falling asleep with delta frequencies, try adjusting between 1-4Hz
-- Experiment with different carrier frequencies (100-400Hz range)
+`effect` provides with a two types of effects: `spin` and `pulse`.
 
-### 📊 Considerations about Amplitude
+The `effect` syntax is:
 
-- Keep binaural beats subtle (10-25% amplitude)
-- Isochronic tones can be slightly louder (15-30% amplitude)
-- Background noise should usually be louder than the tones
+```
+effect spin width [width value] rate [rate value] intensity [intensity value]
+effect pulse [pulse value] intensity [intensity value]
+```
 
-### ⏱️ Session Duration
+Examples:
 
-- For beginners, start with 15-20 minute sessions
-- Gradually increase to 30-60 minutes as you become more comfortable
-- For sleep aid sequences, 45-90 minutes can help you through the initial sleep cycles
+```
+effect spin width 500 rate 1.5 intensity 80
+effect pulse 8.5 intensity 90
+```
 
-### 🔄 Creating a Practice
+The `effect spin` creates a same `spin` effect, but applied to the background instead of the noise.
 
-For best results, use brainwave entrainment regularly:
+The `effect pulse` creates a pulse effect on the background.
 
-- Daily practice helps your brain become more responsive
-- Try different sequences for different times of day
-- Keep notes on which frequencies and durations work best for you
+#### `spin`
 
-Remember that brainwave entrainment is a tool to help you achieve certain mental states, but the experience is ultimately personal. Experiment, adjust, and find what works best for you.
+The `spin` syntax is:
 
-## 🎉 Conclusion
+```
+spin [type of spin] width [width value] rate [rate value] amplitude [amplitude value]
+```
 
-SynapSeq is a powerful tool for exploring altered states of consciousness, enhancing meditation, improving focus, and aiding relaxation. This guide covers the basics to get you started, but there's much more to explore. As you become more familiar with the program, you can create increasingly sophisticated sequences tailored to your specific needs.
+Examples:
 
-For more technical details, see the [SynapSeq Manual](SYNAPSEQ.txt).
+```
+spin white width 400 rate 4.0 amplitude 10
+spin pink width 300 rate 2.0 amplitude 25
+spin brown width 200 rate 1.0 amplitude 40
+```
 
-And for the scientific background behind SynapSeq, check out [RESEARCH.md](RESEARCH.md).
+#### `waveform`
 
-Happy exploring!
+The `waveform` could be `sine`, `square`, `triangle`, `sawtooth`.
+
+Waveform is used in: `tone`, `spin`, and `effect`.
+
+Examples:
+
+```
+waveform square tone 400 iso 10 amplitude 2.5
+waveform triangle spin pink width 500 rate 5.5 amplitude 10
+waveform sawtooth effect pulse 6 intensity 80
+```
+
+For default, the `waveform` for `tone`, `spin`, and `effect` is `sine`.
+
+#### Presets
+
+To create your sequence, you need to define presets before. The presets could be a word to define a state of mind or a any name you want.
+
+The preset syntax is:
+
+```
+[preset name]
+  [elements] ...
+  ...
+```
+
+The preset need start with a letter and can contain letters, numbers, underscores, and hyphens.
+
+Examples:
+
+```
+alpha
+  noise brown amplitude 40
+  tone 100 bin 8 amplitude 15
+```
+
+The "alpha" word is a custom preset defined to play a brown noise and a 100Hz binaural beat with 8Hz offset and 15% amplitude.
+
+You can create a many presets as you want.
+
+```
+alpha1
+  tone 300 iso 10 amplitude 15
+alpha2
+  tone 300 iso 8 amplitude 15
+alpha3
+  tone 250 iso 9 amplitude 10
+```
+
+Your custom presets can have several tones and other elements:
+
+```
+preparation
+  noise pink amplitude 30
+  tone 100 binaural 7 amplitude 15
+  tone 150 binaural 9 amplitude 5
+  ...
+```
+
+The rules for the presets are:
+
+- Same word can be used only once.
+- The elements are separated by a newline.
+- The elements starts with 2 indentations after preset line.
+
+#### Timeline
+
+The timeline is a sequence of presets controlled by time. Timeline is defined in end of the file, after the all presets.
+
+Timeline have a start and end time. The start time is 00:00:00 and the end time is the total duration of the sequence.
+
+The timeline syntax is:
+
+```
+hh:mm:ss [preset name]
+```
+
+Where `hh:mm:ss` is the time in **h**ours, **m**inutes, and **s**econds.
+
+To insert a fade in/out or silence in your timeline, you can use the reserved word **`silence`**.
+
+Examples:
+
+```
+00:00:00 silence
+00:00:15 alpha1
+00:01:00 alpha1
+00:02:00 alpha2
+00:03:00 silence
+```
+
+This creates a fade in to alpha1 preset for 15 seconds, and keeps it alpha1 preset until 1 minute, then slides to alpha2 preset for 1 minute, and fade out to silence for 1 minute. The total duration of this sequence is 3 minutes.
+
+Another example:
+
+```
+00:00:00 silence
+00:00:30 beta
+00:01:00 beta
+00:02:00 alpha
+00:05:00 theta
+00:15:00 delta
+00:20:00 theta
+00:25:00 alpha
+00:29:00 alpha
+00:30:00 silence
+```
+
+In SynapSeq, all is slide to the next preset. In other words, if you don't define a fixed time for a preset, it will slide to the next preset.
+
+Slide is a smooth transition between presets. It is a default behavior in SynapSeq. It is valid for `tone`, `noise`, `spin`, `background`, and `effect`.
+
+But, if your next preset is a different tone of brainwave entrainment, a different waveform, effect, spin or noise, it will not slide. It will create automatically a fade in/out to the next preset.
+
+Example:
+
+```
+alpha1
+  tone 300 binaural 10 amplitude 10 # Voice 1 of alpha1
+alpha2
+  tone 300 isochronic 10 amplitude 10 # Voice 1 of alpha2
+```
+
+In this example, the `alpha1` (with voice 1) preset has a binaural beat, and the `alpha2` (with voice 1) preset has an isochronic tone. Because the tone type is different in the same voices (voice 1), it will not slide. It will create automatically a fade in/out to the next preset.
+
+Another example:
+
+```
+theta1
+  noise brown amplitude 40 # Voice 1 of theta1
+  tone 125 binaural 7.0 amplitude 10 # Voice 2 of theta1
+theta2
+  noise pink amplitude 40 # different noise, create a fade in/out from theta1 to theta2
+  tone 125 binaural 7.0 amplitude 15 # same tone type, slide from theta1 to theta2
+```
+
+#### Comments
+
+You can use comments in your sequence. Comments are ignored by SynapSeq in the processing.
+
+The comments syntax is:
+
+```
+# [comment]
+```
+
+Examples:
+
+```
+# A simple comment
+alpha
+  ...
+```
+
+If you use two `#` in the same line, your comment will printed in the output. Example:
+
+```
+## This is a comment that will be printed in the output
+alpha
+  ...
+  ...
+```
+
+In SynapSeq execution, the output will be:
+
+```
+> This is a comment that will be printed in the output
+...
+```
+
+Comments are useful to explain your sequence and to help you to remember what you want to achieve.
+
+More examples:
+
+```
+preset1
+  # This is a comment for preset1
+  tone 440 binaural 8 amplitude 5
+preset2
+  tone 440 binaural 10 amplitude 10 # This is a comment for preset2
+```
