@@ -2,14 +2,9 @@
 
 ## 📑 Table of Contents
 
-- [📑 Introduction to SynapSeq](#-introduction-to-synapseq)
-- [🧠 Introduction to Brainwave Entrainment](#-introduction-to-brainwave-entrainment)
-- [💡 Basic Concepts](#-basic-concepts)
-- [⌨️ Command Line Basics](#️-command-line-basics)
-- [📝 Creating Simple Sequences](#-creating-simple-sequences)
-- [📚 Example Sequences for Different Purposes](#-example-sequences-for-different-purposes)
-- [🎵 Using Background Sounds](#-using-background-sounds)
-- [🔍 Advanced Tips](#-advanced-tips)
+- [Introduction to SynapSeq](#-introduction-to-synapseq)
+- [Introduction to Brainwave Entrainment](#-introduction-to-brainwave-entrainment)
+- [Understanding the Syntax](#-understanding-the-syntax)
 
 ## 📑 Introduction to SynapSeq
 
@@ -51,7 +46,7 @@ Different frequency ranges correspond to different mental states:
 - **Beta (13-30 Hz)**: Active thinking, focus, alertness
 - **Gamma (30+ Hz)**: Higher mental activity, peak concentration
 
-### 📝 Understanding the Syntax
+## 📝 Understanding the Syntax
 
 SynapSeq uses a specific syntax to create a sequence. The syntax is based on the following elements:
 
