@@ -333,3 +333,129 @@ preset1
 preset2
   tone 440 binaural 10 amplitude 10 # This is a comment for preset2
 ```
+
+### Global Options
+
+SynapSeq has a global options that can be set in the top of the file. All options starts with `@`.
+
+#### `@background`
+
+The `@background` option is used to set the background sound.
+
+The syntax is:
+
+```
+@background [path of the background sound]
+```
+
+Examples:
+
+```
+@background /path/to/background.wav
+```
+
+The SynapSeq support `.wav`, `.ogg`, and `.mp3` files. For default, SynapSeq creates a looping for the background sound.
+
+The amplitude of the background is controlled by the `background` element in the sequence.
+
+#### `@gainlevel`
+
+This option is used to set the gain level of the `@background` sound.
+
+The syntax is:
+
+```
+@gainlevel [level]
+```
+
+The levels are:
+
+- `verylow`: set the gain to the -20db
+- `low`: set the gain to the -16db
+- `medium`: set the gain to the -12db
+- `high`: set the gain to the -6db
+- `veryhigh`: set the gain to the 0db
+
+The `medium` level is the default and is applied to the `@background` sound to avoid any distortion. If you don't want any gain level, you can set the `@gainlevel` to `veryhigh`, this is normal gain of the background sound.
+
+#### `@volume`
+
+This option is used to set the volume of the output.
+
+The syntax is:
+
+```
+@volume [volume value]
+```
+
+The volume is a value between 0 and 100. The default is 100.
+
+#### `@waveform`
+
+This option is used to set the waveform for all elements in the sequence.
+
+The syntax is:
+
+```
+@waveform [waveform]
+```
+
+The waveform could be `sine`, `square`, `triangle`, `sawtooth`. `sine` is the default.
+
+**Note**: If you set waveform manually in the sequence, the `@waveform` option will be ignored.
+
+#### `@samplerate`
+
+This option is used to set the sample rate of the output.
+
+The syntax is:
+
+```
+@samplerate [samplerate value]
+```
+
+The default is 44100.
+
+#### `@verbose`
+
+This option is used to set the verbose mode of the output.
+
+The syntax is:
+
+```
+@verbose
+```
+
+#### `@quiet`
+
+This option is used to set the quiet mode of the output.
+
+The syntax is:
+
+```
+@quiet
+```
+
+#### `@export`
+
+This option is used to export the sequence to a file to a WAV file.
+
+The syntax is:
+
+```
+@export [path of the exported file]
+```
+
+The exported file is a WAV file.
+
+#### `@test`
+
+This option is used to test the sequence.
+
+The syntax is:
+
+```
+@test
+```
+
+The test mode is used to test the sequence and to see the output in the console.
