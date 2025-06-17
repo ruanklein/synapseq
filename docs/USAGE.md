@@ -454,3 +454,104 @@ The syntax is:
 ```
 
 The test mode is used to test the sequence and to see the output in the console.
+
+## Command Line
+
+SynapSeq is designed to be used with a text based sequence, that's why the command options is very limited.
+
+The command line syntax is:
+
+```
+synapseq [options] [path of the sequence file]
+```
+
+#### `--help`
+
+Show the help and exit.
+
+#### `--test`
+
+Test sequence. Equivalent to `@test` option.
+
+#### `--quiet`
+
+Quiet mode. Equivalent to `@quiet` option.
+
+#### `--verbose`
+
+Verbose mode. Equivalent to `@verbose` option.
+
+#### `--volume`
+
+The syntax is:
+
+```
+--volume [value]
+```
+
+The value is a number between 0 and 100. The default is 100.
+Equivalent to `@volume` option.
+
+#### `--waveform`
+
+Set the waveform for all elements in the sequence.
+
+The syntax is:
+
+```
+--waveform [waveform]
+```
+
+The waveform could be `sine`, `square`, `triangle`, `sawtooth`. `sine` is the default.
+
+#### `--samplerate`
+
+Set the sample rate of the output.
+
+The syntax is:
+
+```
+--samplerate [samplerate value]
+```
+
+The default is 44100.
+
+#### `--output-raw-file`
+
+The syntax is:
+
+```
+--output-raw-file [path of the output file]
+```
+
+The output file is a raw audio data file.
+
+#### `--output-wav-file`
+
+The syntax is:
+
+```
+--output-wav-file [path of the output file]
+```
+
+The output file is a WAV file.
+
+#### `--raw`
+
+The syntax is:
+
+```
+--raw [path of the output file]
+```
+
+Print raw audio data to the console insted of playing the sequence.
+
+#### `--wav`
+
+The syntax is:
+
+```
+--wav [path of the output file]
+```
+
+Print WAV data to the console insted of playing the sequence.
