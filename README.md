@@ -2,22 +2,22 @@
 
 SynapSeq is a text-based tool for generating tones to stimulate the brainwave to help with meditation, relaxation, and altering states of consciousness.
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [💡 Example](#-example)
-- [📥 Installation](#-installation)
-  - [🪟 Installing on Windows](#-installing-on-windows)
-  - [🍎 Installing on macOS](#-installing-on-macos)
-- [🛠️ Compilation](#️-compilation)
-  - [🍎 For macOS ](#-for-macos)
-  - [🐧 For Linux](#-for-linux)
-  - [🪟 For Windows](#-for-windows)
-- [📚 Documentation](#-documentation)
-- [🔍 Research](#-research)
-- [⚖️ License](#️-license)
-- [👏 Credits](#-credits)
+- [Example](#example)
+- [Installation](#installation)
+  - [Installing on Windows](#installing-on-windows)
+  - [Installing on macOS](#installing-on-macos)
+- [Compilation](#compilation)
+  - [For macOS ](#for-macos)
+  - [For Linux](#for-linux)
+  - [For Windows](#for-windows)
+- [Documentation](#documentation)
+- [Research](#research)
+- [License](#license)
+- [Credits](#credits)
 
-## 💡 Example
+## Example
 
 To get started with SynapSeq, create a new text file called `Relax.spsq` with the following content and double click on the file to open it with SynapSeq (Windows/macOS) or run `synapseq Relax.spsq` on Terminal (all platforms).
 
@@ -60,11 +60,11 @@ Phases:
 ├─ 9:00-10:00: Fade-out of relax1 for silence (end of the sequence)
 ```
 
-## 📥 Installation
+## Installation
 
 You can download pre-built binaries on Windows (only 64-bit) and macOS (only Apple Silicon for macOS 15+) from the [releases page](https://github.com/ruanklein/synapseq/releases).
 
-### 🪟 Installing on Windows
+### Installing on Windows
 
 1. Download the installer:
 
@@ -74,7 +74,7 @@ You can download pre-built binaries on Windows (only 64-bit) and macOS (only App
 
 3. Run the installer and follow the instructions.
 
-⚠️ **Warning about antivirus on Windows**
+**Warning about antivirus on Windows**
 
 Some versions of Windows Defender or other antivirus software may falsely detect `SynapSeq` as a threat.
 
@@ -82,9 +82,9 @@ This happens because the executable is **not digitally signed**, and as a comman
 
 `SynapSeq` is an open-source project, and the source code is publicly available in this repository for inspection.
 
-✅ **Temporary solution:** if you trust the source of the executable, add an exception in your antivirus for the file or the folder where `SynapSeq` is installed.
+**Temporary solution:** if you trust the source of the executable, add an exception in your antivirus for the file or the folder where `SynapSeq` is installed.
 
-### 🍎 Installing on macOS
+### Installing on macOS
 
 1. Download the macOS Installer:
 
@@ -100,11 +100,11 @@ This happens because the executable is **not digitally signed**, and as a comman
 
 **Important:** The `SynapSeq` application is not digitally signed, so you may need to add an exception on the `System Settings -> Security & Privacy -> General tab`.
 
-## 🛠️ Compilation
+## Compilation
 
 SynapSeq can be compiled for macOS, Linux and Windows.
 
-### 🍎 For macOS
+### For macOS
 
 Install the "Xcode Command Line Tools" in your system.
 
@@ -136,7 +136,7 @@ If you want to create a installer DMG file, run the following script to create t
 
 The installer DMG file will be created in the `build/dist` folder.
 
-### 🐧 For Linux
+### For Linux
 
 In Ubuntu/Debian based distributions, install dependencies:
 
@@ -152,7 +152,7 @@ Run the build script to create the binary:
 
 The binary will be created in the `build/dist` folder.
 
-### 🪟 For Windows
+### For Windows
 
 In Windows, the best way to build SynapSeq is using [Docker](https://www.docker.com/) with WSL2.
 
@@ -169,20 +169,20 @@ docker compose -f build/compose.yml up build-windows-installer-x86-64 # Optional
 
 The `.exe` will be created in the `build/dist` folder.
 
-## 📚 Documentation
+## Documentation
 
 For detailed information on all features, see the [USAGE.md](docs/USAGE.md) file.
 
-## 🔍 Research
+## Research
 
 For the scientific background behind SynapSeq, check out [RESEARCH.md](docs/RESEARCH.md).
 
-## ⚖️ License
+## License
 
 SynapSeq is distributed under the GPL license. See the [COPYING.txt](COPYING.txt) file for details.
 
-## 👏 Credits
+## Credits
 
-SynapSeq is based on the SBaGen by Jim Peters. See [SBaGen project](https://uazu.net/sbagen/).
+SynapSeq is based on the SBaGen. See [SBaGen project](https://uazu.net/sbagen/).
 
 ALSA support is based on this [patch](https://github.com/jave/sbagen-alsa/blob/master/sbagen.c).
