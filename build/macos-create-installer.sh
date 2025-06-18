@@ -178,7 +178,7 @@ on open theFiles
         if convertChoice is "Convert to WAV" then
             tell application "Terminal"
                 activate
-                set terminalWindow to do script ("cd " & quoted form of dirPath & "; " & synapseqPath & " -Wo " & outputFilePath & " " & quoted form of filePath & "; exit")
+                set terminalWindow to do script ("cd " & quoted form of dirPath & "; " & synapseqPath & " --output-wav-file " & outputFilePath & " " & quoted form of filePath & "; exit")
                 repeat while busy of terminalWindow is true
                     delay 0.5
                 end repeat
