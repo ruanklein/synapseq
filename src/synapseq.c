@@ -274,7 +274,7 @@ void usage() {
         "Alternatively, SynapSeq may be run from the command line, or from" NL
         "BAT/PS1 files.  SynapSeq is powerful software -- it is worth the "
         "effort of figuring" NL
-        "all this out.  See SYNAPSEQ.TXT for the full documentation."
+        "all this out.  See USAGE.TXT for the full documentation."
 #endif
       );
 }
