@@ -175,7 +175,7 @@ For detailed information on all features, see the [USAGE.md](docs/USAGE.md) file
 
 ## 🔍 Research
 
-For the scientific background behind SynapSeq, check out [RESEARCH.md](RESEARCH.md).
+For the scientific background behind SynapSeq, check out [RESEARCH.md](docs/RESEARCH.md).
 
 ## ⚖️ License
 

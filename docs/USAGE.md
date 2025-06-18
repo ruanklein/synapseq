@@ -161,6 +161,10 @@ waveform sawtooth effect pulse 6 intensity 80
 
 For default, the `waveform` for `tone`, `spin`, and `effect` is `sine`.
 
+#### Notes
+
+- If the sum of the amplitude of the `tone`, `noise`, `spin`, and `background` is greater than 100, the amplitude will be normalized to 100 without any warning.
+
 #### Presets
 
 To create your sequence, you need to define presets before. The presets could be a word to define a state of mind or a any name you want.
