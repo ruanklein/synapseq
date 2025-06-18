@@ -1094,15 +1094,7 @@ void handleOptionInSequence(char *p) {
     }
     out_rate_def = 0;
   }
-  else if (strcmp(option, "@export") == 0) {
-    char *file_name = getWord();
-    if (!file_name) {
-      error("Output file name expected at line %d: %s", in_lin, lin_copy); 
-    }
-
-    opt_o = StrDup(file_name);
-    opt_W = 1;
-  } else if (strcmp(option, "@quiet") == 0) {
+  else if (strcmp(option, "@quiet") == 0) {
     opt_Q = 1;
   } else if (strcmp(option, "@test") == 0) {
     opt_D = 1;
