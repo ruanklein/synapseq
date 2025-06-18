@@ -237,35 +237,24 @@ void help() {
       "(c) 2025 Ruan, https://ruan.sh/" NL
       "Released under the GNU GPL v2. See file COPYING." NL NL
       "Usage: synapseq [options] sequence-file ..." NL NL
-      "Options:  -h        Display this help-text" NL
-      "          -Q        Quiet - don't display running status" NL
-      "          -D        Display the full interpreted sequence instead of "
-      "playing it" NL
-      "          -r rate   Select the output rate (default is 44100 Hz)"
+      "Options:  --help                  show this help and exit" NL
+      "          --quiet                 quiet mode" NL
+      "          --test                  test mode" NL
+      "          --sample-rate rate      set the sample rate of the output (default is 44100 Hz)" NL
 #ifdef ALSA_AUDIO
-      NL
-      "          -d dev    Select a different ALSA device instead of 'default'"
+      "          --device dev            set the ALSA device to use (default is 'default')" NL
 #endif
 #ifdef MAC_AUDIO
-      NL
-      "          -B size   Force buffer size (in samples) for audio output." NL
-      "                     (e.g. 1024, 2048, 4096, etc.)"
+      "          --buffer-size size      configure the buffer size (in samples) for audio output (e.g. 1024, 2048, 4096, etc.)" NL
 #endif
-      NL "          -V        Set the global volume level (Min 1, Max 100. "
-      "Default 100)" NL
-      "          -w type   Set the global waveform type (sine, square, "
-      "triangle, sawtooth; default sine)" NL
-      "          -o file   Output raw data to the given file instead of "
-      "default device" NL
-      "          -O        Output raw data to the standard output" NL
-      "          -W        Output a WAV-format file instead of raw data" NL
-      "          -v        Verbose mode" NL NL
-      "          Legacy options:" NL
-      "          -R rate   Select rate in Hz that frequency "
-      "changes are recalculated" NL
-      "                     (for file/pipe output only, default is 10Hz)" NL
-      NL "          -c spec   Compensate for low-frequency headphone roll-off; "
-      "see docs" NL);
+      "          --volume volume         set the volume level (Min 1, Max 100. Default is 100)" NL
+      "          --waveform type         change the waveform type (sine, square, triangle, sawtooth; default is sine)" NL
+      "          --output-raw-file file  write raw data to the given file" NL
+      "          --output-wav-file file  write WAV-format data to the given file" NL
+      "          --raw                   write raw data to stdout" NL
+      "          --wav                   write WAV-format data to stdout" NL
+      "          --verbose               verbose mode" NL
+      );
   exit(0);
 }
 
@@ -274,7 +263,7 @@ void usage() {
         "(c) 2025 Ruan, https://ruan.sh/" NL
         "Released under the GNU GPL v2. See file COPYING." NL NL
         "Usage: synapseq [options] sequence-file ..." NL
-        "For full usage help, type 'synapseq -h'."
+        "Type 'synapseq --help' for full usage help." NL
 #ifdef EXIT_KEY
         NL NL "Windows users please note that this utility is designed to be "
         "run as the" NL "associated application for SPSQ files.  This "
@@ -339,8 +328,6 @@ struct NameDef {
 int *sin_tables[4];  // 0=sine, 1=square, 2=triangle, 3=sawtooth
 #define AMP_DA(pc) (40.96 * (pc))   // Display value (%age) to ->amp value
 #define AMP_AD(amp) ((amp) / 40.96) // Amplitude value to display %age
-int *waves[100]; // Pointers are either 0 or point to a sin_table[]-style array
-                 // of int
 
 Channel chan[N_CH]; // Current channel states
 int now;            // Current time (milliseconds from midnight)
@@ -934,100 +921,103 @@ void scanOptions(int *acp, char ***avp) {
   char dmy;
 
   // Scan options
-  while (argc > 0 && argv[0][0] == '-' && argv[0][1]) {
-    char opt, *p = 1 + *argv++;
+  while (argc > 0 && argv[0][0] == '-' && argv[0][1] == '-') {
+    char *current_opt = argv[0] + 2;
     argc--;
-    while ((opt = *p++)) {
-      // Check options that are available on both
-      switch (opt) {
-      case 'Q':
-        opt_Q = 1;
-        break;
-#ifdef MAC_AUDIO
-      case 'B':
-        if (argc-- < 1 || 1 != sscanf(*argv++, "%d %c", &opt_B, &dmy))
-          error("-B expects buffer size in samples");
-        if (opt_B < 1024 || opt_B > BUFFER_SIZE / 2)
-          error("Buffer size must be between 1024 and %d samples.",
-                BUFFER_SIZE / 2);
-        if ((opt_B & (opt_B - 1)) != 0)
-          error("Buffer size must be a power of 2. (e.g. 1024, 2048, 4096, "
-                "etc.)");
-        opt_B *= 2;
-        break;
-#endif
-      case 'V':
-        if (argc-- < 1 || 1 != sscanf(*argv++, "%d %c", &opt_V, &dmy))
-          error("-V expects volume level in percent (0-100)");
-        if (opt_V < 0 || opt_V > 100)
-          error("Volume level must be between 0 and 100");
-        break;
-      case 'v':
-        opt_v = 1;
-        break;
-      case 'w':
-        if (argc-- < 1)
-          error("-w expects waveform type (sine, square, triangle, sawtooth)");
-        if (0 == strcmp(*argv, "sine"))
-          opt_w = 0;
-        else if (0 == strcmp(*argv, "square"))
-          opt_w = 1;
-        else if (0 == strcmp(*argv, "triangle"))
-          opt_w = 2;
-        else if (0 == strcmp(*argv, "sawtooth"))
-          opt_w = 3;
-        else
-          error("Unknown waveform: %s (use sine, square, triangle, sawtooth)",
-                *argv);
-        argv++;
-        break;
-      case 'c':
-        if (argc-- < 1)
-          error("-c expects argument");
-        setupOptC(*argv++);
-        break;
-      case 'h':
-        help();
-        break;
-      case 'D':
-        opt_D = 1;
-        break;
-      case 'O':
-        opt_O = 1;
-        if (!fast_mult)
-          fast_mult = 1; // Don't try to sync with real time
-        break;
-      case 'W':
-        opt_W = 1;
-        if (!fast_mult)
-          fast_mult = 1; // Don't try to sync with real time
-        break;
-      case 'r':
-        if (argc-- < 1 || 1 != sscanf(*argv++, "%d %c", &out_rate, &dmy))
-          error("Expecting an integer after -r");
-        out_rate_def = 0;
-        break;
-      case 'o':
-        if (argc-- < 1)
-          error("Expecting filename after -o");
-        opt_o = *argv++;
-        if (!fast_mult)
-          fast_mult = 1; // Don't try to sync with real time
-        break;
-#ifdef ALSA_AUDIO
-      case 'd':
-        if (argc-- < 1)
-          error("Expecting ALSA device name after -d");
-        opt_d = *argv++;
-        break;
-#endif
-      case 'R':
-        if (argc-- < 1 || 1 != sscanf(*argv++, "%d %c", &out_prate, &dmy))
-          error("Expecting integer after -R");
-        break;
-      default:
-        error("Option -%c not known; run 'synapseq -h' for help", opt);
+    argv++;
+    
+    if (strcmp(current_opt, "help") == 0) {
+      help();
+    }
+    else if (strcmp(current_opt, "test") == 0) {
+      opt_D = 1;
+    }
+    else if (strcmp(current_opt, "verbose") == 0) {
+      opt_v = 1;
+    }
+    else if (strcmp(current_opt, "waveform") == 0) {
+      if (argc < 1)
+        error("--waveform expects waveform type (sine, square, triangle, sawtooth)");
+      if (strcmp(argv[0], "sine") == 0) {
+        opt_w = 0;
+      } else if (strcmp(argv[0], "square") == 0) {
+        opt_w = 1;
+      } else if (strcmp(argv[0], "triangle") == 0) {
+        opt_w = 2;
+      } else if (strcmp(argv[0], "sawtooth") == 0) {
+        opt_w = 3;
+      } else {
+        error("Invalid waveform type: %s", argv[0]);
       }
+      argc--;
+      argv++;
+    }
+    else if (strcmp(current_opt, "quiet") == 0) {
+      opt_Q = 1;
+    }
+    else if (strcmp(current_opt, "volume") == 0) {
+      if (argc < 1 || 1 != sscanf(argv[0], "%d %c", &opt_V, &dmy))
+        error("--volume expects volume level in percent (0-100)");
+      if (opt_V < 0 || opt_V > 100)
+        error("Volume level must be between 0 and 100");
+      argc--;
+      argv++;
+    }
+#ifdef MAC_AUDIO
+    else if (strcmp(current_opt, "buffer-size") == 0) {
+      if (argc < 1 || 1 != sscanf(argv[0], "%d %c", &opt_B, &dmy))
+        error("--buffer-size expects buffer size in samples");
+      if (opt_B < 1024 || opt_B > BUFFER_SIZE / 2)
+        error("Buffer size must be between 1024 and %d samples.",
+              BUFFER_SIZE / 2);
+      if ((opt_B & (opt_B - 1)) != 0)
+        error("Buffer size must be a power of 2. (e.g. 1024, 2048, 4096, "
+              "etc.)");
+      opt_B *= 2;
+      argc--;
+      argv++;
+    }
+#endif
+    else if (strcmp(current_opt, "output-raw-file") == 0) {
+      if (argc < 1)
+        error("Expecting filename after --output-raw-file");
+      opt_o = argv[0];
+      argc--;
+      argv++;
+    }
+    else if (strcmp(current_opt, "output-wav-file") == 0) {
+      if (argc < 1)
+        error("Expecting filename after --output-wav-file");
+      opt_o = argv[0];
+      opt_W = 1;
+
+      argc--;
+      argv++;
+    }
+    else if (strcmp(current_opt, "sample-rate") == 0) {
+      if (argc < 1 || 1 != sscanf(argv[0], "%d %c", &out_rate, &dmy))
+        error("Expecting an integer after --samplerate");
+      out_rate_def = 0;
+      argc--;
+      argv++;
+    }
+#ifdef ALSA_AUDIO
+    else if (strcmp(current_opt, "device") == 0) {
+      if (argc < 1)
+        error("Expecting ALSA device name after --device");
+      opt_d = argv[0];
+      argc--;
+      argv++;
+    }
+#endif
+    else if (strcmp(current_opt, "raw") == 0) {
+      opt_O = 1;
+    }
+    else if (strcmp(current_opt, "wav") == 0) {
+      opt_W = opt_O = 1;
+    }
+    else {
+      error("Invalid option: --%s. Type 'synapseq --help' for help.", current_opt);
     }
   }
 
