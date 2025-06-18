@@ -48,7 +48,7 @@
 
 # A sample monaural sequence
 
-# Tone sets
+# Presets
 alpha-one
   noise pink amplitude 30
   tone 250 monaural 8 amplitude 15
@@ -65,7 +65,7 @@ alpha-four
   noise pink amplitude 15
   tone 250 monaural 11 amplitude 15
 
-# Timeline sequence
+# Timeline
 00:00:00 silence
 00:00:15 alpha-one
 00:01:00 alpha-one

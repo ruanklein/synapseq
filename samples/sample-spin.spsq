@@ -26,7 +26,7 @@
 
 # A sample spin sequence
 
-# Tone sets
+# Presets
 spin-one
   spin brown width 300 rate 1.5 amplitude 15
 spin-two
@@ -34,7 +34,7 @@ spin-two
 spin-three
   spin white width 300 rate 1.5 amplitude 15
 
-# Timeline sequence
+# Timeline
 00:00:00 silence
 00:00:15 spin-one
 00:00:30 spin-two

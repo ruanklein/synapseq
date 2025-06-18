@@ -94,7 +94,7 @@
 
 # A sample waveform sequence
 
-# Tone sets
+# Presets
 waveform-one
   waveform sine tone 250 isochronic 8 amplitude 15
 waveform-two
@@ -104,7 +104,7 @@ waveform-three
 waveform-four
   waveform sawtooth tone 250 isochronic 8 amplitude 10
 
-# Timeline sequence
+# Timeline
 00:00:00 silence
 00:00:15 waveform-one
 00:00:30 waveform-two
