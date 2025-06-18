@@ -14,7 +14,7 @@ SynapSeq is built on the philosophy of doing one thing well. Providing a concise
 
 Instead of flexibility, it offers clarity. Instead of options, it offers direction.
 
-### 💡 Design Principles
+### Design Principles
 
 - One way to do it
 - Clarity over cleverness
@@ -33,8 +33,6 @@ SynapSeq supports a few types of brainwave entrainment:
 2. **Monaural Beats**: In this mode, two binaural beats with mirrored frequency offsets are played in opposite channels. This configuration creates a perceived rhythmic pulse that can be effective even without headphones. The auditory system interprets the resulting interference as a monaural beat, promoting brainwave entrainment similarly to traditional methods. Monaural beats can be used with or without headphones.
 
 3. **Isochronic Tones**: These are single tones that are turned on and off at regular intervals. The brain responds to this rhythmic stimulation and begins to resonate with the frequency. Isochronic tones can be effective with or without headphones.
-
-4. **Harmonic Box X**: A powerful brainwave entrainment technique originally described by James Mann. It combines monaural and binaural beats in a harmonic configuration across four layered voices (two per stereo channel). The structure is based on a base frequency and its harmonics, with beats occurring at the fundamental frequency, double, and triple its value. This layered stimulation promotes broad-spectrum brainwave synchronization. Headphones are required for full stereo separation and effectiveness.
 
 ### 📊 Brainwave Frequency Bands
 
@@ -69,10 +67,9 @@ tone [carrier frequency] [type of brainwave entrainment] [frequency offset] ampl
 Examples:
 
 ```
-tone 400 binaural 10 amplitude 10 # `bin` can be used as an alias for `binaural`
-tone 300 monaural 10 amplitude 10 # `mon` can be used as an alias for `monaural`
-tone 200 isochronic 10 amplitude 10 # `iso` can be used as an alias for `isochronic`
-tone 100 harmonicbox 10 amplitude 10 # `box` can be used as an alias for `harmonicbox`
+tone 400 binaural 10 amplitude 10 # for binaural beats
+tone 300 monaural 10 amplitude 10 # for monaural beats
+tone 200 isochronic 10 amplitude 10 # for isochronic tones
 ```
 
 #### `noise`
