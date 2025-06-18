@@ -431,18 +431,6 @@ The syntax is:
 @quiet
 ```
 
-#### `@export`
-
-This option is used to export the sequence to a file to a WAV file.
-
-The syntax is:
-
-```
-@export [path of the exported file]
-```
-
-The exported file is a WAV file.
-
 #### `@test`
 
 This option is used to test the sequence.
@@ -457,12 +445,16 @@ The test mode is used to test the sequence and to see the output in the console.
 
 ## Command Line
 
-SynapSeq is designed to be used with a text based sequence, that's why the command options is very limited.
-
 The command line syntax is:
 
 ```
 synapseq [options] [path of the sequence file]
+```
+
+You can open a sequence file through pipe with stdin. Example:
+
+```
+cat sequence.spsq | synapseq -
 ```
 
 #### `--help`
@@ -504,7 +496,7 @@ The syntax is:
 
 The waveform could be `sine`, `square`, `triangle`, `sawtooth`. `sine` is the default.
 
-#### `--samplerate`
+#### `--sample-rate`
 
 Set the sample rate of the output.
 
@@ -555,3 +547,23 @@ The syntax is:
 ```
 
 Print WAV data to the console insted of playing the sequence.
+
+#### `--buffer-size` (macOS)
+
+The syntax is:
+
+```
+--buffer-size [buffer size]
+```
+
+The buffer size (in samples) is a number between 1024 and 4096. The default is 2048.
+
+#### `--device` (Linux)
+
+The syntax is:
+
+```
+--device [device name]
+```
+
+The ALSA device name is the name of the device to use. The default is `default`.
