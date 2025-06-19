@@ -149,7 +149,7 @@ Waveform is used in: `tone`, `spin`, and `effect`.
 Examples:
 
 ```
-waveform square tone 400 iso 10 amplitude 2.5
+waveform square tone 400 isochronic 10 amplitude 2.5
 waveform triangle spin pink width 500 rate 5.5 amplitude 10
 waveform sawtooth effect pulse 6 intensity 80
 ```
@@ -179,7 +179,7 @@ Examples:
 ```
 alpha
   noise brown amplitude 40
-  tone 100 bin 8 amplitude 15
+  tone 100 binaural 8 amplitude 15
 ```
 
 The "alpha" word is a custom preset defined to play a brown noise and a 100Hz binaural beat with 8Hz offset and 15% amplitude.
@@ -188,11 +188,11 @@ You can create a many presets as you want.
 
 ```
 alpha1
-  tone 300 iso 10 amplitude 15
+  tone 300 isochronic 10 amplitude 15
 alpha2
-  tone 300 iso 8 amplitude 15
+  tone 300 isochronic 8 amplitude 15
 alpha3
-  tone 250 iso 9 amplitude 10
+  tone 250 isochronic 9 amplitude 10
 ```
 
 Your custom presets can have several tones and other elements:
