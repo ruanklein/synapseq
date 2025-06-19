@@ -199,7 +199,7 @@ jobs:
             echo "" >> release_body.md
             
             # Extract changelog entries for this version using the provided command
-            CHANGELOG_CONTENT=$(grep "^$(cat VERSION):" ChangeLog.txt | sed -r 's/^[0-9]+.[0-9]+.[0-9]+:/*/g' || true)
+            CHANGELOG_CONTENT=$(grep "^$(cat build/VERSION):" ChangeLog.txt | sed -r 's/^[0-9]+.[0-9]+.[0-9]+:/*/g' || true)
             
             if [ -n "$CHANGELOG_CONTENT" ]; then
               echo "$CHANGELOG_CONTENT" >> release_body.md
