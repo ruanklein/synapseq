@@ -75,8 +75,6 @@ Source: "..\samples\*"; DestDir: "{app}\samples"; Flags: ignoreversion recursesu
 Source: "..\ChangeLog.txt"; DestDir: "{app}"; Flags: ignoreversion
 ; USAGE.txt
 Source: "windows-installer\USAGE.txt"; DestDir: "{app}\docs"; Flags: ignoreversion
-; RESEARCH.txt
-Source: "windows-installer\RESEARCH.txt"; DestDir: "{app}\docs"; Flags: ignoreversion
 ; Documentation files in user's Documents folder
 Source: "..\samples\*"; DestDir: "{#MyAppUserDocsDir}\Samples"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "windows-installer\*"; DestDir: "{#MyAppUserDocsDir}\Documentation"; Flags: ignoreversion recursesubdirs createallsubdirs

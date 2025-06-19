@@ -213,7 +213,6 @@ cp "$PWD/NOTICE.txt" "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/NOTICE.txt
 
 # Convert *.md to *.txt
 pandoc -f markdown -t plain "$DOC_DIR/USAGE.md" -o "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/docs/USAGE.txt"
-pandoc -f markdown -t plain "$DOC_DIR/RESEARCH.md" -o "$INSTALLER_DIR/$APP_NAME.app/Contents/Resources/docs/RESEARCH.txt"
 
 # Copy examples
 info "Copying examples to application bundle..."

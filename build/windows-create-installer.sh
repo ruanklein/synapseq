@@ -107,9 +107,6 @@ create_dir_if_not_exists "$INSTALLER_DIR"
 # Convert USAGE.md to USAGE.txt
 pandoc -f markdown -t plain "$DOC_DIR/USAGE.md" -o "$INSTALLER_DIR/USAGE.txt"
 
-# Convert RESEARCH.md to RESEARCH.txt
-pandoc -f markdown -t plain "$DOC_DIR/RESEARCH.md" -o "$INSTALLER_DIR/RESEARCH.txt"
-
 # Run ISCC with increased memory limits and in silent mode
 wine "$ISCC" /O+ /Q "build/setup.iss"
 
