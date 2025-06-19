@@ -1,0 +1,222 @@
+name: Stable Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag version (e.g., v1.5.6)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+  packages: write
+
+jobs:
+  build-windows:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.tag }}"
+            VERSION=${VERSION#v}  # Remove 'v' prefix
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}  # Remove 'refs/tags/v' prefix
+          fi
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag_version=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Stable version: ${VERSION}"
+
+          # Update VERSION file for consistency
+          echo $VERSION > build/VERSION
+
+      - name: Build for Windows
+        run: |
+          mkdir -p artifacts
+
+          # Run build Windows libs
+          docker compose -f build/compose.yml run --rm build-windows-libs-x86-64
+
+          # Run build Windows SynapSeq
+          docker compose -f build/compose.yml run --rm build-windows-synapseq-x86-64
+
+          # Run build Windows Installer
+          docker compose -f build/compose.yml run --rm build-windows-installer-x86-64
+
+          # Copy generated artifacts
+          if [ -f "build/dist/synapseq-windows-setup.exe" ]; then
+            cp build/dist/synapseq-windows-setup.exe artifacts/synapseq-windows-setup.exe
+          fi
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd artifacts
+          find . -type f -exec sha256sum {} \; | sort > ../checksums.txt
+          cat ../checksums.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: synapseq-stable-${{ steps.version.outputs.version }}
+          path: |
+            artifacts/
+            checksums.txt
+          retention-days: 90
+
+  build-macos:
+    runs-on: macos-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          # Install required tools via Homebrew
+          brew install pkg-config libvorbis libmad create-dmg pandoc
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.tag }}"
+            VERSION=${VERSION#v}  # Remove 'v' prefix
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}  # Remove 'refs/tags/v' prefix
+          fi
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag_version=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Stable version: ${VERSION}"
+
+          # Update VERSION file for consistency
+          echo $VERSION > build/VERSION
+
+      - name: Build SynapSeq for macOS
+        run: |
+          ./build/macos-build-synapseq.sh
+
+      - name: Create macOS installer
+        run: |
+          ./build/macos-create-installer.sh
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p artifacts
+
+          # Copy DMG installer with version
+          if [ -f "build/dist/SynapSeq-Installer.dmg" ]; then
+            cp build/dist/SynapSeq-Installer.dmg artifacts/SynapSeq-Installer.dmg
+          fi
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd artifacts
+          find . -type f -exec shasum -a 256 {} \; | sort > ../checksums-macos.txt
+          cat ../checksums-macos.txt
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: synapseq-macos-stable-${{ steps.version.outputs.version }}
+          path: |
+            artifacts/
+            checksums-macos.txt
+          retention-days: 90
+
+  create-release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: synapseq-stable-${{ needs.build-windows.outputs.version }}
+          path: windows/
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: synapseq-macos-stable-${{ needs.build-macos.outputs.version }}
+          path: macos/
+
+      - name: Combine artifacts
+        run: |
+          mkdir -p all-artifacts
+
+          # Copy Windows artifacts
+          if [ -d "windows/artifacts" ]; then
+            cp windows/artifacts/* all-artifacts/ 2>/dev/null || true
+          fi
+
+          # Copy macOS artifacts
+          if [ -d "macos/artifacts" ]; then
+            cp macos/artifacts/* all-artifacts/ 2>/dev/null || true
+          fi
+
+          # Merge checksums
+          if [ -f "macos/checksums-macos.txt" ]; then
+            cat macos/checksums-macos.txt >> all-artifacts/checksums.txt
+            rm -f macos/checksums-macos.txt
+          fi
+
+      - name: Generate release body from ChangeLog
+        run: |
+          # Update VERSION file to match the release version
+          echo "${{ needs.build-windows.outputs.version }}" > build/VERSION
+
+          # Extract changelog for this version
+          if [ -f "ChangeLog.txt" ]; then
+            echo "## What's Changed" >> release_body.md
+            echo "" >> release_body.md
+            
+            # Extract changelog entries for this version using the provided command
+            CHANGELOG_CONTENT=$(grep "^$(cat VERSION):" ChangeLog.txt | sed -r 's/^[0-9]+.[0-9]+.[0-9]+:/*/g' || true)
+            
+            if [ -n "$CHANGELOG_CONTENT" ]; then
+              echo "$CHANGELOG_CONTENT" >> release_body.md
+            else
+              echo "* Release notes not found in ChangeLog.txt for version ${{ needs.build-windows.outputs.version }}" >> release_body.md
+            fi
+          fi
+
+      - name: Create Stable Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.build-windows.outputs.version }}
+          name: "v${{ needs.build-windows.outputs.version }}"
+          body_path: release_body.md
+          files: |
+            all-artifacts/*
+          prerelease: false
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

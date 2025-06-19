@@ -1,0 +1,27 @@
+x-common-settings: &common-settings
+  image: synapseq-build-image:latest # Avoid rebuilding the image if it already exists
+  build:
+    context: ..
+    dockerfile: build/Dockerfile
+  volumes:
+    - ..:/synapseq
+  working_dir: /synapseq
+
+services:
+  build-windows-libs-x86-64:
+    <<: *common-settings
+    container_name: build-synapseq-windows-libs-x86-64
+    platform: linux/amd64
+    command: ./build/windows-build-libs.sh
+
+  build-windows-synapseq-x86-64:
+    <<: *common-settings
+    container_name: build-synapseq-windows-synapseq-x86-64
+    platform: linux/amd64
+    command: ./build/windows-build-synapseq.sh
+
+  build-windows-installer-x86-64:
+    <<: *common-settings
+    container_name: build-synapseq-windows-installer-x86-64
+    platform: linux/amd64
+    command: ./build/windows-create-installer.sh

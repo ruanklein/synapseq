@@ -1,0 +1,42 @@
+## SPIN EFFECT DEMONSTRATION SEQUENCE
+## This sample demonstrates the spatial rotation effect using different noise types
+## 
+## HOW SPIN WORKS:
+## The "spin" effect creates a sensation of circular sound movement between your ears
+## using different types of noise as the base audio source.
+##
+## SPIN PARAMETERS:
+## - width: rotation width (300Hz = smooth and wide rotation)
+## - rate: rotation speed (1.5Hz = 1.5 rotations per second) 
+## - amplitude: amplitude of the noise (15% amplitude)
+##
+## The spin effect works by modulating the amplitude of noise between left and right channels,
+## creating a sensation of circular movement. The sound "rotates" around your head.
+##
+## TEMPORAL SEQUENCE BREAKDOWN:
+## 00:00-00:15: Initial silence
+## 00:15-00:30: BROWN NOISE SPINNING - warmer, deeper sound with more low-frequency energy
+## 00:30-00:45: PINK NOISE SPINNING - balanced, natural sound with equal energy per octave  
+## 00:45-01:00: WHITE NOISE SPINNING - brighter, sharper sound with equal energy at all frequencies
+## 01:00+: End of sequence
+##
+## USAGE TIP:
+## Use headphones to best experience the spatial rotation effect.
+## The spin effect is ideal for relaxation and can help with focus and concentration.
+
+# A sample spin sequence
+
+# Presets
+spin-one
+  spin brown width 300 rate 1.5 amplitude 15
+spin-two
+  spin pink width 300 rate 1.5 amplitude 15
+spin-three
+  spin white width 300 rate 1.5 amplitude 15
+
+# Timeline
+00:00:00 silence
+00:00:15 spin-one
+00:00:30 spin-two
+00:00:45 spin-three
+00:01:00 silence
