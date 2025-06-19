@@ -1,5 +1,5 @@
-SynapSeq is a text-based tool for generating tones to stimulate the brainwave to help
-with meditation, relaxation, and altering states of consciousness.
+SynapSeq is a text-based tone generator for brainwave entrainment. It helps induce states such as
+relaxation, meditation, and focused awareness by guiding brainwave frequencies through sound
 
 The full source code is available at:
 https://github.com/ruanklein/synapseq

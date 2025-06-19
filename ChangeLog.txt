@@ -7,4 +7,3 @@
 2.0.0: New format for sequence files: .spsq.
 2.0.0: New icon and new background image for dmg.
 2.0.0: Added Monaural Beats
-2.0.0: Added Harmonic Box X

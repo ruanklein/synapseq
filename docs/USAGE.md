@@ -1,12 +1,12 @@
 # <img style="border-radius: 15%;" src="../build/assets/synapseq.png" alt="SynapSeq Logo" width="32" height="32"> SynapSeq Usage Guide
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [Introduction to SynapSeq](#-introduction-to-synapseq)
-- [Introduction to Brainwave Entrainment](#-introduction-to-brainwave-entrainment)
-- [Understanding the Syntax](#-understanding-the-syntax)
+- [Introduction to SynapSeq](#introduction-to-synapseq)
+- [Introduction to Brainwave Entrainment](#introduction-to-brainwave-entrainment)
+- [Understanding the Syntax](#understanding-the-syntax)
 
-## 📑 Introduction to SynapSeq
+## Introduction to SynapSeq
 
 This guide will help you get started with SynapSeq, a text-based tool for generating tones to support meditation, relaxation, and altered states of consciousness.
 
@@ -22,9 +22,9 @@ Instead of flexibility, it offers clarity. Instead of options, it offers directi
 - Less options, more focus
 - You write tones, not code
 
-## 🧠 Introduction to Brainwave Entrainment
+## Introduction to Brainwave Entrainment
 
-Brainwave entrainment is a method to stimulate the brain into entering a specific state by using a pulsing sound, light, or electromagnetic field. The pulses elicit the brain's 'frequency following' response, encouraging the brainwaves to align to the frequency of the given beat.
+Brainwave entrainment is a technique that uses rhythmic stimuli - such as pulsing sounds or flashing lights - to encourage the brain to synchronize its brainwaves with the frequency of the external stimulus. This phenomenon is known as the 'frequency following response', where the brain tends to align its electrical activity to the rhythm it perceives. Depending on the frequency used, this can promote states such as relaxation, focus, or deep sleep.
 
 SynapSeq supports a few types of brainwave entrainment:
 
@@ -34,7 +34,7 @@ SynapSeq supports a few types of brainwave entrainment:
 
 3. **Isochronic Tones**: These are single tones that are turned on and off at regular intervals. The brain responds to this rhythmic stimulation and begins to resonate with the frequency. Isochronic tones can be effective with or without headphones.
 
-### 📊 Brainwave Frequency Bands
+### Brainwave Frequency Bands
 
 Different frequency ranges correspond to different mental states:
 
@@ -44,7 +44,7 @@ Different frequency ranges correspond to different mental states:
 - **Beta (13-30 Hz)**: Active thinking, focus, alertness
 - **Gamma (30+ Hz)**: Higher mental activity, peak concentration
 
-## 📝 Understanding the Syntax
+## Understanding the Syntax
 
 SynapSeq uses a specific syntax to create a sequence. The syntax is based on the following elements:
 

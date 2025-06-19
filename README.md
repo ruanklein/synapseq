@@ -1,6 +1,13 @@
-# <img style="border-radius: 15%;" src="build/assets/synapseq.png" alt="SynapSeq Logo" width="32" height="32"> SynapSeq - Synapse-Sequenced Brainwave Generator
+<div align="center">
+  <img src="build/assets/synapseq.png" alt="SynapSeq Logo" width="96" height="96" style="border-radius: 20%;">
 
-SynapSeq is a text-based tool for generating tones to stimulate the brainwave to help with meditation, relaxation, and altering states of consciousness.
+# SynapSeq
+
+### Synapse-Sequenced Brainwave Generator
+
+</div>
+
+SynapSeq is a text-based tone generator for brainwave entrainment. It helps induce states such as relaxation, meditation, and focused awareness by guiding brainwave frequencies through sound.
 
 ## Table of Contents
 
@@ -13,8 +20,8 @@ SynapSeq is a text-based tool for generating tones to stimulate the brainwave to
   - [For Linux](#for-linux)
   - [For Windows](#for-windows)
 - [Documentation](#documentation)
-- [Research](#research)
 - [License](#license)
+- [Contact](#contact)
 - [Credits](#credits)
 
 ## Example
@@ -173,13 +180,13 @@ The `.exe` will be created in the `build/dist` folder.
 
 For detailed information on all features, see the [USAGE.md](docs/USAGE.md) file.
 
-## Research
-
-For the scientific background behind SynapSeq, check out [RESEARCH.md](docs/RESEARCH.md).
-
 ## License
 
 SynapSeq is distributed under the GPL license. See the [COPYING.txt](COPYING.txt) file for details.
+
+## Contact
+
+If you have any questions, plase open a topic on the [discussions](https://github.com/ruanklein/synapseq/discussions) page.
 
 ## Credits
 
