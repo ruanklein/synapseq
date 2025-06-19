@@ -12,8 +12,6 @@ This guide will help you get started with SynapSeq, a text-based tool for genera
 
 SynapSeq is built on the philosophy of doing one thing well. Providing a concise, human-readable syntax that lets you focus on what you want to achieve, not on how to express it.
 
-Instead of flexibility, it offers clarity. Instead of options, it offers direction.
-
 ### Design Principles
 
 - One way to do it

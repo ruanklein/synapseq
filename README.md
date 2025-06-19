@@ -11,6 +11,7 @@ SynapSeq is a text-based tone generator for brainwave entrainment. It helps indu
 
 ## Table of Contents
 
+- [How To Use](#how-to-use)
 - [Example](#example)
 - [Installation](#installation)
   - [Installing on Windows](#installing-on-windows)
@@ -24,9 +25,36 @@ SynapSeq is a text-based tone generator for brainwave entrainment. It helps indu
 - [Contact](#contact)
 - [Credits](#credits)
 
+## How to Use
+
+To get the most out of SynapSeq-generated sessions, it’s essential to create the right environment and use proper equipment. Brainwave entrainment is subtle. Small distractions or poor audio quality can ruin the effect. Follow these tips:
+
+### Equipment
+
+- Headphones required: Use high-quality, over-ear headphones for binaural or monaural beats. Do not use speakers. They break the phase relationships.
+- For isochronic tones: Speakers can work, but headphones are still recommended for a more immersive experience.
+- Avoid using wireless earbuds with aggressive compression or latency. They can interfere with the intended frequency response.
+
+### Environment
+
+- Quiet space: Find a calm, quiet place where you won’t be disturbed.
+- Low light: Many users benefit from dim lighting or even complete darkness.
+- No multitasking: Don’t browse, check your phone, or try to work. Focus inward.
+
+### Timing
+
+- Use during meditation, relaxation, before sleep, or deep work.
+- Sessions work best when you are relaxed, sitting or lying down, and not in a rush.
+- If you’re using stimulating frequencies (like beta or gamma), avoid close to bedtime.
+
+### Consistency
+
+- The effects build up with consistent use. Think of it like training your brain.
+- Some people feel results immediately; others may need a few sessions to adjust.
+
 ## Example
 
-To get started with SynapSeq, create a new text file called `Relax.spsq` with the following content and double click on the file to open it with SynapSeq (Windows/macOS) or run `synapseq Relax.spsq` on Terminal (all platforms).
+Create a new text file called `Relax.spsq` with the following content and double click on the file to open it with SynapSeq (Windows/macOS) or run `synapseq Relax.spsq` on Terminal (all platforms).
 
 ```
 # Presets
@@ -186,7 +214,7 @@ SynapSeq is distributed under the GPL license. See the [COPYING.txt](COPYING.txt
 
 ## Contact
 
-If you have any questions, plase open a topic on the [discussions](https://github.com/ruanklein/synapseq/discussions) page.
+If you have any questions, please open a topic on the [discussions](https://github.com/ruanklein/synapseq/discussions) page.
 
 ## Credits
 
