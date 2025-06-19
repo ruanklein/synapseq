@@ -675,7 +675,6 @@ void verbose_mode() {
   
   int has_background = (opt_m != NULL);
   
-  // Background (se existir)
   if (has_background) {
     char truncated_filename[30];
     
@@ -707,7 +706,6 @@ void verbose_mode() {
     printf("│   └── Gain: %s\n", gain_level);
   }
   
-  // Audio output info - incluir informações sobre saída de arquivo
   char device_info[128] = "Unknown";
   char output_info[256] = "";
   
