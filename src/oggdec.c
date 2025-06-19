@@ -3,16 +3,13 @@
 //
 //  (c) 2025 Ruan <https://ruan.sh/>
 //
-//  Originally based on SBaGen (Sequenced Binaural Beat Generator) v1.4.4 by Jim Peters.
+//  Originally based on SBaGen (Sequenced Binaural Beat Generator).
 //  SBaGen homepage: http://uazu.net/sbagen/
 //  License: GNU General Public License v2 (GPLv2)
 //
-//  SynapSeq is released under the GNU GPL version 2.
-//  Use at your own risk.
-//
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, version 2.
+//  the Free Software Foundation, version 2. 
 //
 //  This program is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,12 +18,14 @@
 //
 //  See the file COPYING.txt for the full license text.
 //
-//	OGG decoding using libvorbis
+//	Original code: OGG decoding using libvorbis
 //
 //        (c) 1999-2004 Jim Peters <jim@uazu.net>.  All Rights Reserved.
 //        For latest version see http://sbagen.sf.net/ or
 //        http://uazu.net/sbagen/.  Released under the GNU GPL version 2.
 //
+
+// This file is a fork of the original oggdec.c file from SBaGen.
 
 #include <stdio.h>
 #include <stdlib.h>

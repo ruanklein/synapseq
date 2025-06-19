@@ -3,16 +3,13 @@
 //
 //  (c) 2025 Ruan <https://ruan.sh/>
 //
-//  Originally based on SBaGen (Sequenced Binaural Beat Generator) v1.4.4 by Jim
-//  Peters. SBaGen homepage: http://uazu.net/sbagen/ License: GNU General Public
-//  License v2 (GPLv2)
-//
-//  SynapSeq is released under the GNU GPL version 2.
-//  Use at your own risk.
+//  Originally based on SBaGen (Sequenced Binaural Beat Generator).
+//  SBaGen homepage: http://uazu.net/sbagen/
+//  License: GNU General Public License v2 (GPLv2)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation, version 2.
+//  the Free Software Foundation, version 2. 
 //
 //  This program is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
