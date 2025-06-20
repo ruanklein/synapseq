@@ -317,6 +317,8 @@ cat > "$INSTALLER_DIR/$APP_NAME.app/Contents/Info.plist" <<EOF
                     <string>application/x-synapseq</string>
                 </array>
             </dict>
+            <key>UTTypeIconFile</key>
+            <string>app_icon</string>
         </dict>
     </array>
     <key>UTExportedTypeDeclarations</key>
@@ -341,6 +343,8 @@ cat > "$INSTALLER_DIR/$APP_NAME.app/Contents/Info.plist" <<EOF
                     <string>application/x-synapseq</string>
                 </array>
             </dict>
+            <key>UTTypeIconFile</key>
+            <string>app_icon</string>
         </dict>
     </array>
     <key>NSAppleEventsUsageDescription</key>
