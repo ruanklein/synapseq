@@ -9,6 +9,12 @@
 
 SynapSeq is a text-based tone generator for brainwave entrainment. It helps induce states such as relaxation, meditation, and focused awareness by guiding brainwave frequencies through sound.
 
+---
+
+🌐 **[Visit the official website](https://ruanklein.github.io/synapseq/)** for interactive examples, audio demonstrations, and complete documentation about the different types of brainwave entrainment.
+
+---
+
 ## Table of Contents
 
 - [How To Use](#how-to-use)
