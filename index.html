@@ -997,6 +997,330 @@
         font-weight: 600;
       }
 
+      /* Download Section */
+      .download-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 40px;
+        margin-bottom: 60px;
+      }
+
+      .download-card {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.1) 0%,
+          rgba(168, 85, 247, 0.05) 50%,
+          rgba(255, 255, 255, 0.02) 100%
+        );
+        border-radius: 30px;
+        border: 1px solid rgba(168, 85, 247, 0.2);
+        backdrop-filter: blur(25px) saturate(200%);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      }
+
+      .download-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            circle at 20% 20%,
+            rgba(168, 85, 247, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(236, 72, 153, 0.08) 0%,
+            transparent 50%
+          );
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+        opacity: 0;
+      }
+
+      .download-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        border-color: rgba(168, 85, 247, 0.4);
+        box-shadow: 0 25px 60px rgba(168, 85, 247, 0.25),
+          0 15px 35px rgba(236, 72, 153, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.15) 0%,
+          rgba(168, 85, 247, 0.1) 50%,
+          rgba(255, 255, 255, 0.05) 100%
+        );
+      }
+
+      .download-card:hover::before {
+        opacity: 1;
+      }
+
+      .download-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 30px 30px 20px;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+        background: rgba(168, 85, 247, 0.03);
+      }
+
+      .download-icon {
+        width: 48px;
+        height: 48px;
+        color: #a855f7;
+        filter: drop-shadow(0 4px 12px rgba(168, 85, 247, 0.3));
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+      }
+
+      .download-card:hover .download-icon {
+        color: #ec4899;
+        transform: scale(1.1);
+        filter: drop-shadow(0 6px 20px rgba(236, 72, 153, 0.4));
+      }
+
+      .download-info h3 {
+        color: #a855f7;
+        font-size: 1.6rem;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+
+      .download-info p {
+        opacity: 0.8;
+        font-size: 0.95rem;
+        margin-bottom: 15px;
+      }
+
+      .version-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .version-badge {
+        background: linear-gradient(135deg, #a855f7, #ec4899);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+      }
+
+      .file-size {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+
+      .download-content {
+        padding: 30px;
+      }
+
+      .download-features {
+        margin-bottom: 30px;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .check-icon {
+        width: 18px;
+        height: 18px;
+        color: #34d399;
+        flex-shrink: 0;
+      }
+
+      .feature-item span {
+        font-size: 0.95rem;
+        opacity: 0.9;
+      }
+
+      .download-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        padding: 18px 30px;
+        background: linear-gradient(
+          135deg,
+          rgba(168, 85, 247, 0.8) 0%,
+          rgba(124, 58, 237, 0.9) 50%,
+          rgba(91, 33, 182, 0.8) 100%
+        );
+        color: white;
+        text-decoration: none;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 25px rgba(168, 85, 247, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 25px;
+      }
+
+      .download-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.6s ease;
+      }
+
+      .download-button:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(168, 85, 247, 0.4),
+          0 8px 20px rgba(236, 72, 153, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        background: linear-gradient(
+          135deg,
+          rgba(168, 85, 247, 0.9) 0%,
+          rgba(124, 58, 237, 1) 50%,
+          rgba(91, 33, 182, 0.9) 100%
+        );
+      }
+
+      .download-button:hover::before {
+        left: 100%;
+      }
+
+      .button-icon {
+        width: 20px;
+        height: 20px;
+      }
+
+      .checksum-info {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        padding: 20px;
+        border: 1px solid rgba(168, 85, 247, 0.1);
+      }
+
+      .checksum-info h4 {
+        color: #a855f7;
+        font-size: 1rem;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+      }
+
+      .checksum {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .checksum-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .checksum-value {
+        background: rgba(168, 85, 247, 0.1);
+        border: 1px solid rgba(168, 85, 247, 0.2);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-family: "Courier New", Monaco, monospace;
+        font-size: 0.75rem;
+        color: #22d3ee;
+        word-break: break-all;
+        line-height: 1.4;
+      }
+
+      .download-note {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.08) 0%,
+          rgba(168, 85, 247, 0.06) 50%,
+          rgba(255, 255, 255, 0.04) 100%
+        );
+        border-radius: 25px;
+        border: 1px solid rgba(168, 85, 247, 0.2);
+        backdrop-filter: blur(20px) saturate(150%);
+        box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .download-note::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(168, 85, 247, 0.05) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      .note-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+      }
+
+      .note-icon {
+        width: 24px;
+        height: 24px;
+        color: #22d3ee;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .note-content h4 {
+        color: #a855f7;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+
+      .note-content p {
+        opacity: 0.9;
+        line-height: 1.6;
+      }
+
+      .note-content a {
+        color: #22d3ee;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+
+      .note-content a:hover {
+        color: #a855f7;
+      }
+
       /* Responsive */
       @media (max-width: 768px) {
         .example-header {
@@ -1128,6 +1452,9 @@
         .nav-links.active li:nth-child(6) {
           transition-delay: 0.6s;
         }
+        .nav-links.active li:nth-child(7) {
+          transition-delay: 0.7s;
+        }
 
         .nav-links a {
           font-size: 1.2rem;
@@ -1148,6 +1475,47 @@
 
         .features-grid {
           grid-template-columns: 1fr;
+        }
+
+        .download-grid {
+          grid-template-columns: 1fr;
+          gap: 30px;
+        }
+
+        .download-card {
+          margin-bottom: 20px;
+        }
+
+        .download-header {
+          padding: 25px 25px 15px;
+          gap: 15px;
+        }
+
+        .download-icon {
+          width: 40px;
+          height: 40px;
+        }
+
+        .download-info h3 {
+          font-size: 1.4rem;
+        }
+
+        .download-content {
+          padding: 25px;
+        }
+
+        .checksum-value {
+          font-size: 0.7rem;
+          padding: 6px 10px;
+        }
+
+        .note-content {
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        .note-icon {
+          align-self: flex-start;
         }
       }
 
@@ -1223,6 +1591,7 @@
           <li><a href="#home">Home</a></li>
           <li><a href="#features">Features</a></li>
           <li><a href="#about">About</a></li>
+          <li><a href="#download">Download</a></li>
           <li><a href="#tips">Tips</a></li>
           <li><a href="#examples">Examples</a></li>
           <li>
@@ -1413,6 +1782,133 @@
                 >
                   View on GitHub
                 </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="download" class="features">
+        <div class="container">
+          <h2 class="section-title">Download SynapSeq</h2>
+          <p
+            style="
+              text-align: center;
+              font-size: 1.1rem;
+              margin-bottom: 60px;
+              opacity: 0.9;
+              max-width: 800px;
+              margin-left: auto;
+              margin-right: auto;
+            "
+          >
+            Download SynapSeq for your platform and start creating your own
+            brainwave entrainment sequences.
+          </p>
+
+          <div class="download-grid">
+            <!-- macOS Download -->
+            <div class="download-card">
+              <div class="download-header">
+                <i data-lucide="apple" class="download-icon"></i>
+                <div class="download-info">
+                  <h3>macOS</h3>
+                  <p>Compatible with macOS 10.15 or later</p>
+                  <div class="version-info">
+                    <span class="version-badge">v2.0.0</span>
+                    <span class="file-size">~15 MB</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="download-content">
+                <div class="download-features">
+                  <div class="feature-item">
+                    <i data-lucide="check" class="check-icon"></i>
+                    <span>Play, Edit, and Export to WAV with a few clicks</span>
+                  </div>
+                </div>
+
+                <a
+                  href="https://github.com/ruanklein/synapseq/releases/download/v2.0.0/SynapSeq-Installer.dmg"
+                  class="download-button"
+                  download
+                >
+                  <i data-lucide="download" class="button-icon"></i>
+                  <span>Download for macOS</span>
+                </a>
+
+                <div class="checksum-info">
+                  <h4>Integrity Verification</h4>
+                  <div class="checksum">
+                    <span class="checksum-label">SHA256:</span>
+                    <code class="checksum-value"
+                      >5732ee8e46a234d0d020d8f8751d458d15c864741198fe0a6239f2ee229f8beb</code
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows Download -->
+            <div class="download-card">
+              <div class="download-header">
+                <i data-lucide="layout-grid" class="download-icon"></i>
+                <div class="download-info">
+                  <h3>Windows</h3>
+                  <p>Compatible with Windows 10 or later</p>
+                  <div class="version-info">
+                    <span class="version-badge">v2.0.0</span>
+                    <span class="file-size">~18 MB</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="download-content">
+                <div class="download-features">
+                  <div class="feature-item">
+                    <i data-lucide="check" class="check-icon"></i>
+                    <span>Play, Edit, and Export to WAV with a few clicks</span>
+                  </div>
+                </div>
+
+                <a
+                  href="https://github.com/ruanklein/synapseq/releases/download/v2.0.0/synapseq-windows-setup.exe"
+                  class="download-button"
+                  download
+                >
+                  <i data-lucide="download" class="button-icon"></i>
+                  <span>Download for Windows</span>
+                </a>
+
+                <div class="checksum-info">
+                  <h4>Integrity Verification</h4>
+                  <div class="checksum">
+                    <span class="checksum-label">SHA256:</span>
+                    <code class="checksum-value"
+                      >2fe7dd410a737bea9e1bf029f4bebfb0d203708c58fffa627cccd713bc3aafb5</code
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="download-note">
+            <div class="note-content">
+              <i data-lucide="info" class="note-icon"></i>
+              <div>
+                <h4>Need help with installation?</h4>
+                <p>
+                  Visit our
+                  <a
+                    href="https://github.com/ruanklein/synapseq"
+                    target="_blank"
+                    >GitHub repository</a
+                  >
+                  for complete documentation, installation guides, and community
+                  support.
+                </p>
               </div>
             </div>
           </div>
