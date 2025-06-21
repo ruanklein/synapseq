@@ -1,3 +1,21 @@
+2.1.0: Removed playback real-time.
+2.1.0: Removed verbose mode.
+2.1.0: Removed support for ALSA, CoreAudio and WIN32 audio API.
+2.1.0: Removed --wav option. 
+2.1.0: Removed --output-raw-file option.
+2.1.0: Removed --output-wav-file option.
+2.1.0: Removed --verbose option.
+2.1.0: Removed --buffer-size option (macOS only).
+2.1.0: Removed --device option (Linux only).
+2.1.0: Removed setup installer scripts.
+2.1.0: Removed assets, icons and background image.
+2.1.0: Removed @verbose global option.
+2.1.0: Removed @test global option.
+2.1.0: Removed @quiet global option.
+2.1.0: Removed @waveform global option.
+2.1.0: Added --output option.
+2.1.0: WAV output is now the default.
+
 2.0.0: New, streamlined syntax. Simpler and more user-oriented.
 2.0.0: Removed SBaGen old features.
 2.0.0: libvorbisidec replaced by libvorbis.

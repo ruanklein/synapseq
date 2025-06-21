@@ -12,6 +12,9 @@ BUILD_DIR="$PWD/build"
 # Source directory
 SRC_DIR="$PWD/src"
 
+# Binary name
+OUTPUT_BINARY=synapseq-windows-win64.exe
+
 section_header "Building SynapSeq for Windows (64-bit)..."
 
 # Check for MinGW cross-compilers
@@ -26,62 +29,6 @@ fi
 # Check distribution directory
 create_dir_if_not_exists "$BUILD_DIR/dist"
 
-# Get version from VERSION file
-VERSION=$(cat $BUILD_DIR/VERSION)
-
-# Extract numeric version and build number for RC file
-NUMERIC_VERSION=$(echo $VERSION | sed 's/-.*$//')
-BUILD_DATE=$(echo $VERSION | sed -n 's/.*-dev\.\([0-9]\{8\}\)\..*$/\1/p')
-BUILD_NUMBER="0"
-
-if [ ! -z "$BUILD_DATE" ]; then
-    # Use last 4 digits of date as build number (avoid overflow)
-    BUILD_NUMBER=$(echo $BUILD_DATE | tail -c 5)  # Gets "0606"
-fi
-
-# Create version for RC file (format: major,minor,patch,build)
-VERSION_RC=$(echo $NUMERIC_VERSION | sed 's/\./,/g'),$BUILD_NUMBER
-
-# Create resource file with version information
-cat > /tmp/synapseq.rc << EOF
-#include <windows.h>
-
-// Include icon
-1 ICON "$BUILD_DIR/assets/synapseq.ico"
-
-VS_VERSION_INFO VERSIONINFO
-FILEVERSION     $VERSION_RC
-PRODUCTVERSION  $VERSION_RC
-FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
-FILEFLAGS       0
-FILEOS          VOS__WINDOWS32
-FILETYPE        VFT_APP
-FILESUBTYPE     0
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904E4"
-        BEGIN
-            VALUE "CompanyName",      "SynapSeq"
-            VALUE "FileDescription",  "Synapse-Sequenced Brainwave Generator"
-            VALUE "FileVersion",      "$VERSION"
-            VALUE "InternalName",     "synapseq"
-            VALUE "LegalCopyright",   "GPLv2"
-            VALUE "OriginalFilename", "synapseq.exe"
-            VALUE "ProductName",      "SynapSeq"
-            VALUE "ProductVersion",   "$VERSION"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1252
-    END
-END
-EOF
-
-# Compile resource file for both architectures
-x86_64-w64-mingw32-windres /tmp/synapseq.rc -O coff -o /tmp/synapseq64.res
-
 # Define paths for libraries. Change it to the correct path for your system.
 LIBMAD_PATH_64="$BUILD_DIR/libs/libmad-win64.a"
 LIBOGG_PATH_64="$BUILD_DIR/libs/libogg-win64.a"
@@ -92,7 +39,7 @@ LIBVORBISFILE_PATH_64="$BUILD_DIR/libs/libvorbisfile-win64.a"
 section_header "Building 64-bit version..."
 
 # Set up compilation flags for 64-bit
-CFLAGS_64="-DT_MINGW -Wall -O3"
+CFLAGS_64="-DT_WIN32 -Wall -O3"
 LIBS_64="-lwinmm"
 
 # Check for MP3 support (64-bit)
@@ -122,18 +69,12 @@ fi
 info "Compiling 64-bit version with flags: $CFLAGS_64"
 info "Libraries: $LIBS_64"
 
-# Replace VERSION with the actual version number
-sed "s/__VERSION__/\"$VERSION\"/" $SRC_DIR/synapseq.c > $SRC_DIR/synapseq.tmp.c
-
-x86_64-w64-mingw32-gcc $CFLAGS_64 $SRC_DIR/synapseq.tmp.c /tmp/synapseq64.res -o $BUILD_DIR/dist/synapseq-win64.exe $LIBS_64
+x86_64-w64-mingw32-gcc $CFLAGS_64 $SRC_DIR/synapseq.c -o $BUILD_DIR/dist/$OUTPUT_BINARY $LIBS_64
 
 if [ $? -eq 0 ]; then
-    success "64-bit compilation successful! Created 64-bit binary: $BUILD_DIR/dist/synapseq-win64.exe"
+    success "64-bit compilation successful! Created 64-bit binary: $BUILD_DIR/dist/$OUTPUT_BINARY"
 else
     error "64-bit compilation failed!"
 fi
-
-# Clean up temporary files
-rm -f /tmp/synapseq.rc /tmp/synapseq64.res $SRC_DIR/synapseq.tmp.c
 
 section_header "Build process completed!" 

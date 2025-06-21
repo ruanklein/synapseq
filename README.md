@@ -1,13 +1,8 @@
-<div align="center">
-  <img src="build/assets/synapseq.png" alt="SynapSeq Logo" width="96" height="96" style="border-radius: 20%;">
-
 # SynapSeq
 
 ### Synapse-Sequenced Brainwave Generator
 
-</div>
-
-SynapSeq is a text-based tone generator for brainwave entrainment. It helps induce states such as relaxation, meditation, and focused awareness by guiding brainwave frequencies through sound.
+SynapSeq is a lightweight engine for sequencing audio tones for brainwave entrainment, using a simple text-based format. It helps induce states such as relaxation, meditation, and focused awareness by guiding brainwave frequencies through sound.
 
 ---
 
@@ -17,11 +12,8 @@ SynapSeq is a text-based tone generator for brainwave entrainment. It helps indu
 
 ## Table of Contents
 
-- [How To Use](#how-to-use)
 - [Example](#example)
 - [Installation](#installation)
-  - [Installing on Windows](#installing-on-windows)
-  - [Installing on macOS](#installing-on-macos)
 - [Compilation](#compilation)
   - [For macOS ](#for-macos)
   - [For Linux](#for-linux)
@@ -31,36 +23,9 @@ SynapSeq is a text-based tone generator for brainwave entrainment. It helps indu
 - [Contact](#contact)
 - [Credits](#credits)
 
-## How to Use
-
-To get the most out of SynapSeq-generated sessions, it’s essential to create the right environment and use proper equipment. Brainwave entrainment is subtle. Small distractions or poor audio quality can ruin the effect. Follow these tips:
-
-### Equipment
-
-- Headphones required: Use high-quality, over-ear headphones for binaural or monaural beats. Do not use speakers. They break the phase relationships.
-- For isochronic tones: Speakers can work, but headphones are still recommended for a more immersive experience.
-- Avoid using wireless earbuds with aggressive compression or latency. They can interfere with the intended frequency response.
-
-### Environment
-
-- Quiet space: Find a calm, quiet place where you won’t be disturbed.
-- Low light: Many users benefit from dim lighting or even complete darkness.
-- No multitasking: Don’t browse, check your phone, or try to work. Focus inward.
-
-### Timing
-
-- Use during meditation, relaxation, before sleep, or deep work.
-- Sessions work best when you are relaxed, sitting or lying down, and not in a rush.
-- If you’re using stimulating frequencies (like beta or gamma), avoid close to bedtime.
-
-### Consistency
-
-- The effects build up with consistent use. Think of it like training your brain.
-- Some people feel results immediately; others may need a few sessions to adjust.
-
 ## Example
 
-Create a new text file called `Relax.spsq` with the following content and double click on the file to open it with SynapSeq (Windows/macOS) or run `synapseq Relax.spsq` on Terminal (all platforms).
+Save this file as `relax.spsq`:
 
 ```
 # Presets
@@ -85,6 +50,15 @@ relax2
 00:10:00 silence
 ```
 
+Run SynapSeq to generate the audio file:
+
+```bash
+synapseq --output relax.wav relax.spsq # Save the audio file
+synapseq --output - relax.spsq | play - # Or play the audio file directly
+```
+
+The audio file will be created in the current directory.
+
 When processing this file, SynapSeq will execute the following sequence of phases:
 
 ```
@@ -103,43 +77,7 @@ Phases:
 
 ## Installation
 
-You can download pre-built binaries on Windows (only 64-bit) and macOS (only Apple Silicon for macOS 15+) from the [releases page](https://github.com/ruanklein/synapseq/releases).
-
-### Installing on Windows
-
-1. Download the installer:
-
-   - [synapseq-windows-setup.exe](https://github.com/ruanklein/synapseq/releases/download/v2.0.0/synapseq-windows-setup.exe)
-
-2. Verify the SHA256 checksum of the installer with the checksum on the releases page.
-
-3. Run the installer and follow the instructions.
-
-**Warning about antivirus on Windows**
-
-Some versions of Windows Defender or other antivirus software may falsely detect `SynapSeq` as a threat.
-
-This happens because the executable is **not digitally signed**, and as a command-line program, it may be flagged as suspicious by default.
-
-`SynapSeq` is an open-source project, and the source code is publicly available in this repository for inspection.
-
-**Temporary solution:** if you trust the source of the executable, add an exception in your antivirus for the file or the folder where `SynapSeq` is installed.
-
-### Installing on macOS
-
-1. Download the macOS Installer:
-
-   - [SynapSeq Installer.dmg](https://github.com/ruanklein/synapseq/releases/download/v2.0.0/SynapSeq-Installer.dmg)
-
-2. Verify the SHA256 checksum of the installer with the checksum on the releases page.
-
-3. Open the DMG file and drag the `SynapSeq` application to the Applications folder.
-
-4. Run the `SynapSeq` application from the Applications folder, accept the license agreement and click the `View Examples` button to view examples of spsq files.
-
-5. Click in the .spsq file to play, edit or convert it. Also, you can drop spsq files on the `SynapSeq` application icon to open them.
-
-**Important:** The `SynapSeq` application is not digitally signed, so you may need to add an exception on the `System Settings -> Security & Privacy -> General tab`.
+SynapSeq is a command-line engine, not a traditional desktop application. It’s designed to be compiled and used directly from the terminal, as part of your audio workflow.
 
 ## Compilation
 
@@ -158,7 +96,7 @@ Install [homebrew](https://brew.sh/) if you don't have it yet.
 Install dependencies:
 
 ```bash
-brew install pkg-config libvorbis libmad create-dmg pandoc
+brew install pkg-config libvorbis libmad
 ```
 
 Run the build script to create the binary:
@@ -169,20 +107,18 @@ Run the build script to create the binary:
 
 The binary will be created in the `build/dist` folder.
 
-If you want to create a installer DMG file, run the following script to create the installer DMG file:
+To install the binary, run the following command:
 
 ```bash
-./build/macos-create-installer.sh
+sudo cp build/dist/synapseq-macos-arm64 /usr/local/bin/synapseq
 ```
-
-The installer DMG file will be created in the `build/dist` folder.
 
 ### For Linux
 
 In Ubuntu/Debian based distributions, install dependencies:
 
 ```bash
-sudo apt-get install build-essential pkg-config libasound2-dev libvorbis-dev libogg-dev libmad0-dev
+sudo apt-get install build-essential pkg-config libvorbis-dev libogg-dev libmad0-dev
 ```
 
 Run the build script to create the binary:
@@ -192,6 +128,12 @@ Run the build script to create the binary:
 ```
 
 The binary will be created in the `build/dist` folder.
+
+To install the binary, run the following command:
+
+```bash
+sudo cp build/dist/synapseq-linux-x86_64 /usr/local/bin/synapseq
+```
 
 ### For Windows
 
@@ -205,7 +147,6 @@ Run this sequence of commands to build SynapSeq (only x86-64):
 ```bash
 docker compose -f build/compose.yml up build-windows-libs-x86-64
 docker compose -f build/compose.yml up build-windows-synapseq-x86-64
-docker compose -f build/compose.yml up build-windows-installer-x86-64 # Optional, if you want to create a installer
 ```
 
 The `.exe` will be created in the `build/dist` folder.
@@ -225,5 +166,3 @@ If you have any questions, please open a topic on the [discussions](https://gith
 ## Credits
 
 SynapSeq is based on the SBaGen. See [SBaGen project](https://uazu.net/sbagen/).
-
-ALSA support is based on this [patch](https://github.com/jave/sbagen-alsa/blob/master/sbagen.c).
