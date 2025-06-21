@@ -71,6 +71,11 @@
         color: white;
         overflow-x: hidden;
         position: relative;
+        min-height: 100vh;
+        min-height: 100dvh; /* Dynamic viewport height for mobile */
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-size: cover;
       }
 
       body::before {
@@ -80,6 +85,8 @@
         left: 0;
         width: 100%;
         height: 100%;
+        min-height: 100vh;
+        min-height: 100dvh; /* Dynamic viewport height for mobile */
         background: radial-gradient(
             circle at 10% 90%,
             rgba(168, 85, 247, 0.1) 0%,
@@ -93,6 +100,9 @@
         pointer-events: none;
         z-index: -1;
         animation: liquid-flow 20s ease-in-out infinite;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-size: cover;
       }
 
       @keyframes liquid-flow {
@@ -1388,8 +1398,43 @@
         }
       }
 
+      /* Mobile Safari fix for background issues */
+      @supports (-webkit-appearance: none) {
+        body {
+          background-attachment: scroll;
+        }
+        body::before {
+          background-attachment: scroll;
+          position: absolute;
+          height: 100vh;
+          min-height: 100vh;
+        }
+      }
+
+      /* iOS specific fixes */
+      @supports (-webkit-touch-callout: none) {
+        body {
+          min-height: -webkit-fill-available;
+          background-attachment: scroll;
+        }
+        body::before {
+          min-height: -webkit-fill-available;
+          background-attachment: scroll;
+          position: absolute;
+        }
+      }
+
       /* Responsive */
       @media (max-width: 768px) {
+        body {
+          background-attachment: scroll;
+        }
+
+        body::before {
+          background-attachment: scroll;
+          position: absolute;
+        }
+
         .hero-content h1 {
           font-size: 2.5rem;
         }
