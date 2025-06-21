@@ -185,6 +185,31 @@
       }
 
       .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .logo:hover {
+        transform: scale(1.05);
+      }
+
+      .logo-image {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        filter: drop-shadow(0 2px 8px rgba(168, 85, 247, 0.3));
+        transition: all 0.3s ease;
+      }
+
+      .logo:hover .logo-image {
+        filter: drop-shadow(0 4px 12px rgba(168, 85, 247, 0.5));
+        transform: rotate(5deg);
+      }
+
+      .logo-text {
         font-size: 24px;
         font-weight: 700;
         background: linear-gradient(45deg, #a855f7, #ec4899);
@@ -1435,6 +1460,15 @@
           position: absolute;
         }
 
+        .logo-image {
+          width: 28px;
+          height: 28px;
+        }
+
+        .logo-text {
+          font-size: 20px;
+        }
+
         .hero-content h1 {
           font-size: 2.5rem;
         }
@@ -1626,7 +1660,14 @@
 
     <header>
       <nav class="container">
-        <div class="logo">SynapSeq</div>
+        <a href="#home" class="logo">
+          <img
+            src="assets/synapseq-rounded.png"
+            alt="SynapSeq Logo"
+            class="logo-image"
+          />
+          <span class="logo-text">SynapSeq</span>
+        </a>
         <div class="hamburger" id="hamburger">
           <span></span>
           <span></span>
