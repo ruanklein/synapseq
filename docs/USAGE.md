@@ -1,10 +1,11 @@
-# <img style="border-radius: 15%;" src="../build/assets/synapseq.png" alt="SynapSeq Logo" width="32" height="32"> SynapSeq Usage Guide
+# SynapSeq Usage Guide
 
 ## Table of Contents
 
 - [Introduction to SynapSeq](#introduction-to-synapseq)
 - [Introduction to Brainwave Entrainment](#introduction-to-brainwave-entrainment)
 - [Understanding the Syntax](#understanding-the-syntax)
+- [Command Line](#command-line)
 
 ## Introduction to SynapSeq
 
@@ -102,7 +103,7 @@ background amplitude 50
 
 #### `effect`
 
-_Note_: The `effect` is only valid with the `background`.
+Note: The `effect` is only valid with the `background`.
 
 `effect` provides with a two types of effects: `spin` and `pulse`.
 
@@ -384,20 +385,6 @@ The syntax is:
 
 The volume is a value between 0 and 100. The default is 100.
 
-#### `@waveform`
-
-This option is used to set the waveform for all elements in the sequence.
-
-The syntax is:
-
-```
-@waveform [waveform]
-```
-
-The waveform could be `sine`, `square`, `triangle`, `sawtooth`. `sine` is the default.
-
-**Note**: If you set waveform manually in the sequence, the `@waveform` option will be ignored.
-
 #### `@samplerate`
 
 This option is used to set the sample rate of the output.
@@ -410,38 +397,6 @@ The syntax is:
 
 The default is 44100.
 
-#### `@verbose`
-
-This option is used to set the verbose mode of the output.
-
-The syntax is:
-
-```
-@verbose
-```
-
-#### `@quiet`
-
-This option is used to set the quiet mode of the output.
-
-The syntax is:
-
-```
-@quiet
-```
-
-#### `@test`
-
-This option is used to test the sequence.
-
-The syntax is:
-
-```
-@test
-```
-
-The test mode is used to test the sequence and to see the output in the console.
-
 ## Command Line
 
 The command line syntax is:
@@ -450,119 +405,59 @@ The command line syntax is:
 synapseq [options] [path of the sequence file]
 ```
 
-You can open a sequence file through pipe with stdin. Example:
+If you not use the `--output` option, the output will be a test mode to check syntax of the sequence. Example:
 
 ```
-cat sequence.spsq | synapseq -
+synapseq sequence-file
+```
+
+You can use the `-` to read the sequence from the console. Example:
+
+```
+cat sequence-file | synapseq -
 ```
 
 #### `--help`
 
 Show the help and exit.
 
-#### `--test`
-
-Test sequence. Equivalent to `@test` option.
-
 #### `--quiet`
 
-Quiet mode. Equivalent to `@quiet` option.
+Quiet mode.
 
-#### `--verbose`
-
-Verbose mode. Equivalent to `@verbose` option.
-
-#### `--volume`
+#### `--output`
 
 The syntax is:
 
 ```
---volume [value]
+--output [path of the output file]
 ```
 
-The value is a number between 0 and 100. The default is 100.
-Equivalent to `@volume` option.
-
-#### `--waveform`
-
-Set the waveform for all elements in the sequence.
-
-The syntax is:
+Example:
 
 ```
---waveform [waveform]
-```
-
-The waveform could be `sine`, `square`, `triangle`, `sawtooth`. `sine` is the default.
-
-#### `--sample-rate`
-
-Set the sample rate of the output.
-
-The syntax is:
-
-```
---samplerate [samplerate value]
-```
-
-The default is 44100.
-
-#### `--output-raw-file`
-
-The syntax is:
-
-```
---output-raw-file [path of the output file]
-```
-
-The output file is a raw audio data file.
-
-#### `--output-wav-file`
-
-The syntax is:
-
-```
---output-wav-file [path of the output file]
+synapseq --output output.wav sequence-file
 ```
 
 The output file is a WAV file.
+
+For UNIX systems, you can use `-` to redirect data to the console.
+Example:
+
+```
+synapseq --output - sequence-file | play - # Play the sequence directly
+```
+
+The "play" command is a command to play the audio file. It is not a command of SynapSeq.
+
+There are several tools to use with SynapSeq to play the sequence in real time, like `play` (sox), `aplay` (ALSA Linux), `ffplay` (FFmpeg), and many more.
 
 #### `--raw`
 
 The syntax is:
 
 ```
---raw [path of the output file]
+--raw --output [path of the output file]
 ```
 
-Print raw audio data to the console insted of playing the sequence.
-
-#### `--wav`
-
-The syntax is:
-
-```
---wav [path of the output file]
-```
-
-Print WAV data to the console insted of playing the sequence.
-
-#### `--buffer-size` (macOS)
-
-The syntax is:
-
-```
---buffer-size [buffer size]
-```
-
-The buffer size (in samples) is a number between 1024 and 4096. The default is 2048.
-
-#### `--device` (Linux)
-
-The syntax is:
-
-```
---device [device name]
-```
-
-The ALSA device name is the name of the device to use. The default is `default`.
+Generate a raw audio data file instead of a WAV file.

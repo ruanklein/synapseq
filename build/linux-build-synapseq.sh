@@ -31,8 +31,8 @@ fi
 create_dir_if_not_exists "$BUILD_DIR/dist"
 
 # Define base compilation flags
-CFLAGS="-DT_LINUX -Wall -O3 -I."
-LIBS="-lm -lpthread -lasound"
+CFLAGS="-DT_POSIX -Wall -O3 -I."
+LIBS="-lm -lpthread"
 
 # Get the version number from the VERSION file
 VERSION=$(cat $BUILD_DIR/VERSION)
@@ -72,9 +72,6 @@ section_header "Starting synapseq compilation..."
 info "Compilation flags: $CFLAGS"
 info "Libraries: $LIBS"
 
-# Replace VERSION with the actual version number
-sed "s/__VERSION__/\"$VERSION\"/" $SRC_DIR/synapseq.c > $SRC_DIR/synapseq.tmp.c
-
 # Determine output binary name based on architecture
 OUTPUT_BINARY=synapseq-linux
 if [ "$ARCH" = "aarch64" ]; then
@@ -86,7 +83,7 @@ else
     warning "Unknown architecture $ARCH, using generic binary name"
 fi
 
-gcc $CFLAGS $SRC_DIR/synapseq.tmp.c -o $OUTPUT_BINARY $LIBS
+gcc $CFLAGS $SRC_DIR/synapseq.c -o $OUTPUT_BINARY $LIBS
 
 if [ $? -eq 0 ]; then
     success "Compilation successful! Binary created: $(basename $OUTPUT_BINARY)"
@@ -96,8 +93,5 @@ if [ $? -eq 0 ]; then
 else
     error "Compilation failed!"
 fi
-
-# Remove the temporary file
-rm -f $SRC_DIR/synapseq.tmp.c
 
 section_header "Build process completed!" 

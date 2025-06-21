@@ -15,12 +15,12 @@ SRC_DIR="$PWD/src"
 # Get Architecture
 ARCH=$(uname -m)
 
-# Default macOS version
-MACOS_MIN_VERSION=15.0
+# Get native macOS version
+MACOS_MIN_VERSION=$(sw_vers -productVersion | cut -d '.' -f 1-2)
 
 # Define base compilation flags
-CFLAGS="-DT_MACOSX -arch $ARCH -mmacosx-version-min=$MACOS_MIN_VERSION -I."
-LIBS="-framework CoreAudio"
+CFLAGS="-DT_POSIX -arch $ARCH -mmacosx-version-min=$MACOS_MIN_VERSION -I."
+LIBS=""
 
 # Get the version number from the VERSION file
 VERSION=$(cat $BUILD_DIR/VERSION)
@@ -90,22 +90,14 @@ section_header "Starting synapseq compilation..."
 info "Compilation flags: $CFLAGS"
 info "Libraries: $LIBS"
 
-# Replace VERSION with the actual version number
-sed "s/__VERSION__/\"$VERSION\"/" $SRC_DIR/synapseq.c > $SRC_DIR/synapseq.tmp.c
-
-gcc $CFLAGS $SRC_DIR/synapseq.tmp.c -o $BUILD_DIR/dist/synapseq-macos-universal $LIBS
+gcc $CFLAGS $SRC_DIR/synapseq.c -o $BUILD_DIR/dist/synapseq-macos-$ARCH $LIBS
 
 if [ $? -eq 0 ]; then
-    success "Compilation successful! Universal binary created: dist/synapseq-macos-universal"
+    success "Compilation successful! Binary created: dist/synapseq-macos-$ARCH"
     # Strip the binary
-    strip $BUILD_DIR/dist/synapseq-macos-universal
+    strip $BUILD_DIR/dist/synapseq-macos-$ARCH
 else
     error "Compilation failed!"
 fi
-
-# Remove the temporary file
-rm -f $SRC_DIR/synapseq.tmp.c
-
-
 
 section_header "Build process completed!" 

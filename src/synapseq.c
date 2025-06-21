@@ -18,88 +18,42 @@
 //
 //  See the file COPYING.txt for the full license text.
 
-#define VERSION __VERSION__
+#define VERSION "2.1.0"
 
-// This should be built with one of the following target macros
-// defined, which selects options for that platform, or else with some
-// of the individual named flags #defined as listed later.
-//
-//  T_LINUX	To build the LINUX version with ALSA support
-//  T_MINGW	To build for Windows using MinGW and Win32 calls
-//  T_MSVC	To build for Windows using MSVC and Win32 calls
-//  T_MACOSX	To build for MacOSX using CoreAudio
-//  T_POSIX	To build for simple file output on any Posix-compliant OS
+//  T_WIN32	To build for Windows using MinGW and Win32 calls
+//  T_POSIX	To build for any Posix-compliant OS
 //
 // Ogg and MP3 support is handled separately from the T_* macros.
 
-// Define ALSA_AUDIO to use ALSA for audio output
-// Define WIN_AUDIO to use Win32 calls
-// Define MAC_AUDIO to use Mac CoreAudio calls
-// Define NO_AUDIO if no audio output device is usable
 // Define UNIX_TIME to use UNIX calls for getting time
 // Define WIN_TIME to use Win32 calls for getting time
-// Define ANSI_TTY to use ANSI sequences to clear/redraw lines
 // Define UNIX_MISC to use UNIX calls for various miscellaneous things
 // Define WIN_MISC to use Windows calls for various miscellaneous things
-// Define EXIT_KEY to require the user to hit RETURN before exiting after error
 
 // Define OGG_DECODE to include OGG support code
 // Define MP3_DECODE to include MP3 support code
 
-#ifdef T_LINUX
-#define ALSA_AUDIO
-#define UNIX_TIME
-#define UNIX_MISC
-#define ANSI_TTY
-#endif
-
-#ifdef T_MINGW
-#define WIN_AUDIO
+#ifdef T_WIN32
 #define WIN_TIME
 #define WIN_MISC
-#define EXIT_KEY
-#endif
-
-#ifdef T_MSVC
-#define WIN_AUDIO
-#define WIN_TIME
-#define WIN_MISC
-#define EXIT_KEY
-#endif
-
-#ifdef T_MACOSX
-#define MAC_AUDIO
-#define UNIX_TIME
-#define UNIX_MISC
-#define ANSI_TTY
 #endif
 
 #ifdef T_POSIX
-#define NO_AUDIO
 #define UNIX_TIME
 #define UNIX_MISC
-#endif
-
-// Make sure NO_AUDIO is set if necessary
-#ifndef MAC_AUDIO
-#ifndef WIN_AUDIO
-#ifndef ALSA_AUDIO
-#define NO_AUDIO
-#endif
-#endif
 #endif
 
 // Make sure one of the _TIME macros is set
 #ifndef UNIX_TIME
 #ifndef WIN_TIME
-#error UNIX_TIME or WIN_TIME not defined.  Maybe you did not define one of T_LINUX/T_MINGW/T_MACOSX/etc ?
+#error UNIX_TIME or WIN_TIME not defined.  Maybe you did not define one of T_WIN32/T_POSIX ?
 #endif
 #endif
 
 // Make sure one of the _MISC macros is set
 #ifndef UNIX_MISC
 #ifndef WIN_MISC
-#error UNIX_MISC or WIN_MISC not defined.  Maybe you did not define one of T_LINUX/T_MINGW/T_MACOSX/etc ?
+#error UNIX_MISC or WIN_MISC not defined.  Maybe you did not define one of T_WIN32/T_POSIX ?
 #endif
 #endif
 
@@ -115,31 +69,15 @@
 #include <sys/types.h>
 #include <time.h>
 
-#ifdef T_MSVC
-#include <io.h>
-#define write _write
-#define vsnprintf _vsnprintf
-typedef long long S64; // I have no idea if this is correct for MSVC
-#else
 #include <sys/time.h>
 #include <unistd.h>
 typedef long long S64;
-#endif
 
-#ifdef T_MINGW
+#ifdef T_WIN32
 #define vsnprintf _vsnprintf
+#include <windows.h>
 #endif
 
-#ifdef ALSA_AUDIO
-#include <alsa/asoundlib.h>
-#endif
-#ifdef WIN_AUDIO
-#include <windows.h>
-#include <mmsystem.h>
-#endif
-#ifdef MAC_AUDIO
-#include <CoreAudio/CoreAudio.h>
-#endif
 #ifdef UNIX_TIME
 #include <sys/ioctl.h>
 #include <sys/times.h>
@@ -152,7 +90,6 @@ typedef struct Channel Channel;
 typedef struct Voice Voice;
 typedef struct Period Period;
 typedef struct NameDef NameDef;
-// typedef struct BlockDef BlockDef;
 typedef unsigned char uchar;
 
 int inbuf_loop(void *vp);
@@ -189,20 +126,17 @@ int sprintVoice(char *, Voice *, Voice *, int);
 int readTime(char *, int *);
 void writeWAV();
 void writeOut(char *, int);
-inline int userTime();
 void find_wav_data_start(FILE *in);
 int raw_mix_in(int *dst, int dlen);
 void scanOptions(int *acp, char ***avp);
 void handleOptionInSequence(char *p);
-void setupOptC(char *spec);
 extern int out_rate, out_rate_def;
 void normalizeAmplitude(Voice *voices, int numChannels, const char *line, int lineNum);
 void checkBackgroundInSequence(NameDef *nd); // Check if background amplitude is specified
 void create_noise_spin_effect(int typ, int amp, int spin_position, int *left, int *right); // Create a spin effect
 int restart_background_file(); // Restart the background file for loop
 void calculate_bg_gain_factor(); // Calculate the background gain factor
-char *get_file_extension(const char *filename); // Get the file extension
-void verbose_mode(); // Print the verbose mode
+int is_stdout_redirected(); // Check if stdout is redirected
 
 #define ALLOC_ARR(cnt, type) ((type *)Alloc((cnt) * sizeof(type)))
 #define uint unsigned int
@@ -214,18 +148,6 @@ void verbose_mode(); // Print the verbose mode
 #include "mp3dec.c"
 #endif
 
-#ifdef WIN_AUDIO
-void CALLBACK win32_audio_callback(HWAVEOUT, UINT, DWORD, DWORD, DWORD);
-#endif
-#ifdef MAC_AUDIO
-OSStatus mac_callback(AudioDeviceID, const AudioTimeStamp *,
-                      const AudioBufferList *, const AudioTimeStamp *,
-                      AudioBufferList *, const AudioTimeStamp *,
-                      void *inClientData);
-
-void init_mac_audio();
-#endif
-
 #define NL "\n"
 
 void help() {
@@ -233,24 +155,13 @@ void help() {
       "SynapSeq - Synapse-Sequenced Brainwave Generator, version " VERSION NL
       "(c) 2025 Ruan, https://ruan.sh/" NL
       "Released under the GNU GPL v2. See file COPYING." NL NL
-      "Usage: synapseq [options] sequence-file ..." NL NL
+      "Usage: synapseq [options] <sequence-file> ..." NL NL
       "Options:  --help                  show this help and exit" NL
       "          --quiet                 quiet mode" NL
-      "          --test                  test mode" NL
-      "          --sample-rate rate      set the sample rate of the output (default is 44100 Hz)" NL
-#ifdef ALSA_AUDIO
-      "          --device dev            set the ALSA device to use (default is 'default')" NL
-#endif
-#ifdef MAC_AUDIO
-      "          --buffer-size size      configure the buffer size (in samples) for audio output (e.g. 1024, 2048, 4096, etc.)" NL
-#endif
-      "          --volume volume         set the volume level (Min 1, Max 100. Default is 100)" NL
-      "          --waveform type         change the waveform type (sine, square, triangle, sawtooth; default is sine)" NL
-      "          --output-raw-file file  write raw data to the given file" NL
-      "          --output-wav-file file  write WAV-format data to the given file" NL
-      "          --raw                   write raw data to stdout" NL
-      "          --wav                   write WAV-format data to stdout" NL
-      "          --verbose               verbose mode" NL
+      "          --output file           write output to file" NL
+      "          --raw                   write raw data instead of WAV" NL NL
+      "Example: synapseq --output output.wav sequence-file" NL
+      "         synapseq --output - sequence-file | play -" NL
       );
   exit(0);
 }
@@ -259,26 +170,11 @@ void usage() {
   error("SynapSeq - Synapse-Sequenced Brainwave Generator, version " VERSION NL
         "(c) 2025 Ruan, https://ruan.sh/" NL
         "Released under the GNU GPL v2. See file COPYING." NL NL
-        "Usage: synapseq [options] sequence-file ..." NL
+        "Usage: synapseq [options] <sequence-file> ..." NL
         "Type 'synapseq --help' for full usage help." NL
-#ifdef EXIT_KEY
-        NL NL "Windows users please note that this utility is designed to be "
-        "run as the" NL "associated application for SPSQ files.  This "
-        "should have been set up for you by" NL
-        "the installer.  You can run all the SPSQ files directly from the "
-        "desktop by" NL "double-clicking on them, and edit them using NotePad "
-        "from the right-click menu." NL
-        "Alternatively, SynapSeq may be run from the command line, or from" NL
-        "BAT/PS1 files.  SynapSeq is powerful software -- it is worth the "
-        "effort of figuring" NL
-        "all this out.  See USAGE.TXT for the full documentation."
-#endif
       );
 }
 
-#define DEBUG_CHK_UTIME 0  // Check how much user time is being consumed
-#define DEBUG_DUMP_WAVES 0 // Dump out wave tables (to plot with gnuplot)
-#define DEBUG_DUMP_AMP 0   // Dump output amplitude to stdout per chunk
 #define N_CH 16            // Number of channels
 
 struct Voice {
@@ -335,7 +231,7 @@ int out_blen;         // Output buffer length (samples) (1.0* or 0.5* out_bsiz)
 int out_bps;          // Output bytes per sample (2 or 4)
 int out_buf_ms;       // Time to output a buffer-ful in ms
 int out_buf_lo;       // Time to output a buffer-ful, fine-tuning in ms/0x10000
-int out_fd;           // Output file descriptor
+int out_fd;       // Output file descriptor
 int out_rate = 44100; // Sample rate
 int out_rate_def = 1; // Sample rate is default value, not set by user
 int out_mode = 1; // Output mode: 0 unsigned char[2], 1 short[2], 2 swapped short[2]
@@ -368,20 +264,10 @@ S64 byte_count = -1; // Number of bytes left to output, or -1 if unlimited
 int tty_erase;       // Chars to erase from current line (for ESC[K emulation)
 
 int opt_Q; // Quiet mode
-int opt_D;
-int opt_v = 0; // Verbose mode
+int opt_D = 1; // Test mode
 char *opt_o, *opt_m;
-int opt_O;
-int opt_W;
-#ifdef ALSA_AUDIO
-char *opt_d = "default"; // Output device to ALSA
-#endif
-#ifdef MAC_AUDIO
-int opt_B = -1; // Buffer size override (-1 = auto)
-#endif
+int opt_W = 1; // Default to WAV output
 int opt_V = 100; // Global volume level (default 100%)
-int opt_w =
-    0; // Waveform type (0 = sine, 1 = square, 2 = triangle, 3 = sawtooth)
 char *waveform_name[] = {"sine", "square", "triangle",
                          "sawtooth"}; // To be used for messages
 
@@ -390,37 +276,13 @@ int mix_cnt;            // Version number from mix filename (#<digits>), or -1
 int bigendian;          // Is this platform Big-endian?
 int mix_flag = 0;       // Has 'mix/*' been used in the sequence?
 double *mix_amp = NULL; // Amplitude of mix sound data to use with
-                        // mixspin/mixpulse. Default is 100%
-
-int opt_c; // Number of -c option points provided (max 16)
-struct AmpAdj {
-  double freq, adj;
-} ampadj[16]; // List of maximum 16 (freq,adj) pairs, freq-increasing order
+                        // effect. Default is 100%
 
 char *pdir; // Program directory (used as second place to look for background files)
 double opt_bg_reduction_db = 12.0; // Default background reduction in 12dB
 double bg_gain_factor = 0.25; // Background gain factor (0.0-1.0)
 static int wav_bits_per_sample = 16;  // Default 16-bit
 static int wav_channels = 2;  // Default 2 channels
-
-#ifdef WIN_AUDIO
-#define BUFFER_COUNT 8
-#define BUFFER_SIZE 8192 * 4
-HWAVEOUT aud_handle;
-WAVEHDR *aud_head[BUFFER_COUNT];
-int aud_current; // Current header
-int aud_cnt;     // Number of headers in use
-#endif
-
-#ifdef MAC_AUDIO
-#define BUFFER_COUNT 8
-#define BUFFER_SIZE 4096 * 4
-char *aud_buf[BUFFER_COUNT];
-int aud_rd; // Next buffer to read out of list (to send to device)
-int aud_wr; // Next buffer to write.  aud_rd==aud_wr means empty buffer list
-static AudioDeviceID aud_dev;
-static AudioDeviceIOProcID proc_id; // New: store the procedure ID
-#endif
 
 //
 //	Delay for a short period of time (in ms)
@@ -599,42 +461,6 @@ void inbuf_start(int (*rout)(int *, int), int len) {
 #endif
 }
 
-#ifdef ALSA_AUDIO
-snd_pcm_t *alsa_handle;           // ALSA PCM handle
-snd_pcm_hw_params_t *alsa_params; // ALSA hardware parameters
-
-// Function to clean up ALSA resources
-void cleanup_alsa() {
-  if (alsa_handle) {
-    snd_pcm_close(alsa_handle);
-    alsa_handle = NULL;
-  }
-}
-#endif
-
-#ifdef MAC_AUDIO
-void cleanup_mac_audio() {
-  if (proc_id) {
-    AudioDeviceStop(aud_dev, proc_id);
-    AudioDeviceDestroyIOProcID(aud_dev, proc_id);
-    proc_id = 0;
-  }
-
-  for (int i = 0; i < BUFFER_COUNT; i++) {
-    if (aud_buf[i]) {
-      free(aud_buf[i]);
-      aud_buf[i] = NULL;
-    }
-  }
-}
-
-void init_mac_audio() {
-  for (int i = 0; i < BUFFER_COUNT; i++) {
-    aud_buf[i] = (char *)Alloc(BUFFER_SIZE);
-  }
-}
-#endif
-
 //
 //	Time-keeping functions
 //
@@ -654,97 +480,10 @@ int t_mid(int t0, int t1) { // Midpoint of period from t0 to t1
   return ((t1 < t0) ? (H24 + t0 + t1) / 2 : (t0 + t1) / 2) % H24;
 }
 
-//
-//	Get the extension of a file
-
-char *get_file_extension(const char *filename) {
-  char *p = strrchr(filename, '.');
-  if (p) return p + 1;
-  return NULL;
-}
-
-//
-//	Verbose mode
-//
-
-void verbose_mode() {
-  printf("\nConfiguration:\n");
-  
-  int has_background = (opt_m != NULL);
-  
-  if (has_background) {
-    char truncated_filename[30];
-    
-    if (strlen(opt_m) > 25) {
-      strncpy(truncated_filename, opt_m, 22);
-      truncated_filename[22] = 0;
-      strcat(truncated_filename, "...");
-    } else {
-      strcpy(truncated_filename, opt_m);
-    }
-
-
-    char gain_level[10];
-    
-    if (opt_bg_reduction_db == 20.0) {
-      strcpy(gain_level, "very low");
-    } else if (opt_bg_reduction_db == 16.0) {
-      strcpy(gain_level, "low");
-    } else if (opt_bg_reduction_db == 12.0) {
-      strcpy(gain_level, "medium");
-    } else if (opt_bg_reduction_db == 6.0) {
-      strcpy(gain_level, "high");
-    } else if (opt_bg_reduction_db == 0.0) {
-      strcpy(gain_level, "very high");
-    }
-    
-    printf("├── Background\n");
-    printf("│   ├── File: %s\n", truncated_filename);
-    printf("│   └── Gain: %s\n", gain_level);
-  }
-  
-  char device_info[128] = "Unknown";
-  char output_info[256] = "";
-  
-  if (opt_o && opt_W) {
-    strcpy(device_info, "WAV File Output");
-    snprintf(output_info, sizeof(output_info), " -> %s", opt_o);
-  } else if (opt_o) {
-    strcpy(device_info, "Raw Data Output");
-    snprintf(output_info, sizeof(output_info), " -> %s (%lld bytes)", opt_o ? opt_o : "stdout", (long long)(byte_count + 44));
-  } else {
-#ifdef ALSA_AUDIO
-    strcpy(device_info, "ALSA");
-#endif
-#ifdef WIN_AUDIO
-    strcpy(device_info, "Windows Default");
-#endif
-#ifdef MAC_AUDIO
-    strcpy(device_info, "Mac CoreAudio");
-#endif
-  }
-  
-  printf("%s── Audio\n", has_background ? "├" : "├");
-  printf("│   ├── Format: %d-bit @ %dHz\n", out_mode ? 16 : 8, out_rate);
-  printf("│   └── Output: %s%s\n", device_info, output_info);
-  
-  printf("├── Playback\n");
-  printf("│   ├── Volume: %d%%\n", opt_V);
-  printf("│   └── Waveform: %s\n", waveform_name[opt_w]);
-  
-  printf("└── Buffer\n");
-#ifdef ALSA_AUDIO
-  printf("    └── Size: %d samples (%d ms latency)\n", out_blen / 2, out_buf_ms);
-#else
-  printf("    └── Size: %dx%d samples (%d ms latency)\n", BUFFER_COUNT, out_blen / 2, out_buf_ms);
-#endif
-}
-
 int restart_background_file() {
   if (!mix_in) return 0;
 
-  char *ext = get_file_extension(opt_m);
-
+  char *ext = strrchr(opt_m, '.');
   if (!ext) {
     warn("No extension found in background file: %s", opt_m);
     return 0;
@@ -764,7 +503,7 @@ int restart_background_file() {
 #endif
   // Go back to the beginning of the file
   if (fseek(mix_in, 0, SEEK_SET) != 0) {
-    if (!opt_Q && opt_v)
+    if (!opt_Q)
       warn("Warning: Could not seek to beginning of background file for loop");
     return 0;
   }
@@ -781,6 +520,10 @@ int restart_background_file() {
 // Calculate the background gain factor based on the reduction in dB
 void calculate_bg_gain_factor() {
   bg_gain_factor = pow(10.0, -opt_bg_reduction_db / 20.0);
+}
+
+int is_stdout_redirected() {
+  return isatty(STDOUT_FILENO) == 0;
 }
 
 //
@@ -810,9 +553,6 @@ int main(int argc, char **argv) {
   init_builtin_namedefs();
   readSeq(argc, argv);
   init_sin_table();
-
-  if (opt_W && !opt_o && !opt_O)
-    error("Use -o or -O with the -W option");
 
   mix_in = 0;
   if (opt_m) {
@@ -882,14 +622,6 @@ int main(int argc, char **argv) {
   }
 
   loop();
-
-#ifdef ALSA_AUDIO
-  cleanup_alsa();
-#endif
-#ifdef MAC_AUDIO
-  cleanup_mac_audio();
-#endif
-
   return 0;
 }
 
@@ -913,92 +645,26 @@ void scanOptions(int *acp, char ***avp) {
     if (strcmp(current_opt, "help") == 0) {
       help();
     }
-    else if (strcmp(current_opt, "test") == 0) {
-      opt_D = 1;
-    }
-    else if (strcmp(current_opt, "verbose") == 0) {
-      opt_v = 1;
-    }
-    else if (strcmp(current_opt, "waveform") == 0) {
-      if (argc < 1)
-        error("--waveform expects waveform type (sine, square, triangle, sawtooth)");
-      if (strcmp(argv[0], "sine") == 0) {
-        opt_w = 0;
-      } else if (strcmp(argv[0], "square") == 0) {
-        opt_w = 1;
-      } else if (strcmp(argv[0], "triangle") == 0) {
-        opt_w = 2;
-      } else if (strcmp(argv[0], "sawtooth") == 0) {
-        opt_w = 3;
-      } else {
-        error("Invalid waveform type: %s", argv[0]);
-      }
-      argc--;
-      argv++;
-    }
     else if (strcmp(current_opt, "quiet") == 0) {
       opt_Q = 1;
     }
-    else if (strcmp(current_opt, "volume") == 0) {
-      if (argc < 1 || 1 != sscanf(argv[0], "%d %c", &opt_V, &dmy))
-        error("--volume expects volume level in percent (0-100)");
-      if (opt_V < 0 || opt_V > 100)
-        error("Volume level must be between 0 and 100");
-      argc--;
-      argv++;
-    }
-#ifdef MAC_AUDIO
-    else if (strcmp(current_opt, "buffer-size") == 0) {
-      if (argc < 1 || 1 != sscanf(argv[0], "%d %c", &opt_B, &dmy))
-        error("--buffer-size expects buffer size in samples");
-      if (opt_B < 1024 || opt_B > BUFFER_SIZE / 2)
-        error("Buffer size must be between 1024 and %d samples.",
-              BUFFER_SIZE / 2);
-      if ((opt_B & (opt_B - 1)) != 0)
-        error("Buffer size must be a power of 2. (e.g. 1024, 2048, 4096, "
-              "etc.)");
-      opt_B *= 2;
-      argc--;
-      argv++;
-    }
-#endif
-    else if (strcmp(current_opt, "output-raw-file") == 0) {
+    else if (strcmp(current_opt, "output") == 0) {
       if (argc < 1)
-        error("Expecting filename after --output-raw-file");
+        error("--output expects output file name");
+
       opt_o = argv[0];
-      argc--;
-      argv++;
-    }
-    else if (strcmp(current_opt, "output-wav-file") == 0) {
-      if (argc < 1)
-        error("Expecting filename after --output-wav-file");
-      opt_o = argv[0];
-      opt_W = 1;
+      opt_D = 0;
+
+      if (opt_o[0] == '-' && opt_o[1] == 0) {
+        out_fd = 1; // stdout
+        opt_o = NULL;
+      }
 
       argc--;
       argv++;
     }
-    else if (strcmp(current_opt, "sample-rate") == 0) {
-      if (argc < 1 || 1 != sscanf(argv[0], "%d %c", &out_rate, &dmy))
-        error("Expecting an integer after --samplerate");
-      out_rate_def = 0;
-      argc--;
-      argv++;
-    }
-#ifdef ALSA_AUDIO
-    else if (strcmp(current_opt, "device") == 0) {
-      if (argc < 1)
-        error("Expecting ALSA device name after --device");
-      opt_d = argv[0];
-      argc--;
-      argv++;
-    }
-#endif
     else if (strcmp(current_opt, "raw") == 0) {
-      opt_O = 1;
-    }
-    else if (strcmp(current_opt, "wav") == 0) {
-      opt_W = opt_O = 1;
+      opt_W = 0;
     }
     else {
       error("Invalid option: --%s. Type 'synapseq --help' for help.", current_opt);
@@ -1055,22 +721,6 @@ void handleOptionInSequence(char *p) {
       error("Volume value must be between 0 and 100 at line %d: %s", in_lin,
             lin_copy);
     }
-  } else if (strcmp(option, "@waveform") == 0) {
-    char *waveform_str = getWord();
-    if (!waveform_str) {
-      error("Waveform value expected at line %d: %s", in_lin, lin_copy);
-    }
-    if (strcmp(waveform_str, "sine") == 0) {
-      opt_w = 0;
-    } else if (strcmp(waveform_str, "square") == 0) {
-      opt_w = 1;
-    } else if (strcmp(waveform_str, "triangle") == 0) {
-      opt_w = 2;
-    } else if (strcmp(waveform_str, "sawtooth") == 0) {
-      opt_w = 3;
-    } else {
-      error("Invalid waveform value at line %d: %s", in_lin, lin_copy);
-    }
   } else if (strcmp(option, "@samplerate") == 0) {
     char *samplerate_str = getWord();
     if (1 != sscanf(samplerate_str, "%d", &out_rate)) {
@@ -1078,64 +728,9 @@ void handleOptionInSequence(char *p) {
     }
     out_rate_def = 0;
   }
-  else if (strcmp(option, "@quiet") == 0) {
-    opt_Q = 1;
-  } else if (strcmp(option, "@test") == 0) {
-    opt_D = 1;
-  } else if (strcmp(option, "@verbose") == 0) {
-    opt_v = 1;
-  }
   else {
     error("Invalid option at line %d: %s", in_lin, lin_copy);
   }
-}
-
-//
-//	Setup the ampadj[] array from the given -c spec-string
-//
-
-void setupOptC(char *spec) {
-  char *p = spec, *q;
-  int a, b;
-
-  while (1) {
-    while (isspace(*p) || *p == ',')
-      p++;
-    if (!*p)
-      break;
-
-    if (opt_c >= sizeof(ampadj) / sizeof(ampadj[0]))
-      error("Too many -c option frequencies; maxmimum is %d",
-            sizeof(ampadj) / sizeof(ampadj[0]));
-
-    ampadj[opt_c].freq = strtod(p, &q);
-    if (p == q)
-      goto bad;
-    if (*q++ != '=')
-      goto bad;
-    ampadj[opt_c].adj = strtod(q, &p);
-    if (p == q)
-      goto bad;
-    opt_c++;
-  }
-
-  // Sort the list
-  for (a = 0; a < opt_c; a++)
-    for (b = a + 1; b < opt_c; b++)
-      if (ampadj[a].freq > ampadj[b].freq) {
-        double tmp;
-        tmp = ampadj[a].freq;
-        ampadj[a].freq = ampadj[b].freq;
-        ampadj[b].freq = tmp;
-        tmp = ampadj[a].adj;
-        ampadj[a].adj = ampadj[b].adj;
-        ampadj[b].adj = tmp;
-      }
-  return;
-
-bad:
-  error("Bad -c option spec; expecting <freq>=<amp>[,<freq>=<amp>]...:\n  %s",
-        spec);
 }
 
 //
@@ -1251,11 +846,6 @@ void status(char *err) {
   if (opt_Q)
     return;
 
-#ifdef ANSI_TTY
-  if (tty_erase)
-    p += sprintf(p, "\033[K");
-#endif
-
   p0 = p; // Start of line
   *p++ = ' ';
   *p++ = ' ';
@@ -1268,20 +858,11 @@ void status(char *err) {
     p += sprintf(p, " %s", err);
   p1 = p; // End of line
 
-#ifndef ANSI_TTY
-  // Truncate line to 79 characters on Windows
-  if (p1 - p0 > 79) {
-    p1 = p0 + 76;
-    p1 += sprintf(p1, "...");
-  }
-#endif
-
-#ifndef ANSI_TTY
   while (tty_erase > p - p0)
     *p++ = ' ';
-#endif
 
   tty_erase = p1 - p0; // Characters that will need erasing
+
   fprintf(stderr, "%s\r", buf);
   fflush(stderr);
 }
@@ -1525,7 +1106,7 @@ void init_builtin_namedefs() {
     nd->vv[i].amp = 0;
     nd->vv[i].carr = 0;
     nd->vv[i].res = 0;
-    nd->vv[i].waveform = opt_w;
+    nd->vv[i].waveform = 0;
   }
 
   // Add to the list
@@ -1538,17 +1119,7 @@ void error(char *fmt, ...) {
   va_start(ap, fmt);
   vfprintf(stderr, fmt, ap);
   fprintf(stderr, "\n");
-#ifdef EXIT_KEY
-  fprintf(stderr, "Press <RETURN> to continue: ");
-  fflush(stderr);
-  getchar();
-#endif
-#ifdef ALSA_AUDIO
-  cleanup_alsa();
-#endif
-#ifdef MAC_AUDIO
-  cleanup_mac_audio();
-#endif
+
   exit(1);
 }
 
@@ -1621,17 +1192,6 @@ inline int calcNow() {
 }
 #endif
 
-#if DEBUG_CHK_UTIME
-inline int userTime() {
-  struct tms buf;
-  times(&buf);
-  return buf.tms_utime;
-}
-#else
-// Dummy to avoid complaints on MSVC
-int userTime() { return 0; }
-#endif
-
 //
 //	Simple random number generator.  Generates a repeating
 //	sequence of 65536 odd numbers in the range -65535->65535.
@@ -1643,10 +1203,6 @@ int userTime() { return 0; }
 #define RAND_MULT 75
 
 static int seed = 2;
-
-// inline int qrand() {
-//   return (seed= seed * 75 % 131074) - 65535;
-// }
 
 //
 //	Generate next sample for simulated pink noise, with same
@@ -1783,7 +1339,6 @@ void loop() {
   int err; // Error to add to 'now' until next cnt==0
   int fast = fast_mult != 0;
   int vfast = fast_mult > 20; // Very fast - update status line often
-  int utime = 0;
   int now_lo = 0; // Low-order 16 bits of 'now' (fractional)
   int err_lo = 0;
   int ms_inc;
@@ -1799,14 +1354,13 @@ void loop() {
       out_bps * (S64)(duration * 0.001 * out_rate / (fast ? fast_mult : 1));
 
   // Do byte-swapping if bigendian and outputting to a file or stream
-  if ((opt_O || opt_o) && out_mode == 1 && bigendian)
+  if (out_mode == 1 && bigendian)
     out_mode = 2;
 
-  if (opt_W)
+  if (opt_W) {
     writeWAV();
+  }
 
-  if (!opt_Q)
-    fprintf(stderr, "\n");
   corrVal(0);          // Get into correct period
   dispCurrPer(stderr); // Display
   status(0);
@@ -1826,29 +1380,6 @@ void loop() {
         now -= H24;
       if (vfast && (c & 1))
         status(0);
-    }
-
-    if (fast) {
-      if (!vfast)
-        status(0);
-    } else {
-      // Synchronize with real clock, gently over the next second or so
-      char buf[32];
-      int diff = calcNow() - now;
-      if (abs(diff) > H12)
-        diff = 0;
-      sprintf(buf, "(%d)", diff);
-
-      err_lo = diff * 0x10000 / cnt;
-      err = err_lo >> 16;
-      err_lo &= 0xFFFF;
-
-      if (DEBUG_CHK_UTIME) {
-        int prev = utime;
-        utime = userTime();
-        sprintf(buf, "%d ticks", utime - prev); // Replaces standard message
-      }
-      status(buf);
     }
   }
 }
@@ -1872,7 +1403,7 @@ void outChunk() {
       // Instead of ending, restart the background file
       if (mix_in && !feof(mix_in)) {
         // If it's not really EOF, it might be an error
-        if (!opt_Q && opt_v)
+        if (!opt_Q)
           warn("\nBackground sound: end of input audio stream");
         exit(0);
       }
@@ -2166,26 +1697,6 @@ void outChunk() {
     out_buf[off++] = tot2 >> 16;
   }
 
-  // Generate debugging amplitude output
-  if (DEBUG_DUMP_AMP) {
-    short *sp = out_buf;
-    short *end = out_buf + out_blen;
-    int max = 0;
-    while (sp < end) {
-      int val = (int)sp[0] + (int)sp[1];
-      sp += 2;
-      if (val < 0)
-        val = -val;
-      if (val > max)
-        max = val;
-    }
-    max /= 328;
-    while (max-- > 0)
-      putc('#', stdout);
-    printf("\n");
-    fflush(stdout);
-  }
-
   // Rewrite buffer for 8-bit mode
   if (out_mode == 0) {
     short *sp = out_buf;
@@ -2210,9 +1721,6 @@ void outChunk() {
   if (byte_count > 0) {
     if (byte_count <= out_bsiz) {
       writeOut((char *)out_buf, byte_count);
-#ifdef ALSA_AUDIO
-      cleanup_alsa();
-#endif
       exit(0); // All done
     } else {
       writeOut((char *)out_buf, out_bsiz);
@@ -2225,114 +1733,12 @@ void outChunk() {
 void writeOut(char *buf, int siz) {
   int rv;
 
-#ifdef WIN_AUDIO
-  if (out_fd == -9999) {
-    // Win32 output: write it to a header and send it off
-    MMRESULT rv;
-
-    // debug_win32_buffer_status();
-
-    // while (aud_cnt == BUFFER_COUNT) {
-    // while (aud_head[aud_current]->dwFlags & WHDR_INQUEUE) {
-    while (!(aud_head[aud_current]->dwFlags & WHDR_DONE)) {
-      // debug("SLEEP %d", out_buf_ms / 2 + 1);
-      Sleep(out_buf_ms / 2 + 1);
-      // debug_win32_buffer_status();
-    }
-
-    memcpy(aud_head[aud_current]->lpData, buf, siz);
-    aud_head[aud_current]->dwBufferLength = (DWORD)siz;
-
-    // debug("Output buffer %d", aud_current);
-    rv = waveOutWrite(aud_handle, aud_head[aud_current], sizeof(WAVEHDR));
-
-    if (rv != MMSYSERR_NOERROR) {
-      char buf[255];
-      waveOutGetErrorText(rv, buf, sizeof(buf) - 1);
-      error("Error writing a fragment to the audio device:\n  %s", buf);
-    }
-
-    aud_cnt++;
-    aud_current++;
-    aud_current %= BUFFER_COUNT;
-
-    return;
-  }
-#endif
-
-#ifdef MAC_AUDIO
-  if (out_fd == -9999) {
-    int new_wr = (aud_wr + 1) % BUFFER_COUNT;
-
-    // Wait until there is space
-    while (new_wr == aud_rd)
-      delay(20);
-
-    memcpy(aud_buf[aud_wr], buf, siz);
-    aud_wr = new_wr;
-
-    return;
-  }
-#endif
-
-#ifdef ALSA_AUDIO
-  if (out_fd == -9998) {
-    int err;
-    int frames = siz / (out_mode ? 4 : 2); // Number of frames (stereo samples)
-
-    // Write data to the ALSA device
-    if ((err = snd_pcm_writei(alsa_handle, buf, frames)) < 0) {
-      if (err == -EPIPE) {
-        // Underflow occurred, try to recover
-        if ((err = snd_pcm_prepare(alsa_handle)) < 0) {
-          error("Unable to recover from underrun: %s", snd_strerror(err));
-        }
-        // Try to write again
-        if ((err = snd_pcm_writei(alsa_handle, buf, frames)) < 0) {
-          error("Failed to write to ALSA device after recovery: %s",
-                snd_strerror(err));
-        }
-      } else {
-        error("Failed to write to ALSA device: %s", snd_strerror(err));
-      }
-    }
-
-    return;
-  }
-#endif
-
   while (-1 != (rv = write(out_fd, buf, siz))) {
     if (0 == (siz -= rv))
       return;
     buf += rv;
   }
   error("Output error");
-}
-
-//
-//	Calculate amplitude adjustment factor for frequency 'freq'
-//
-
-double ampAdjust(double freq) {
-  int a;
-  struct AmpAdj *p0, *p1;
-
-  if (!opt_c)
-    return 1.0;
-  if (freq <= ampadj[0].freq)
-    return ampadj[0].adj;
-  if (freq >= ampadj[opt_c - 1].freq)
-    return ampadj[opt_c - 1].adj;
-
-  for (a = 1; a < opt_c; a++)
-    if (freq < ampadj[a].freq)
-      break;
-
-  p0 = &ampadj[a - 1];
-  p1 = &ampadj[a];
-
-  return p0->adj +
-         (p1->adj - p0->adj) * (freq - p0->freq) / (p1->freq - p0->freq);
 }
 
 //
@@ -2355,12 +1761,8 @@ void corrVal(int running) {
     t1 = per->nxt->tim;
     if (running) {
       if (tty_erase) {
-#ifdef ANSI_TTY
-        fprintf(stderr, "\033[K");
-#else
         fprintf(stderr, "%*s\r", tty_erase, "");
         tty_erase = 0;
-#endif
       }
       dispCurrPer(stderr);
       status(0);
@@ -2497,41 +1899,6 @@ void corrVal(int running) {
     }
   }
 
-  // Check and limit amplitudes if -c option in use
-  if (opt_c) {
-    double tot_beat = 0, tot_other = 0;
-    for (a = 0; a < N_CH; a++) {
-      vv = &chan[a].v;
-
-      if (vv->waveform != 0) {
-        // Skip non-sine waveforms
-        continue;
-      }
-
-      if (vv->typ == 1) {
-        double adj1 = ampAdjust(vv->carr + vv->res / 2);
-        double adj2 = ampAdjust(vv->carr - vv->res / 2);
-        if (adj2 > adj1)
-          adj1 = adj2;
-        tot_beat += vv->amp * adj1;
-      }
-      else if (vv->typ) {
-        tot_other += vv->amp;
-      }
-    }
-    if (tot_beat + tot_other > 4096) {
-      double adj_beat = (tot_beat > 4096) ? 4096 / tot_beat : 1.0;
-      double adj_other = (4096 - tot_beat * adj_beat) / tot_other;
-      for (a = 0; a < N_CH; a++) {
-        vv = &chan[a].v;
-        if (vv->typ == 1)
-          vv->amp *= adj_beat;
-        else if (vv->typ)
-          vv->amp *= adj_other;
-      }
-    }
-  }
-
   // Setup Channel data from Voice data
   for (a = 0; a < N_CH; a++) {
     ch = &chan[a];
@@ -2543,11 +1910,7 @@ void corrVal(int running) {
     case 1:
       freq1 = vv->carr + vv->res / 2;
       freq2 = vv->carr - vv->res / 2;
-      if (opt_c) {
-        ch->amp = vv->amp * ampAdjust(freq1);
-        ch->amp2 = vv->amp * ampAdjust(freq2);
-      } else
-        ch->amp = ch->amp2 = (int)vv->amp;
+      ch->amp = ch->amp2 = (int)vv->amp;
       ch->inc1 = (int)(freq1 / out_rate * ST_SIZ * 65536);
       ch->inc2 = (int)(freq2 / out_rate * ST_SIZ * 65536);
       break;
@@ -2576,22 +1939,22 @@ void corrVal(int running) {
       // Modulator (pulse frequency)
       ch->inc2 = (int)(vv->res / out_rate * ST_SIZ * 65536);
       break;
-    case 6: // Mixspin
+    case 6: // Effect spin
       ch->amp = (int)vv->amp;
       ch->inc1 = (int)(vv->res / out_rate * ST_SIZ * 65536);
       ch->inc2 = (int)(vv->carr * 1E-6 * out_rate * (1 << 24) / ST_AMP);
       break;
-    case 7: // Mixpulse
+    case 7: // Effect pulse
       ch->amp = (int)vv->amp;
       // Modulator (pulse frequency)
       ch->inc2 = (int)(vv->res / out_rate * ST_SIZ * 65536);
       break;
-    case 11: // Bspin - spinning brown noise
+    case 11: // Spin - spinning brown noise
       ch->amp = (int)vv->amp;
       ch->inc1 = (int)(vv->res / out_rate * ST_SIZ * 65536);
       ch->inc2 = (int)(vv->carr * 1E-6 * out_rate * (1 << 24) / ST_AMP);
       break;
-    case 12: // Wspin - spinning white noise
+    case 12: // Spin - spinning white noise
       ch->amp = (int)vv->amp;
       ch->inc1 = (int)(vv->res / out_rate * ST_SIZ * 65536);
       ch->inc2 = (int)(vv->carr * 1E-6 * out_rate * (1 << 24) / ST_AMP);
@@ -2608,384 +1971,25 @@ void corrVal(int running) {
 
 void setup_device(void) {
   // Handle output to files and pipes
-  if (opt_O || opt_o) {
-    if (opt_O)
-      out_fd = 1; // stdout
-    else {
-      FILE *out; // Need to create a stream to set binary mode for DOS
-      if (!(out = fopen(opt_o, "wb")))
-        error("Can't open \"%s\", errno %d", opt_o, errno);
-      out_fd = fileno(out);
-    }
-    out_blen = out_rate * 2 / out_prate; // 10 fragments a second by default
-    while (out_blen & (out_blen - 1))
-      out_blen &= out_blen - 1; // Make power of two
-    out_bsiz = out_blen * (out_mode ? 2 : 1);
-    out_bps = out_mode ? 4 : 2;
-    out_buf = (short *)Alloc(out_blen * sizeof(short));
-    out_buf_lo = (int)(0x10000 * 1000.0 * 0.5 * out_blen / out_rate);
-    out_buf_ms = out_buf_lo >> 16;
-    out_buf_lo &= 0xFFFF;
-    tmp_buf = (int *)Alloc(out_blen * sizeof(int));
-
-    if (!opt_Q && !opt_W && opt_v) // Informational message for opt_W is written later
-    {
-      //warn("Audio: %d-bit @ %d Hz -> raw data", out_mode ? 16 : 8, out_rate);
-      verbose_mode();
-    }
-    return;
+  if (opt_o) {
+    FILE *out;
+    if (!(out = fopen(opt_o, "wb")))
+      error("Can't open output file: %s", opt_o);
+    out_fd = fileno(out);
   }
 
-#ifdef ALSA_AUDIO
-  // ALSA audio output
-  {
-    int err;
-    unsigned int rate = out_rate;
-    snd_pcm_format_t format;
-    snd_pcm_uframes_t buffer_size;
-    snd_pcm_uframes_t period_size;
-
-    // Open the PCM device for playback
-    if ((err = snd_pcm_open(&alsa_handle, opt_d, SND_PCM_STREAM_PLAYBACK, 0)) <
-        0) {
-      error("Unable to open ALSA device %s: %s", opt_d, snd_strerror(err));
-    }
-
-    // Allocate hardware parameters
-    snd_pcm_hw_params_alloca(&alsa_params);
-
-    // Fill with default values
-    if ((err = snd_pcm_hw_params_any(alsa_handle, alsa_params)) < 0) {
-      error("Unable to configure default parameters: %s", snd_strerror(err));
-    }
-
-    // Configure access
-    if ((err = snd_pcm_hw_params_set_access(
-             alsa_handle, alsa_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
-      error("Unable to configure access: %s", snd_strerror(err));
-    }
-
-    // Configure format (16 bits or 8 bits)
-    format = out_mode ? SND_PCM_FORMAT_S16 : SND_PCM_FORMAT_U8;
-    if ((err = snd_pcm_hw_params_set_format(alsa_handle, alsa_params, format)) <
-        0) {
-      error("Unable to configure format %s: %s", out_mode ? "16-bit" : "8-bit",
-            snd_strerror(err));
-    }
-
-    // Configure channels (stereo)
-    if ((err = snd_pcm_hw_params_set_channels(alsa_handle, alsa_params, 2)) <
-        0) {
-      error("Unable to configure stereo channels: %s", snd_strerror(err));
-    }
-
-    // Configure sampling rate
-    if ((err = snd_pcm_hw_params_set_rate_near(alsa_handle, alsa_params, &rate,
-                                               0)) < 0) {
-      error("Unable to configure sampling rate %d: %s", out_rate,
-            snd_strerror(err));
-    }
-
-    // Configure buffer and period size
-    period_size = 1024; // Initial value
-    if ((err = snd_pcm_hw_params_set_period_size_near(alsa_handle, alsa_params,
-                                                      &period_size, 0)) < 0) {
-      error("Unable to configure period size: %s", snd_strerror(err));
-    }
-
-    buffer_size = period_size * 4; // Buffer of 4 periods
-    if ((err = snd_pcm_hw_params_set_buffer_size_near(alsa_handle, alsa_params,
-                                                      &buffer_size)) < 0) {
-      error("Unable to configure buffer size: %s", snd_strerror(err));
-    }
-
-    // Apply hardware parameters
-    if ((err = snd_pcm_hw_params(alsa_handle, alsa_params)) < 0) {
-      error("Unable to apply hardware parameters: %s", snd_strerror(err));
-    }
-
-    // Get the actual period size
-    snd_pcm_hw_params_get_period_size(alsa_params, &period_size, 0);
-
-    // Configure output buffer size
-    out_blen = period_size * 2;               // Stereo
-    out_bsiz = out_blen * (out_mode ? 2 : 1); // 16 bits or 8 bits
-    out_bps = out_mode ? 4 : 2;
-    out_buf = (short *)Alloc(out_blen * sizeof(short));
-    out_buf_lo = (int)(0x10000 * 1000.0 * 0.5 * out_blen / out_rate);
-    out_buf_ms = out_buf_lo >> 16;
-    out_buf_lo &= 0xFFFF;
-    tmp_buf = (int *)Alloc(out_blen * sizeof(int));
-
-    // Mark that we are using ALSA
-    out_fd = -9998; // Special value for ALSA
-
-    if (!opt_Q && opt_v) {
-      // warn("Audio: %d-bit @ %d Hz -> ALSA | %d×%d samples (%d ms latency)",
-      //      out_mode ? 16 : 8, out_rate, period_size, out_blen / 2, out_buf_ms);
-      verbose_mode();
-    }
-    return;
-  }
-#endif
-
-#ifdef WIN_AUDIO
-  // Output using Win32 calls
-  {
-    MMRESULT rv;
-    WAVEFORMATEX fmt;
-    int a;
-
-    fmt.wFormatTag = WAVE_FORMAT_PCM;
-    fmt.nChannels = 2;
-    fmt.nSamplesPerSec = out_rate;
-    fmt.wBitsPerSample = out_mode ? 16 : 8;
-    fmt.nBlockAlign = fmt.nChannels * (fmt.wBitsPerSample / 8);
-    fmt.nAvgBytesPerSec = fmt.nSamplesPerSec * fmt.nBlockAlign;
-    fmt.cbSize = 0;
-    aud_handle = NULL;
-
-    // if (MMSYSERR_NOERROR !=
-    //    waveOutOpen(&aud_handle, WAVE_MAPPER, &fmt, 0,
-    //                0L, WAVE_FORMAT_QUERY))
-    //    error("Windows is rejecting our audio request (%d-bit stereo, %dHz)",
-    //          out_mode ? 16 : 8, out_rate);
-
-    if (MMSYSERR_NOERROR !=
-        (rv = waveOutOpen(&aud_handle, WAVE_MAPPER, (WAVEFORMATEX *)&fmt,
-                          (DWORD_PTR)win32_audio_callback, (DWORD)0,
-                          CALLBACK_FUNCTION))) {
-      char buf[255];
-      waveOutGetErrorText(rv, buf, sizeof(buf) - 1);
-      error("Can't open audio device (%d-bit stereo, %dHz):\n  %s",
-            out_mode ? 16 : 8, out_rate, buf);
-    }
-
-    if (fmt.nChannels != 2)
-      error("Can't open audio device in stereo");
-    if (fmt.wBitsPerSample != (out_mode ? 16 : 8))
-      error("Can't open audio device in %d-bit mode", out_mode ? 16 : 8);
-
-    aud_current = 0;
-    aud_cnt = 0;
-
-    for (a = 0; a < BUFFER_COUNT; a++) {
-      char *p = (char *)Alloc(sizeof(WAVEHDR) + BUFFER_SIZE);
-      WAVEHDR *w = aud_head[a] = (WAVEHDR *)p;
-
-      w->lpData = (LPSTR)p + sizeof(WAVEHDR);
-      w->dwBufferLength = (DWORD)BUFFER_SIZE;
-      w->dwBytesRecorded = 0L;
-      w->dwUser = 0;
-      w->dwFlags = 0;
-      w->dwLoops = 0;
-      w->lpNext = 0;
-      w->reserved = 0;
-
-      rv = waveOutPrepareHeader(aud_handle, w, sizeof(WAVEHDR));
-      if (rv != MMSYSERR_NOERROR) {
-        char buf[255];
-        waveOutGetErrorText(rv, buf, sizeof(buf) - 1);
-        error("Can't setup a wave header %d:\n  %s", a, buf);
-      }
-      w->dwFlags |= WHDR_DONE;
-    }
-
-    out_rate = fmt.nSamplesPerSec;
-    out_bsiz = BUFFER_SIZE;
-    out_blen = out_mode ? out_bsiz / 2 : out_bsiz;
-    out_bps = out_mode ? 4 : 2;
-    out_buf = (short *)Alloc(out_blen * sizeof(short));
-    out_buf_lo = (int)(0x10000 * 1000.0 * 0.5 * out_blen / out_rate);
-    out_buf_ms = out_buf_lo >> 16;
-    out_buf_lo &= 0xFFFF;
-    out_fd = -9999;
-    tmp_buf = (int *)Alloc(out_blen * sizeof(int));
-
-    if (!opt_Q && opt_v) {
-      // warn("Audio: %d-bit @ %d Hz -> \"default\" | %d×%d samples (%d ms latency)",
-      //      (int)fmt.wBitsPerSample, out_rate, BUFFER_COUNT, out_blen / 2, out_buf_ms);
-      verbose_mode();
-    }
-  }
-#endif
-#ifdef MAC_AUDIO
-  // Mac CoreAudio for OS X
-  {
-    char deviceName[256];
-    OSStatus err;
-    UInt32 propertySize, bufferByteCount;
-    struct AudioStreamBasicDescription streamDesc;
-
-    int device_out_rate;
-    int buffer_size = opt_B > 0 ? opt_B : 4096; // Default is 2048 samples (L+R)
-
-    // Initialize the audio buffers for Mac here
-    init_mac_audio();
-
-    out_bsiz = buffer_size;
-    out_blen = out_mode ? out_bsiz / 2 : out_bsiz;
-    out_bps = out_mode ? 4 : 2;
-    out_buf = (short *)Alloc(out_blen * sizeof(short));
-    out_buf_lo = (int)(0x10000 * 1000.0 * 0.5 * out_blen / out_rate);
-    out_buf_ms = out_buf_lo >> 16;
-    out_buf_lo &= 0xFFFF;
-    tmp_buf = (int *)Alloc(out_blen * sizeof(int));
-
-    // N.B.  Both -r and -b flags are totally ignored for CoreAudio --
-    // we just use whatever the default device is set to, and feed it
-    // floats.
-    out_mode = 1;
-    out_fd = -9999;
-
-    // Find default device
-    propertySize = sizeof(aud_dev);
-    AudioObjectPropertyAddress propertyAddress = {
-        kAudioHardwarePropertyDefaultOutputDevice,
-        kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain};
-    if ((err = AudioObjectGetPropertyData(kAudioObjectSystemObject,
-                                          &propertyAddress, 0, NULL,
-                                          &propertySize, &aud_dev))) {
-      error("Get default output device failed, status = %d", (int)err);
-    }
-
-    if (aud_dev == kAudioDeviceUnknown)
-      error("No default audio device found");
-
-    // Get device name
-    propertySize = sizeof(deviceName);
-    propertyAddress.mSelector = kAudioDevicePropertyDeviceName;
-    propertyAddress.mScope = kAudioObjectPropertyScopeGlobal;
-    propertyAddress.mElement = kAudioObjectPropertyElementMain;
-    if ((err = AudioObjectGetPropertyData(aud_dev, &propertyAddress, 0, NULL,
-                                          &propertySize, deviceName))) {
-      error("Get audio device name failed, status = %d", (int)err);
-    }
-
-    // Get device properties
-    propertySize = sizeof(streamDesc);
-    propertyAddress.mSelector = kAudioDevicePropertyStreamFormat;
-    propertyAddress.mScope =
-        kAudioObjectPropertyScopeOutput; // Adjusted for output
-    propertyAddress.mElement = kAudioObjectPropertyElementMain;
-    if ((err = AudioObjectGetPropertyData(aud_dev, &propertyAddress, 0, NULL,
-                                          &propertySize, &streamDesc))) {
-      error("Get audio device properties failed, status = %d", (int)err);
-    }
-
-    device_out_rate = (int)streamDesc.mSampleRate;
-
-    if (streamDesc.mChannelsPerFrame != 2)
-      error("SynapSeq requires a stereo output device -- \n"
-            "default output has %d channels",
-            streamDesc.mChannelsPerFrame);
-
-    if (streamDesc.mFormatID != kAudioFormatLinearPCM ||
-        !(streamDesc.mFormatFlags & kLinearPCMFormatFlagIsFloat))
-      error("Expecting a 32-bit float linear PCM output stream -- \n"
-            "default output uses another format");
-
-    // Set buffer size
-    bufferByteCount = (float)buffer_size / 2 * sizeof(float);
-    propertySize = sizeof(bufferByteCount);
-    propertyAddress.mSelector = kAudioDevicePropertyBufferSize;
-    propertyAddress.mScope = kAudioObjectPropertyScopeGlobal;
-    propertyAddress.mElement = kAudioObjectPropertyElementMain;
-    if ((err = AudioObjectSetPropertyData(aud_dev, &propertyAddress, 0, NULL,
-                                          propertySize, &bufferByteCount))) {
-      error("Set audio output buffer size failed, status = %d", (int)err);
-    }
-
-    // Setup callback and start it
-    err = AudioDeviceCreateIOProcID(aud_dev, mac_callback, (void *)1, &proc_id);
-    if (err != noErr) {
-      error("Failed to create audio callback, status = %d", (int)err);
-    }
-
-    err = AudioDeviceStart(aud_dev, proc_id);
-    if (err != noErr) {
-      AudioDeviceDestroyIOProcID(aud_dev, proc_id);
-      error("Failed to start audio device, status = %d", (int)err);
-    }
-
-    // Report settings
-    if (!opt_Q && opt_v) {
-      // warn("Audio: %d-bit @ %d Hz -> \"%s\" | %d×%d samples (%d ms latency)",
-      //      (int)streamDesc.mBitsPerChannel, out_rate, deviceName, BUFFER_COUNT,
-      //      out_blen / 2, out_buf_ms);
-      verbose_mode();
-    }
-  }
-#endif
-#ifdef NO_AUDIO
-  error("Direct output to soundcard not supported on this platform.\n"
-        "Use -o or -O to write raw data, or -Wo or -WO to write a WAV file.");
-#endif
+  // Handle output to files and pipes
+  out_blen = out_rate * 2 / out_prate; // 10 fragments a second by default
+  while (out_blen & (out_blen - 1))
+    out_blen &= out_blen - 1; // Make power of two
+  out_bsiz = out_blen * (out_mode ? 2 : 1);
+  out_bps = out_mode ? 4 : 2;
+  out_buf = (short *)Alloc(out_blen * sizeof(short));
+  out_buf_lo = (int)(0x10000 * 1000.0 * 0.5 * out_blen / out_rate);
+  out_buf_ms = out_buf_lo >> 16;
+  out_buf_lo &= 0xFFFF;
+  tmp_buf = (int *)Alloc(out_blen * sizeof(int));
 }
-
-//
-//	Audio callback for Win32
-//
-
-#ifdef WIN_AUDIO
-void CALLBACK win32_audio_callback(HWAVEOUT hand, UINT uMsg, DWORD dwInstance,
-                                   DWORD dwParam1, DWORD dwParam2) {
-  switch (uMsg) {
-  case WOM_CLOSE:
-    break;
-  case WOM_OPEN:
-    break;
-  case WOM_DONE:
-    aud_cnt--;
-    // debug("Buffer done (cnt==%d)", aud_cnt);
-    // debug_win32_buffer_status();
-    break;
-  }
-}
-
-void debug_win32_buffer_status() {
-  char tmp[80];
-  char *p = tmp;
-  int a;
-  for (a = 0; a < BUFFER_COUNT; a++) {
-    *p++ = (aud_head[a]->dwFlags & WHDR_INQUEUE) ? 'I' : '-';
-    *p++ = (aud_head[a]->dwFlags & WHDR_DONE) ? 'D' : '-';
-    *p++ = ' ';
-  }
-  p[-1] = 0;
-  debug(tmp);
-}
-#endif
-
-//
-//	Audio callback for Mac OS X
-//
-
-#ifdef MAC_AUDIO
-OSStatus mac_callback(AudioDeviceID inDevice, const AudioTimeStamp *inNow,
-                      const AudioBufferList *inInputData,
-                      const AudioTimeStamp *inInputTime,
-                      AudioBufferList *outOutputData,
-                      const AudioTimeStamp *inOutputTime, void *inClientData) {
-  float *fp = outOutputData->mBuffers[0].mData;
-  int cnt = opt_B > 0 ? opt_B / 2 : BUFFER_SIZE / 2;
-  short *sp;
-
-  if (aud_rd == aud_wr) {
-    // Nothing in buffer list, so fill with silence
-    while (cnt-- > 0)
-      *fp++ = 0.0;
-  } else {
-    // Consume a buffer
-    sp = (short *)aud_buf[aud_rd];
-    while (cnt-- > 0)
-      *fp++ = *sp++ * (1 / 32768.0);
-    aud_rd = (aud_rd + 1) % BUFFER_COUNT;
-  }
-
-  return kAudioHardwareNoError;
-}
-#endif
 
 //
 //	Write a WAV header, and setup out_mode if byte-swapping is
@@ -3033,11 +2037,6 @@ void writeWAV() {
   addStr("data");
   addU4(byte_count);
   writeOut(buf, 44);
-
-  if (!opt_Q && opt_v)
-    //warn("Audio: %d-bit @ %d Hz -> WAV file (%d bytes)",
-    //     out_mode ? 16 : 8, out_rate, byte_count + 44);
-    verbose_mode();
 }
 
 //
@@ -3116,7 +2115,7 @@ char *getWord() {
 //
 
 void badSeq() {
-  error("Bad sequence file content at line: %d\n  %s", in_lin, lin_copy);
+  error("Error in sequence file at line: %d\n  %s", in_lin, lin_copy);
 }
 
 //
@@ -3134,7 +2133,7 @@ void readSeq(int ac, char **av) {
 
     in = (0 == strcmp("-", fnam)) ? stdin : fopen(fnam, "r");
     if (!in)
-      error("Can't open sequence file: %s", fnam);
+      error("Error opening sequence file: %s", fnam);
 
     in_lin = 0;
 
@@ -3472,6 +2471,8 @@ void correctPeriods() {
 
     pp = per;
 
+    fprintf(stderr, "\n*** This is a test mode. Use --output to generate the audio file. ***\n\n");
+
     do {
       dispCurrPer(stdout);
       per = per->nxt;
@@ -3523,7 +2524,7 @@ void readNameDef() {
   // Validate name characters
   for (q = p; *q; q++)
     if (!isalnum(*q) && *q != '-' && *q != '_')
-      error("Bad name \"%s\" in definition, line %d:\n  %s", p, in_lin,
+      error("Invalid name \"%s\" in preset, line %d:\n  %s", p, in_lin,
             lin_copy);
 
   if (strcmp(p, "silence") == 0)
@@ -3539,7 +2540,7 @@ void readNameDef() {
     nd->vv[i].amp = 0;
     nd->vv[i].carr = 0;
     nd->vv[i].res = 0;
-    nd->vv[i].waveform = opt_w;
+    nd->vv[i].waveform = 0;
   }
 
   // Add to list immediately after creating the basic structure
@@ -3669,7 +2670,6 @@ void readNameDef() {
         error("Invalid noise amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
       }
 
-      nd->vv[ch].waveform = opt_w;
       nd->vv[ch].amp = AMP_DA(amp);
       ch++;
       lines_processed++; // Increment count of processed lines
@@ -3740,7 +2740,6 @@ void readNameDef() {
         error("Invalid tone amplitude at line %d.\nSupported range: 0 to 100.\n  %s", in_lin, lin_copy);
       }
 
-      nd->vv[ch].waveform = opt_w;
       nd->vv[ch].amp = AMP_DA(amp);
       ch++;
       lines_processed++; // Increment count of processed lines
@@ -4098,7 +3097,6 @@ void readNameDef() {
       }
 
       nd->vv[ch].carr = width;
-      nd->vv[ch].waveform = opt_w;
       nd->vv[ch].res = rate;
       nd->vv[ch].amp = AMP_DA(amp);
       ch++;
@@ -4145,7 +3143,6 @@ void readNameDef() {
         }
 
         nd->vv[ch].typ = 7;
-        nd->vv[ch].waveform = opt_w;
         nd->vv[ch].res = pulse;
         nd->vv[ch].amp = AMP_DA(intensity);
         ch++;
@@ -4213,11 +3210,6 @@ void readNameDef() {
             cmd, in_lin);
     }
   }
-
-  
-
-  fprintf(stderr, "DEBUG: %s\n", lin_copy);
-
   // Normalize total amplitude
   normalizeAmplitude(nd->vv, N_CH, lin_copy, in_lin);
 }
@@ -4227,7 +3219,7 @@ void readNameDef() {
 //
 
 void badTime(char *tim) {
-  error("Badly constructed time \"%s\", line %d:\n  %s", tim, in_lin, lin_copy);
+  error("Invalid time \"%s\", line %d:\n  %s", tim, in_lin, lin_copy);
 }
 
 //
@@ -4272,7 +3264,7 @@ void readTimeLine() {
   for (nd = nlist; nd && 0 != strcmp(p, nd->name); nd = nd->nxt)
     ;
   if (!nd)
-    error("Name \"%s\" not defined, line %d:\n  %s", p, in_lin, lin_copy);
+    error("Preset \"%s\" not defined, line %d:\n  %s", p, in_lin, lin_copy);
 
   // Normal name-def
   pp = (Period *)Alloc(sizeof(*pp));
@@ -4327,7 +3319,7 @@ normalizeAmplitude(Voice *voices, int numChannels, const char *line,
                         int lineNum) {
   double totalAmplitude = 0.0;
 
-  // Calculate the total amplitude of all voices (excluding mixspin/mixpulse)
+  // Calculate the total amplitude of all voices (excluding effect spin/pulse)
   for (int ch = 0; ch < numChannels; ch++) {
     if (voices[ch].typ != 0 && voices[ch].typ != 6 && voices[ch].typ != 7) {
       double ampPercentage = voices[ch].amp / 40.96;
@@ -4338,7 +3330,7 @@ normalizeAmplitude(Voice *voices, int numChannels, const char *line,
   // If total amplitude exceeds 100%, normalize all active voices
   if (totalAmplitude > 100.0) {
     double normalizationFactor = 100.0 / totalAmplitude;
-    // Apply normalization to all active voices (except mixspin/mixpulse)
+    // Apply normalization to all active voices (except effect spin/pulse)
     for (int ch = 0; ch < numChannels; ch++) {
       if (voices[ch].typ != 0 && voices[ch].typ != 6 && voices[ch].typ != 7) {
         voices[ch].amp *= normalizationFactor;

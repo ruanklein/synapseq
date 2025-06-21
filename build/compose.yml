@@ -19,9 +19,3 @@ services:
     container_name: build-synapseq-windows-synapseq-x86-64
     platform: linux/amd64
     command: ./build/windows-build-synapseq.sh
-
-  build-windows-installer-x86-64:
-    <<: *common-settings
-    container_name: build-synapseq-windows-installer-x86-64
-    platform: linux/amd64
-    command: ./build/windows-create-installer.sh
