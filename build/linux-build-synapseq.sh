@@ -34,9 +34,6 @@ create_dir_if_not_exists "$BUILD_DIR/dist"
 CFLAGS="-DT_POSIX -Wall -O3 -I."
 LIBS="-lm -lpthread"
 
-# Get the version number from the VERSION file
-VERSION=$(cat $BUILD_DIR/VERSION)
-
 # Check for MP3 support using pkg-config
 if pkg-config --exists mad; then
     info "Including MP3 support using pkg-config (libmad)"

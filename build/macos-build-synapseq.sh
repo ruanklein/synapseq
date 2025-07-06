@@ -22,9 +22,6 @@ MACOS_MIN_VERSION=$(sw_vers -productVersion | cut -d '.' -f 1-2)
 CFLAGS="-DT_POSIX -arch $ARCH -mmacosx-version-min=$MACOS_MIN_VERSION -I."
 LIBS=""
 
-# Get the version number from the VERSION file
-VERSION=$(cat $BUILD_DIR/VERSION)
-
 section_header "Building SynapSeq native binary ($ARCH) for macOS $MACOS_MIN_VERSION..."
 
 if [ ! "$(which pkg-config)" 2> /dev/null ]; then
