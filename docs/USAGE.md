@@ -461,3 +461,7 @@ The syntax is:
 ```
 
 Generate a raw audio data file instead of a WAV file.
+
+#### `--version`
+
+Show the version and audio format support.

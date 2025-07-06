@@ -18,7 +18,7 @@
 //
 //  See the file COPYING.txt for the full license text.
 
-#define VERSION "2.1.0"
+#define VERSION "2.1.1"
 
 //  T_WIN32	To build for Windows using MinGW and Win32 calls
 //  T_POSIX	To build for any Posix-compliant OS
@@ -159,7 +159,8 @@ void help() {
       "Options:  --help                  show this help and exit" NL
       "          --quiet                 quiet mode" NL
       "          --output file           write output to file" NL
-      "          --raw                   write raw data instead of WAV" NL NL
+      "          --raw                   write raw data instead of WAV" NL
+      "          --version               show version and exit" NL NL
       "Example: synapseq --output output.wav sequence-file" NL
       "         synapseq --output - sequence-file | play -" NL
       );
@@ -664,6 +665,22 @@ void scanOptions(int *acp, char ***avp) {
     }
     else if (strcmp(current_opt, "raw") == 0) {
       opt_W = 0;
+    }
+    else if (strcmp(current_opt, "version") == 0) {
+      printf("SynapSeq version %s\n", VERSION);
+      printf("\nAudio format support for the @background option:\n");
+#ifdef OGG_DECODE
+      printf("  ✓ OGG support: enabled\n");
+#else 
+      printf("  ✗ OGG support: disabled\n");
+#endif
+#ifdef MP3_DECODE
+      printf("  ✓ MP3 support: enabled\n");
+#else
+      printf("  ✗ MP3 support: disabled\n");
+#endif
+      printf("  ✓ WAV support: enabled (built-in)\n");
+      exit(0);
     }
     else {
       error("Invalid option: --%s. Type 'synapseq --help' for help.", current_opt);
