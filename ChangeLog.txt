@@ -1,3 +1,6 @@
+2.1.1: Fixed build scripts.
+2.1.1: Added --version option.
+
 2.1.0: Removed playback real-time.
 2.1.0: Removed verbose mode.
 2.1.0: Removed support for ALSA, CoreAudio and WIN32 audio API.
