@@ -634,7 +634,6 @@ int main(int argc, char **argv) {
 void scanOptions(int *acp, char ***avp) {
   int argc = *acp;
   char **argv = *avp;
-  char dmy;
 
   // Scan options
   while (argc > 0 && argv[0][0] == '-' && argv[0][1] == '-') {
