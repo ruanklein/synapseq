@@ -77,6 +77,17 @@ Phases:
 └─ 9:00-10:00: Fade-out from alpha to silence (end of sequence)
 ```
 
+### More Examples
+
+You can find additional example scripts in the `samples/` folder of this repository. These include various types of brainwave entrainment sequences that you can download and test:
+
+- `sample-binaural.spsq` - Binaural beats example
+- `sample-isochronic.spsq` - Isochronic tones example
+- `sample-monaural.spsq` - Monaural beats example
+- `sample-noise.spsq` - Noise-based entrainment
+- `sample-spin.spsq` - Spinning frequency effects
+- `sample-waveform.spsq` - Custom waveform example
+
 ## Installation
 
 SynapSeq is a command-line tool, not a traditional desktop application. It's designed to be compiled and used directly from the terminal as part of your audio workflow.
