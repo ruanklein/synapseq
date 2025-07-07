@@ -188,6 +188,32 @@ docker compose -f build/compose.yml up build-windows-synapseq-x86-64
 
 The `.exe` file will be created in the `build/dist` folder.
 
+#### Installing the executable
+
+To install SynapSeq system-wide on Windows:
+
+1. **Copy the executable to a permanent location (run Command Prompt as Administrator):**
+
+   ```cmd
+   mkdir "C:\Program Files\SynapSeq"
+   copy "build\dist\synapseq-windows-x86_64.exe" "C:\Program Files\SynapSeq\synapseq.exe"
+   ```
+
+2. **Add to PATH environment variable:**
+
+   - Open "Environment Variables" (search for it in Start menu)
+   - In "System Variables", find and select "Path", then click "Edit"
+   - Click "New" and add: `C:\Program Files\SynapSeq`
+   - Click "OK" to save all changes
+   - Restart your terminal/command prompt
+
+3. **Verify installation (in Command Prompt or PowerShell):**
+   ```cmd
+   synapseq --version
+   ```
+
+After installation, you can use `synapseq` from any directory in your terminal.
+
 ## Documentation
 
 For detailed information on all features and advanced usage, see the [USAGE.md](docs/USAGE.md) file.
