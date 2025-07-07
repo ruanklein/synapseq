@@ -90,7 +90,27 @@ You can find additional example scripts in the `samples/` folder of this reposit
 
 ## Installation
 
-SynapSeq is a command-line tool, not a traditional desktop application. It's designed to be compiled and used directly from the terminal as part of your audio workflow.
+SynapSeq is a command-line tool, not a traditional desktop application. You can use it in two ways:
+
+### Option 1: Using Docker (Recommended)
+
+The easiest way to use SynapSeq is with Docker, without needing to compile or install anything on your system.
+
+```bash
+docker run --rm -v ./spsq:/data ruanklein/synapseq --output Relax.wav Relax.spsq
+```
+
+In this command:
+
+- `--rm` removes the container after execution
+- `-v ./spsq:/data` maps your local folder containing `.spsq` files to the container's `/data` directory
+- The SynapSeq command follows the same syntax as the compiled version
+
+Make sure your `.spsq` files are in the local folder you're mapping to `/data`.
+
+### Option 2: Compile from Source
+
+Alternatively, you can compile SynapSeq from source and use it directly from the terminal as part of your audio workflow.
 
 ## Compilation
 
