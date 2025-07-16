@@ -1,0 +1,7 @@
+alpha-one
+  tone 250 binaural 10 amplitude 10
+
+00:00:00 silence
+00:00:15 alpha-one
+00:00:45 alpha-one
+00:01:00 silence
