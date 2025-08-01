@@ -14,5 +14,6 @@ build/windows-installer/*
 *.log
 
 !/samples/**/*.spsq
+!/contrib/**/*.spsq
 
 .vscode/
