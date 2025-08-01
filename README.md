@@ -19,6 +19,7 @@ SynapSeq is a lightweight and efficient engine for sequencing audio tones for br
   - [Linux](#linux)
   - [Windows](#windows)
 - [Documentation](#documentation)
+- [Sequence Contributing](#sequence-contributing)
 - [License](#license)
 - [Contact](#contact)
 - [Credits](#credits)
@@ -217,6 +218,12 @@ After installation, you can use `synapseq` from any directory in your terminal.
 ## Documentation
 
 For detailed information on all features and advanced usage, see the [USAGE.md](docs/USAGE.md) file.
+
+## Sequence Contributing
+
+Share your brainwave entrainment sequences with the community! If you've created interesting `.spsq` files that others might find useful, you can contribute them to the project.
+
+For detailed instructions on how to contribute your sequences, see the [Contributing Guide](contrib/README.md) in the `contrib/` directory.
 
 ## License
 
