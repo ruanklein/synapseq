@@ -125,12 +125,18 @@ Install the Xcode Command Line Tools on your system:
 xcode-select --install
 ```
 
-Install [Homebrew](https://brew.sh/) if you don't have it yet.
+Install either [Homebrew](https://brew.sh/) or [MacPorts](https://www.macports.org/install.php) if you don't have any of them yet.
 
-Install the required dependencies:
+If using Homebrew, install the required dependencies with:
 
 ```bash
 brew install pkg-config libvorbis libmad
+```
+
+If using MacPorts, install the required dependencies with:
+
+```bash
+port install pkgconfig libvorbis libmad
 ```
 
 Run the build script to create the binary:

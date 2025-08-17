@@ -30,9 +30,14 @@ if [ ! "$(which pkg-config)" 2> /dev/null ]; then
     exit 1
 fi
 
-if [ -z $HOMEBREW_PREFIX ]; then
-    error "HOMEBREW_PREFIX is not set"
-    error "Please install Homebrew using 'https://brew.sh/'"
+if [[ -n $HOMEBREW_PREFIX ]]; then
+    LIB_PATH=$HOMEBREW_PREFIX/lib
+elif command -v port >/dev/null 2>&1; then
+    MACPORTS_PREFIX=$(dirname $(dirname $(command -v port)))
+    LIB_PATH=$MACPORTS_PREFIX/lib
+else
+    error "Missing required dependencies"
+    info "Follow the steps in README.md under Compilation -> macOS to install either Homebrew or MacPorts and required dependencies"
     exit 1
 fi
 
@@ -45,13 +50,13 @@ if pkg-config --exists mad; then
     CFLAGS="$CFLAGS -DMP3_DECODE $(pkg-config --cflags mad)"
     
     # Force static linking by using .a files directly
-    MAD_LIB="$HOMEBREW_PREFIX/lib/libmad.a"
+    MAD_LIB="$LIB_PATH/libmad.a"
     if [ -f "$MAD_LIB" ]; then
         LIBS="$LIBS $MAD_LIB -lm"
         info "Using static library: $MAD_LIB"
     else
         LIBS="$LIBS $(pkg-config --libs mad)"
-        warning "Static libmad.a not found, using dynamic"
+        warning "Static libmad.a not found, using dynamic${MACPORTS_PREFIX:+ due to MacPorts not providing a static variant of libmad}"
     fi
 else
     warning "libmad not found via pkg-config"
@@ -65,9 +70,9 @@ if pkg-config --exists vorbis vorbisfile ogg; then
     CFLAGS="$CFLAGS -DOGG_DECODE $(pkg-config --cflags vorbis vorbisfile ogg)"
     
     # Force static linking by using .a files directly
-    VORBISFILE_LIB="$HOMEBREW_PREFIX/lib/libvorbisfile.a"
-    VORBIS_LIB="$HOMEBREW_PREFIX/lib/libvorbis.a"
-    OGG_LIB="$HOMEBREW_PREFIX/lib/libogg.a"
+    VORBISFILE_LIB="$LIB_PATH/libvorbisfile.a"
+    VORBIS_LIB="$LIB_PATH/libvorbis.a"
+    OGG_LIB="$LIB_PATH/libogg.a"
     
     if [ -f "$VORBISFILE_LIB" ] && [ -f "$VORBIS_LIB" ] && [ -f "$OGG_LIB" ]; then
         LIBS="$LIBS $VORBISFILE_LIB $VORBIS_LIB $OGG_LIB -lm"
