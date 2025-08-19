@@ -20,6 +20,7 @@ SynapSeq is a lightweight and efficient engine for sequencing audio tones for br
   - [Windows](#windows)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
+  - [Code of Conduct](#code-of-conduct)
 - [License](#license)
 - [Contact](#contact)
 - [Credits](#credits)
@@ -227,8 +228,19 @@ For detailed information on all features and advanced usage, see the [USAGE.md](
 
 ## Contributing
 
-We welcome contributions!  
+We welcome contributions!
+
 Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute code, bug fixes, documentation, or new sequence files to the project.
+
+### Code of Conduct
+
+Please note that all contributors are expected to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+- Be respectful and considerate in all interactions.
+- Harassment or abusive behavior will not be tolerated.
+- Help us maintain a friendly and inclusive community.
+
+If you experience or witness unacceptable behavior, please report it as described in the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
