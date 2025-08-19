@@ -19,7 +19,7 @@ SynapSeq is a lightweight and efficient engine for sequencing audio tones for br
   - [Linux](#linux)
   - [Windows](#windows)
 - [Documentation](#documentation)
-- [Sequence Contributing](#sequence-contributing)
+- [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
 - [Credits](#credits)
@@ -125,12 +125,18 @@ Install the Xcode Command Line Tools on your system:
 xcode-select --install
 ```
 
-Install [Homebrew](https://brew.sh/) if you don't have it yet.
+Install either [Homebrew](https://brew.sh/) or [MacPorts](https://www.macports.org/install.php) if you don't have any of them yet.
 
-Install the required dependencies:
+If using Homebrew, install the required dependencies with:
 
 ```bash
 brew install pkg-config libvorbis libmad
+```
+
+If using MacPorts, install the required dependencies with:
+
+```bash
+port install pkgconfig libvorbis libmad
 ```
 
 Run the build script to create the binary:
@@ -219,11 +225,10 @@ After installation, you can use `synapseq` from any directory in your terminal.
 
 For detailed information on all features and advanced usage, see the [USAGE.md](docs/USAGE.md) file.
 
-## Sequence Contributing
+## Contributing
 
-Share your brainwave entrainment sequences with the community! If you've created interesting `.spsq` files that others might find useful, you can contribute them to the project.
-
-For detailed instructions on how to contribute your sequences, see the [Contributing Guide](contrib/README.md) in the `contrib/` directory.
+We welcome contributions!  
+Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute code, bug fixes, documentation, or new sequence files to the project.
 
 ## License
 
