@@ -15,6 +15,9 @@ All function, method, variable, struct, and interface names must be explicit and
 **Do Not Migrate Dead Code:**  
 Do not migrate code that is obsolete or irrelevant for SynapSeq, such as remnants of real-time playback or any functionality not aligned with the current project goals. Only port code that is meaningful and necessary for the offline sequence-to-WAV workflow.
 
+**Clean Code and Best Practices:**  
+This project follows clean code principles and the KISS (Keep It Simple, Stupid!) philosophy. Code should be easy to read, concise, and maintainable. Avoid unnecessarily complex, verbose, or inconsistent code. Pull requests with code that is hard to interpret, excessively long, or lacking clear structure and standards will not be accepted.
+
 **Code Formatting:**  
 All Go code must be formatted using [`gofmt`](https://pkg.go.dev/cmd/gofmt). Please ensure your code is properly formatted before submitting a pull request.
 
@@ -166,5 +169,16 @@ All Go code must be formatted using [`gofmt`](https://pkg.go.dev/cmd/gofmt). Ple
 - Prepare build scripts and release instructions.
 - Ensure cross-platform compatibility (Linux, macOS, Windows).
 - Publish the project and documentation.
+
+---
+
+### Future after v3
+
+- Consider improving the Timeline syntax to make it easier to understand, following the principle of **Intention over Syntax**.
+- Separate the core from additional features, creating a mechanism for addons.
+- Following the addon idea, add export formats such as MP3, OGG, and others.
+- Add support for well-known formats beyond `.spsq`, such as JSON, via addons.
+
+---
 
 **This roadmap ensures a faithful, maintainable, and idiomatic Go port of SynapSeq, covering all technical and architectural aspects identified in the original C code.**

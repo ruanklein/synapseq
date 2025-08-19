@@ -51,4 +51,11 @@ We are happy to discuss ideas, answer questions, and help guide your contributio
 
 ---
 
+## License
+
+By contributing to SynapSeq, you agree that your contributions will be licensed under the same license as the project.  
+Please make sure you have the right to submit your code or content under these terms.
+
+---
+
 Thank you for helping make SynapSeq better! We appreciate your contributions.
