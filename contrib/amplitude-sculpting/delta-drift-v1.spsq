@@ -1,0 +1,122 @@
+## Sequence Explanation – "Delta Drift v1"
+## Created by @jlundi on 2025-08-02
+## 
+## A 4-phase amplitude-sculpted entrainment session for deep body-mind release
+## 🧬 Core Design Philosophy
+## 
+## This session uses simultaneous multi-band entrainment, not frequency sweeping. All five core brainwave bands are present throughout—delta (1.5 Hz), theta (4.5 Hz), alpha (8.5 Hz), SMR (15 Hz), and gamma (40 Hz)—with their amplitudes gradually shaped across four phases to guide the listener into a deep, still, and receptive state.
+## 
+## The design is modeled after natural descent from relaxed wakefulness to subconscious immersion, while keeping the window of awareness open.
+## 🔄 Phase-by-Phase Breakdown
+## Phase 1 – Grounding & Stabilization (00:00–10:00)
+## 
+## Goal: Relax the mind-body system and build a stable closed-eye alpha base.
+## Frequency Role Amplitude
+## 1.5 Hz Delta – deep body calm 1 (seeded)
+## 4.5 Hz Theta – dreamlike drift 3
+## 8.5 Hz Alpha – dominant relaxation 9
+## 15 Hz SMR – still alertness 7
+## 40 Hz Gamma – coherence, subtle awareness 5
+## 
+## Alpha is strong to promote internal stillness. SMR and gamma are present to preserve alertness. Delta/theta are introduced quietly, setting the stage.
+## Phase 2 – Descent & Transition (10:00–20:00)
+## 
+## Goal: Begin withdrawal from cognitive bands, increase subconscious access.
+## Frequency Role Amplitude
+## 1.5 Hz Delta – rising strongly 9
+## 4.5 Hz Theta – stable 5
+## 8.5 Hz Alpha – reduced 7
+## 15 Hz SMR – fading 3
+## 40 Hz Gamma – minimal 1
+## 
+## Delta comes forward, theta remains active, and alpha starts fading. Cognitive bands (SMR/gamma) reduce to make space for deeper entrainment.
+## Phase 3 – Immersion (20:00–30:00)
+## 
+## Goal: Enter the delta/theta field and quiet the cognitive mind.
+## Frequency Role Amplitude
+## 1.5 Hz Delta – dominant 11
+## 4.5 Hz Theta – strong 9
+## 8.5 Hz Alpha – minimal 1
+## 15 Hz SMR – minimal 1
+## 40 Hz Gamma – minimal 1
+## 
+## This is the core descent zone: delta/theta dominate, while alpha, SMR, and gamma are dropped to near-silence. This replicates dream onset, body sleep, or somatic integration states.
+## Phase 4 – Stabilization (30:00–32:00)
+## 
+## Goal: Maintain the entrained deep state without disrupting it.
+## 
+## Same settings as Phase 3:
+## 
+## Delta (11), Theta (9), all other bands (1)
+## 
+## Holding the final state avoids abrupt transitions and gives the nervous system time to integrate.
+## 🔧 Timeline Summary
+## 
+## 00:00:00 – Silence (settling)
+## 
+## 00:00:15 – Phase 1: Relaxed alpha dominance
+## 
+## 00:10:00 – Phase 2: Delta begins to rise
+## 
+## 00:20:00 – Phase 3: Full delta/theta immersion
+## 
+## 00:30:00 – Phase 4: Hold and integrate
+## 
+## 00:32:00 – Silence (exit buffer)
+## 🧠 Why This Structure Works
+## 
+## Respects real brain layering: multiple bands coexist in the brain at all times. This sequence mirrors that.
+## 
+## Uses amplitude, not frequency shifts: avoids jarring transitions; aligns with EEG practice.
+## 
+## Gradual descent: supports natural progression from wakefulness → deep subconscious states.
+## 
+## No overstimulation: cognitive bands fade gently, not abruptly.
+## 🌀 Ideal Use Cases
+## 
+## Deep meditation
+## 
+## Trauma unwinding
+## 
+## Sleep onset with awareness
+## 
+## Hypnagogic exploration
+## 
+## Nervous system reset
+
+# Presets
+Phase_1
+  tone 100 binaural 1.5 amplitude 1
+  tone 200 binaural 4.5 amplitude 3
+  tone 250 binaural 8.5 amplitude 9
+  tone 300 binaural 15 amplitude 7
+  tone 400 binaural 40 amplitude 5
+
+Phase_2
+  tone 100 binaural 1.5 amplitude 9
+  tone 200 binaural 4.5 amplitude 5
+  tone 250 binaural 8.5 amplitude 7
+  tone 300 binaural 15 amplitude 3
+  tone 400 binaural 40 amplitude 1
+
+Phase_3
+  tone 100 binaural 1.5 amplitude 11
+  tone 200 binaural 4.5 amplitude 9
+  tone 250 binaural 8.5 amplitude 1
+  tone 300 binaural 15 amplitude 1
+  tone 400 binaural 40 amplitude 1
+
+Phase_4
+  tone 100 binaural 1.5 amplitude 11
+  tone 200 binaural 4.5 amplitude 9
+  tone 250 binaural 8.5 amplitude 1
+  tone 300 binaural 15 amplitude 1
+  tone 400 binaural 40 amplitude 1
+
+# Timeline
+00:00:00 silence
+00:00:15 Phase_1
+00:10:00 Phase_2
+00:20:00 Phase_3
+00:30:00 Phase_4
+00:32:00 silence
