@@ -1,6 +1,13 @@
 # Contributing to SynapSeq
 
-Thank you for your interest in contributing to SynapSeq! Please read the guidelines below before opening a pull request (PR).
+First off, thank you for considering contributing to **SynapSeq**!
+This project grows stronger with community support, whether through code, docs, bug reports, build scripts, or new ideas.
+
+## TL;DR (Quick Summary)
+
+- 🚀 PRs for the Go rewrite (v3) → branch: `development-v3`
+- 🛠️ PRs for the C version (v2) → branch: `development` (bug fixes, docs, build scripts only)
+- 🎵 Sequence files (`.spsq`) → see [`contrib/README.md`](./contrib/README.md)
 
 ---
 
@@ -8,47 +15,68 @@ Thank you for your interest in contributing to SynapSeq! Please read the guideli
 
 ### Version 3.x (Go Rewrite)
 
-- **New features will only be accepted for version 3.1 and above, and must be implemented in Go.**
 - The current focus for version 3.0 (branch: `development-v3`) is the faithful porting of the original C code to idiomatic Go.
 - **Only PRs that port code from C to Go, following the requirements and conventions described in [`ROADMAP.md`](./ROADMAP.md), will be accepted at this stage.**
-- If you wish to help accelerate the Go rewrite, please consult the [`ROADMAP.md`](./ROADMAP.md) for detailed requirements and architectural guidelines.
-- All PRs for the Go rewrite must target the `development-v3` branch.
+- New features will only be considered starting in version **3.1+**, after the port is complete.
+- Please open your PRs against `development-v3`.
 
 ### Version 2.x (C Codebase)
 
-- The current C version (`synapseq.c`) is in maintenance mode and will be deprecated after the Go rewrite is released.
-- **Only bug fixes will be accepted for the C codebase.**
-- PRs for the C version must target the `development` branch.
-- Contributions such as build scripts and documentation improvements for the C version are welcome if they add value to the project.
+- The current C version (`synapseq.c`) is in **maintenance mode**.
+- We still welcome contributions that add value for users:
+  - **Bug fixes**
+  - **Documentation improvements**
+  - **Build scripts or integration tweaks** to support more systems and tools
+- All PRs for the C codebase must target the `development` branch.
 
 ---
 
 ## Contributing Sequence Files (`.spsq`)
 
-If you want to contribute new or improved sequence files (`.spsq`), please refer to the guidelines in [`contrib/README.md`](./contrib/README.md).  
-The contribution process for sequence files is different from code contributions and is described in detail in that document.
+If you’d like to contribute new or improved sequence files (`.spsq`), please see [`contrib/README.md`](./contrib/README.md).  
+This process is separate from code contributions.
+
+---
+
+## Commit Convention
+
+We use the **Conventional Commits** format.  
+Examples:
+
+- `feat: add new waveform option`
+- `fix: correct parsing bug for noise sequences`
+- `docs: update README with usage examples`
+- `build: add Makefile for macOS`
+- `chore: clean up unused code in parser`
+
+Following this format keeps the commit history clear and enables automated changelog generation in the future.
 
 ---
 
 ## Pull Request Guidelines
 
-- **For Go (v3) contributions:**
+✅ Before opening a PR, please make sure:
 
-  - Open your PR against the `development-v3` branch.
-  - Ensure your changes strictly follow the structure and naming conventions outlined in [`ROADMAP.md`](./ROADMAP.md).
-  - Do not submit new features or refactors outside the porting scope until v3.1.
-
-- **For C (current) contributions:**
-  - Open your PR against the `development` branch.
-  - Only bug fixes, build scripts, or documentation improvements will be considered.
+- [ ] Your PR targets the correct branch (`development-v3` for Go, `development` for C).
+- [ ] You followed the conventions in [`ROADMAP.md`](./ROADMAP.md) (v3).
+- [ ] You wrote clear, descriptive commit messages (see above).
+- [ ] Tests (if applicable) run successfully.
+- [ ] Your changes are limited to the scope of the PR (no unrelated edits).
 
 ---
 
-## Not Sure? Open an Issue!
+## Not Sure? Open an Issue First!
 
-If you are unsure whether your contribution will be useful or fit the project's direction, **feel free to open an issue first**.  
-We are happy to discuss ideas, answer questions, and help guide your contribution before you start working on a pull request.
+If you’re not sure whether your contribution fits, **open an issue**.  
+We’ll be happy to discuss your idea before you start coding — saving you time and aligning with the project’s roadmap.
 
 ---
 
-Thank you for helping make SynapSeq better! We appreciate your contributions.
+## License
+
+By contributing to SynapSeq, you agree that your contributions will be licensed under the same license as the project.  
+Please ensure you have the right to submit your code or content under these terms.
+
+---
+
+💡 Thank you for helping make SynapSeq better! Even small contributions - fixing typos, improving docs, or sharing ideas - help this project grow.
