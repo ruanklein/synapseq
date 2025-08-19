@@ -81,4 +81,4 @@ Description: Brief description about yourself or your work (optional)
 2. Create a new branch with the naming convention: `contrib/project-name`
 3. Create your project folder in the `contrib` directory
 4. Add your `.spsq` file(s) and required documentation
-5. Submit a pull request
+5. Submit a pull request to `development` branch
