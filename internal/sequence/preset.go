@@ -1,11 +1,17 @@
 package sequence
 
 import (
+	"regexp"
+
 	"github.com/ruanklein/synapseq/internal/audio"
 )
 
+const (
+	BuiltinSilence = "silence" // Represents silence
+)
+
 var (
-	PresetList *Preset // List of presets
+	PresetList []Preset // List of presets
 )
 
 // Preset represents a named preset
@@ -24,4 +30,10 @@ func (p *Preset) InitVoices() {
 		p.Voice[i].Resonance = 0.0
 		p.Voice[i].Waveform = audio.WaveformSine
 	}
+}
+
+// Regex for validating preset names
+func IsPreset(s string) bool {
+	regexPreset := regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_-]*$`)
+	return regexPreset.MatchString(s)
 }
