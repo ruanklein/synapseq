@@ -2,32 +2,33 @@ package sequence
 
 import (
 	"fmt"
+	"strings"
 )
 
 const (
-	KeywordComment    = "#"          // Represents a comment
-	KeywordOption     = "@"          // Represents an option
-	KeywordTone       = "tone"       // Represents a tone
-	KeywordBinaural   = "binaural"   // Represents a binaural tone
-	KeywordMonaural   = "monaural"   // Represents a monaural tone
-	KeywordIsochronic = "isochronic" // Represents an isochronic tone
-	KeywordAmplitude  = "amplitude"  // Represents an amplitude
-	KeywordNoise      = "noise"      // Represents a noise
-	KeywordWhite      = "white"      // Represents a white noise
-	KeywordPink       = "pink"       // Represents a pink noise
-	KeywordBrown      = "brown"      // Represents a brown noise
-	KeywordSpin       = "spin"       // Represents a spin
-	KeywordWidth      = "width"      // Represents a width
-	KeywordRate       = "rate"       // Represents a rate
-	KeywordIntensity  = "intensity"  // Represents an intensity
-
-	// Regex for validating preset names
-	// RegexPreset = `^[a-zA-Z][a-zA-Z0-9_-]*$`
+	keywordComment    = "#"          // Represents a comment
+	keywordOption     = "@"          // Represents an option
+	keywordWaveform   = "waveform"   // Represents a waveform
+	keywordSine       = "sine"       // Represents a sine wave
+	keywordSquare     = "square"     // Represents a square wave
+	keywordTriangle   = "triangle"   // Represents a triangle wave
+	keywordSawtooth   = "sawtooth"   // Represents a sawtooth wave
+	keywordTone       = "tone"       // Represents a tone
+	keywordBinaural   = "binaural"   // Represents a binaural tone
+	keywordMonaural   = "monaural"   // Represents a monaural tone
+	keywordIsochronic = "isochronic" // Represents an isochronic tone
+	keywordAmplitude  = "amplitude"  // Represents an amplitude
+	keywordNoise      = "noise"      // Represents a noise
+	keywordWhite      = "white"      // Represents a white noise
+	keywordPink       = "pink"       // Represents a pink noise
+	keywordBrown      = "brown"      // Represents a brown noise
+	keywordSpin       = "spin"       // Represents a spin
+	keywordWidth      = "width"      // Represents a width
+	keywordRate       = "rate"       // Represents a rate
+	keywordIntensity  = "intensity"  // Represents an intensity
 )
 
 // LoadSequence loads a sequence from a file
-// and parses its contents into a preset
-// and create channels as needed
 func LoadSequence(fileName string) error {
 	file, err := LoadFile(fileName)
 	if err != nil {
@@ -35,8 +36,54 @@ func LoadSequence(fileName string) error {
 	}
 
 	for file.NextLine() {
-		// Debugging output
-		fmt.Printf("Processing line %d: %s\n", file.CurrentLineNumber, file.CurrentLine)
+		fields := strings.Fields(file.CurrentLine)
+
+		// Skip empty lines and comments
+		if len(fields) == 0 || fields[0] == keywordComment {
+			continue
+		}
+
+		// Printable comment
+		if fields[0] == strings.Repeat(keywordComment, 2) {
+			fmt.Printf("> %s\n", strings.Join(fields[1:], " "))
+			continue
+		}
+
+		// Preset definition
+		if len(fields) == 1 && IsPreset(fields[0]) {
+			presetName := strings.ToLower(fields[0])
+			if presetName == BuiltinSilence {
+				return fmt.Errorf("cannot load built-in preset '%s' at line %d", BuiltinSilence, file.CurrentLineNumber)
+			}
+
+			var preset Preset
+			if len(PresetList) > 0 {
+				for i := 0; i < len(PresetList); i++ {
+					if PresetList[i].Name == presetName {
+						return fmt.Errorf("preset '%s' already exists at line %d", presetName, file.CurrentLineNumber)
+					}
+				}
+
+				PresetList[len(PresetList)-1].Next = &preset
+			}
+
+			// Create a new preset
+			preset.Name = presetName
+			preset.InitVoices()
+			PresetList = append(PresetList, preset)
+
+			continue
+		}
+
+	}
+
+	// Debug presets
+	for _, p := range PresetList {
+		if p.Next != nil {
+			fmt.Printf("Preset: %s | Next: %s\n", p.Name, p.Next.Name)
+		} else {
+			fmt.Printf("Preset: %s\n", p.Name)
+		}
 	}
 
 	return nil
