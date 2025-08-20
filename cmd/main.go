@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/ruanklein/synapseq/internal/sequence"
+	"github.com/ruanklein/synapseq/internal/utils"
 )
 
 func main() {
@@ -15,8 +16,7 @@ func main() {
 
 	// Debug sequence
 	if err := sequence.LoadSequence(os.Args[1]); err != nil {
-		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-		os.Exit(1)
+		utils.Error(err.Error())
 	}
 
 }
