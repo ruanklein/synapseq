@@ -1,6 +1,9 @@
 package config
 
+import "github.com/ruanklein/synapseq/internal/audio"
+
 const (
-	DefaultSampleRate   = 44100 // Default sample rate
-	DefaultFadeInterval = 60000 // Default fade interval (ms)
+	SampleRate   = 44100           // Sample rate
+	OutputFormat = audio.WavFormat // Output format
+	Volume       = 100             // Volume (0-100)
 )
