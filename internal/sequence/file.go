@@ -8,10 +8,10 @@ import (
 
 // SequenceFile represents a sequence file
 type SequenceFile struct {
-	CurrentLine       string
-	CurrentLineNumber int
-	scanner           *bufio.Scanner
-	file              *os.File
+	CurrentLine       string         // Current line in the file
+	CurrentLineNumber int            // Current line number
+	scanner           *bufio.Scanner // Scanner for reading the file
+	file              *os.File       // File handle
 }
 
 // LoadFile loads a sequence file

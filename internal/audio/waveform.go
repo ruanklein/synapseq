@@ -4,7 +4,8 @@ import (
 	"fmt"
 )
 
-type WaveformType int // WaveformType represents the waveform shape
+// WaveformType represents the waveform shape
+type WaveformType int
 
 // Waveform types
 const (

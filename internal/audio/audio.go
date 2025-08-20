@@ -1,9 +1,6 @@
 package audio
 
 const (
-	// Number of channels
-	NumberOfChannels = 16
-
-	// Number of elements in sine-table (power of 2)
-	SineTableSize = 16384
+	NumberOfChannels = 16    // Number of channels
+	SineTableSize    = 16384 // Number of elements in sine-table (power of 2)
 )
