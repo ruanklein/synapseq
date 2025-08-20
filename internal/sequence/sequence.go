@@ -28,6 +28,11 @@ const (
 	keywordIntensity  = "intensity"  // Represents an intensity
 )
 
+// isDoubleComment checks if a string is a double comment
+func isDoubleComment(s string) bool {
+	return s == strings.Repeat(keywordComment, 2)
+}
+
 // LoadSequence loads a sequence from a file
 func LoadSequence(fileName string) error {
 	file, err := LoadFile(fileName)
@@ -44,16 +49,27 @@ func LoadSequence(fileName string) error {
 		}
 
 		// Printable comment
-		if fields[0] == strings.Repeat(keywordComment, 2) {
+		if isDoubleComment(fields[0]) {
 			fmt.Printf("> %s\n", strings.Join(fields[1:], " "))
 			continue
 		}
 
 		// Preset definition
-		if len(fields) == 1 && IsPreset(fields[0]) {
+		if !strings.HasPrefix(file.CurrentLine, " ") && IsPreset(fields[0]) {
 			presetName := strings.ToLower(fields[0])
 			if presetName == BuiltinSilence {
 				return fmt.Errorf("cannot load built-in preset '%s' at line %d", BuiltinSilence, file.CurrentLineNumber)
+			}
+
+			// Check for a comment after the preset name
+			if len(fields) > 1 {
+				if isDoubleComment(fields[1]) {
+					fmt.Printf("> %s\n", strings.Join(fields[2:], " "))
+				} else if fields[1] == keywordComment {
+					// Skip
+				} else {
+					return fmt.Errorf("invalid preset definition at line %d: %s", file.CurrentLineNumber, file.CurrentLine)
+				}
 			}
 
 			var preset Preset
@@ -79,7 +95,7 @@ func LoadSequence(fileName string) error {
 
 	// Debug presets
 	for _, p := range PresetList {
-		if p.Next != nil {
+		if p.HasNext() {
 			fmt.Printf("Preset: %s | Next: %s\n", p.Name, p.Next.Name)
 		} else {
 			fmt.Printf("Preset: %s\n", p.Name)

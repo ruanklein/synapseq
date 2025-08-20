@@ -32,6 +32,10 @@ func (p *Preset) InitVoices() {
 	}
 }
 
+func (p *Preset) HasNext() bool {
+	return p.Next != nil
+}
+
 // Regex for validating preset names
 func IsPreset(s string) bool {
 	regexPreset := regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_-]*$`)
