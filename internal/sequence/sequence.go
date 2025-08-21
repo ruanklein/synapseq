@@ -2,36 +2,39 @@ package sequence
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
+
+	"github.com/ruanklein/synapseq/internal/audio"
 )
 
 const (
-	keywordComment    = "#"          // Represents a comment
-	keywordOption     = "@"          // Represents an option
-	keywordWaveform   = "waveform"   // Represents a waveform
-	keywordSine       = "sine"       // Represents a sine wave
-	keywordSquare     = "square"     // Represents a square wave
-	keywordTriangle   = "triangle"   // Represents a triangle wave
-	keywordSawtooth   = "sawtooth"   // Represents a sawtooth wave
-	keywordTone       = "tone"       // Represents a tone
-	keywordBinaural   = "binaural"   // Represents a binaural tone
-	keywordMonaural   = "monaural"   // Represents a monaural tone
-	keywordIsochronic = "isochronic" // Represents an isochronic tone
-	keywordAmplitude  = "amplitude"  // Represents an amplitude
-	keywordNoise      = "noise"      // Represents a noise
-	keywordWhite      = "white"      // Represents a white noise
-	keywordPink       = "pink"       // Represents a pink noise
-	keywordBrown      = "brown"      // Represents a brown noise
-	keywordSpin       = "spin"       // Represents a spin
-	keywordWidth      = "width"      // Represents a width
-	keywordRate       = "rate"       // Represents a rate
-	keywordIntensity  = "intensity"  // Represents an intensity
+	keywordComment       = "#"          // Represents a comment
+	keywordDoubleComment = "##"         // Represents a double comment
+	keywordOption        = "@"          // Represents an option
+	keywordWaveform      = "waveform"   // Represents a waveform
+	keywordSine          = "sine"       // Represents a sine wave
+	keywordSquare        = "square"     // Represents a square wave
+	keywordTriangle      = "triangle"   // Represents a triangle wave
+	keywordSawtooth      = "sawtooth"   // Represents a sawtooth wave
+	keywordTone          = "tone"       // Represents a tone
+	keywordBinaural      = "binaural"   // Represents a binaural tone
+	keywordMonaural      = "monaural"   // Represents a monaural tone
+	keywordIsochronic    = "isochronic" // Represents an isochronic tone
+	keywordAmplitude     = "amplitude"  // Represents an amplitude
+	keywordNoise         = "noise"      // Represents a noise
+	keywordWhite         = "white"      // Represents a white noise
+	keywordPink          = "pink"       // Represents a pink noise
+	keywordBrown         = "brown"      // Represents a brown noise
+	keywordSpin          = "spin"       // Represents a spin
+	keywordWidth         = "width"      // Represents a width
+	keywordRate          = "rate"       // Represents a rate
+	keywordEffect        = "effect"     // Represents an effect
+	keywordBackground    = "background" // Represents a background
+	keywordPulse         = "pulse"      // Represents a pulse
+	keywordIntensity     = "intensity"  // Represents an intensity
 )
-
-// isDoubleComment checks if a string is a double comment
-func isDoubleComment(s string) bool {
-	return s == strings.Repeat(keywordComment, 2)
-}
 
 // LoadSequence loads a sequence from a file
 func LoadSequence(fileName string) error {
@@ -41,42 +44,35 @@ func LoadSequence(fileName string) error {
 	}
 
 	for file.NextLine() {
-		fields := strings.Fields(file.CurrentLine)
+		line := file.CurrentLine
+		lineNumber := file.CurrentLineNumber
+
+		// Split the line into fields
+		fields := strings.Fields(line)
 
 		// Skip empty lines and comments
 		if len(fields) == 0 || fields[0] == keywordComment {
 			continue
 		}
 
-		// Printable comment
-		if isDoubleComment(fields[0]) {
+		// Print if double comment
+		if fields[0] == keywordDoubleComment {
 			fmt.Printf("> %s\n", strings.Join(fields[1:], " "))
 			continue
 		}
 
 		// Preset definition
-		if !strings.HasPrefix(file.CurrentLine, " ") && IsPreset(fields[0]) {
+		if line[0] != ' ' && IsPreset(fields[0]) {
 			presetName := strings.ToLower(fields[0])
 			if presetName == BuiltinSilence {
-				return fmt.Errorf("cannot load built-in preset '%s' at line %d", BuiltinSilence, file.CurrentLineNumber)
-			}
-
-			// Check for a comment after the preset name
-			if len(fields) > 1 {
-				if isDoubleComment(fields[1]) {
-					fmt.Printf("> %s\n", strings.Join(fields[2:], " "))
-				} else if fields[1] == keywordComment {
-					// Skip
-				} else {
-					return fmt.Errorf("invalid preset definition at line %d: %s", file.CurrentLineNumber, file.CurrentLine)
-				}
+				return fmt.Errorf("cannot load built-in preset '%s' at line %d", BuiltinSilence, lineNumber)
 			}
 
 			var preset Preset
 			if len(PresetList) > 0 {
 				for i := 0; i < len(PresetList); i++ {
 					if PresetList[i].Name == presetName {
-						return fmt.Errorf("preset '%s' already exists at line %d", presetName, file.CurrentLineNumber)
+						return fmt.Errorf("preset '%s' already exists at line %d", presetName, lineNumber)
 					}
 				}
 
@@ -91,6 +87,43 @@ func LoadSequence(fileName string) error {
 			continue
 		}
 
+		// Voice line
+		if len(line) > 3 && line[0] == ' ' && line[1] == ' ' && line[2] != ' ' {
+			if len(PresetList) == 0 {
+				return fmt.Errorf("voice defined without a preset list at line %d: %s", lineNumber, line)
+			}
+
+			preset := &PresetList[len(PresetList)-1]
+			var voice audio.Voice
+
+			switch fields[0] {
+			case keywordWaveform: // waveform is valid with tone, spin, and effect
+				if len(fields) < 2 {
+					return fmt.Errorf("invalid voice definition at line %d: %s", lineNumber, line)
+				}
+
+				waveform, err := ParseWaveformType(fields[1])
+				if err != nil {
+					return fmt.Errorf("invalid waveform type at line %d: %s", lineNumber, line)
+				}
+
+				// Tone line
+				if len(fields) == 8 {
+					if fields[2] != keywordTone {
+						return fmt.Errorf("expected tone keyword at line %d: %s", lineNumber, line)
+					}
+
+					carrier, err := strconv.ParseFloat(fields[3], 64)
+					if err != nil {
+						return fmt.Errorf("invalid carrier frequency at line %d: %s", lineNumber, line)
+					}
+				}
+			}
+			continue
+		}
+
+		// Error if no valid syntax is found
+		return fmt.Errorf("invalid syntax at line %d: %s", lineNumber, line)
 	}
 
 	// Debug presets
@@ -103,4 +136,27 @@ func LoadSequence(fileName string) error {
 	}
 
 	return nil
+}
+
+// Regex for validating preset names
+func IsPreset(s string) bool {
+	regexPreset := regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_-]*$`)
+	return regexPreset.MatchString(s)
+}
+
+// ParseWaveformType parses a string into a WaveformType
+// Returns an error if the string does not match any known waveform type
+func ParseWaveformType(s string) (audio.WaveformType, error) {
+	switch s {
+	case keywordSine:
+		return audio.WaveformSine, nil
+	case keywordSquare:
+		return audio.WaveformSquare, nil
+	case keywordTriangle:
+		return audio.WaveformTriangle, nil
+	case keywordSawtooth:
+		return audio.WaveformSawtooth, nil
+	default:
+		return -1, fmt.Errorf("invalid waveform type: %s", s)
+	}
 }
