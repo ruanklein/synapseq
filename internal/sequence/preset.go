@@ -1,8 +1,6 @@
 package sequence
 
 import (
-	"regexp"
-
 	"github.com/ruanklein/synapseq/internal/audio"
 )
 
@@ -34,10 +32,4 @@ func (p *Preset) InitVoices() {
 
 func (p *Preset) HasNext() bool {
 	return p.Next != nil
-}
-
-// Regex for validating preset names
-func IsPreset(s string) bool {
-	regexPreset := regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_-]*$`)
-	return regexPreset.MatchString(s)
 }
