@@ -7,6 +7,10 @@ const (
 	amplitudeScale = 40.96 // Amplitude scale factor
 )
 
+var (
+	BackgroundAmplitude *AmplitudeType // Background amplitude level to use with effects
+)
+
 type AmplitudeType float64 // Amplitude level (0-4096 for 0-100%)
 
 // ToPercent converts a raw amplitude value to a float64 percentage
@@ -15,6 +19,6 @@ func (a AmplitudeType) ToPercent() float64 {
 }
 
 // AmplitudePercentToRaw converts a float64 value to a raw amplitude value
-func AmplitudePercentToRaw(v AmplitudeType) AmplitudeType {
-	return AmplitudeType(float64(v) * amplitudeScale)
+func AmplitudePercentToRaw(v float64) AmplitudeType {
+	return AmplitudeType(v * amplitudeScale)
 }
