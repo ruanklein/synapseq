@@ -45,6 +45,7 @@ func (v Voice) IsOff() bool {
 	return v.Type == VoiceOff || v.Amplitude == 0
 }
 
+// Validate checks if the voice configuration is valid
 func (v Voice) Validate() error {
 	if v.Amplitude < 0 || v.Amplitude > 4096 {
 		return fmt.Errorf("invalid amplitude: %.2f", v.Amplitude.ToPercent())
