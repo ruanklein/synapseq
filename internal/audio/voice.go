@@ -1,5 +1,7 @@
 package audio
 
+import "fmt"
+
 // VoiceType represents the type of voice/sound
 type VoiceType int
 
@@ -22,11 +24,11 @@ const (
 
 // Voice represents a voice configuration
 type Voice struct {
-	Type      VoiceType    // Voice type
-	Amplitude float64      // Amplitude level (0-4096 for 0-100%)
-	Carrier   float64      // Carrier frequency
-	Resonance float64      // Resonance frequency
-	Waveform  WaveformType // Waveform shape
+	Type      VoiceType     // Voice type
+	Amplitude AmplitudeType // Amplitude level (0-4096 for 0-100%)
+	Carrier   float64       // Carrier frequency
+	Resonance float64       // Resonance frequency
+	Waveform  WaveformType  // Waveform shape
 }
 
 // Equal checks if two Voice structs are equal
@@ -41,4 +43,20 @@ func (v1 Voice) Equal(v2 Voice) bool {
 // IsOff checks if the voice is off
 func (v Voice) IsOff() bool {
 	return v.Type == VoiceOff || v.Amplitude == 0
+}
+
+func (v Voice) Validate() error {
+	if v.Amplitude < 0 || v.Amplitude > 4096 {
+		return fmt.Errorf("invalid amplitude: %.2f", v.Amplitude.ToPercent())
+	}
+	if v.Carrier < 0 {
+		return fmt.Errorf("invalid carrier frequency: %.2f", v.Carrier)
+	}
+	if v.Resonance < 0 {
+		return fmt.Errorf("invalid resonance frequency: %.2f", v.Resonance)
+	}
+	if _, err := v.Waveform.String(); err != nil {
+		return fmt.Errorf("%v", err)
+	}
+	return nil
 }
