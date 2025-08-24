@@ -8,13 +8,10 @@ const (
 	WaveTableAmplitude = 0x7FFFF // Amplitude of wave in wave-table
 )
 
-var (
-	WaveTables [4][]int // WaveTables holds the precomputed waveform tables
-)
-
 // InitWaveformTables initializes the waveform tables
-func InitWaveformTables() {
-	for i := range WaveTables {
+func InitWaveformTables() [4][]int {
+	var waveTables [4][]int
+	for i := range waveTables {
 		waveformTable := make([]int, SineTableSize)
 
 		for j := range SineTableSize {
@@ -45,6 +42,7 @@ func InitWaveformTables() {
 			waveformTable[j] = int(WaveTableAmplitude * val)
 		}
 
-		WaveTables[i] = waveformTable
+		waveTables[i] = waveformTable
 	}
+	return waveTables
 }
