@@ -9,30 +9,114 @@ import (
 )
 
 const (
-	keywordComment    = "#"          // Represents a comment
-	keywordOption     = "@"          // Represents an option
-	keywordWaveform   = "waveform"   // Represents a waveform
-	keywordSine       = "sine"       // Represents a sine wave
-	keywordSquare     = "square"     // Represents a square wave
-	keywordTriangle   = "triangle"   // Represents a triangle wave
-	keywordSawtooth   = "sawtooth"   // Represents a sawtooth wave
-	keywordTone       = "tone"       // Represents a tone
-	keywordBinaural   = "binaural"   // Represents a binaural tone
-	keywordMonaural   = "monaural"   // Represents a monaural tone
-	keywordIsochronic = "isochronic" // Represents an isochronic tone
-	keywordAmplitude  = "amplitude"  // Represents an amplitude
-	keywordNoise      = "noise"      // Represents a noise
-	keywordWhite      = "white"      // Represents a white noise
-	keywordPink       = "pink"       // Represents a pink noise
-	keywordBrown      = "brown"      // Represents a brown noise
-	keywordSpin       = "spin"       // Represents a spin
-	keywordWidth      = "width"      // Represents a width
-	keywordRate       = "rate"       // Represents a rate
-	keywordEffect     = "effect"     // Represents an effect
-	keywordBackground = "background" // Represents a background
-	keywordPulse      = "pulse"      // Represents a pulse
-	keywordIntensity  = "intensity"  // Represents an intensity
+	keywordComment                 = "#"          // Represents a comment
+	keywordOption                  = "@"          // Represents an option
+	keywordOptionSampleRate        = "samplerate" // Represents a sample rate option
+	keywordOptionVolume            = "volume"     // Represents a volume option
+	keywordOptionBackground        = "background" // Represents a background option
+	keywordOptionGainLevel         = "gainlevel"  // Represents a gain level option
+	keywordOptionGainLevelVeryLow  = "verylow"    // Represents a very low gain level option
+	keywordOptionGainLevelLow      = "low"        // Represents a low gain level option
+	keywordOptionGainLevelMedium   = "medium"     // Represents a medium gain level option
+	keywordOptionGainLevelHigh     = "high"       // Represents a high gain level option
+	keywordOptionGainLevelVeryHigh = "veryhigh"   // Represents a very high gain level option
+	keywordWaveform                = "waveform"   // Represents a waveform
+	keywordSine                    = "sine"       // Represents a sine wave
+	keywordSquare                  = "square"     // Represents a square wave
+	keywordTriangle                = "triangle"   // Represents a triangle wave
+	keywordSawtooth                = "sawtooth"   // Represents a sawtooth wave
+	keywordTone                    = "tone"       // Represents a tone
+	keywordBinaural                = "binaural"   // Represents a binaural tone
+	keywordMonaural                = "monaural"   // Represents a monaural tone
+	keywordIsochronic              = "isochronic" // Represents an isochronic tone
+	keywordAmplitude               = "amplitude"  // Represents an amplitude
+	keywordNoise                   = "noise"      // Represents a noise
+	keywordWhite                   = "white"      // Represents a white noise
+	keywordPink                    = "pink"       // Represents a pink noise
+	keywordBrown                   = "brown"      // Represents a brown noise
+	keywordSpin                    = "spin"       // Represents a spin
+	keywordWidth                   = "width"      // Represents a width
+	keywordRate                    = "rate"       // Represents a rate
+	keywordEffect                  = "effect"     // Represents an effect
+	keywordBackground              = "background" // Represents a background
+	keywordPulse                   = "pulse"      // Represents a pulse
+	keywordIntensity               = "intensity"  // Represents an intensity
 )
+
+// isOptionLine checks if the first element is an option
+func isOptionLine(ctx *LineContext) bool {
+	if len(ctx.Line) == 0 {
+		return false
+	}
+	return string(ctx.Line[0]) == keywordOption
+}
+
+// parseOption extracts and applies the option from the elements
+func parseOptionLine(ctx *LineContext, options *SequenceOptions) error {
+	tok, ok := ctx.NextToken()
+	if !ok {
+		return fmt.Errorf("expected option, got EOF: %s", ctx.Line)
+	}
+	if string(tok[0]) != keywordOption {
+		return fmt.Errorf("expected option. Received: %s", tok)
+	}
+
+	option := tok[1:]
+	if len(option) == 0 {
+		return fmt.Errorf("expected option name: %s", ctx.Line)
+	}
+
+	switch option {
+	case keywordOptionSampleRate:
+		sampleRate, err := ctx.NextIntStrict()
+		if err != nil {
+			return fmt.Errorf("samplerate: %v", err)
+		}
+		options.SampleRate = sampleRate
+	case keywordOptionVolume:
+		volume, err := ctx.NextIntStrict()
+		if err != nil {
+			return fmt.Errorf("volume: %v", err)
+		}
+		options.Volume = volume
+	case keywordOptionBackground:
+		backgroundPath, ok := ctx.NextToken()
+		if !ok {
+			return fmt.Errorf("expected background path: %s", ctx.Line)
+		}
+		options.BackgroundPath = backgroundPath
+	case keywordOptionGainLevel:
+		gainLevel, ok := ctx.NextToken()
+		if !ok {
+			return fmt.Errorf("expected gain level: %s", ctx.Line)
+		}
+
+		switch gainLevel {
+		case keywordOptionGainLevelVeryLow:
+			options.GainLevel = gainVeryLow
+		case keywordOptionGainLevelLow:
+			options.GainLevel = gainLow
+		case keywordOptionGainLevelMedium:
+			options.GainLevel = gainMedium
+		case keywordOptionGainLevelHigh:
+			options.GainLevel = gainHigh
+		case keywordOptionGainLevelVeryHigh:
+			options.GainLevel = gainVeryHigh
+		default:
+			return fmt.Errorf("invalid gain level: %q", gainLevel)
+		}
+	default:
+		return fmt.Errorf("invalid option: %q", option)
+	}
+
+	// Check for unexpected tokens
+	unknown, ok := ctx.NextToken()
+	if ok {
+		return fmt.Errorf("unexpected token after definition: %q", unknown)
+	}
+
+	return nil
+}
 
 // isCommentLine checks if the first element is a comment
 func isCommentLine(ctx *LineContext) bool {
@@ -75,17 +159,12 @@ func parsePresetLine(ctx *LineContext) (*Preset, error) {
 	return preset, nil
 }
 
-// isIndentedTwoSpaces checks if the current line is indented with two spaces
-func isIndentedTwoSpaces(ctx *LineContext) bool {
+// isVoiceLine checks if the current line is a voice definition
+func isVoiceLine(ctx *LineContext) bool {
 	if len(ctx.Line) < 3 {
 		return false
 	}
 	return ctx.Line[0] == ' ' && ctx.Line[1] == ' ' && ctx.Line[2] != ' '
-}
-
-// isVoiceLine checks if the current line is a voice definition
-func isVoiceLine(ctx *LineContext) bool {
-	return len(ctx.Tokens) >= 3 && len(ctx.Tokens) <= 10 && isIndentedTwoSpaces(ctx)
 }
 
 // parseVoiceLine extracts and returns a Voice from the current line context
@@ -265,6 +344,12 @@ func parseVoiceLine(ctx *LineContext) (*audio.Voice, error) {
 		}
 	default:
 		return nil, fmt.Errorf("expected %q, %q, %q, %q, or %q. Received: %s", keywordTone, keywordNoise, keywordSpin, keywordEffect, keywordBackground, first)
+	}
+
+	// Check for unexpected tokens
+	unknown, ok := ctx.NextToken()
+	if ok {
+		return nil, fmt.Errorf("unexpected token after definition: %q", unknown)
 	}
 
 	voice := audio.Voice{
