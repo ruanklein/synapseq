@@ -17,10 +17,12 @@ func main() {
 
 	// waveTables := audio.InitWaveformTables()
 
-	presets, err := sequence.LoadSequence(os.Args[1])
+	presets, options, err := sequence.LoadSequence(os.Args[1])
 	if err != nil {
 		utils.Error(err.Error())
 	}
+
+	fmt.Printf("Sequence Options: %+v\n\n", options)
 
 	// Debug presets
 	for _, p := range presets {
@@ -30,7 +32,6 @@ func main() {
 				fmt.Printf("  Voice (%d): %+v\n", i, voice)
 			}
 		}
-		fmt.Printf("\n\n")
 	}
 
 }
