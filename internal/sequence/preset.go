@@ -61,6 +61,7 @@ func (p *Preset) GetBackgroundVoice() *audio.Voice {
 	return nil
 }
 
+// HasNext checks if the preset has a next preset
 func (p *Preset) HasNext() bool {
 	return p.Next != nil
 }
