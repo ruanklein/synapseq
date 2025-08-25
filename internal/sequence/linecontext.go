@@ -60,14 +60,28 @@ func (ctx *LineContext) NextExpectOneOf(wants ...string) (string, error) {
 func (ctx *LineContext) NextFloat64Strict() (float64, error) {
 	tok, ok := ctx.NextToken()
 	if !ok {
-		return 0, fmt.Errorf("expected number, got EOF: %s", ctx.Line)
+		return 0, fmt.Errorf("expected float, got EOF: %s", ctx.Line)
 	}
 
 	f, err := strconv.ParseFloat(tok, 64)
 	if err != nil {
-		return 0, fmt.Errorf("invalid number: %q", tok)
+		return 0, fmt.Errorf("invalid float: %q", tok)
 	}
 	return f, nil
+}
+
+// NextIntStrict retrieves the next token as an int, enforcing strict parsing
+func (ctx *LineContext) NextIntStrict() (int, error) {
+	tok, ok := ctx.NextToken()
+	if !ok {
+		return 0, fmt.Errorf("expected integer, got EOF: %s", ctx.Line)
+	}
+
+	i, err := strconv.Atoi(tok)
+	if err != nil {
+		return 0, fmt.Errorf("invalid integer: %q", tok)
+	}
+	return i, nil
 }
 
 // NewLineContext creates a new LineContext for the given line
