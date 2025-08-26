@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ruanklein/synapseq/internal/types"
+	t "github.com/ruanklein/synapseq/internal/types"
 )
 
 // isLetter checks if a byte is a letter
@@ -41,7 +41,7 @@ func (ctx *ParserContext) IsPresetLine() bool {
 }
 
 // ParsePreset extracts and returns a Preset from the current line context
-func (ctx *ParserContext) ParsePresetLine() (*types.Preset, error) {
+func (ctx *ParserContext) ParsePresetLine() (*t.Preset, error) {
 	ln := ctx.Line.Raw
 	tok, ok := ctx.Line.NextToken()
 	if !ok {
@@ -49,7 +49,7 @@ func (ctx *ParserContext) ParsePresetLine() (*types.Preset, error) {
 	}
 
 	presetName := strings.ToLower(tok)
-	if presetName == types.BuiltinSilence {
+	if presetName == t.BuiltinSilence {
 		return nil, fmt.Errorf("cannot load %q built-in preset: %s", presetName, ln)
 	}
 
@@ -58,7 +58,7 @@ func (ctx *ParserContext) ParsePresetLine() (*types.Preset, error) {
 		return nil, fmt.Errorf("unexpected token after definition: %q", unknown)
 	}
 
-	preset := &types.Preset{Name: presetName}
+	preset := &t.Preset{Name: presetName}
 	preset.InitVoices()
 	return preset, nil
 }
