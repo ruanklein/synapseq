@@ -69,6 +69,10 @@ func LoadSequence(fileName string) ([]t.Preset, *t.AudioOptions, error) {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
+			if preset.Name == t.BuiltinSilence {
+				return nil, nil, fmt.Errorf("line %d: preset name %q is reserved", file.CurrentLineNumber, t.BuiltinSilence)
+			}
+
 			for _, p := range presets {
 				if p.Name == preset.Name {
 					return nil, nil, fmt.Errorf("line %d: duplicate preset definition: %s", file.CurrentLineNumber, preset.Name)
@@ -97,6 +101,16 @@ func LoadSequence(fileName string) ([]t.Preset, *t.AudioOptions, error) {
 			}
 
 			lastPreset.Voice[voiceIndex] = *voice
+			continue
+		}
+
+		// Timeline (in development)
+		if ctx.IsTimeline() {
+			timeline, err := ctx.ParseTimeline()
+			if err != nil {
+				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+			}
+			fmt.Print(timeline)
 			continue
 		}
 
