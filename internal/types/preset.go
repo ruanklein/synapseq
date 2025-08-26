@@ -1,32 +1,29 @@
-package sequence
+package types
 
 import (
 	"fmt"
-
-	"github.com/ruanklein/synapseq/internal/audio"
 )
 
 const (
-	MaxPresets = 32 // Maximum number of presets
-
-	builtinSilence = "silence" // Represents silence built-in preset
+	MaxPresets     = 32        // Maximum number of presets
+	BuiltinSilence = "silence" // Represents silence built-in preset
 )
 
 // Preset represents a named preset
 type Preset struct {
-	Next  *Preset                             // Next preset in list
-	Name  string                              // Name of preset
-	Voice [audio.NumberOfChannels]audio.Voice // Voice-set for it
+	Next  *Preset                 // Next preset in list
+	Name  string                  // Name of preset
+	Voice [NumberOfChannels]Voice // Voice-set for it
 }
 
 // InitVoices initializes the voices in the preset
 func (p *Preset) InitVoices() {
-	for i := range audio.NumberOfChannels {
-		p.Voice[i].Type = audio.VoiceOff
+	for i := range NumberOfChannels {
+		p.Voice[i].Type = VoiceOff
 		p.Voice[i].Amplitude = 0.0
 		p.Voice[i].Carrier = 0.0
 		p.Voice[i].Resonance = 0.0
-		p.Voice[i].Waveform = audio.WaveformSine
+		p.Voice[i].Waveform = WaveformSine
 		p.Voice[i].Intensity = 0.0
 	}
 }
@@ -34,7 +31,7 @@ func (p *Preset) InitVoices() {
 // AllocateVoice allocates a free voice in the preset
 func (p *Preset) AllocateVoice() (int, error) {
 	for index, voice := range p.Voice {
-		if voice.Type == audio.VoiceOff {
+		if voice.Type == VoiceOff {
 			return index, nil
 		}
 	}
@@ -44,7 +41,7 @@ func (p *Preset) AllocateVoice() (int, error) {
 // AllVoicesAreOff checks if all voices in the preset are off
 func (p *Preset) AllVoicesAreOff() bool {
 	for _, voice := range p.Voice {
-		if voice.Type != audio.VoiceOff {
+		if voice.Type != VoiceOff {
 			return false
 		}
 	}
@@ -52,9 +49,9 @@ func (p *Preset) AllVoicesAreOff() bool {
 }
 
 // GetBackgroundVoice retrieves the background voice if it exists
-func (p *Preset) GetBackgroundVoice() *audio.Voice {
+func (p *Preset) GetBackgroundVoice() *Voice {
 	for i := range p.Voice {
-		if p.Voice[i].Type == audio.VoiceBackground {
+		if p.Voice[i].Type == VoiceBackground {
 			return &p.Voice[i]
 		}
 	}

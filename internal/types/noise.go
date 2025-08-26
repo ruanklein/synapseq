@@ -1,4 +1,4 @@
-package audio
+package types
 
 const (
 	NoiseShift     = 12                               // NoiseShift is the bit shift for noise generation

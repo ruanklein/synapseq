@@ -2,75 +2,44 @@ package sequence
 
 import (
 	"fmt"
-	"os"
+
+	"github.com/ruanklein/synapseq/internal/parser"
+	t "github.com/ruanklein/synapseq/internal/types"
 )
-
-type GainLevel int // Gain level (-20db, -16db, -12db, -6db, 0db) for background audio
-
-const (
-	gainVeryLow  GainLevel = 20 // -20db apply to background audio
-	gainLow      GainLevel = 16 // -16db apply to background audio
-	gainMedium   GainLevel = 12 // -12db apply to background audio
-	gainHigh     GainLevel = 6  // -6db apply to background audio
-	gainVeryHigh GainLevel = 0  // 0db apply to background audio
-)
-
-type SequenceOptions struct {
-	SampleRate     int       // Sample rate (e.g., 44100)
-	Volume         int       // Volume level (0-100 for 0-100%)
-	BackgroundPath string    // Path to the background audio file
-	GainLevel      GainLevel // Gain level (20, 16, 12, 6, 0)
-}
-
-// Validate checks if the sequence options are valid
-func (s *SequenceOptions) Validate() error {
-	if s.SampleRate <= 0 {
-		return fmt.Errorf("invalid sample rate: %d", s.SampleRate)
-	}
-	if s.Volume < 0 || s.Volume > 100 {
-		return fmt.Errorf("invalid volume: %d", s.Volume)
-	}
-	if s.BackgroundPath != "" {
-		if _, err := os.Stat(s.BackgroundPath); os.IsNotExist(err) {
-			return fmt.Errorf("background path does not exist: %s", s.BackgroundPath)
-		}
-	}
-	return nil
-}
 
 // LoadSequence loads a sequence from a file
-func LoadSequence(fileName string) ([]Preset, *SequenceOptions, error) {
+func LoadSequence(fileName string) ([]t.Preset, *t.AudioOptions, error) {
 	file, err := LoadFile(fileName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error loading sequence file: %v", err)
 	}
 
-	presets := make([]Preset, 0, MaxPresets)
+	presets := make([]t.Preset, 0, t.MaxPresets)
 
 	// Initialize built-in presets
-	silencePreset := Preset{Name: builtinSilence}
+	silencePreset := t.Preset{Name: t.BuiltinSilence}
 	silencePreset.InitVoices()
 	presets = append(presets, silencePreset)
 
-	// Initialize sequence options
-	options := &SequenceOptions{
+	// Initialize audio options
+	options := &t.AudioOptions{
 		SampleRate:     44100,
 		Volume:         100,
 		BackgroundPath: "",
-		GainLevel:      gainMedium,
+		GainLevel:      t.GainLevelMedium,
 	}
 
 	for file.NextLine() {
-		ctx := NewLineContext(file.CurrentLine)
+		ctx := parser.NewParserContext(file.CurrentLine)
 
 		// Skip empty lines
-		if len(ctx.Tokens) == 0 {
+		if len(ctx.Line.Tokens) == 0 {
 			continue
 		}
 
 		// Skip comments
-		if isCommentLine(ctx) {
-			comment := parseCommentLine(ctx)
+		if ctx.IsCommentLine() {
+			comment := ctx.ParseCommentLine()
 			if comment != "" {
 				fmt.Printf("> %s\n", comment)
 			}
@@ -78,24 +47,24 @@ func LoadSequence(fileName string) ([]Preset, *SequenceOptions, error) {
 		}
 
 		// Option line
-		if isOptionLine(ctx) {
+		if ctx.IsOptionLine() {
 			if len(presets) > 1 {
 				return nil, nil, fmt.Errorf("line %d: options must be defined before any preset", file.CurrentLineNumber)
 			}
 
-			if err := parseOptionLine(ctx, options); err != nil {
+			if err := ctx.ParseOptionLine(options); err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 			continue
 		}
 
 		// Preset definition
-		if isValidPresetName(ctx.Line) {
-			if len(presets) >= MaxPresets {
+		if ctx.IsPresetLine() {
+			if len(presets) >= t.MaxPresets {
 				return nil, nil, fmt.Errorf("line %d: maximum number of presets reached", file.CurrentLineNumber)
 			}
 
-			preset, err := parsePresetLine(ctx)
+			preset, err := ctx.ParsePresetLine()
 			if err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
@@ -111,9 +80,9 @@ func LoadSequence(fileName string) ([]Preset, *SequenceOptions, error) {
 		}
 
 		// Voice line
-		if isVoiceLine(ctx) {
+		if ctx.IsVoiceLine() {
 			if len(presets) == 1 { // 1 = silence preset
-				return nil, nil, fmt.Errorf("line %d: definition defined before any preset: %s", file.CurrentLineNumber, ctx.Line)
+				return nil, nil, fmt.Errorf("line %d: definition defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
 			}
 
 			lastPreset := &presets[len(presets)-1]
@@ -122,7 +91,7 @@ func LoadSequence(fileName string) ([]Preset, *SequenceOptions, error) {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
-			voice, err := parseVoiceLine(ctx)
+			voice, err := ctx.ParseVoiceLine()
 			if err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
@@ -131,7 +100,7 @@ func LoadSequence(fileName string) ([]Preset, *SequenceOptions, error) {
 			continue
 		}
 
-		return nil, nil, fmt.Errorf("line %d: invalid syntax: %s", file.CurrentLineNumber, ctx.Line)
+		return nil, nil, fmt.Errorf("line %d: invalid syntax: %s", file.CurrentLineNumber, ctx.Line.Raw)
 	}
 
 	// Check for empty presets

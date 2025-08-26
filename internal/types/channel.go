@@ -1,4 +1,4 @@
-package audio
+package types
 
 var (
 	CurrentChannel [NumberOfChannels]Channel // Current channel state

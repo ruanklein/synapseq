@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ruanklein/synapseq/internal/audio"
 	"github.com/ruanklein/synapseq/internal/sequence"
-	"github.com/ruanklein/synapseq/internal/utils"
+	t "github.com/ruanklein/synapseq/internal/types"
 )
 
 func main() {
@@ -19,7 +18,8 @@ func main() {
 
 	presets, options, err := sequence.LoadSequence(os.Args[1])
 	if err != nil {
-		utils.Error(err.Error())
+		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+		os.Exit(1)
 	}
 
 	fmt.Printf("Sequence Options: %+v\n\n", options)
@@ -28,7 +28,7 @@ func main() {
 	for _, p := range presets {
 		fmt.Printf("Preset: %s\n", p.Name)
 		for i, voice := range p.Voice {
-			if voice.Type != audio.VoiceOff {
+			if voice.Type != t.VoiceOff {
 				fmt.Printf("  Voice (%d): %+v\n", i, voice)
 			}
 		}
