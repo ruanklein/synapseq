@@ -199,7 +199,7 @@ func (ctx *ParserContext) ParseVoiceLine() (*t.Voice, error) {
 
 	unknown, ok := ctx.Line.Peek()
 	if ok {
-		return nil, fmt.Errorf("unexpected token after definition: %q", unknown)
+		return nil, fmt.Errorf("unexpected token after voice definition: %q", unknown)
 	}
 
 	voice := t.Voice{
