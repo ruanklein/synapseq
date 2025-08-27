@@ -79,7 +79,7 @@ func (ctx *ParserContext) ParseOptionLine(options *t.AudioOptions) error {
 
 	unknown, ok := ctx.Line.Peek()
 	if ok {
-		return fmt.Errorf("unexpected token after definition: %q", unknown)
+		return fmt.Errorf("unexpected token after option definition: %q", unknown)
 	}
 
 	return nil
