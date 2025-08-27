@@ -16,7 +16,7 @@ func main() {
 
 	// waveTables := audio.InitWaveformTables()
 
-	presets, options, err := sequence.LoadSequence(os.Args[1])
+	periods, options, err := sequence.LoadSequence(os.Args[1])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
@@ -24,12 +24,12 @@ func main() {
 
 	fmt.Printf("Sequence Options: %+v\n\n", options)
 
-	// Debug presets
-	for _, p := range presets {
-		fmt.Printf("Preset: %s\n", p.Name)
-		for i, voice := range p.Voice {
+	// Debug periods
+	for _, p := range periods {
+		fmt.Printf("Period start at %s\n", p.TimeString())
+		for i, voice := range p.VoiceStart {
 			if voice.Type != t.VoiceOff {
-				fmt.Printf("  Voice (%d): %+v\n", i, voice)
+				fmt.Printf("  Voice (%d): %+v\n", i+1, voice)
 			}
 		}
 	}
