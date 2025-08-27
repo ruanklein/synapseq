@@ -8,13 +8,14 @@ import (
 )
 
 // LoadSequence loads a sequence from a file
-func LoadSequence(fileName string) ([]t.Preset, *t.AudioOptions, error) {
+func LoadSequence(fileName string) ([]t.Period, *t.AudioOptions, error) {
 	file, err := LoadFile(fileName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error loading sequence file: %v", err)
 	}
 
 	presets := make([]t.Preset, 0, t.MaxPresets)
+	var periods []t.Period
 
 	// Initialize built-in presets
 	silencePreset := t.Preset{Name: t.BuiltinSilence}
@@ -29,6 +30,7 @@ func LoadSequence(fileName string) ([]t.Preset, *t.AudioOptions, error) {
 		GainLevel:      t.GainLevelMedium,
 	}
 
+	// Parse each line in the file
 	for file.NextLine() {
 		ctx := parser.NewParserContext(file.CurrentLine)
 
@@ -64,6 +66,10 @@ func LoadSequence(fileName string) ([]t.Preset, *t.AudioOptions, error) {
 				return nil, nil, fmt.Errorf("line %d: maximum number of presets reached", file.CurrentLineNumber)
 			}
 
+			if len(periods) > 0 {
+				return nil, nil, fmt.Errorf("line %d: preset definitions must be before any timeline definitions", file.CurrentLineNumber)
+			}
+
 			preset, err := ctx.ParsePresetLine()
 			if err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
@@ -73,10 +79,9 @@ func LoadSequence(fileName string) ([]t.Preset, *t.AudioOptions, error) {
 				return nil, nil, fmt.Errorf("line %d: preset name %q is reserved", file.CurrentLineNumber, t.BuiltinSilence)
 			}
 
-			for _, p := range presets {
-				if p.Name == preset.Name {
-					return nil, nil, fmt.Errorf("line %d: duplicate preset definition: %s", file.CurrentLineNumber, preset.Name)
-				}
+			p := t.FindPreset(preset.Name, presets)
+			if p != nil {
+				return nil, nil, fmt.Errorf("line %d: duplicate preset definition: %s", file.CurrentLineNumber, preset.Name)
 			}
 
 			presets = append(presets, *preset)
@@ -86,7 +91,11 @@ func LoadSequence(fileName string) ([]t.Preset, *t.AudioOptions, error) {
 		// Voice line
 		if ctx.IsVoiceLine() {
 			if len(presets) == 1 { // 1 = silence preset
-				return nil, nil, fmt.Errorf("line %d: definition defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
+				return nil, nil, fmt.Errorf("line %d: voice defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
+			}
+
+			if len(periods) > 0 {
+				return nil, nil, fmt.Errorf("line %d: voice definitions must be before any timeline definitions", file.CurrentLineNumber)
 			}
 
 			lastPreset := &presets[len(presets)-1]
@@ -104,23 +113,38 @@ func LoadSequence(fileName string) ([]t.Preset, *t.AudioOptions, error) {
 			continue
 		}
 
-		// Timeline (in development)
+		// Timeline
 		if ctx.IsTimeline() {
-			timeline, err := ctx.ParseTimeline()
+			if len(presets) == 1 { // 1 = silence preset
+				return nil, nil, fmt.Errorf("line %d: timeline defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
+			}
+
+			period, err := ctx.ParseTimeline(&presets)
 			if err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
-			fmt.Print(timeline)
+
+			if len(periods) > 0 {
+				lastPeriodIndex := len(periods) - 1
+				periods[lastPeriodIndex].VoiceEnd = period.VoiceStart
+			}
+
+			periods = append(periods, *period)
 			continue
 		}
 
 		return nil, nil, fmt.Errorf("line %d: invalid syntax: %s", file.CurrentLineNumber, ctx.Line.Raw)
 	}
 
-	// Check for empty presets
+	// Validate if has one preset (1 = silence preset)
+	if len(presets) == 1 {
+		return nil, nil, fmt.Errorf("no presets defined")
+	}
+
+	// Validate if all presets are defined
 	for i := 1; i < len(presets); i++ {
 		if presets[i].AllVoicesAreOff() {
-			return nil, nil, fmt.Errorf("preset '%s' is empty", presets[i].Name)
+			return nil, nil, fmt.Errorf("preset %q is empty", presets[i].Name)
 		}
 	}
 
@@ -129,5 +153,22 @@ func LoadSequence(fileName string) ([]t.Preset, *t.AudioOptions, error) {
 		return nil, nil, fmt.Errorf("%v", err)
 	}
 
-	return presets, options, nil
+	// Validate if has more than two Periods
+	if len(periods) < 2 {
+		return nil, nil, fmt.Errorf("at least two periods must be defined")
+	}
+
+	// Validate if is first period start with 00:00:00
+	if periods[0].Time != 0 {
+		return nil, nil, fmt.Errorf("first period must start at 00:00:00")
+	}
+
+	// Validate chronological order of periods
+	for i := 1; i < len(periods); i++ {
+		if periods[i].Time <= periods[i-1].Time {
+			return nil, nil, fmt.Errorf("periods %s and %s overlap", periods[i-1].TimeString(), periods[i].TimeString())
+		}
+	}
+
+	return periods, options, nil
 }
