@@ -1,34 +1,18 @@
 package types
 
-var (
-	CurrentPeriod *Period // Current period state
-)
+import "fmt"
 
 // Period represents a time period with voice configurations
 type Period struct {
-	Next       *Period                 // Next period in chain
-	Prev       *Period                 // Previous period in chain
 	Time       int                     // Start time (end time is ->Next->Time)
 	VoiceStart [NumberOfChannels]Voice // Start voices for each channel
 	VoiceEnd   [NumberOfChannels]Voice // End voices for each channel
-	FadeIn     int                     // Fade-in mode
-	FadeOut    int                     // Fade-out mode
 }
 
-// Duration returns the duration of this period in milliseconds
-func (p *Period) Duration() int {
-	if p.Next == nil {
-		return 0 // Last period has no duration
-	}
-	return p.Next.Time - p.Time
-}
-
-// IsLast returns true if this is the last period in the chain
-func (p *Period) IsLast() bool {
-	return p.Next == nil
-}
-
-// IsFirst returns true if this is the first period in the chain
-func (p *Period) IsFirst() bool {
-	return p.Prev == nil
+// TimeString returns the time of this period as a formatted string
+func (p *Period) TimeString() string {
+	hh := p.Time / 3600000
+	mm := (p.Time % 3600000) / 60000
+	ss := (p.Time % 60000) / 1000
+	return fmt.Sprintf("%02d:%02d:%02d", hh, mm, ss)
 }
