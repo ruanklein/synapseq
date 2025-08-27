@@ -11,7 +11,6 @@ const (
 
 // Preset represents a named preset
 type Preset struct {
-	Next  *Preset                 // Next preset in list
 	Name  string                  // Name of preset
 	Voice [NumberOfChannels]Voice // Voice-set for it
 }
@@ -48,17 +47,12 @@ func (p *Preset) AllVoicesAreOff() bool {
 	return true
 }
 
-// GetBackgroundVoice retrieves the background voice if it exists
-func (p *Preset) GetBackgroundVoice() *Voice {
-	for i := range p.Voice {
-		if p.Voice[i].Type == VoiceBackground {
-			return &p.Voice[i]
+// FindPreset searches for a preset by name in a slice of presets
+func FindPreset(n string, presets []Preset) *Preset {
+	for i := range presets {
+		if presets[i].Name == n {
+			return &presets[i]
 		}
 	}
 	return nil
-}
-
-// HasNext checks if the preset has a next preset
-func (p *Preset) HasNext() bool {
-	return p.Next != nil
 }
