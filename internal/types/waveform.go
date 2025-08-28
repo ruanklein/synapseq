@@ -1,9 +1,5 @@
 package types
 
-import (
-	"fmt"
-)
-
 // WaveformType represents the waveform shape
 type WaveformType int
 
@@ -15,14 +11,18 @@ const (
 	WaveformSawtooth                     // Sawtooth
 )
 
-// String returns the string representation of WaveformType:
-// "sine", "square", "triangle", "sawtooth"
-func (wt WaveformType) String() (string, error) {
-	names := []string{"sine", "square", "triangle", "sawtooth"}
-
-	if int(wt) >= len(names) {
-		return "", fmt.Errorf("unknown waveform type: %d", wt)
+// String returns the string representation of WaveformType
+func (wt WaveformType) String() string {
+	switch wt {
+	case WaveformSine:
+		return KeywordSine
+	case WaveformSquare:
+		return KeywordSquare
+	case WaveformTriangle:
+		return KeywordTriangle
+	case WaveformSawtooth:
+		return KeywordSawtooth
+	default:
+		return ""
 	}
-
-	return names[wt], nil
 }

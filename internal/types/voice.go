@@ -21,6 +21,34 @@ const (
 	VoiceEffectPulse                     // Voice is a pulse effect
 )
 
+// String returns the string representation of the VoiceType
+func (vt VoiceType) String() string {
+	switch vt {
+	case VoiceOff:
+		return "- -"
+	case VoiceBinauralBeat:
+		return KeywordBinaural
+	case VoiceMonauralBeat:
+		return KeywordMonaural
+	case VoiceIsochronicBeat:
+		return KeywordIsochronic
+	case VoiceWhiteNoise, VoiceSpinWhite:
+		return KeywordWhite
+	case VoicePinkNoise, VoiceSpinPink:
+		return KeywordPink
+	case VoiceBrownNoise, VoiceSpinBrown:
+		return KeywordBrown
+	case VoiceBackground:
+		return KeywordBackground
+	case VoiceEffectSpin:
+		return KeywordSpin
+	case VoiceEffectPulse:
+		return KeywordPulse
+	default:
+		return "- -"
+	}
+}
+
 // Voice represents a voice configuration
 type Voice struct {
 	Type      VoiceType     // Voice type
@@ -31,23 +59,8 @@ type Voice struct {
 	Intensity IntensityType // Intensity (for effects)
 }
 
-// Equal checks if two Voice structs are equal
-func (v1 Voice) Equal(v2 Voice) bool {
-	return v1.Type == v2.Type &&
-		v1.Amplitude == v2.Amplitude &&
-		v1.Carrier == v2.Carrier &&
-		v1.Resonance == v2.Resonance &&
-		v1.Waveform == v2.Waveform &&
-		v1.Intensity == v2.Intensity
-}
-
-// IsOff checks if the voice is off
-func (v Voice) IsOff() bool {
-	return v.Type == VoiceOff || v.Amplitude == 0
-}
-
 // Validate checks if the voice configuration is valid
-func (v Voice) Validate() error {
+func (v *Voice) Validate() error {
 	if v.Amplitude < 0 || v.Amplitude > 4096 {
 		return fmt.Errorf("amplitude must be between 0 and 100. Received: %.2f", v.Amplitude.ToPercent())
 	}
@@ -60,8 +73,27 @@ func (v Voice) Validate() error {
 	if v.Intensity < 0 || v.Intensity > 1.0 {
 		return fmt.Errorf("intensity must be between 0 and 100. Received: %.2f", v.Intensity.ToPercent())
 	}
-	if _, err := v.Waveform.String(); err != nil {
-		return fmt.Errorf("%v", err)
-	}
 	return nil
+}
+
+// String returns the string representation of the Voice
+func (v *Voice) String() string {
+	switch v.Type {
+	case VoiceOff:
+		return "- -"
+	case VoiceBinauralBeat, VoiceMonauralBeat, VoiceIsochronicBeat:
+		return fmt.Sprintf("%s %s %s %.2f %s %.2f %s %.2f", KeywordWaveform, v.Waveform.String(), KeywordTone, v.Carrier, v.Type.String(), v.Resonance, KeywordAmplitude, v.Amplitude.ToPercent())
+	case VoiceWhiteNoise, VoicePinkNoise, VoiceBrownNoise:
+		return fmt.Sprintf("%s %s %s %.2f", KeywordNoise, v.Type.String(), KeywordAmplitude, v.Amplitude.ToPercent())
+	case VoiceSpinWhite, VoiceSpinPink, VoiceSpinBrown:
+		return fmt.Sprintf("%s %s %s %s %s %.2f %s %.2f %s %.2f", KeywordWaveform, v.Waveform.String(), KeywordSpin, v.Type.String(), KeywordWidth, v.Carrier, KeywordRate, v.Resonance, KeywordAmplitude, v.Amplitude.ToPercent())
+	case VoiceBackground:
+		return fmt.Sprintf("%s %s %.2f", KeywordBackground, KeywordAmplitude, v.Amplitude.ToPercent())
+	case VoiceEffectSpin:
+		return fmt.Sprintf("%s %s %s %s %.2f %s %.2f %s %.2f", KeywordWaveform, v.Waveform.String(), KeywordSpin, KeywordWidth, v.Carrier, KeywordRate, v.Resonance, KeywordIntensity, v.Intensity.ToPercent())
+	case VoiceEffectPulse:
+		return fmt.Sprintf("%s %s %s %.2f %s %.2f", KeywordWaveform, v.Waveform.String(), KeywordPulse, v.Resonance, KeywordIntensity, v.Intensity.ToPercent())
+	default:
+		return ""
+	}
 }
