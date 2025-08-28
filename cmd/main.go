@@ -22,7 +22,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Sequence Options: %+v\n\n", options)
+	fmt.Printf("Sequence Options:\n  %+v\n\n", options.String())
 
 	// Debug periods
 	for _, p := range periods {
