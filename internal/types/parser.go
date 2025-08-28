@@ -35,14 +35,27 @@ const (
 	KeywordIntensity               = "intensity"  // Represents an intensity
 )
 
-// Parser defines the interface for parsing different line types
+// Parser defines the interface for parsing different content types
 type Parser interface {
-	// ParseComment parses a comment line
-	ParseComment() (string, error)
-	// ParseOption parses an option line
+	// HasComment checks if the content is a comment
+	HasComment() bool
+	// HasOption checks if the content is an option
+	HasOption() bool
+	// HasPreset checks if the content is a preset
+	HasPreset() bool
+	// HasVoice checks if the content is a voice
+	HasVoice() bool
+	// HasTimeline checks if the content is a timeline
+	HasTimeline() bool
+
+	// ParseComment parses a comment content
+	ParseComment() string
+	// ParseOption parses an option content
 	ParseOption(*Option) error
-	// ParsePreset parses a preset line
+	// ParsePreset parses a preset content
 	ParsePreset() (*Preset, error)
-	// ParseVoice parses a voice line
+	// ParseVoice parses a voice content
 	ParseVoice() (*Voice, error)
+	// ParseTimeline parses a timeline content
+	ParseTimeline(*[]Preset) (*Period, error)
 }
