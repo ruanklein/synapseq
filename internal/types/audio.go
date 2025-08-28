@@ -1,40 +1,11 @@
 // Audio processing types
 package types
 
-import (
-	"fmt"
-	"os"
-)
-
 const (
 	NumberOfChannels   = 16      // Number of channels
 	SineTableSize      = 16384   // Number of elements in sine-table (power of 2)
 	WaveTableAmplitude = 0x7FFFF // Amplitude of wave in wave-table
 )
-
-// AudioOptions holds the configuration options for audio processing
-type AudioOptions struct {
-	SampleRate     int       // Sample rate (e.g., 44100)
-	Volume         int       // Volume level (0-100 for 0-100%)
-	BackgroundPath string    // Path to the background audio file
-	GainLevel      GainLevel // Gain level (20, 16, 12, 6, 0) for audio processing
-}
-
-// Validate checks if the options are valid
-func (o *AudioOptions) Validate() error {
-	if o.SampleRate <= 0 {
-		return fmt.Errorf("invalid sample rate: %d", o.SampleRate)
-	}
-	if o.Volume < 0 || o.Volume > 100 {
-		return fmt.Errorf("invalid volume: %d", o.Volume)
-	}
-	if o.BackgroundPath != "" {
-		if _, err := os.Stat(o.BackgroundPath); os.IsNotExist(err) {
-			return fmt.Errorf("background path does not exist: %s", o.BackgroundPath)
-		}
-	}
-	return nil
-}
 
 type AudioFormat int // Audio format type
 
