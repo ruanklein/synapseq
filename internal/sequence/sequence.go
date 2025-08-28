@@ -124,8 +124,18 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
+			if len(periods) == 0 && period.Time != 0 {
+				return nil, nil, fmt.Errorf("line %d: first timeline must start at 00:00:00", file.CurrentLineNumber)
+			}
+
 			if len(periods) > 0 {
 				lastPeriodIndex := len(periods) - 1
+				lastPeriod := &periods[lastPeriodIndex]
+
+				if lastPeriod.Time >= period.Time {
+					return nil, nil, fmt.Errorf("line %d: timeline %s overlaps with previous timeline %s", file.CurrentLineNumber, period.TimeString(), lastPeriod.TimeString())
+				}
+
 				periods[lastPeriodIndex].VoiceEnd = period.VoiceStart
 			}
 
@@ -151,18 +161,6 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 	// Validate if has more than two Periods
 	if len(periods) < 2 {
 		return nil, nil, fmt.Errorf("at least two periods must be defined")
-	}
-
-	// Validate if is first period start with 00:00:00
-	if periods[0].Time != 0 {
-		return nil, nil, fmt.Errorf("first period must start at 00:00:00")
-	}
-
-	// Validate chronological order of periods
-	for i := 1; i < len(periods); i++ {
-		if periods[i].Time <= periods[i-1].Time {
-			return nil, nil, fmt.Errorf("periods %s and %s overlap", periods[i-1].TimeString(), periods[i].TimeString())
-		}
 	}
 
 	return periods, options, nil
