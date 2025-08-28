@@ -6,8 +6,8 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// IsVoiceLine checks if the current line is a voice definition
-func (ctx *ParserContext) IsVoiceLine() bool {
+// IsVoice checks if the current line is a voice definition
+func (ctx *TextParser) IsVoice() bool {
 	ln := ctx.Line.Raw
 
 	if len(ln) < 3 {
@@ -17,32 +17,32 @@ func (ctx *ParserContext) IsVoiceLine() bool {
 	return ln[0] == ' ' && ln[1] == ' ' && ln[2] != ' '
 }
 
-// ParseVoiceLine extracts and returns a Voice from the current line context
-func (ctx *ParserContext) ParseVoiceLine() (*t.Voice, error) {
+// ParseVoice extracts and returns a Voice from the current line context
+func (ctx *TextParser) ParseVoice() (*t.Voice, error) {
 	waveform := t.WaveformSine
 	ln := ctx.Line.Raw
 
-	if tok, ok := ctx.Line.Peek(); ok && tok == keywordWaveform {
+	if tok, ok := ctx.Line.Peek(); ok && tok == t.KeywordWaveform {
 		ctx.Line.NextToken() // skip "waveform"
 
-		wfTok, err := ctx.Line.NextExpectOneOf(keywordSine, keywordSquare, keywordTriangle, keywordSawtooth)
+		wfTok, err := ctx.Line.NextExpectOneOf(t.KeywordSine, t.KeywordSquare, t.KeywordTriangle, t.KeywordSawtooth)
 		if err != nil {
-			return nil, fmt.Errorf("expected %q, %q, %q, or %q after waveform: %s", keywordSine, keywordSquare, keywordTriangle, keywordSawtooth, ln)
+			return nil, fmt.Errorf("expected %q, %q, %q, or %q after waveform: %s", t.KeywordSine, t.KeywordSquare, t.KeywordTriangle, t.KeywordSawtooth, ln)
 		}
 
 		switch wfTok {
-		case keywordSine:
+		case t.KeywordSine:
 			waveform = t.WaveformSine
-		case keywordSquare:
+		case t.KeywordSquare:
 			waveform = t.WaveformSquare
-		case keywordTriangle:
+		case t.KeywordTriangle:
 			waveform = t.WaveformTriangle
-		case keywordSawtooth:
+		case t.KeywordSawtooth:
 			waveform = t.WaveformSawtooth
 		}
 
-		if _, err := ctx.Line.NextExpectOneOf(keywordTone, keywordSpin, keywordEffect); err != nil {
-			return nil, fmt.Errorf("expected %q, %q, or %q after waveform type: %s", keywordTone, keywordSpin, keywordEffect, ln)
+		if _, err := ctx.Line.NextExpectOneOf(t.KeywordTone, t.KeywordSpin, t.KeywordEffect); err != nil {
+			return nil, fmt.Errorf("expected %q, %q, or %q after waveform type: %s", t.KeywordTone, t.KeywordSpin, t.KeywordEffect, ln)
 		}
 
 		ctx.Line.RewindToken(1) // rewind to re-process the tone line
@@ -50,7 +50,7 @@ func (ctx *ParserContext) ParseVoiceLine() (*t.Voice, error) {
 
 	first, ok := ctx.Line.NextToken()
 	if !ok {
-		return nil, fmt.Errorf("expected %q, %q, %q, %q, or %q: %s", keywordTone, keywordNoise, keywordSpin, keywordEffect, keywordBackground, ln)
+		return nil, fmt.Errorf("expected %q, %q, %q, %q, or %q: %s", t.KeywordTone, t.KeywordNoise, t.KeywordSpin, t.KeywordEffect, t.KeywordBackground, ln)
 	}
 
 	var (
@@ -59,142 +59,142 @@ func (ctx *ParserContext) ParseVoiceLine() (*t.Voice, error) {
 	)
 
 	switch first {
-	case keywordTone:
+	case t.KeywordTone:
 		var err error
 		if carrier, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("carrier: %w", err)
 		}
 
-		kind, err := ctx.Line.NextExpectOneOf(keywordBinaural, keywordMonaural, keywordIsochronic)
+		kind, err := ctx.Line.NextExpectOneOf(t.KeywordBinaural, t.KeywordMonaural, t.KeywordIsochronic)
 		if err != nil {
-			return nil, fmt.Errorf("expected %q, %q, or %q after carrier: %s", keywordBinaural, keywordMonaural, keywordIsochronic, ln)
+			return nil, fmt.Errorf("expected %q, %q, or %q after carrier: %s", t.KeywordBinaural, t.KeywordMonaural, t.KeywordIsochronic, ln)
 		}
 
 		switch kind {
-		case keywordBinaural:
+		case t.KeywordBinaural:
 			voiceType = t.VoiceBinauralBeat
-		case keywordMonaural:
+		case t.KeywordMonaural:
 			voiceType = t.VoiceMonauralBeat
-		case keywordIsochronic:
+		case t.KeywordIsochronic:
 			voiceType = t.VoiceIsochronicBeat
 		}
 
 		if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("resonance: %w", err)
 		}
-		if _, err := ctx.Line.NextExpectOneOf(keywordAmplitude); err != nil {
-			return nil, fmt.Errorf("expected %q after resonance: %s", keywordAmplitude, ln)
+		if _, err := ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
+			return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordAmplitude, ln)
 		}
 		if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("amplitude: %w", err)
 		}
-	case keywordNoise:
+	case t.KeywordNoise:
 		var err error
-		kind, err := ctx.Line.NextExpectOneOf(keywordWhite, keywordPink, keywordBrown)
+		kind, err := ctx.Line.NextExpectOneOf(t.KeywordWhite, t.KeywordPink, t.KeywordBrown)
 		if err != nil {
-			return nil, fmt.Errorf("expected %q, %q, or %q after noise: %s", keywordWhite, keywordPink, keywordBrown, ln)
+			return nil, fmt.Errorf("expected %q, %q, or %q after noise: %s", t.KeywordWhite, t.KeywordPink, t.KeywordBrown, ln)
 		}
 
 		switch kind {
-		case keywordWhite:
+		case t.KeywordWhite:
 			voiceType = t.VoiceWhiteNoise
-		case keywordPink:
+		case t.KeywordPink:
 			voiceType = t.VoicePinkNoise
-		case keywordBrown:
+		case t.KeywordBrown:
 			voiceType = t.VoiceBrownNoise
 		}
 
-		if _, err := ctx.Line.NextExpectOneOf(keywordAmplitude); err != nil {
-			return nil, fmt.Errorf("expected %q after noise type: %s", keywordAmplitude, ln)
+		if _, err := ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
+			return nil, fmt.Errorf("expected %q after noise type: %s", t.KeywordAmplitude, ln)
 		}
 		if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("amplitude: %w", err)
 		}
-	case keywordSpin:
+	case t.KeywordSpin:
 		var err error
-		kind, err := ctx.Line.NextExpectOneOf(keywordWhite, keywordPink, keywordBrown)
+		kind, err := ctx.Line.NextExpectOneOf(t.KeywordWhite, t.KeywordPink, t.KeywordBrown)
 		if err != nil {
-			return nil, fmt.Errorf("expected %q, %q, or %q after spin: %s", keywordWhite, keywordPink, keywordBrown, ln)
+			return nil, fmt.Errorf("expected %q, %q, or %q after spin: %s", t.KeywordWhite, t.KeywordPink, t.KeywordBrown, ln)
 		}
 
 		switch kind {
-		case keywordWhite:
+		case t.KeywordWhite:
 			voiceType = t.VoiceSpinWhite
-		case keywordPink:
+		case t.KeywordPink:
 			voiceType = t.VoiceSpinPink
-		case keywordBrown:
+		case t.KeywordBrown:
 			voiceType = t.VoiceSpinBrown
 		}
 
-		if _, err := ctx.Line.NextExpectOneOf(keywordWidth); err != nil {
-			return nil, fmt.Errorf("expected %q after spin noise type: %s", keywordWidth, ln)
+		if _, err := ctx.Line.NextExpectOneOf(t.KeywordWidth); err != nil {
+			return nil, fmt.Errorf("expected %q after spin noise type: %s", t.KeywordWidth, ln)
 		}
 		if carrier, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("carrier: %w", err)
 		}
-		if _, err := ctx.Line.NextExpectOneOf(keywordRate); err != nil {
-			return nil, fmt.Errorf("expected %q after carrier: %s", keywordRate, ln)
+		if _, err := ctx.Line.NextExpectOneOf(t.KeywordRate); err != nil {
+			return nil, fmt.Errorf("expected %q after carrier: %s", t.KeywordRate, ln)
 		}
 		if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("resonance: %w", err)
 		}
-		if _, err := ctx.Line.NextExpectOneOf(keywordAmplitude); err != nil {
-			return nil, fmt.Errorf("expected %q after resonance: %s", keywordAmplitude, ln)
+		if _, err := ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
+			return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordAmplitude, ln)
 		}
 		if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("amplitude: %w", err)
 		}
-	case keywordBackground:
+	case t.KeywordBackground:
 		voiceType = t.VoiceBackground
 		var err error
-		if _, err = ctx.Line.NextExpectOneOf(keywordAmplitude); err != nil {
-			return nil, fmt.Errorf("expected %q after background: %s", keywordAmplitude, ln)
+		if _, err = ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
+			return nil, fmt.Errorf("expected %q after background: %s", t.KeywordAmplitude, ln)
 		}
 		if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("amplitude: %w", err)
 		}
-	case keywordEffect:
+	case t.KeywordEffect:
 		var err error
-		kind, err := ctx.Line.NextExpectOneOf(keywordSpin, keywordPulse)
+		kind, err := ctx.Line.NextExpectOneOf(t.KeywordSpin, t.KeywordPulse)
 		if err != nil {
-			return nil, fmt.Errorf("expected %q or %q after effect: %s", keywordSpin, keywordPulse, ln)
+			return nil, fmt.Errorf("expected %q or %q after effect: %s", t.KeywordSpin, t.KeywordPulse, ln)
 		}
 
 		switch kind {
-		case keywordSpin:
+		case t.KeywordSpin:
 			voiceType = t.VoiceEffectSpin
-			if _, err := ctx.Line.NextExpectOneOf(keywordWidth); err != nil {
-				return nil, fmt.Errorf("expected %q after spin: %s", keywordWidth, ln)
+			if _, err := ctx.Line.NextExpectOneOf(t.KeywordWidth); err != nil {
+				return nil, fmt.Errorf("expected %q after spin: %s", t.KeywordWidth, ln)
 			}
 			if carrier, err = ctx.Line.NextFloat64Strict(); err != nil {
 				return nil, fmt.Errorf("carrier: %w", err)
 			}
-			if _, err := ctx.Line.NextExpectOneOf(keywordRate); err != nil {
-				return nil, fmt.Errorf("expected %q after carrier: %s", keywordRate, ln)
+			if _, err := ctx.Line.NextExpectOneOf(t.KeywordRate); err != nil {
+				return nil, fmt.Errorf("expected %q after carrier: %s", t.KeywordRate, ln)
 			}
 			if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
 				return nil, fmt.Errorf("resonance: %w", err)
 			}
-			if _, err = ctx.Line.NextExpectOneOf(keywordIntensity); err != nil {
-				return nil, fmt.Errorf("expected %q after resonance: %s", keywordIntensity, ln)
+			if _, err = ctx.Line.NextExpectOneOf(t.KeywordIntensity); err != nil {
+				return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordIntensity, ln)
 			}
 			if intensity, err = ctx.Line.NextFloat64Strict(); err != nil {
 				return nil, fmt.Errorf("intensity: %w", err)
 			}
-		case keywordPulse:
+		case t.KeywordPulse:
 			voiceType = t.VoiceEffectPulse
 			if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
 				return nil, fmt.Errorf("resonance: %w", err)
 			}
-			if _, err = ctx.Line.NextExpectOneOf(keywordIntensity); err != nil {
-				return nil, fmt.Errorf("expected %q after resonance: %s", keywordIntensity, ln)
+			if _, err = ctx.Line.NextExpectOneOf(t.KeywordIntensity); err != nil {
+				return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordIntensity, ln)
 			}
 			if intensity, err = ctx.Line.NextFloat64Strict(); err != nil {
 				return nil, fmt.Errorf("intensity: %w", err)
 			}
 		}
 	default:
-		return nil, fmt.Errorf("expected %q, %q, %q, %q, or %q. Received: %s", keywordTone, keywordNoise, keywordSpin, keywordEffect, keywordBackground, first)
+		return nil, fmt.Errorf("expected %q, %q, %q, %q, or %q. Received: %s", t.KeywordTone, t.KeywordNoise, t.KeywordSpin, t.KeywordEffect, t.KeywordBackground, first)
 	}
 
 	unknown, ok := ctx.Line.Peek()

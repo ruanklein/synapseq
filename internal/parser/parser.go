@@ -7,43 +7,8 @@ import (
 	"strings"
 )
 
-const (
-	keywordComment                 = "#"          // Represents a comment
-	keywordOption                  = "@"          // Represents an option
-	keywordOptionSampleRate        = "samplerate" // Represents a sample rate option
-	keywordOptionVolume            = "volume"     // Represents a volume option
-	keywordOptionBackground        = "background" // Represents a background option
-	keywordOptionGainLevel         = "gainlevel"  // Represents a gain level option
-	keywordOptionGainLevelVeryLow  = "verylow"    // Represents a very low gain level option
-	keywordOptionGainLevelLow      = "low"        // Represents a low gain level option
-	keywordOptionGainLevelMedium   = "medium"     // Represents a medium gain level option
-	keywordOptionGainLevelHigh     = "high"       // Represents a high gain level option
-	keywordOptionGainLevelVeryHigh = "veryhigh"   // Represents a very high gain level option
-	keywordWaveform                = "waveform"   // Represents a waveform
-	keywordSine                    = "sine"       // Represents a sine wave
-	keywordSquare                  = "square"     // Represents a square wave
-	keywordTriangle                = "triangle"   // Represents a triangle wave
-	keywordSawtooth                = "sawtooth"   // Represents a sawtooth wave
-	keywordTone                    = "tone"       // Represents a tone
-	keywordBinaural                = "binaural"   // Represents a binaural tone
-	keywordMonaural                = "monaural"   // Represents a monaural tone
-	keywordIsochronic              = "isochronic" // Represents an isochronic tone
-	keywordAmplitude               = "amplitude"  // Represents an amplitude
-	keywordNoise                   = "noise"      // Represents a noise
-	keywordWhite                   = "white"      // Represents a white noise
-	keywordPink                    = "pink"       // Represents a pink noise
-	keywordBrown                   = "brown"      // Represents a brown noise
-	keywordSpin                    = "spin"       // Represents a spin
-	keywordWidth                   = "width"      // Represents a width
-	keywordRate                    = "rate"       // Represents a rate
-	keywordEffect                  = "effect"     // Represents an effect
-	keywordBackground              = "background" // Represents a background
-	keywordPulse                   = "pulse"      // Represents a pulse
-	keywordIntensity               = "intensity"  // Represents an intensity
-)
-
-// ParserContext holds the context for parsing
-type ParserContext struct {
+// TextParser holds the context for parsing
+type TextParser struct {
 	Line lineContext // Context for the current line
 }
 
@@ -125,9 +90,9 @@ func (ctx *lineContext) NextIntStrict() (int, error) {
 	return i, nil
 }
 
-// NewParserContext creates a new ParserContext for the given line
-func NewParserContext(line string) *ParserContext {
-	return &ParserContext{
+// NewTextParser creates a new TextParser for the given line
+func NewTextParser(line string) *TextParser {
+	return &TextParser{
 		Line: lineContext{
 			Raw:    line,
 			Tokens: strings.Fields(line),

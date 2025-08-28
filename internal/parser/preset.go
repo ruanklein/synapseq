@@ -17,8 +17,8 @@ func isDigit(b byte) bool {
 	return b >= '0' && b <= '9'
 }
 
-// IsPresetLine checks if the current line is a preset definition
-func (ctx *ParserContext) IsPresetLine() bool {
+// IsPreset checks if the current line is a preset definition
+func (ctx *TextParser) IsPreset() bool {
 	tok, ok := ctx.Line.Peek()
 	if !ok {
 		return false
@@ -42,7 +42,7 @@ func (ctx *ParserContext) IsPresetLine() bool {
 }
 
 // ParsePreset extracts and returns a Preset from the current line context
-func (ctx *ParserContext) ParsePresetLine() (*t.Preset, error) {
+func (ctx *TextParser) ParsePreset() (*t.Preset, error) {
 	ln := ctx.Line.Raw
 	tok, ok := ctx.Line.NextToken()
 	if !ok {

@@ -6,26 +6,26 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// IsOptionLine checks if the first element is an option
-func (ctx *ParserContext) IsOptionLine() bool {
+// IsOption checks if the first element is an option
+func (ctx *TextParser) IsOption() bool {
 	ln := ctx.Line.Raw
 
 	if len(ln) == 0 {
 		return false
 	}
 
-	return string(ln[0]) == keywordOption
+	return string(ln[0]) == t.KeywordOption
 }
 
 // ParseOption extracts and applies the option from the elements
-func (ctx *ParserContext) ParseOptionLine(options *t.AudioOptions) error {
+func (ctx *TextParser) ParseOption(options *t.Option) error {
 	ln := ctx.Line.Raw
 	tok, ok := ctx.Line.NextToken()
 	if !ok {
 		return fmt.Errorf("expected option, got EOF: %s", ln)
 	}
 
-	if string(tok[0]) != keywordOption {
+	if string(tok[0]) != t.KeywordOption {
 		return fmt.Errorf("expected option. Received: %s", tok)
 	}
 
@@ -35,46 +35,51 @@ func (ctx *ParserContext) ParseOptionLine(options *t.AudioOptions) error {
 	}
 
 	switch option {
-	case keywordOptionSampleRate:
+	case t.KeywordOptionSampleRate:
 		sampleRate, err := ctx.Line.NextIntStrict()
 		if err != nil {
 			return fmt.Errorf("samplerate: %v", err)
 		}
 		options.SampleRate = sampleRate
-	case keywordOptionVolume:
+	case t.KeywordOptionVolume:
 		volume, err := ctx.Line.NextIntStrict()
 		if err != nil {
 			return fmt.Errorf("volume: %v", err)
 		}
 		options.Volume = volume
-	case keywordOptionBackground:
+	case t.KeywordOptionBackground:
 		backgroundPath, ok := ctx.Line.NextToken()
 		if !ok {
 			return fmt.Errorf("expected background path: %s", ln)
 		}
 		options.BackgroundPath = backgroundPath
-	case keywordOptionGainLevel:
+	case t.KeywordOptionGainLevel:
 		gainLevel, ok := ctx.Line.NextToken()
 		if !ok {
 			return fmt.Errorf("expected gain level: %s", ln)
 		}
 
 		switch gainLevel {
-		case keywordOptionGainLevelVeryLow:
+		case t.KeywordOptionGainLevelVeryLow:
 			options.GainLevel = t.GainLevelVeryLow
-		case keywordOptionGainLevelLow:
+		case t.KeywordOptionGainLevelLow:
 			options.GainLevel = t.GainLevelLow
-		case keywordOptionGainLevelMedium:
+		case t.KeywordOptionGainLevelMedium:
 			options.GainLevel = t.GainLevelMedium
-		case keywordOptionGainLevelHigh:
+		case t.KeywordOptionGainLevelHigh:
 			options.GainLevel = t.GainLevelHigh
-		case keywordOptionGainLevelVeryHigh:
+		case t.KeywordOptionGainLevelVeryHigh:
 			options.GainLevel = t.GainLevelVeryHigh
 		default:
 			return fmt.Errorf("invalid gain level: %q", gainLevel)
 		}
 	default:
 		return fmt.Errorf("invalid option: %q", option)
+	}
+
+	// Validate options
+	if err := options.Validate(); err != nil {
+		return fmt.Errorf("%v", err)
 	}
 
 	unknown, ok := ctx.Line.Peek()

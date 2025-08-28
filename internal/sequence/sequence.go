@@ -8,7 +8,7 @@ import (
 )
 
 // LoadSequence loads a sequence from a file
-func LoadSequence(fileName string) ([]t.Period, *t.AudioOptions, error) {
+func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 	file, err := LoadFile(fileName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error loading sequence file: %v", err)
@@ -23,7 +23,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.AudioOptions, error) {
 	presets = append(presets, silencePreset)
 
 	// Initialize audio options
-	options := &t.AudioOptions{
+	options := &t.Option{
 		SampleRate:     44100,
 		Volume:         100,
 		BackgroundPath: "",
@@ -32,7 +32,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.AudioOptions, error) {
 
 	// Parse each line in the file
 	for file.NextLine() {
-		ctx := parser.NewParserContext(file.CurrentLine)
+		ctx := parser.NewTextParser(file.CurrentLine)
 
 		// Skip empty lines
 		if len(ctx.Line.Tokens) == 0 {
@@ -40,8 +40,8 @@ func LoadSequence(fileName string) ([]t.Period, *t.AudioOptions, error) {
 		}
 
 		// Skip comments
-		if ctx.IsCommentLine() {
-			comment := ctx.ParseCommentLine()
+		if ctx.IsComment() {
+			comment := ctx.ParseComment()
 			if comment != "" {
 				fmt.Printf("> %s\n", comment)
 			}
@@ -49,19 +49,19 @@ func LoadSequence(fileName string) ([]t.Period, *t.AudioOptions, error) {
 		}
 
 		// Option line
-		if ctx.IsOptionLine() {
+		if ctx.IsOption() {
 			if len(presets) > 1 {
 				return nil, nil, fmt.Errorf("line %d: options must be defined before any preset", file.CurrentLineNumber)
 			}
 
-			if err := ctx.ParseOptionLine(options); err != nil {
+			if err = ctx.ParseOption(options); err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 			continue
 		}
 
 		// Preset definition
-		if ctx.IsPresetLine() {
+		if ctx.IsPreset() {
 			if len(presets) >= t.MaxPresets {
 				return nil, nil, fmt.Errorf("line %d: maximum number of presets reached", file.CurrentLineNumber)
 			}
@@ -70,7 +70,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.AudioOptions, error) {
 				return nil, nil, fmt.Errorf("line %d: preset definitions must be before any timeline definitions", file.CurrentLineNumber)
 			}
 
-			preset, err := ctx.ParsePresetLine()
+			preset, err := ctx.ParsePreset()
 			if err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
@@ -89,7 +89,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.AudioOptions, error) {
 		}
 
 		// Voice line
-		if ctx.IsVoiceLine() {
+		if ctx.IsVoice() {
 			if len(presets) == 1 { // 1 = silence preset
 				return nil, nil, fmt.Errorf("line %d: voice defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
 			}
@@ -104,7 +104,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.AudioOptions, error) {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
-			voice, err := ctx.ParseVoiceLine()
+			voice, err := ctx.ParseVoice()
 			if err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
@@ -146,11 +146,6 @@ func LoadSequence(fileName string) ([]t.Period, *t.AudioOptions, error) {
 		if presets[i].AllVoicesAreOff() {
 			return nil, nil, fmt.Errorf("preset %q is empty", presets[i].Name)
 		}
-	}
-
-	// Validate options
-	if err := options.Validate(); err != nil {
-		return nil, nil, fmt.Errorf("%v", err)
 	}
 
 	// Validate if has more than two Periods

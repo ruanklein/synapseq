@@ -42,7 +42,7 @@ func parseTime(s string) (int, error) {
 }
 
 // IsTimeline checks if the current line is a timeline entry
-func (ctx *ParserContext) IsTimeline() bool {
+func (ctx *TextParser) IsTimeline() bool {
 	tok, ok := ctx.Line.Peek()
 	if !ok {
 		return false
@@ -60,7 +60,7 @@ func (ctx *ParserContext) IsTimeline() bool {
 }
 
 // ParseTimeline parses a timeline line and returns a Period
-func (ctx *ParserContext) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
+func (ctx *TextParser) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
 	ln := ctx.Line.Raw
 	tok, ok := ctx.Line.NextToken()
 	if !ok {
