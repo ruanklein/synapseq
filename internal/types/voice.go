@@ -2,7 +2,8 @@ package types
 
 import "fmt"
 
-type VoiceType int // VoiceType represents the type of voice/sound
+// VoiceType represents the type of voice/sound
+type VoiceType int
 
 // Voice types
 const (
