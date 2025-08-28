@@ -6,8 +6,8 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// IsVoice checks if the current line is a voice definition
-func (ctx *TextParser) IsVoice() bool {
+// HasVoice checks if the current line is a voice definition
+func (ctx *TextParser) HasVoice() bool {
 	ln := ctx.Line.Raw
 
 	if len(ln) < 3 {

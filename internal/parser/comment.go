@@ -7,8 +7,8 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// IsComment checks if the first element is a comment
-func (ctx *TextParser) IsComment() bool {
+// HasComment checks if the first element is a comment
+func (ctx *TextParser) HasComment() bool {
 	tok, ok := ctx.Line.Peek()
 	return ok && string(tok[0]) == t.KeywordComment
 }

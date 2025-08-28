@@ -41,8 +41,8 @@ func parseTime(s string) (int, error) {
 	return (hh*3600 + mm*60 + ss) * 1000, nil
 }
 
-// IsTimeline checks if the current line is a timeline entry
-func (ctx *TextParser) IsTimeline() bool {
+// HasTimeline checks if the current line is a timeline entry
+func (ctx *TextParser) HasTimeline() bool {
 	tok, ok := ctx.Line.Peek()
 	if !ok {
 		return false

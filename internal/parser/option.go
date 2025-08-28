@@ -6,8 +6,8 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// IsOption checks if the first element is an option
-func (ctx *TextParser) IsOption() bool {
+// HasOption checks if the first element is an option
+func (ctx *TextParser) HasOption() bool {
 	ln := ctx.Line.Raw
 
 	if len(ln) == 0 {

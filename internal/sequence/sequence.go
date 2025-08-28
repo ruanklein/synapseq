@@ -40,7 +40,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 		}
 
 		// Skip comments
-		if ctx.IsComment() {
+		if ctx.HasComment() {
 			comment := ctx.ParseComment()
 			if comment != "" {
 				fmt.Printf("> %s\n", comment)
@@ -49,7 +49,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 		}
 
 		// Option line
-		if ctx.IsOption() {
+		if ctx.HasOption() {
 			if len(presets) > 1 {
 				return nil, nil, fmt.Errorf("line %d: options must be defined before any preset", file.CurrentLineNumber)
 			}
@@ -61,7 +61,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 		}
 
 		// Preset definition
-		if ctx.IsPreset() {
+		if ctx.HasPreset() {
 			if len(presets) >= t.MaxPresets {
 				return nil, nil, fmt.Errorf("line %d: maximum number of presets reached", file.CurrentLineNumber)
 			}
@@ -89,7 +89,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 		}
 
 		// Voice line
-		if ctx.IsVoice() {
+		if ctx.HasVoice() {
 			if len(presets) == 1 { // 1 = silence preset
 				return nil, nil, fmt.Errorf("line %d: voice defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
 			}
@@ -114,7 +114,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 		}
 
 		// Timeline
-		if ctx.IsTimeline() {
+		if ctx.HasTimeline() {
 			if len(presets) == 1 { // 1 = silence preset
 				return nil, nil, fmt.Errorf("line %d: timeline defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
 			}
