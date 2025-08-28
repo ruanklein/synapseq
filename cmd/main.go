@@ -29,7 +29,7 @@ func main() {
 		fmt.Printf("Period start at %s\n", p.TimeString())
 		for i, voice := range p.VoiceStart {
 			if voice.Type != t.VoiceOff {
-				fmt.Printf("  Voice (%d): %+v\n", i+1, voice)
+				fmt.Printf("  Voice (%d): %s\n", i+1, voice.String())
 			}
 		}
 	}
