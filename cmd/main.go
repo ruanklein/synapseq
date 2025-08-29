@@ -26,10 +26,10 @@ func main() {
 
 	// Debug periods
 	for _, p := range periods {
-		fmt.Printf("Period start at %s\n", p.TimeString())
-		for i, voice := range p.VoiceStart {
+		fmt.Printf("- %s\n", p.TimeString())
+		for _, voice := range p.VoiceStart {
 			if voice.Type != t.VoiceOff {
-				fmt.Printf("  Voice (%d): %s\n", i+1, voice.String())
+				fmt.Printf("\t%s\n", voice.String())
 			}
 		}
 	}
