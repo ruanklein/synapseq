@@ -129,14 +129,13 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 			}
 
 			if len(periods) > 0 {
-				lastPeriodIndex := len(periods) - 1
-				lastPeriod := &periods[lastPeriodIndex]
+				lastPeriod := &periods[len(periods)-1]
 
 				if lastPeriod.Time >= period.Time {
 					return nil, nil, fmt.Errorf("line %d: timeline %s overlaps with previous timeline %s", file.CurrentLineNumber, period.TimeString(), lastPeriod.TimeString())
 				}
 
-				periods[lastPeriodIndex].VoiceEnd = period.VoiceStart
+				lastPeriod.VoiceEnd = period.VoiceStart
 			}
 
 			periods = append(periods, *period)
