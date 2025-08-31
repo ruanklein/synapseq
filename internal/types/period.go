@@ -16,3 +16,8 @@ func (p *Period) TimeString() string {
 	ss := (p.Time % 60000) / 1000
 	return fmt.Sprintf("%02d:%02d:%02d", hh, mm, ss)
 }
+
+// AdjustPeriods adjusts the voices in the overlapping periods
+func AdjustPeriods(lastPeriod, newPeriod *Period) {
+	// TODO: Implement the "correctPeriodVoices()" logic to add fade-in/out with different voices and waveforms
+}
