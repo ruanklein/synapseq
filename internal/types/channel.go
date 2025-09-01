@@ -1,9 +1,5 @@
 package types
 
-var (
-	CurrentChannel [NumberOfChannels]Channel // Current channel state
-)
-
 // Channel represents a channel state
 type Channel struct {
 	Voice     Voice     // Current voice setting (updated from current period)
