@@ -83,12 +83,6 @@ func (r *AudioRenderer) GenerateAudioChunk() *audio.IntBuffer {
 	for i := range t.BufferSize {
 		left, right := r.generateStereoSample()
 
-		// Apply global volume
-		if r.volume != 100 {
-			left = int(int64(left) * int64(r.volume) / 100)
-			right = int(int64(right) * int64(r.volume) / 100)
-		}
-
 		// Clipping to 16-bit range
 		if left > 32767 {
 			left = 32767
@@ -128,6 +122,11 @@ func (r *AudioRenderer) generateStereoSample() (int, int) {
 		right += r
 	}
 
+	if r.volume != 100 {
+		left = int(int64(left) * int64(r.volume) / 100)
+		right = int(int64(right) * int64(r.volume) / 100)
+	}
+
 	return left >> 16, right >> 16 // Scale down to prevent overflow
 }
 
@@ -164,6 +163,10 @@ func (r *AudioRenderer) generateBinauralSample(ch *t.Channel) (int, int) {
 
 // updateSingleChannel updates the state of a single audio channel
 func (r *AudioRenderer) updateSingleChannel(chIdx int, period t.Period, progress float64) {
+	if chIdx >= len(r.channels) || chIdx >= len(period.VoiceStart) {
+		return // Bounds protection
+	}
+
 	ch := &r.channels[chIdx]
 	v0 := period.VoiceStart[chIdx]
 	v1 := period.VoiceEnd[chIdx]
@@ -243,12 +246,13 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 	endMs := r.periods[len(r.periods)-1].Time
 
 	totalFrames := int64(math.Round(float64(endMs) * float64(r.sampleRate) / 1000.0))
-	framesWritten := int64(0)
 	chunkFrames := int64(t.BufferSize)
+	framesWritten := int64(0)
 
 	r.currentTime = 0
 	r.periodIdx = 0
-	for i := 0; i < t.NumberOfChannels; i++ {
+
+	for i := range t.NumberOfChannels {
 		r.channels[i] = t.Channel{}
 	}
 
@@ -278,6 +282,7 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 		}
 	}
 
+	// Close encoder and output file after writing
 	if err := enc.Close(); err != nil {
 		return fmt.Errorf("close encoder: %w", err)
 	}
