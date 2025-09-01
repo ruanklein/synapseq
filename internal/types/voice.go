@@ -123,3 +123,13 @@ func (v *Voice) CompactString() string {
 		return " ???"
 	}
 }
+
+// Equal checks if two voice configurations are identical
+func (v *Voice) Equal(v2 *Voice) bool {
+	return v.Type == v2.Type &&
+		v.Amplitude == v2.Amplitude &&
+		v.Carrier == v2.Carrier &&
+		v.Resonance == v2.Resonance &&
+		v.Waveform == v2.Waveform &&
+		v.Intensity == v2.Intensity
+}
