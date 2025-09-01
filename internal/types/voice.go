@@ -98,3 +98,23 @@ func (v *Voice) String() string {
 		return ""
 	}
 }
+
+// CompactString returns a compact string representation of the voice configuration
+func (v *Voice) CompactString() string {
+	switch v.Type {
+	case VoiceOff:
+		return " -"
+	case VoiceBinauralBeat, VoiceMonauralBeat, VoiceIsochronicBeat:
+		return fmt.Sprintf(" (%s:%.1f %s:%.2f %s:%.1f)",
+			KeywordTone, v.Carrier, v.Type.String(), v.Resonance, KeywordAmplitude, v.Amplitude.ToPercent())
+	case VoiceWhiteNoise, VoicePinkNoise, VoiceBrownNoise:
+		return fmt.Sprintf(" (%s:%.1f)", KeywordNoise, v.Amplitude.ToPercent())
+	case VoiceSpinWhite, VoiceSpinPink, VoiceSpinBrown:
+		return fmt.Sprintf(" (%s:%.1f %s:%.2f %s:%.1f)",
+			KeywordSpin, v.Carrier, KeywordRate, v.Resonance, KeywordAmplitude, v.Amplitude.ToPercent())
+	case VoiceBackground:
+		return fmt.Sprintf(" (%s:%.1f)", KeywordAmplitude, v.Amplitude.ToPercent())
+	default:
+		return " ???"
+	}
+}
