@@ -105,15 +105,20 @@ func (v *Voice) CompactString() string {
 	case VoiceOff:
 		return " -"
 	case VoiceBinauralBeat, VoiceMonauralBeat, VoiceIsochronicBeat:
-		return fmt.Sprintf(" (%s:%.1f %s:%.2f %s:%.1f)",
+		return fmt.Sprintf(" (%s:%.2f %s:%.2f %s:%.2f)",
 			KeywordTone, v.Carrier, v.Type.String(), v.Resonance, KeywordAmplitude, v.Amplitude.ToPercent())
 	case VoiceWhiteNoise, VoicePinkNoise, VoiceBrownNoise:
-		return fmt.Sprintf(" (%s:%.1f)", KeywordNoise, v.Amplitude.ToPercent())
+		return fmt.Sprintf(" (%s:%.2f)", KeywordNoise, v.Amplitude.ToPercent())
 	case VoiceSpinWhite, VoiceSpinPink, VoiceSpinBrown:
-		return fmt.Sprintf(" (%s:%.1f %s:%.2f %s:%.1f)",
+		return fmt.Sprintf(" (%s:%.2f %s:%.2f %s:%.2f)",
 			KeywordSpin, v.Carrier, KeywordRate, v.Resonance, KeywordAmplitude, v.Amplitude.ToPercent())
 	case VoiceBackground:
-		return fmt.Sprintf(" (%s:%.1f)", KeywordAmplitude, v.Amplitude.ToPercent())
+		return fmt.Sprintf(" (%s:%.2f)", KeywordAmplitude, v.Amplitude.ToPercent())
+	case VoiceEffectSpin:
+		return fmt.Sprintf(" (%s:%.2f %s:%.2f %s:%.2f)",
+			KeywordSpin, v.Carrier, KeywordRate, v.Resonance, KeywordIntensity, v.Intensity.ToPercent())
+	case VoiceEffectPulse:
+		return fmt.Sprintf(" (%s:%.2f %s:%.2f)", KeywordPulse, v.Resonance, KeywordIntensity, v.Intensity.ToPercent())
 	default:
 		return " ???"
 	}
