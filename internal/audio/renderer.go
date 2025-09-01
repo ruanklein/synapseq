@@ -235,11 +235,16 @@ func (r *AudioRenderer) interpolateVoice(v0, v1 t.Voice, progress float64) t.Voi
 
 // RenderToWAV renders the audio to a WAV file using go-audio/wav
 func (r *AudioRenderer) RenderToWAV(outPath string) error {
-	out, err := os.Create(outPath)
-	if err != nil {
-		return fmt.Errorf("create output: %w", err)
+	out := os.Stdout // Use standard output as default
+
+	if outPath != "-" {
+		var err error
+		out, err = os.Create(outPath)
+		if err != nil {
+			return fmt.Errorf("create output: %w", err)
+		}
+		defer out.Close()
 	}
-	defer out.Close()
 
 	enc := wav.NewEncoder(out, r.sampleRate, 16, 2, 1)
 
@@ -274,12 +279,6 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 		}
 
 		framesWritten += framesToWrite
-
-		if framesWritten%int64(r.sampleRate) == 0 {
-			pct := float64(framesWritten) / float64(totalFrames) * 100.0
-			secs := float64(framesWritten) / float64(r.sampleRate)
-			fmt.Printf("Progress: %.1f%% (%d/%d frames, %.1fs)\n", pct, framesWritten, totalFrames, secs)
-		}
 	}
 
 	// Close encoder and output file after writing
@@ -290,7 +289,5 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 		return fmt.Errorf("sync file: %w", err)
 	}
 
-	secs := float64(framesWritten) / float64(r.sampleRate)
-	fmt.Printf("Audio rendering complete: %d frames written (%.2f seconds)\n", framesWritten, secs)
 	return nil
 }
