@@ -2,6 +2,7 @@ package audio
 
 import (
 	"fmt"
+	"math"
 	"os"
 
 	"github.com/go-audio/audio"
@@ -231,59 +232,60 @@ func (r *AudioRenderer) interpolateVoice(v0, v1 t.Voice, progress float64) t.Voi
 
 // RenderToWAV renders the audio to a WAV file using go-audio/wav
 func (r *AudioRenderer) RenderToWAV(outPath string) error {
-	// Create output file
 	out, err := os.Create(outPath)
 	if err != nil {
-		return fmt.Errorf("failed to create output file: %w", err)
+		return fmt.Errorf("create output: %w", err)
 	}
 	defer out.Close()
 
-	// Create WAV encoder
 	enc := wav.NewEncoder(out, r.sampleRate, 16, 2, 1)
 
-	durationMs := r.periods[len(r.periods)-1].Time
-	totalSamplesNeeded := int64(float64(durationMs) * 0.001 * float64(r.sampleRate))
+	endMs := r.periods[len(r.periods)-1].Time
 
-	fmt.Printf("Rendering audio: 0ms to %dms (%.2f seconds)\n", durationMs, float64(durationMs)/1000.0)
-	fmt.Printf("Total samples needed: %d\n", totalSamplesNeeded)
+	totalFrames := int64(math.Round(float64(endMs) * float64(r.sampleRate) / 1000.0))
+	framesWritten := int64(0)
+	chunkFrames := int64(t.BufferSize)
 
-	samplesWritten := int64(0)
-	currentTimeMs := 0
-	for currentTimeMs < durationMs {
-		// Update channel states (equivalent to corrVal)
+	r.currentTime = 0
+	r.periodIdx = 0
+	for i := 0; i < t.NumberOfChannels; i++ {
+		r.channels[i] = t.Channel{}
+	}
+
+	for framesWritten < totalFrames {
+		currentTimeMs := int((float64(framesWritten) * 1000.0) / float64(r.sampleRate))
 		r.UpdateChannelStates(currentTimeMs)
 
-		// Generate audio buffer (equivalent to outChunk)
-		audioBuffer := r.GenerateAudioChunk()
+		buf := r.GenerateAudioChunk()
 
-		// Write buffer to WAV file
-		if err := enc.Write(audioBuffer); err != nil {
-			enc.Close()
-			return fmt.Errorf("failed to write audio buffer: %w", err)
+		framesToWrite := chunkFrames
+		if remain := totalFrames - framesWritten; remain < chunkFrames {
+			framesToWrite = remain
+			buf.Data = buf.Data[:remain*2] // stereo interleaved
 		}
 
-		samplesWritten += t.BufferSize
-		currentTimeMs = int(float64(samplesWritten) / float64(r.sampleRate) * 1000.0)
+		if err := enc.Write(buf); err != nil {
+			_ = enc.Close()
+			return fmt.Errorf("write wav: %w", err)
+		}
 
-		// Progress indicator (every second of audio)
-		if samplesWritten%(int64(r.sampleRate)) == 0 {
-			progress := float64(currentTimeMs) / float64(durationMs) * 100
-			fmt.Printf("Progress: %.1f%% (%dms/%dms, %.1fs)\n",
-				progress, currentTimeMs, durationMs,
-				float64(samplesWritten)/float64(r.sampleRate))
+		framesWritten += framesToWrite
+
+		if framesWritten%int64(r.sampleRate) == 0 {
+			pct := float64(framesWritten) / float64(totalFrames) * 100.0
+			secs := float64(framesWritten) / float64(r.sampleRate)
+			fmt.Printf("Progress: %.1f%% (%d/%d frames, %.1fs)\n", pct, framesWritten, totalFrames, secs)
 		}
 	}
 
 	if err := enc.Close(); err != nil {
-		return fmt.Errorf("failed to close WAV encoder: %w", err)
+		return fmt.Errorf("close encoder: %w", err)
 	}
 	if err := out.Sync(); err != nil {
-		return fmt.Errorf("failed to sync output file: %w", err)
+		return fmt.Errorf("sync file: %w", err)
 	}
 
-	actualDurationSeconds := float64(samplesWritten) / float64(r.sampleRate)
-	fmt.Printf("Audio rendering complete: %d samples written (%.2f seconds)\n",
-		samplesWritten, actualDurationSeconds)
-
+	secs := float64(framesWritten) / float64(r.sampleRate)
+	fmt.Printf("Audio rendering complete: %d frames written (%.2f seconds)\n", framesWritten, secs)
 	return nil
 }
