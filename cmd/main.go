@@ -43,12 +43,8 @@ func main() {
 	}
 
 	// Render to WAV file
-	fmt.Printf("Rendering audio to %s...\n", outputFile)
 	if err := renderer.RenderToWAV(outputFile); err != nil {
 		fmt.Fprintf(os.Stderr, "Error rendering audio: %v\n", err)
 		os.Exit(1)
 	}
-
-	fmt.Println("Audio rendering completed successfully!")
-
 }
