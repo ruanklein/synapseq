@@ -247,6 +247,7 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 	}
 
 	enc := wav.NewEncoder(out, r.sampleRate, 16, 2, 1)
+	defer enc.Close()
 
 	endMs := r.periods[len(r.periods)-1].Time
 
@@ -261,9 +262,14 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 		r.channels[i] = t.Channel{}
 	}
 
+	statusReporter := NewStatusReporter(false)
+	defer statusReporter.FinalStatus()
+
 	for framesWritten < totalFrames {
 		currentTimeMs := int((float64(framesWritten) * 1000.0) / float64(r.sampleRate))
 		r.UpdateChannelStates(currentTimeMs)
+
+		statusReporter.CheckPeriodChange(r)
 
 		buf := r.GenerateAudioChunk()
 
@@ -274,19 +280,15 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 		}
 
 		if err := enc.Write(buf); err != nil {
-			_ = enc.Close()
+			enc.Close()
 			return fmt.Errorf("write wav: %w", err)
 		}
 
 		framesWritten += framesToWrite
-	}
 
-	// Close encoder and output file after writing
-	if err := enc.Close(); err != nil {
-		return fmt.Errorf("close encoder: %w", err)
-	}
-	if err := out.Sync(); err != nil {
-		return fmt.Errorf("sync file: %w", err)
+		if statusReporter.ShouldUpdateStatus() {
+			statusReporter.DisplayStatus(r, currentTimeMs)
+		}
 	}
 
 	return nil
