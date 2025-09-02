@@ -7,18 +7,23 @@ import (
 
 	"github.com/go-audio/audio"
 	"github.com/go-audio/wav"
+	"github.com/ruanklein/synapseq/internal/audio/voices"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
 // AudioRenderer handle audio generation
 type AudioRenderer struct {
-	channels    [t.NumberOfChannels]t.Channel
-	periods     []t.Period
-	currentTime int      // Current playback time in milliseconds
-	periodIdx   int      // Current period index
-	waveTables  [4][]int // Waveform tables for different waveforms
-	sampleRate  int
-	volume      int // Volume level (0-100)
+	channels      [t.NumberOfChannels]t.Channel
+	periods       []t.Period
+	currentTime   int      // Current playback time in milliseconds
+	periodIdx     int      // Current period index
+	waveTables    [4][]int // Waveform tables for different waveforms
+	sampleRate    int
+	volume        int // Volume level (0-100)
+	voiceRegistry *voices.VoiceRegistry
+
+	cachedGenerators [t.NumberOfChannels]t.VoiceGenerator // Cached voice generators for each channel
+	cachedTypes      [t.NumberOfChannels]t.VoiceType      // Cached voice types for each channel
 }
 
 // NewAudioRenderer creates a new AudioRenderer instance
@@ -28,10 +33,11 @@ func NewAudioRenderer(periods []t.Period, option *t.Option) (*AudioRenderer, err
 	}
 
 	renderer := &AudioRenderer{
-		periods:    periods,
-		waveTables: InitWaveformTables(),
-		sampleRate: option.SampleRate,
-		volume:     option.Volume,
+		periods:       periods,
+		waveTables:    InitWaveformTables(),
+		sampleRate:    option.SampleRate,
+		volume:        option.Volume,
+		voiceRegistry: voices.NewVoiceRegistry(),
 	}
 
 	return renderer, nil
@@ -97,8 +103,8 @@ func (r *AudioRenderer) GenerateAudioChunk() *audio.IntBuffer {
 			right = -32768
 		}
 
-		samples[i*2] = left    // Left channel
-		samples[i*2+1] = right // Right channel
+		samples[i*2] = left
+		samples[i*2+1] = right
 	}
 
 	return &audio.IntBuffer{
@@ -117,7 +123,7 @@ func (r *AudioRenderer) generateStereoSample() (int, int) {
 
 	for ch := range t.NumberOfChannels {
 		channel := &r.channels[ch]
-		l, r := r.generateChannelSample(channel)
+		l, r := r.generateChannelSample(channel, ch)
 		left += l
 		right += r
 	}
@@ -131,34 +137,12 @@ func (r *AudioRenderer) generateStereoSample() (int, int) {
 }
 
 // generateChannelSample generates sample for a specific channel
-func (r *AudioRenderer) generateChannelSample(ch *t.Channel) (int, int) {
-	switch ch.Voice.Type {
-	case t.VoiceBinauralBeat:
-		return r.generateBinauralSample(ch)
-	default:
-		return 0, 0 // Silence for unimplemented types
+func (r *AudioRenderer) generateChannelSample(ch *t.Channel, chIdx int) (int, int) {
+	generator := r.getOrCacheGenerator(chIdx, ch.Voice.Type)
+	if generator != nil {
+		return generator.GenerateSample(ch, r.waveTables)
 	}
-}
-
-// generateBinauralSample generates binaural beat sample
-func (r *AudioRenderer) generateBinauralSample(ch *t.Channel) (int, int) {
-	// Advance offset for each ear
-	ch.Offset[0] += ch.Increment[0]
-	ch.Offset[0] &= (t.SineTableSize << 16) - 1
-
-	ch.Offset[1] += ch.Increment[1]
-	ch.Offset[1] &= (t.SineTableSize << 16) - 1
-
-	// Generate samples using waveform table
-	waveIdx := int(ch.Voice.Waveform) % 4
-	if waveIdx >= len(r.waveTables) {
-		waveIdx = 0 // Default to sine wave
-	}
-
-	leftSample := ch.Amplitude[0] * r.waveTables[waveIdx][ch.Offset[0]>>16]
-	rightSample := ch.Amplitude[1] * r.waveTables[waveIdx][ch.Offset[1]>>16]
-
-	return leftSample, rightSample
+	return 0, 0 // Silence for unsupported types
 }
 
 // updateSingleChannel updates the state of a single audio channel
@@ -171,64 +155,37 @@ func (r *AudioRenderer) updateSingleChannel(chIdx int, period t.Period, progress
 	v0 := period.VoiceStart[chIdx]
 	v1 := period.VoiceEnd[chIdx]
 
-	// Interpolate voice parameters
 	ch.Voice = r.interpolateVoice(v0, v1, progress)
 
-	// If the type changed, reset offsets
 	if ch.Type != ch.Voice.Type {
 		ch.Type = ch.Voice.Type
 		ch.Offset[0] = 0
 		ch.Offset[1] = 0
 	}
 
-	// Configure specific channel parameters based on type
-	switch ch.Voice.Type {
-	case t.VoiceOff: // Type 0
-		ch.Amplitude[0] = 0
-		ch.Amplitude[1] = 0
-	case t.VoiceBinauralBeat: // Type 1
-		freq1 := ch.Voice.Carrier + ch.Voice.Resonance/2
-		freq2 := ch.Voice.Carrier - ch.Voice.Resonance/2
-		ch.Amplitude[0] = int(ch.Voice.Amplitude)
-		ch.Amplitude[1] = int(ch.Voice.Amplitude)
-		ch.Increment[0] = int(freq1 / float64(r.sampleRate) * t.SineTableSize * 65536)
-		ch.Increment[1] = int(freq2 / float64(r.sampleRate) * t.SineTableSize * 65536)
-
-		// case t.VoiceWhiteNoise, t.VoicePinkNoise, t.VoiceBrownNoise: // Types 2, 9, 10
-		// 	ch.Amplitude[0] = int(ch.Voice.Amplitude)
-
-		// case t.VoiceMonauralBeat: // Type 3
-		// 	freqHigh := ch.Voice.Carrier + ch.Voice.Resonance/2
-		// 	freqLow := ch.Voice.Carrier - ch.Voice.Resonance/2
-		// 	ch.Amplitude[0] = int(ch.Voice.Amplitude)
-		// 	ch.Increment[0] = int(freqHigh / float64(r.sampleRate) * t.SineTableSize * 65536)
-		// 	ch.Increment[1] = int(freqLow / float64(r.sampleRate) * t.SineTableSize * 65536)
-
-		// case t.SpinPink: // Type 4
-		// 	ch.Amplitude[0] = int(ch.Voice.Amplitude)
-		// 	ch.Increment[0] = int(ch.Voice.Resonance / float64(r.sampleRate) * ST_SIZ * 65536)
-		// 	ch.Increment[1] = int(ch.Voice.Carrier * 1e-6 * float64(r.sampleRate) * (1 << 24) / ST_AMP)
-
-		// case t.Background: // Type 5
-		// 	ch.Amplitude[0] = int(ch.Voice.Amplitude)
-
-		// case t.Isochronic: // Type 8
-		// 	ch.Amplitude[0] = int(ch.Voice.Amplitude)
-		// 	ch.Increment[0] = int(ch.Voice.Carrier / float64(r.sampleRate) * ST_SIZ * 65536)
-		// 	ch.Increment[1] = int(ch.Voice.Resonance / float64(r.sampleRate) * ST_SIZ * 65536)
-		//
-	default:
-		panic("voice not implemented")
+	generator := r.getOrCacheGenerator(chIdx, ch.Voice.Type)
+	if generator != nil {
+		generator.UpdateChannel(ch, r.sampleRate)
 	}
 }
 
+// getOrCacheGenerator retrieves or caches the voice generator for a channel
+func (r *AudioRenderer) getOrCacheGenerator(chIdx int, voiceType t.VoiceType) t.VoiceGenerator {
+	if r.cachedTypes[chIdx] != voiceType {
+		r.cachedTypes[chIdx] = voiceType
+		r.cachedGenerators[chIdx] = r.voiceRegistry.GetGenerator(voiceType)
+	}
+	return r.cachedGenerators[chIdx]
+}
+
+// interpolateVoice interpolates between two voice parameters
 func (r *AudioRenderer) interpolateVoice(v0, v1 t.Voice, progress float64) t.Voice {
 	return t.Voice{
-		Type:      v0.Type, // Type does not interpolate
+		Type:      v0.Type,
 		Amplitude: t.AmplitudeType(float64(v0.Amplitude)*(1-progress) + float64(v1.Amplitude)*progress),
 		Carrier:   v0.Carrier*(1-progress) + v1.Carrier*progress,
 		Resonance: v0.Resonance*(1-progress) + v1.Resonance*progress,
-		Waveform:  v0.Waveform, // Waveform does not interpolate
+		Waveform:  v0.Waveform,
 		Intensity: t.IntensityType(float64(v0.Intensity)*(1-progress) + float64(v1.Intensity)*progress),
 	}
 }
