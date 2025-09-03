@@ -1,19 +1,11 @@
-package voices
+package generator
 
 import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// BinauralGenerator generates binaural beat samples
-type BinauralGenerator struct{}
-
-// GetVoiceType returns the voice type this generator handles
-func (bg *BinauralGenerator) GetVoiceType() t.VoiceType {
-	return t.VoiceBinauralBeat
-}
-
-// UpdateChannel updates channel state for binaural beats
-func (bg *BinauralGenerator) UpdateChannel(ch *t.Channel, sampleRate int) {
+// binauralUpdateChannel updates channel state for binaural beats
+func binauralUpdateChannel(ch *t.Channel, sampleRate int) {
 	freq1 := ch.Voice.Carrier + ch.Voice.Resonance/2
 	freq2 := ch.Voice.Carrier - ch.Voice.Resonance/2
 	ch.Amplitude[0] = int(ch.Voice.Amplitude)
@@ -22,8 +14,8 @@ func (bg *BinauralGenerator) UpdateChannel(ch *t.Channel, sampleRate int) {
 	ch.Increment[1] = int(freq2 / float64(sampleRate) * t.SineTableSize * 65536)
 }
 
-// GenerateSample generates a binaural beat sample
-func (bg *BinauralGenerator) GenerateSample(ch *t.Channel, waveTables [4][]int) (int, int) {
+// binauralGenerateSample generates a binaural beat sample
+func binauralGenerateSample(ch *t.Channel, waveTables [4][]int) (int, int) {
 	// Advance offset for each ear
 	ch.Offset[0] += ch.Increment[0]
 	ch.Offset[0] &= (t.SineTableSize << 16) - 1
@@ -31,11 +23,7 @@ func (bg *BinauralGenerator) GenerateSample(ch *t.Channel, waveTables [4][]int) 
 	ch.Offset[1] += ch.Increment[1]
 	ch.Offset[1] &= (t.SineTableSize << 16) - 1
 
-	// Generate samples using waveform table
-	waveIdx := int(ch.Voice.Waveform) % 4
-	if waveIdx >= len(waveTables) {
-		waveIdx = 0 // Default to sine wave
-	}
+	waveIdx := int(ch.Voice.Waveform)
 
 	leftSample := ch.Amplitude[0] * waveTables[waveIdx][ch.Offset[0]>>16]
 	rightSample := ch.Amplitude[1] * waveTables[waveIdx][ch.Offset[1]>>16]

@@ -133,15 +133,3 @@ func (v *Voice) Equal(v2 *Voice) bool {
 		v.Waveform == v2.Waveform &&
 		v.Intensity == v2.Intensity
 }
-
-// VoiceGenerator interface for all voice sample generators
-type VoiceGenerator interface {
-	// GenerateSample generates a single stereo sample for this voice type
-	GenerateSample(ch *Channel, waveTables [4][]int) (int, int)
-
-	// UpdateChannel updates channel state (increments, amplitudes, etc) for this voice type
-	UpdateChannel(ch *Channel, sampleRate int)
-
-	// GetVoiceType returns the voice type this generator handles
-	GetVoiceType() VoiceType
-}

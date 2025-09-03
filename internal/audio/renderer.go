@@ -7,23 +7,19 @@ import (
 
 	"github.com/go-audio/audio"
 	"github.com/go-audio/wav"
-	"github.com/ruanklein/synapseq/internal/audio/voices"
+	"github.com/ruanklein/synapseq/internal/generator"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
 // AudioRenderer handle audio generation
 type AudioRenderer struct {
-	channels      [t.NumberOfChannels]t.Channel
-	periods       []t.Period
-	currentTime   int      // Current playback time in milliseconds
-	periodIdx     int      // Current period index
-	waveTables    [4][]int // Waveform tables for different waveforms
-	sampleRate    int
-	volume        int // Volume level (0-100)
-	voiceRegistry *voices.VoiceRegistry
-
-	cachedGenerators [t.NumberOfChannels]t.VoiceGenerator // Cached voice generators for each channel
-	cachedTypes      [t.NumberOfChannels]t.VoiceType      // Cached voice types for each channel
+	channels    [t.NumberOfChannels]t.Channel
+	periods     []t.Period
+	currentTime int      // Current playback time in milliseconds
+	periodIdx   int      // Current period index
+	waveTables  [4][]int // Waveform tables for different waveforms
+	sampleRate  int
+	volume      int // Volume level (0-100)
 }
 
 // NewAudioRenderer creates a new AudioRenderer instance
@@ -33,11 +29,10 @@ func NewAudioRenderer(periods []t.Period, option *t.Option) (*AudioRenderer, err
 	}
 
 	renderer := &AudioRenderer{
-		periods:       periods,
-		waveTables:    InitWaveformTables(),
-		sampleRate:    option.SampleRate,
-		volume:        option.Volume,
-		voiceRegistry: voices.NewVoiceRegistry(),
+		periods:    periods,
+		waveTables: InitWaveformTables(),
+		sampleRate: option.SampleRate,
+		volume:     option.Volume,
 	}
 
 	return renderer, nil
@@ -83,9 +78,7 @@ func (r *AudioRenderer) UpdateChannelStates(timeMs int) {
 }
 
 // GenerateAudioChunk generates a buffer of audio samples
-func (r *AudioRenderer) GenerateAudioChunk() *audio.IntBuffer {
-	samples := make([]int, t.BufferSize*2) // Stereo: left + right
-
+func (r *AudioRenderer) GenerateAudioChunk(samples []int) []int {
 	for i := range t.BufferSize {
 		left, right := r.generateStereoSample()
 
@@ -107,14 +100,7 @@ func (r *AudioRenderer) GenerateAudioChunk() *audio.IntBuffer {
 		samples[i*2+1] = right
 	}
 
-	return &audio.IntBuffer{
-		Format: &audio.Format{
-			NumChannels: 2,
-			SampleRate:  r.sampleRate,
-		},
-		Data:           samples,
-		SourceBitDepth: 16,
-	}
+	return samples
 }
 
 // generateStereoSample generates a single stereo sample
@@ -123,7 +109,7 @@ func (r *AudioRenderer) generateStereoSample() (int, int) {
 
 	for ch := range t.NumberOfChannels {
 		channel := &r.channels[ch]
-		l, r := r.generateChannelSample(channel, ch)
+		l, r := generator.GenerateSample(channel, r.waveTables)
 		left += l
 		right += r
 	}
@@ -136,15 +122,6 @@ func (r *AudioRenderer) generateStereoSample() (int, int) {
 	return left >> 16, right >> 16 // Scale down to prevent overflow
 }
 
-// generateChannelSample generates sample for a specific channel
-func (r *AudioRenderer) generateChannelSample(ch *t.Channel, chIdx int) (int, int) {
-	generator := r.getOrCacheGenerator(chIdx, ch.Voice.Type)
-	if generator != nil {
-		return generator.GenerateSample(ch, r.waveTables)
-	}
-	return 0, 0 // Silence for unsupported types
-}
-
 // updateSingleChannel updates the state of a single audio channel
 func (r *AudioRenderer) updateSingleChannel(chIdx int, period t.Period, progress float64) {
 	if chIdx >= len(r.channels) || chIdx >= len(period.VoiceStart) {
@@ -155,7 +132,12 @@ func (r *AudioRenderer) updateSingleChannel(chIdx int, period t.Period, progress
 	v0 := period.VoiceStart[chIdx]
 	v1 := period.VoiceEnd[chIdx]
 
-	ch.Voice = r.interpolateVoice(v0, v1, progress)
+	ch.Voice.Type = v0.Type
+	ch.Voice.Amplitude = t.AmplitudeType(float64(v0.Amplitude)*(1-progress) + float64(v1.Amplitude)*progress)
+	ch.Voice.Carrier = v0.Carrier*(1-progress) + v1.Carrier*progress
+	ch.Voice.Resonance = v0.Resonance*(1-progress) + v1.Resonance*progress
+	ch.Voice.Waveform = v0.Waveform
+	ch.Voice.Intensity = t.IntensityType(float64(v0.Intensity)*(1-progress) + float64(v1.Intensity)*progress)
 
 	if ch.Type != ch.Voice.Type {
 		ch.Type = ch.Voice.Type
@@ -163,31 +145,7 @@ func (r *AudioRenderer) updateSingleChannel(chIdx int, period t.Period, progress
 		ch.Offset[1] = 0
 	}
 
-	generator := r.getOrCacheGenerator(chIdx, ch.Voice.Type)
-	if generator != nil {
-		generator.UpdateChannel(ch, r.sampleRate)
-	}
-}
-
-// getOrCacheGenerator retrieves or caches the voice generator for a channel
-func (r *AudioRenderer) getOrCacheGenerator(chIdx int, voiceType t.VoiceType) t.VoiceGenerator {
-	if r.cachedTypes[chIdx] != voiceType {
-		r.cachedTypes[chIdx] = voiceType
-		r.cachedGenerators[chIdx] = r.voiceRegistry.GetGenerator(voiceType)
-	}
-	return r.cachedGenerators[chIdx]
-}
-
-// interpolateVoice interpolates between two voice parameters
-func (r *AudioRenderer) interpolateVoice(v0, v1 t.Voice, progress float64) t.Voice {
-	return t.Voice{
-		Type:      v0.Type,
-		Amplitude: t.AmplitudeType(float64(v0.Amplitude)*(1-progress) + float64(v1.Amplitude)*progress),
-		Carrier:   v0.Carrier*(1-progress) + v1.Carrier*progress,
-		Resonance: v0.Resonance*(1-progress) + v1.Resonance*progress,
-		Waveform:  v0.Waveform,
-		Intensity: t.IntensityType(float64(v0.Intensity)*(1-progress) + float64(v1.Intensity)*progress),
-	}
+	generator.UpdateChannel(ch, r.sampleRate)
 }
 
 // RenderToWAV renders the audio to a WAV file using go-audio/wav
@@ -222,21 +180,31 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 	statusReporter := NewStatusReporter(false)
 	defer statusReporter.FinalStatus()
 
+	samples := make([]int, t.BufferSize*2) // Stereo: left + right
+	audioBuf := &audio.IntBuffer{
+		Format: &audio.Format{
+			NumChannels: 2,
+			SampleRate:  r.sampleRate,
+		},
+		Data:           samples,
+		SourceBitDepth: 16,
+	}
+
 	for framesWritten < totalFrames {
 		currentTimeMs := int((float64(framesWritten) * 1000.0) / float64(r.sampleRate))
 		r.UpdateChannelStates(currentTimeMs)
 
 		statusReporter.CheckPeriodChange(r)
 
-		buf := r.GenerateAudioChunk()
+		audioBuf.Data = r.GenerateAudioChunk(samples)
 
 		framesToWrite := chunkFrames
 		if remain := totalFrames - framesWritten; remain < chunkFrames {
 			framesToWrite = remain
-			buf.Data = buf.Data[:remain*2] // stereo interleaved
+			audioBuf.Data = audioBuf.Data[:remain*2] // stereo interleaved
 		}
 
-		if err := enc.Write(buf); err != nil {
+		if err := enc.Write(audioBuf); err != nil {
 			enc.Close()
 			return fmt.Errorf("write wav: %w", err)
 		}
