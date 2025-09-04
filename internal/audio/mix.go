@@ -15,7 +15,6 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 			switch channel.Voice.Type {
 			case t.VoiceBinauralBeat:
-				// Advance offset for each ear
 				channel.Offset[0] += channel.Increment[0]
 				channel.Offset[0] &= (t.SineTableSize << 16) - 1
 
@@ -25,22 +24,44 @@ func (r *AudioRenderer) mix(samples []int) []int {
 				left += channel.Amplitude[0] * r.waveTables[waveIdx][channel.Offset[0]>>16]
 				right += channel.Amplitude[1] * r.waveTables[waveIdx][channel.Offset[1]>>16]
 			case t.VoiceMonauralBeat:
-				// Advance phases for both frequencies
-				channel.Offset[0] += channel.Increment[0] // high freq
+				channel.Offset[0] += channel.Increment[0]
 				channel.Offset[0] &= (t.SineTableSize << 16) - 1
 
-				channel.Offset[1] += channel.Increment[1] // low freq
+				channel.Offset[1] += channel.Increment[1]
 				channel.Offset[1] &= (t.SineTableSize << 16) - 1
 
 				freqHigh := r.waveTables[waveIdx][channel.Offset[0]>>16]
 				freqLow := r.waveTables[waveIdx][channel.Offset[1]>>16]
 
-				// Monaural: sum frequencies with reduced amplitude
 				halfAmp := channel.Amplitude[0] / 2
 				mixedSample := halfAmp * (freqHigh + freqLow)
 
 				left += mixedSample
 				right += mixedSample
+			case t.VoiceIsochronicBeat:
+				channel.Offset[0] += channel.Increment[0]
+				channel.Offset[0] &= (t.SineTableSize << 16) - 1
+
+				channel.Offset[1] += channel.Increment[1]
+				channel.Offset[1] &= (t.SineTableSize << 16) - 1
+
+				modVal := float64(r.waveTables[waveIdx][channel.Offset[1]>>16])
+				threshold := 0.3 * float64(t.WaveTableAmplitude)
+				den := 0.7 * float64(t.WaveTableAmplitude)
+
+				factor := 0.0
+				if modVal > threshold {
+					factor = (modVal - threshold) / den
+					factor = factor * factor * (3 - 2*factor)
+				}
+
+				carrier := float64(r.waveTables[waveIdx][channel.Offset[0]>>16])
+				amp := float64(channel.Amplitude[0])
+
+				out := int(amp * carrier * factor)
+
+				left += out
+				right += out
 			}
 		}
 
