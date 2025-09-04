@@ -6,8 +6,6 @@ import (
 
 // sync synchronizes the audio renderer state with the current time
 func (r *AudioRenderer) sync(timeMs int) {
-	r.currentTime = timeMs
-
 	// Find the correct period for the current time
 	for r.periodIdx+1 < len(r.periods) && timeMs >= r.periods[r.periodIdx+1].Time {
 		r.periodIdx++
