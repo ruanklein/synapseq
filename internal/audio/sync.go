@@ -22,18 +22,7 @@ func (r *AudioRenderer) sync(timeMs int) {
 	}
 
 	// Calculate interpolation factor (0.0 to 1.0)
-	t0 := period.Time
-	t1 := nextTime
-	progress := 0.0
-	if t1 > t0 {
-		progress = float64(timeMs-t0) / float64(t1-t0)
-	}
-	if progress < 0 {
-		progress = 0
-	}
-	if progress > 1 {
-		progress = 1
-	}
+	progress := float64(timeMs-period.Time) / float64(nextTime-period.Time)
 
 	// Update each channel
 	for ch := range t.NumberOfChannels {
@@ -66,14 +55,18 @@ func (r *AudioRenderer) sync(timeMs int) {
 			freq2 := channel.Voice.Carrier - channel.Voice.Resonance/2
 			channel.Amplitude[0] = int(channel.Voice.Amplitude)
 			channel.Amplitude[1] = int(channel.Voice.Amplitude)
-			channel.Increment[0] = int(freq1 / float64(r.sampleRate) * t.SineTableSize * 65536)
-			channel.Increment[1] = int(freq2 / float64(r.sampleRate) * t.SineTableSize * 65536)
+			channel.Increment[0] = int(freq1 / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
+			channel.Increment[1] = int(freq2 / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
 		case t.VoiceMonauralBeat:
 			freqHigh := channel.Voice.Carrier + channel.Voice.Resonance/2
 			freqLow := channel.Voice.Carrier - channel.Voice.Resonance/2
 			channel.Amplitude[0] = int(channel.Voice.Amplitude)
-			channel.Increment[0] = int(freqHigh / float64(r.sampleRate) * t.SineTableSize * 65536)
-			channel.Increment[1] = int(freqLow / float64(r.sampleRate) * t.SineTableSize * 65536)
+			channel.Increment[0] = int(freqHigh / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
+			channel.Increment[1] = int(freqLow / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
+		case t.VoiceIsochronicBeat:
+			channel.Amplitude[0] = int(channel.Voice.Amplitude)
+			channel.Increment[0] = int(channel.Voice.Carrier / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
+			channel.Increment[1] = int(channel.Voice.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
 		}
 	}
 }
