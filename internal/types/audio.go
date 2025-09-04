@@ -6,6 +6,7 @@ const (
 	BufferSize         = 1024    // Buffer size for audio processing
 	SineTableSize      = 16384   // Number of elements in sine-table (power of 2)
 	WaveTableAmplitude = 0x7FFFF // Amplitude of wave in wave-table
+	PhasePrecision     = 65536   // Phase precision (1/65536 of a cycle)
 )
 
 type AudioFormat int // Audio format type
