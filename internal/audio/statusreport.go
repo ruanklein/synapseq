@@ -61,7 +61,7 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer) {
 
 		// Start Voice
 		startStr := ""
-		if startVoice.Type != t.VoiceOff {
+		if startVoice.Type != t.VoiceOff && startVoice.Type != t.VoiceSilence {
 			startStr = fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), startVoice.String())
 		}
 
@@ -69,7 +69,7 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer) {
 		endStr := "\n       --"
 		if !startVoice.Equal(&endVoice) {
 			endStr = "\n       -"
-			if endVoice.Type != t.VoiceOff {
+			if endVoice.Type != t.VoiceOff && endVoice.Type != t.VoiceSilence {
 				endStr = fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), endVoice.String())
 			}
 		}
