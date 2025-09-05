@@ -16,9 +16,9 @@ type Preset struct {
 }
 
 // InitVoices initializes the voices in the preset
-func (p *Preset) InitVoices() {
+func (p *Preset) InitVoices(defaultType VoiceType) {
 	for i := range NumberOfChannels {
-		p.Voice[i].Type = VoiceOff
+		p.Voice[i].Type = defaultType
 		p.Voice[i].Amplitude = 0.0
 		p.Voice[i].Carrier = 0.0
 		p.Voice[i].Resonance = 0.0

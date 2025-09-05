@@ -8,6 +8,7 @@ type VoiceType int
 // Voice types
 const (
 	VoiceOff            VoiceType = iota // Voice is off
+	VoiceSilence                         // Voice is silence
 	VoiceBinauralBeat                    // Voice is a binaural beat
 	VoiceMonauralBeat                    // Voice is a monaural beat
 	VoiceIsochronicBeat                  // Voice is an isochronic beat
@@ -25,8 +26,6 @@ const (
 // String returns the string representation of the VoiceType
 func (vt VoiceType) String() string {
 	switch vt {
-	case VoiceOff:
-		return "- -"
 	case VoiceBinauralBeat:
 		return KeywordBinaural
 	case VoiceMonauralBeat:

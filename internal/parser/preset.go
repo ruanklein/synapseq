@@ -55,6 +55,6 @@ func (ctx *TextParser) ParsePreset() (*t.Preset, error) {
 	}
 
 	preset := &t.Preset{Name: strings.ToLower(tok)}
-	preset.InitVoices()
+	preset.InitVoices(t.VoiceOff)
 	return preset, nil
 }

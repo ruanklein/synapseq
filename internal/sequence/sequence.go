@@ -19,7 +19,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 
 	// Initialize built-in presets
 	silencePreset := t.Preset{Name: t.BuiltinSilence}
-	silencePreset.InitVoices()
+	silencePreset.InitVoices(t.VoiceSilence)
 	presets = append(presets, silencePreset)
 
 	// Initialize audio options
