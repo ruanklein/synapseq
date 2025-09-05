@@ -79,7 +79,7 @@ func (v *Voice) Validate() error {
 // String returns the string representation of the Voice
 func (v *Voice) String() string {
 	switch v.Type {
-	case VoiceOff:
+	case VoiceOff, VoiceSilence:
 		return "- -"
 	case VoiceBinauralBeat, VoiceMonauralBeat, VoiceIsochronicBeat:
 		return fmt.Sprintf("%s %s %s %.2f %s %.2f %s %.2f", KeywordWaveform, v.Waveform.String(), KeywordTone, v.Carrier, v.Type.String(), v.Resonance, KeywordAmplitude, v.Amplitude.ToPercent())
@@ -101,7 +101,7 @@ func (v *Voice) String() string {
 // CompactString returns a compact string representation of the voice configuration
 func (v *Voice) CompactString() string {
 	switch v.Type {
-	case VoiceOff:
+	case VoiceOff, VoiceSilence:
 		return " -"
 	case VoiceBinauralBeat, VoiceMonauralBeat, VoiceIsochronicBeat:
 		return fmt.Sprintf(" (%s:%.2f %s:%.2f %s:%.2f)",
