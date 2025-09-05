@@ -27,7 +27,7 @@ func LoadFile(fileName string) (*SequenceFile, error) {
 
 	file, err := os.Open(fileName)
 	if err != nil {
-		return nil, fmt.Errorf("error opening file %s: %v", fileName, err)
+		return nil, fmt.Errorf("%v", err)
 	}
 
 	return &SequenceFile{
