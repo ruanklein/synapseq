@@ -12,12 +12,13 @@ import (
 
 // AudioRenderer handle audio generation
 type AudioRenderer struct {
-	channels   [t.NumberOfChannels]t.Channel
-	periods    []t.Period
-	periodIdx  int      // Current period index
-	waveTables [4][]int // Waveform tables for different waveforms
-	sampleRate int
-	volume     int // Volume level (0-100)
+	channels       [t.NumberOfChannels]t.Channel
+	periods        []t.Period
+	periodIdx      int      // Current period index
+	waveTables     [4][]int // Waveform tables for different waveforms
+	noiseGenerator *t.NoiseGenerator
+	sampleRate     int
+	volume         int // Volume level (0-100)
 }
 
 // NewAudioRenderer creates a new AudioRenderer instance
@@ -27,11 +28,12 @@ func NewAudioRenderer(periods []t.Period, option *t.Option) (*AudioRenderer, err
 	}
 
 	renderer := &AudioRenderer{
-		periods:    periods,
-		waveTables: InitWaveformTables(),
-		sampleRate: option.SampleRate,
-		volume:     option.Volume,
-		periodIdx:  0,
+		periods:        periods,
+		waveTables:     InitWaveformTables(),
+		noiseGenerator: t.NewNoiseGenerator(),
+		sampleRate:     option.SampleRate,
+		volume:         option.Volume,
+		periodIdx:      0,
 	}
 
 	return renderer, nil

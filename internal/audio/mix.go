@@ -71,6 +71,12 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 				left += out
 				right += out
+			case t.VoiceWhiteNoise, t.VoicePinkNoise, t.VoiceBrownNoise:
+				noiseVal := int64(r.noiseGenerator.Generate(channel.Voice.Type))
+				sampleVal := int64(channel.Amplitude[0]) * noiseVal
+
+				left += sampleVal
+				right += sampleVal
 			}
 		}
 
