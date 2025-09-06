@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	s "github.com/ruanklein/synapseq/internal/shared"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
@@ -55,7 +56,7 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer) {
 	// Line 2: Next period (end)
 	line2 := fmt.Sprintf("  %s ", nextPeriod.TimeString())
 
-	for ch := range t.CountActiveChannels(r.channels[:]) {
+	for ch := range s.CountActiveChannels(r.channels[:]) {
 		startVoice := period.VoiceStart[ch]
 		endVoice := period.VoiceEnd[ch]
 
@@ -67,7 +68,7 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer) {
 
 		// End Voice
 		endStr := "\n       --"
-		if !startVoice.Equal(&endVoice) {
+		if !s.IsVoiceEqual(&startVoice, &endVoice) {
 			endStr = "\n       -"
 			if endVoice.Type != t.VoiceOff && endVoice.Type != t.VoiceSilence {
 				endStr = fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), endVoice.String())
@@ -97,7 +98,7 @@ func (sr *StatusReporter) DisplayStatus(r *AudioRenderer, currentTimeMs int) {
 	status := fmt.Sprintf("  %02d:%02d:%02d", hh, mm, ss)
 
 	// Add active voices from each channel
-	for ch := range t.CountActiveChannels(r.channels[:]) {
+	for ch := range s.CountActiveChannels(r.channels[:]) {
 		channel := &r.channels[ch]
 		status += channel.Voice.CompactString()
 	}

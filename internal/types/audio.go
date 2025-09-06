@@ -2,18 +2,10 @@
 package types
 
 const (
-	NumberOfChannels   = 16      // Number of channels
 	BufferSize         = 1024    // Buffer size for audio processing
 	SineTableSize      = 16384   // Number of elements in sine-table (power of 2)
 	WaveTableAmplitude = 0x7FFFF // Amplitude of wave in wave-table
 	PhasePrecision     = 65536   // Phase precision (1/65536 of a cycle)
-)
-
-type AudioFormat int // Audio format type
-
-const (
-	WavFormat AudioFormat = iota // WAV format
-	RawFormat                    // RAW format
 )
 
 type GainLevel int // Gain level (-20db, -16db, -12db, -6db, 0db) for background audio

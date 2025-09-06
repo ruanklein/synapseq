@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	s "github.com/ruanklein/synapseq/internal/shared"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
@@ -82,7 +83,7 @@ func (ctx *TextParser) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
 		return nil, fmt.Errorf("unexpected token after timeline definition: %q", unknown)
 	}
 
-	p := t.FindPreset(strings.ToLower(tok), *presets)
+	p := s.FindPreset(strings.ToLower(tok), *presets)
 	if p == nil {
 		return nil, fmt.Errorf("preset %q not found: %s", tok, ln)
 	}

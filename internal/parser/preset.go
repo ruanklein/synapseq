@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	s "github.com/ruanklein/synapseq/internal/shared"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
@@ -55,6 +56,6 @@ func (ctx *TextParser) ParsePreset() (*t.Preset, error) {
 	}
 
 	preset := &t.Preset{Name: strings.ToLower(tok)}
-	preset.InitVoices(t.VoiceOff)
+	s.InitPresetVoices(preset, t.VoiceOff)
 	return preset, nil
 }

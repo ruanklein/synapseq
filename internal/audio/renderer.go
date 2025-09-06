@@ -16,7 +16,7 @@ type AudioRenderer struct {
 	periods        []t.Period
 	periodIdx      int      // Current period index
 	waveTables     [4][]int // Waveform tables for different waveforms
-	noiseGenerator *t.NoiseGenerator
+	noiseGenerator *NoiseGenerator
 	sampleRate     int
 	volume         int // Volume level (0-100)
 }
@@ -30,7 +30,7 @@ func NewAudioRenderer(periods []t.Period, option *t.Option) (*AudioRenderer, err
 	renderer := &AudioRenderer{
 		periods:        periods,
 		waveTables:     InitWaveformTables(),
-		noiseGenerator: t.NewNoiseGenerator(),
+		noiseGenerator: NewNoiseGenerator(),
 		sampleRate:     option.SampleRate,
 		volume:         option.Volume,
 		periodIdx:      0,

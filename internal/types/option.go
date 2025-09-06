@@ -28,17 +28,3 @@ func (o *Option) Validate() error {
 	}
 	return nil
 }
-
-// String returns a string representation of the options.
-func (o *Option) String() string {
-	var background string
-
-	if o.BackgroundPath == "" {
-		background = "none"
-	} else {
-		background = o.BackgroundPath
-	}
-
-	return fmt.Sprintf("samplerate %d volume %d background %s gainlevel %ddb",
-		o.SampleRate, o.Volume, background, o.GainLevel)
-}

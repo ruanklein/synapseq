@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ruanklein/synapseq/internal/parser"
+	s "github.com/ruanklein/synapseq/internal/shared"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
@@ -19,7 +20,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 
 	// Initialize built-in presets
 	silencePreset := t.Preset{Name: t.BuiltinSilence}
-	silencePreset.InitVoices(t.VoiceSilence)
+	s.InitPresetVoices(&silencePreset, t.VoiceSilence)
 	presets = append(presets, silencePreset)
 
 	// Initialize audio options
@@ -79,7 +80,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 				return nil, nil, fmt.Errorf("line %d: preset name %q is reserved", file.CurrentLineNumber, t.BuiltinSilence)
 			}
 
-			p := t.FindPreset(preset.Name, presets)
+			p := s.FindPreset(preset.Name, presets)
 			if p != nil {
 				return nil, nil, fmt.Errorf("line %d: duplicate preset definition: %s", file.CurrentLineNumber, preset.Name)
 			}
@@ -99,7 +100,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 			}
 
 			lastPreset := &presets[len(presets)-1]
-			voiceIndex, err := lastPreset.AllocateVoice()
+			voiceIndex, err := s.AllocateVoice(lastPreset)
 			if err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
@@ -135,7 +136,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 					return nil, nil, fmt.Errorf("line %d: timeline %s overlaps with previous timeline %s", file.CurrentLineNumber, period.TimeString(), lastPeriod.TimeString())
 				}
 
-				if err := t.AdjustPeriods(lastPeriod, period); err != nil {
+				if err := s.AdjustPeriods(lastPeriod, period); err != nil {
 					return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 				}
 			}
@@ -154,7 +155,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 
 	// Validate if all presets are defined
 	for i := 1; i < len(presets); i++ {
-		if presets[i].AllVoicesAreOff() {
+		if s.IsPresetEmpty(&presets[i]) {
 			return nil, nil, fmt.Errorf("preset %q is empty", presets[i].Name)
 		}
 	}
