@@ -1,6 +1,8 @@
 package types
 
 const (
+	KeywordOff                     = "off"        // Represents an off state
+	KeywordSilence                 = "silence"    // Represents silence
 	KeywordComment                 = "#"          // Represents a comment
 	KeywordOption                  = "@"          // Represents an option
 	KeywordOptionSampleRate        = "samplerate" // Represents a sample rate option

@@ -26,6 +26,10 @@ const (
 // String returns the string representation of the VoiceType
 func (vt VoiceType) String() string {
 	switch vt {
+	case VoiceOff:
+		return KeywordOff
+	case VoiceSilence:
+		return KeywordSilence
 	case VoiceBinauralBeat:
 		return KeywordBinaural
 	case VoiceMonauralBeat:
@@ -45,7 +49,7 @@ func (vt VoiceType) String() string {
 	case VoiceEffectPulse:
 		return KeywordPulse
 	default:
-		return "- -"
+		return "unknown"
 	}
 }
 
