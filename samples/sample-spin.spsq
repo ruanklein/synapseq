@@ -36,7 +36,9 @@ spin-three
 
 # Timeline
 00:00:00 silence
-00:00:15 spin-one
+00:00:10 spin-one
+00:00:20 silence
 00:00:30 spin-two
-00:00:45 spin-three
+00:00:40 silence
+00:00:50 spin-three
 00:01:00 silence
