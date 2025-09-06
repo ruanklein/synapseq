@@ -67,8 +67,22 @@ func (r *AudioRenderer) sync(timeMs int) {
 			channel.Amplitude[0] = int(channel.Voice.Amplitude)
 			channel.Increment[0] = int(channel.Voice.Carrier / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
 			channel.Increment[1] = int(channel.Voice.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
-		case t.VoicePinkNoise, t.VoiceWhiteNoise, t.VoiceBrownNoise:
+		case t.VoiceWhiteNoise, t.VoicePinkNoise, t.VoiceBrownNoise:
 			channel.Amplitude[0] = int(channel.Voice.Amplitude)
+		case t.VoiceSpinWhite, t.VoiceSpinPink, t.VoiceSpinBrown:
+			channel.Amplitude[0] = int(channel.Voice.Amplitude)
+			channel.Increment[0] = int(channel.Voice.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
+			// Clamp carrier to a maximum of 127Hz to avoid clicks
+			spinCarrierMax := 127.0 / 1e-6 / float64(r.sampleRate)
+			clampedCarrier := channel.Voice.Carrier
+
+			if clampedCarrier > spinCarrierMax {
+				clampedCarrier = spinCarrierMax
+			}
+			if clampedCarrier < -spinCarrierMax {
+				clampedCarrier = -spinCarrierMax
+			}
+			channel.Increment[1] = int(clampedCarrier * 1e-6 * float64(r.sampleRate) * float64(1<<24) / float64(t.WaveTableAmplitude))
 		}
 	}
 }

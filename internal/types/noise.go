@@ -117,3 +117,50 @@ func (ng *NoiseGenerator) generatePinkNoise() int {
 
 	return ng.noiseBuffer[ng.noiseBufferOff-1]
 }
+
+// GenerateSpinEffect creates a spin effect for noise
+func (ng *NoiseGenerator) GenerateSpinEffect(t VoiceType, a int, s int) (int64, int64) {
+	// Apply intensity factor to rotation value
+	amplifiedVal := int(float64(s) * 1.5)
+
+	// Limit value between -128 and 127
+	if amplifiedVal > 127 {
+		amplifiedVal = 127
+	}
+	if amplifiedVal < -128 {
+		amplifiedVal = -128
+	}
+
+	// Use absolute value for calculations
+	posVal := amplifiedVal
+	if posVal < 0 {
+		posVal = -posVal
+	}
+
+	var baseNoise int
+	switch t {
+	case VoiceSpinBrown:
+		baseNoise = ng.generateBrownNoise()
+	case VoiceSpinWhite:
+		baseNoise = ng.generateWhiteNoise()
+	default: // Pink noise spin
+		baseNoise = ng.generatePinkNoise()
+	}
+
+	var noiseL, noiseR int
+
+	if amplifiedVal >= 0 {
+		// Rotation to the right
+		noiseL = (baseNoise * (128 - posVal)) >> 7
+		noiseR = baseNoise + ((baseNoise * posVal) >> 7)
+	} else {
+		// Rotation to the left
+		noiseL = baseNoise + ((baseNoise * posVal) >> 7)
+		noiseR = (baseNoise * (128 - posVal)) >> 7
+	}
+
+	left := int64(a) * int64(noiseL)
+	right := int64(a) * int64(noiseR)
+
+	return left, right
+}

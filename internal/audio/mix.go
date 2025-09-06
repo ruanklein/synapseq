@@ -77,6 +77,15 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 				left += sampleVal
 				right += sampleVal
+			case t.VoiceSpinWhite, t.VoiceSpinPink, t.VoiceSpinBrown:
+				channel.Offset[0] += channel.Increment[0]
+				channel.Offset[0] &= (t.SineTableSize << 16) - 1
+
+				spinPos := (channel.Increment[1] * r.waveTables[waveIdx][channel.Offset[0]>>16]) >> 24
+				spinLeft, spinRight := r.noiseGenerator.GenerateSpinEffect(channel.Voice.Type, channel.Amplitude[0], spinPos)
+
+				left += spinLeft
+				right += spinRight
 			}
 		}
 
