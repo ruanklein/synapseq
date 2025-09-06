@@ -106,8 +106,11 @@ waveform-four
 
 # Timeline
 00:00:00 silence
-00:00:15 waveform-one
+00:00:10 waveform-one
+00:00:20 silence
 00:00:30 waveform-two
-00:00:45 waveform-three
-00:01:00 waveform-four
-00:01:15 silence
+00:00:40 silence
+00:00:50 waveform-three
+00:01:00 silence
+00:01:10 waveform-four
+00:01:20 silence
