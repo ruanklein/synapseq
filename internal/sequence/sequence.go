@@ -135,29 +135,9 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 					return nil, nil, fmt.Errorf("line %d: timeline %s overlaps with previous timeline %s", file.CurrentLineNumber, period.TimeString(), lastPeriod.TimeString())
 				}
 
-				for ch := range t.NumberOfChannels {
-					v0 := &lastPeriod.VoiceStart[ch]
-					v1 := &lastPeriod.VoiceEnd[ch]
-					v2 := &period.VoiceStart[ch]
-
-					// Apply Fade-In
-					if v0.Type == t.VoiceSilence {
-						v0.Type = v2.Type
-						v0.Carrier = v2.Carrier
-						v0.Resonance = v2.Resonance
-						v0.Amplitude = 0
-						v0.Intensity = v2.Intensity
-						v0.Waveform = v2.Waveform
-					}
-
-					// Apply Fade-Out
-					if v2.Type == t.VoiceSilence {
-						v2.Carrier = v1.Carrier
-						v2.Resonance = v1.Resonance
-						v2.Intensity = v1.Intensity
-					}
+				if err := t.AdjustPeriods(lastPeriod, period); err != nil {
+					return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 				}
-				lastPeriod.VoiceEnd = period.VoiceStart
 			}
 
 			periods = append(periods, *period)
