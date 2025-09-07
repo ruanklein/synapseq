@@ -26,14 +26,13 @@ type BackgroundAudio struct {
 }
 
 // NewBackgroundAudio creates a new background audio processor
-func NewBackgroundAudio(filePath string, sampleRate int) (*BackgroundAudio, error) {
+func NewBackgroundAudio(filePath string) (*BackgroundAudio, error) {
 	if filePath == "" {
 		return &BackgroundAudio{isEnabled: false}, nil
 	}
 
 	bg := &BackgroundAudio{
 		filePath:   filePath,
-		sampleRate: sampleRate,
 		bufferSize: t.BufferSize * audioChannels, // Stereo
 		isEnabled:  true,
 	}
@@ -64,14 +63,6 @@ func (bg *BackgroundAudio) openFile() error {
 	bg.channels = int(bg.decoder.NumChans)
 	bg.bitDepth = int(bg.decoder.BitDepth)
 	bg.hasReachedEOF = false
-
-	// TODO: Support more formats
-	if bg.channels != 2 {
-		return fmt.Errorf("unsupported channel count: %d", bg.channels)
-	}
-	if bg.bitDepth != 24 {
-		return fmt.Errorf("unsupported bit depth: %d", bg.bitDepth)
-	}
 
 	return nil
 }
@@ -180,16 +171,6 @@ func (bg *BackgroundAudio) Close() error {
 // IsEnabled returns whether background audio is enabled
 func (bg *BackgroundAudio) IsEnabled() bool {
 	return bg.isEnabled
-}
-
-// GetSampleRate returns the sample rate of the background audio
-func (bg *BackgroundAudio) GetSampleRate() int {
-	return bg.sampleRate
-}
-
-// GetChannels returns the number of channels in the background audio
-func (bg *BackgroundAudio) GetChannels() int {
-	return bg.channels
 }
 
 // CalculateBackgroundGain calculates the gain factor based on GainLevel
