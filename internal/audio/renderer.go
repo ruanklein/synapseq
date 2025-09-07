@@ -38,9 +38,26 @@ func NewAudioRenderer(periods []t.Period, option *t.Option) (*AudioRenderer, err
 	}
 
 	// Initialize background audio
-	backgroundAudio, err := NewBackgroundAudio(option.BackgroundPath, option.SampleRate)
+	backgroundAudio, err := NewBackgroundAudio(option.BackgroundPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize background audio: %w", err)
+	}
+
+	// Validate background audio parameters
+	if backgroundAudio.isEnabled {
+		bgSampleRate := backgroundAudio.sampleRate
+		if bgSampleRate != option.SampleRate {
+			return nil, fmt.Errorf("background audio sample rate (%d Hz) does not match output sample rate (%d Hz)",
+				bgSampleRate, option.SampleRate)
+		}
+		bgChannels := backgroundAudio.channels
+		if bgChannels != audioChannels {
+			return nil, fmt.Errorf("background audio must be stereo (%d channels detected)", bgChannels)
+		}
+		bgBitDepth := backgroundAudio.bitDepth
+		if bgBitDepth != audioBitDepth {
+			return nil, fmt.Errorf("background audio must be %d-bit (detected %d-bit)", audioBitDepth, bgBitDepth)
+		}
 	}
 
 	renderer := &AudioRenderer{
@@ -110,7 +127,7 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 		framesToWrite := chunkFrames
 		if remain := totalFrames - framesWritten; remain < chunkFrames {
 			framesToWrite = remain
-			audioBuf.Data = audioBuf.Data[:remain*2] // stereo interleaved
+			audioBuf.Data = audioBuf.Data[:remain*audioChannels] // stereo interleaved
 		}
 
 		if err := enc.Write(audioBuf); err != nil {
