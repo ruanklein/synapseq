@@ -19,9 +19,7 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 	var periods []t.Period
 
 	// Initialize built-in presets
-	silencePreset := t.Preset{Name: t.BuiltinSilence}
-	s.InitPresetVoices(&silencePreset, t.VoiceSilence)
-	presets = append(presets, silencePreset)
+	presets = append(presets, *t.NewBuiltinSilencePreset())
 
 	// Initialize audio options
 	options := &t.Option{
@@ -76,13 +74,10 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
-			if preset.Name == t.BuiltinSilence {
-				return nil, nil, fmt.Errorf("line %d: preset name %q is reserved", file.CurrentLineNumber, t.BuiltinSilence)
-			}
-
-			p := s.FindPreset(preset.Name, presets)
+			pName := preset.String()
+			p := s.FindPreset(pName, presets)
 			if p != nil {
-				return nil, nil, fmt.Errorf("line %d: duplicate preset definition: %s", file.CurrentLineNumber, preset.Name)
+				return nil, nil, fmt.Errorf("line %d: duplicate preset definition: %s", file.CurrentLineNumber, pName)
 			}
 
 			presets = append(presets, *preset)
@@ -157,10 +152,14 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 		return nil, nil, fmt.Errorf("no presets defined")
 	}
 
-	// Validate if all presets are defined
+	// Validate each preset (skip silence preset)
 	for i := 1; i < len(presets); i++ {
-		if s.IsPresetEmpty(&presets[i]) {
-			return nil, nil, fmt.Errorf("preset %q is empty", presets[i].Name)
+		p := &presets[i]
+		if s.IsPresetEmpty(p) {
+			return nil, nil, fmt.Errorf("preset %q is empty", presets[i].String())
+		}
+		if n := s.NumBackgroundVoices(p); n > 1 {
+			return nil, nil, fmt.Errorf("preset %q has %d background voices; only one background voice is allowed per preset", presets[i].String(), n)
 		}
 	}
 

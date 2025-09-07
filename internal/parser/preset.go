@@ -2,44 +2,24 @@ package parser
 
 import (
 	"fmt"
-	"strings"
 
-	s "github.com/ruanklein/synapseq/internal/shared"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// isLetter checks if a byte is a letter
-func isLetter(b byte) bool {
-	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
-}
-
-// isDigit checks if a byte is a digit
-func isDigit(b byte) bool {
-	return b >= '0' && b <= '9'
-}
-
 // HasPreset checks if the current line is a preset definition
 func (ctx *TextParser) HasPreset() bool {
+	ln := ctx.Line.Raw
 	tok, ok := ctx.Line.Peek()
 	if !ok {
 		return false
 	}
 
-	// first char of line must be a letter
-	first := ctx.Line.Raw[0]
-	if !isLetter(first) {
-		return false
+	ch := tok[0]
+	if ln[0] != ' ' && ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+		return true
 	}
 
-	// can contain letters, digits, '_' or '-'
-	for i := 1; i < len(tok); i++ {
-		ch := tok[i]
-		if !(isLetter(ch) || isDigit(ch) || ch == '_' || ch == '-') {
-			return false
-		}
-	}
-
-	return true
+	return false
 }
 
 // ParsePreset extracts and returns a Preset from the current line context
@@ -55,7 +35,9 @@ func (ctx *TextParser) ParsePreset() (*t.Preset, error) {
 		return nil, fmt.Errorf("unexpected token after preset definition: %q", unknown)
 	}
 
-	preset := &t.Preset{Name: strings.ToLower(tok)}
-	s.InitPresetVoices(preset, t.VoiceOff)
+	preset, err := t.NewPreset(tok)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
 	return preset, nil
 }
