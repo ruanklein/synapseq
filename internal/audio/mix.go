@@ -21,8 +21,8 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 	if r.backgroundAudio.IsEnabled() {
 		// Buffer for background audio
-		backgroundSamples = make([]int, t.BufferSize*2) // Stereo
-		r.backgroundAudio.ReadSamples(backgroundSamples, t.BufferSize*2)
+		backgroundSamples = make([]int, t.BufferSize*audioChannels) // Stereo
+		r.backgroundAudio.ReadSamples(backgroundSamples, t.BufferSize*audioChannels)
 
 		// Calculate background gain factor based on gain level
 		bgGainFactor = calculateBackgroundGain(r.gainLevel)
@@ -121,22 +121,22 @@ func (r *AudioRenderer) mix(samples []int) []int {
 		left += nextDither()
 		right += nextDither()
 
-		// Scale down to 16-bit range
-		left >>= 16
-		right >>= 16
+		// Scale down to 24-bit range
+		left >>= audioBitShift
+		right >>= audioBitShift
 
-		// Clipping to 16-bit range
-		if left > 32767 {
-			left = 32767
+		// Clipping to 24-bit range
+		if left > audioMaxValue {
+			left = audioMaxValue
 		}
-		if left < -32768 {
-			left = -32768
+		if left < audioMinValue {
+			left = audioMinValue
 		}
-		if right > 32767 {
-			right = 32767
+		if right > audioMaxValue {
+			right = audioMaxValue
 		}
-		if right < -32768 {
-			right = -32768
+		if right < audioMinValue {
+			right = audioMinValue
 		}
 
 		samples[i*2] = int(left)

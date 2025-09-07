@@ -10,6 +10,14 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
+const (
+	audioChannels = 2        // Stereo
+	audioBitDepth = 24       // 24-bit audio
+	audioBitShift = 8        // 24 Bit shift
+	audioMaxValue = 8388607  // 2^23 - 1
+	audioMinValue = -8388608 // -2^23
+)
+
 // AudioRenderer handle audio generation
 type AudioRenderer struct {
 	channels        [t.NumberOfChannels]t.Channel
@@ -62,7 +70,7 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 		defer out.Close()
 	}
 
-	enc := wav.NewEncoder(out, r.sampleRate, 16, 2, 1)
+	enc := wav.NewEncoder(out, r.sampleRate, audioBitDepth, audioChannels, 1)
 	defer enc.Close()
 
 	// Ensure background audio file is closed if opened
@@ -81,14 +89,14 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 	statusReporter := NewStatusReporter(false)
 	defer statusReporter.FinalStatus()
 
-	samples := make([]int, t.BufferSize*2) // Stereo: left + right
+	samples := make([]int, t.BufferSize*audioChannels) // Stereo: left + right
 	audioBuf := &audio.IntBuffer{
 		Format: &audio.Format{
-			NumChannels: 2,
+			NumChannels: audioChannels,
 			SampleRate:  r.sampleRate,
 		},
 		Data:           samples,
-		SourceBitDepth: 16,
+		SourceBitDepth: audioBitDepth,
 	}
 
 	for framesWritten < totalFrames {

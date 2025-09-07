@@ -34,7 +34,7 @@ func NewBackgroundAudio(filePath string, sampleRate int) (*BackgroundAudio, erro
 	bg := &BackgroundAudio{
 		filePath:   filePath,
 		sampleRate: sampleRate,
-		bufferSize: t.BufferSize * 2, // Stereo
+		bufferSize: t.BufferSize * audioChannels, // Stereo
 		isEnabled:  true,
 	}
 
