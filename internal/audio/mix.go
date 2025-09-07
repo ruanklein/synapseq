@@ -15,6 +15,19 @@ func (r *AudioRenderer) mix(samples []int) []int {
 		return int64(int32(ditherState>>16) - 32768)
 	}
 
+	// Read background audio samples if enabled
+	var backgroundSamples []int
+	var bgGainFactor float64
+
+	if r.backgroundAudio.IsEnabled() {
+		// Buffer for background audio
+		backgroundSamples = make([]int, t.BufferSize*2) // Stereo
+		r.backgroundAudio.ReadSamples(backgroundSamples, t.BufferSize*2)
+
+		// Calculate background gain factor based on gain level
+		bgGainFactor = calculateBackgroundGain(r.gainLevel)
+	}
+
 	for i := range t.BufferSize {
 		var left, right int64
 
@@ -86,6 +99,16 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 				left += spinLeft
 				right += spinRight
+			case t.VoiceBackground:
+				bgLeft := int64(float64(backgroundSamples[i*2]) * bgGainFactor)
+				bgRight := int64(float64(backgroundSamples[i*2+1]) * bgGainFactor)
+
+				backgroundAmplitude := int64(channel.Amplitude[0])
+				backgroundLeft := (bgLeft * backgroundAmplitude)
+				backgroundRight := (bgRight * backgroundAmplitude)
+
+				left += backgroundLeft
+				right += backgroundRight
 			}
 		}
 

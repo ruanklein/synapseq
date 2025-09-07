@@ -12,13 +12,15 @@ import (
 
 // AudioRenderer handle audio generation
 type AudioRenderer struct {
-	channels       [t.NumberOfChannels]t.Channel
-	periods        []t.Period
-	periodIdx      int      // Current period index
-	waveTables     [4][]int // Waveform tables for different waveforms
-	noiseGenerator *NoiseGenerator
-	sampleRate     int
-	volume         int // Volume level (0-100)
+	channels        [t.NumberOfChannels]t.Channel
+	periods         []t.Period
+	periodIdx       int      // Current period index
+	waveTables      [4][]int // Waveform tables for different waveforms
+	noiseGenerator  *NoiseGenerator
+	backgroundAudio *BackgroundAudio
+	sampleRate      int
+	volume          int // Volume level (0-100)
+	gainLevel       t.GainLevel
 }
 
 // NewAudioRenderer creates a new AudioRenderer instance
@@ -27,13 +29,21 @@ func NewAudioRenderer(periods []t.Period, option *t.Option) (*AudioRenderer, err
 		return nil, fmt.Errorf("audio renderer options are required")
 	}
 
+	// Initialize background audio
+	backgroundAudio, err := NewBackgroundAudio(option.BackgroundPath, option.SampleRate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize background audio: %w", err)
+	}
+
 	renderer := &AudioRenderer{
-		periods:        periods,
-		waveTables:     InitWaveformTables(),
-		noiseGenerator: NewNoiseGenerator(),
-		sampleRate:     option.SampleRate,
-		volume:         option.Volume,
-		periodIdx:      0,
+		periods:         periods,
+		waveTables:      InitWaveformTables(),
+		noiseGenerator:  NewNoiseGenerator(),
+		backgroundAudio: backgroundAudio,
+		sampleRate:      option.SampleRate,
+		volume:          option.Volume,
+		periodIdx:       0,
+		gainLevel:       option.GainLevel,
 	}
 
 	return renderer, nil
@@ -54,6 +64,13 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 
 	enc := wav.NewEncoder(out, r.sampleRate, 16, 2, 1)
 	defer enc.Close()
+
+	// Ensure background audio file is closed if opened
+	defer func() {
+		if r.backgroundAudio != nil {
+			r.backgroundAudio.Close()
+		}
+	}()
 
 	endMs := r.periods[len(r.periods)-1].Time
 

@@ -67,7 +67,7 @@ func (r *AudioRenderer) sync(timeMs int) {
 			channel.Amplitude[0] = int(channel.Voice.Amplitude)
 			channel.Increment[0] = int(channel.Voice.Carrier / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
 			channel.Increment[1] = int(channel.Voice.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
-		case t.VoiceWhiteNoise, t.VoicePinkNoise, t.VoiceBrownNoise:
+		case t.VoiceWhiteNoise, t.VoicePinkNoise, t.VoiceBrownNoise, t.VoiceBackground:
 			channel.Amplitude[0] = int(channel.Voice.Amplitude)
 		case t.VoiceSpinWhite, t.VoiceSpinPink, t.VoiceSpinBrown:
 			channel.Amplitude[0] = int(channel.Voice.Amplitude)

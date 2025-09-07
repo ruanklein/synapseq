@@ -110,6 +110,10 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
+			if voice.Type == t.VoiceBackground && options.BackgroundPath == "" {
+				return nil, nil, fmt.Errorf("line %d: background voice defined but no background audio file specified in options", file.CurrentLineNumber)
+			}
+
 			lastPreset.Voice[voiceIndex] = *voice
 			continue
 		}
