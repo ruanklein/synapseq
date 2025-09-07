@@ -113,8 +113,8 @@ func (r *AudioRenderer) mix(samples []int) []int {
 		}
 
 		if r.volume != 100 {
-			left *= int64(r.volume) / 100
-			right *= int64(r.volume) / 100
+			left = left * int64(r.volume) / 100
+			right = right * int64(r.volume) / 100
 		}
 
 		// Apply dithering
