@@ -17,7 +17,7 @@ func main() {
 	inputFile := os.Args[1]
 	outputFile := os.Args[2]
 
-	periods, options, err := sequence.LoadSequence(inputFile)
+	periods, options, err := sequence.LoadTextSequence(inputFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)

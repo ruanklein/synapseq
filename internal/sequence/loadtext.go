@@ -8,8 +8,8 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// LoadSequence loads a sequence from a file
-func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
+// LoadTextSequence loads a sequence from a text file
+func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
 	file, err := LoadFile(fileName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error loading sequence file: %v", err)
