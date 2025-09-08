@@ -13,7 +13,7 @@ const (
 // Preset represents a named preset
 type Preset struct {
 	name  string                  // Name of preset
-	Voice [NumberOfChannels]Voice // Voice-set for it
+	Track [NumberOfChannels]Track // Track-set for it
 }
 
 // NewPreset creates a new preset with the given name
@@ -48,12 +48,12 @@ func NewPreset(name string) (*Preset, error) {
 
 	preset := &Preset{name: n}
 	for i := range NumberOfChannels {
-		preset.Voice[i].Type = VoiceOff
-		preset.Voice[i].Carrier = 0.0
-		preset.Voice[i].Resonance = 0.0
-		preset.Voice[i].Amplitude = 0.0
-		preset.Voice[i].Intensity = 0.0
-		preset.Voice[i].Waveform = WaveformSine
+		preset.Track[i].Type = TrackOff
+		preset.Track[i].Carrier = 0.0
+		preset.Track[i].Resonance = 0.0
+		preset.Track[i].Amplitude = 0.0
+		preset.Track[i].Intensity = 0.0
+		preset.Track[i].Waveform = WaveformSine
 	}
 	return preset, nil
 }
@@ -62,12 +62,12 @@ func NewPreset(name string) (*Preset, error) {
 func NewBuiltinSilencePreset() *Preset {
 	preset := &Preset{name: builtinSilence}
 	for i := range NumberOfChannels {
-		preset.Voice[i].Type = VoiceSilence
-		preset.Voice[i].Carrier = 0.0
-		preset.Voice[i].Resonance = 0.0
-		preset.Voice[i].Amplitude = 0.0
-		preset.Voice[i].Intensity = 0.0
-		preset.Voice[i].Waveform = WaveformSine
+		preset.Track[i].Type = TrackSilence
+		preset.Track[i].Carrier = 0.0
+		preset.Track[i].Resonance = 0.0
+		preset.Track[i].Amplitude = 0.0
+		preset.Track[i].Intensity = 0.0
+		preset.Track[i].Waveform = WaveformSine
 	}
 	return preset
 }

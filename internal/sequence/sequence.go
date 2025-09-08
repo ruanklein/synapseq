@@ -84,32 +84,32 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 			continue
 		}
 
-		// Voice line
-		if ctx.HasVoice() {
+		// Track line
+		if ctx.HasTrack() {
 			if len(presets) == 1 { // 1 = silence preset
-				return nil, nil, fmt.Errorf("line %d: voice defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
+				return nil, nil, fmt.Errorf("line %d: track defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
 			}
 
 			if len(periods) > 0 {
-				return nil, nil, fmt.Errorf("line %d: voice definitions must be before any timeline definitions", file.CurrentLineNumber)
+				return nil, nil, fmt.Errorf("line %d: track definitions must be before any timeline definitions", file.CurrentLineNumber)
 			}
 
 			lastPreset := &presets[len(presets)-1]
-			voiceIndex, err := s.AllocateVoice(lastPreset)
+			trackIndex, err := s.AllocateTrack(lastPreset)
 			if err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
-			voice, err := ctx.ParseVoice()
+			track, err := ctx.ParseTrack()
 			if err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
-			if voice.Type == t.VoiceBackground && options.BackgroundPath == "" {
-				return nil, nil, fmt.Errorf("line %d: background voice defined but no background audio file specified in options", file.CurrentLineNumber)
+			if track.Type == t.TrackBackground && options.BackgroundPath == "" {
+				return nil, nil, fmt.Errorf("line %d: background track defined but no background audio file specified in options", file.CurrentLineNumber)
 			}
 
-			lastPreset.Voice[voiceIndex] = *voice
+			lastPreset.Track[trackIndex] = *track
 			continue
 		}
 
@@ -158,8 +158,8 @@ func LoadSequence(fileName string) ([]t.Period, *t.Option, error) {
 		if s.IsPresetEmpty(p) {
 			return nil, nil, fmt.Errorf("preset %q is empty", presets[i].String())
 		}
-		if n := s.NumBackgroundVoices(p); n > 1 {
-			return nil, nil, fmt.Errorf("preset %q has %d background voices; only one background voice is allowed per preset", presets[i].String(), n)
+		if n := s.NumBackgroundTracks(p); n > 1 {
+			return nil, nil, fmt.Errorf("preset %q has %d background tracks; only one background track is allowed per preset", presets[i].String(), n)
 		}
 	}
 

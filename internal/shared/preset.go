@@ -16,31 +16,31 @@ func FindPreset(name string, presets []t.Preset) *t.Preset {
 	return nil
 }
 
-// AllocateVoice allocates a free voice in the preset
-func AllocateVoice(preset *t.Preset) (int, error) {
-	for index, voice := range preset.Voice {
-		if voice.Type == t.VoiceOff {
+// AllocateTrack allocates a free track in the preset
+func AllocateTrack(preset *t.Preset) (int, error) {
+	for index, track := range preset.Track {
+		if track.Type == t.TrackOff {
 			return index, nil
 		}
 	}
-	return -1, fmt.Errorf("no available voices for preset %q", preset.String())
+	return -1, fmt.Errorf("no available tracks for preset %q", preset.String())
 }
 
-// IsPresetEmpty checks if all voices in the preset are off
+// IsPresetEmpty checks if all tracks in the preset are off
 func IsPresetEmpty(preset *t.Preset) bool {
-	for _, voice := range preset.Voice {
-		if voice.Type != t.VoiceOff {
+	for _, track := range preset.Track {
+		if track.Type != t.TrackOff {
 			return false
 		}
 	}
 	return true
 }
 
-// NumBackgroundVoices counts the number of background voices in the preset
-func NumBackgroundVoices(preset *t.Preset) int {
+// NumBackgroundTracks counts the number of background tracks in the preset
+func NumBackgroundTracks(preset *t.Preset) int {
 	count := 0
-	for _, voice := range preset.Voice {
-		if voice.Type == t.VoiceBackground {
+	for _, track := range preset.Track {
+		if track.Type == t.TrackBackground {
 			count++
 		}
 	}

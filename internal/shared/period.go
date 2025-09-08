@@ -6,61 +6,61 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// AdjustPeriods adjusts the voices in the overlapping periods
+// AdjustPeriods adjusts the tracks in the overlapping periods
 func AdjustPeriods(last, next *t.Period) error {
 	for ch := range t.NumberOfChannels {
-		v0 := &last.VoiceStart[ch]
-		v1 := &last.VoiceEnd[ch]
-		v2 := &next.VoiceStart[ch]
+		tr0 := &last.TrackStart[ch]
+		tr1 := &last.TrackEnd[ch]
+		tr2 := &next.TrackStart[ch]
 
 		// Apply Fade-In
-		if v0.Type == t.VoiceSilence {
-			v0.Type = v2.Type
-			v0.Carrier = v2.Carrier
-			v0.Resonance = v2.Resonance
-			v0.Amplitude = 0
-			v0.Intensity = v2.Intensity
-			v0.Waveform = v2.Waveform
+		if tr0.Type == t.TrackSilence {
+			tr0.Type = tr2.Type
+			tr0.Carrier = tr2.Carrier
+			tr0.Resonance = tr2.Resonance
+			tr0.Amplitude = 0
+			tr0.Intensity = tr2.Intensity
+			tr0.Waveform = tr2.Waveform
 		}
 
 		// Apply Fade-Out
-		if v2.Type == t.VoiceSilence {
-			v2.Carrier = v1.Carrier
-			v2.Resonance = v1.Resonance
-			v2.Intensity = v1.Intensity
+		if tr2.Type == t.TrackSilence {
+			tr2.Carrier = tr1.Carrier
+			tr2.Resonance = tr1.Resonance
+			tr2.Intensity = tr1.Intensity
 		}
 
-		// Validate if previus period has a voice on and next period turn it off or vice-versa
-		if (v1.Type != t.VoiceOff && v1.Type != t.VoiceSilence && v2.Type == t.VoiceOff) ||
-			(v1.Type == t.VoiceOff && v2.Type != t.VoiceOff && v2.Type != t.VoiceSilence) {
-			return fmt.Errorf("channel %d cannot be turned off or on directly, use silence instead: %s --> %s", ch+1, v1.Type.String(), v2.Type.String())
+		// Validate if previus period has a track on and next period turn it off or vice-versa
+		if (tr1.Type != t.TrackOff && tr1.Type != t.TrackSilence && tr2.Type == t.TrackOff) ||
+			(tr1.Type == t.TrackOff && tr2.Type != t.TrackOff && tr2.Type != t.TrackSilence) {
+			return fmt.Errorf("channel %d cannot be turned off or on directly, use silence instead: %s --> %s", ch+1, tr1.Type.String(), tr2.Type.String())
 		}
 
-		// Validate if previus period has a voice on and next period change type
-		if (v1.Type != v2.Type) &&
-			(v1.Type != t.VoiceOff &&
-				v1.Type != t.VoiceSilence &&
-				v2.Type != t.VoiceOff &&
-				v2.Type != t.VoiceSilence) {
-			return fmt.Errorf("channel %d cannot change voice type directly, use silence instead: %s --> %s", ch+1, v1.Type.String(), v2.Type.String())
+		// Validate if previus period has a track on and next period change type
+		if (tr1.Type != tr2.Type) &&
+			(tr1.Type != t.TrackOff &&
+				tr1.Type != t.TrackSilence &&
+				tr2.Type != t.TrackOff &&
+				tr2.Type != t.TrackSilence) {
+			return fmt.Errorf("channel %d cannot change track type directly, use silence instead: %s --> %s", ch+1, tr1.Type.String(), tr2.Type.String())
 		}
 
-		// Validate if previus period has a voice on and next period change waveform
-		if (v1.Waveform != v2.Waveform) &&
-			(v1.Type != t.VoiceOff &&
-				v1.Type != t.VoiceSilence &&
-				v2.Type != t.VoiceOff &&
-				v2.Type != t.VoiceSilence) {
-			return fmt.Errorf("channel %d cannot change waveform directly, use silence instead: %s --> %s", ch+1, v1.Waveform.String(), v2.Waveform.String())
+		// Validate if previus period has a track on and next period change waveform
+		if (tr1.Waveform != tr2.Waveform) &&
+			(tr1.Type != t.TrackOff &&
+				tr1.Type != t.TrackSilence &&
+				tr2.Type != t.TrackOff &&
+				tr2.Type != t.TrackSilence) {
+			return fmt.Errorf("channel %d cannot change waveform directly, use silence instead: %s --> %s", ch+1, tr1.Waveform.String(), tr2.Waveform.String())
 		}
 
-		// Carry forward the voice settings from the end of the last period to the start of the next period
-		v1.Type = v2.Type
-		v1.Carrier = v2.Carrier
-		v1.Resonance = v2.Resonance
-		v1.Amplitude = v2.Amplitude
-		v1.Intensity = v2.Intensity
-		v1.Waveform = v2.Waveform
+		// Carry forward the track settings from the end of the last period to the start of the next period
+		tr1.Type = tr2.Type
+		tr1.Carrier = tr2.Carrier
+		tr1.Resonance = tr2.Resonance
+		tr1.Amplitude = tr2.Amplitude
+		tr1.Intensity = tr2.Intensity
+		tr1.Waveform = tr2.Waveform
 	}
 	return nil
 }

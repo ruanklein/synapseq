@@ -90,8 +90,8 @@ func (ctx *TextParser) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
 
 	period := &t.Period{
 		Time:       timeMs,
-		VoiceStart: p.Voice,
-		VoiceEnd:   p.Voice,
+		TrackStart: p.Track,
+		TrackEnd:   p.Track,
 	}
 
 	return period, nil

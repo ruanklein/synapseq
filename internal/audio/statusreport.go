@@ -11,10 +11,14 @@ import (
 
 // StatusReporter handles terminal status output during rendering
 type StatusReporter struct {
-	quiet           bool // If true, suppresses all output
-	lastStatusWidth int  // To clear the previous line
-	lastPeriodIdx   int  // To detect period change
-	updateCounter   int  // To control update frequency
+	// If true, suppresses all output
+	quiet bool
+	// To clear the previous line
+	lastStatusWidth int
+	// To detect period change
+	lastPeriodIdx int
+	// To control update frequency
+	updateCounter int
 }
 
 // NewStatusReporter creates a new status reporter
@@ -57,21 +61,21 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer) {
 	line2 := fmt.Sprintf("  %s ", nextPeriod.TimeString())
 
 	for ch := range s.CountActiveChannels(r.channels[:]) {
-		startVoice := period.VoiceStart[ch]
-		endVoice := period.VoiceEnd[ch]
+		startTrack := period.TrackStart[ch]
+		endTrack := period.TrackEnd[ch]
 
-		// Start Voice
+		// Start Track
 		startStr := ""
-		if startVoice.Type != t.VoiceOff && startVoice.Type != t.VoiceSilence {
-			startStr = fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), startVoice.String())
+		if startTrack.Type != t.TrackOff && startTrack.Type != t.TrackSilence {
+			startStr = fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), startTrack.String())
 		}
 
-		// End Voice
+		// End Track
 		endStr := "\n       --"
-		if !s.IsVoiceEqual(&startVoice, &endVoice) {
+		if !s.IsTrackEqual(&startTrack, &endTrack) {
 			endStr = "\n       -"
-			if endVoice.Type != t.VoiceOff && endVoice.Type != t.VoiceSilence {
-				endStr = fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), endVoice.String())
+			if endTrack.Type != t.TrackOff && endTrack.Type != t.TrackSilence {
+				endStr = fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), endTrack.String())
 			}
 		}
 
@@ -97,10 +101,10 @@ func (sr *StatusReporter) DisplayStatus(r *AudioRenderer, currentTimeMs int) {
 	// Create status line
 	status := fmt.Sprintf("  %02d:%02d:%02d", hh, mm, ss)
 
-	// Add active voices from each channel
+	// Add active tracks from each channel
 	for ch := range s.CountActiveChannels(r.channels[:]) {
 		channel := &r.channels[ch]
-		status += channel.Voice.CompactString()
+		status += channel.Track.ShortString()
 	}
 
 	// Clean previous line if necessary

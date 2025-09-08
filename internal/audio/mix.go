@@ -33,10 +33,10 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 		for ch := range t.NumberOfChannels {
 			channel := &r.channels[ch]
-			waveIdx := int(channel.Voice.Waveform)
+			waveIdx := int(channel.Track.Waveform)
 
-			switch channel.Voice.Type {
-			case t.VoiceBinauralBeat:
+			switch channel.Track.Type {
+			case t.TrackBinauralBeat:
 				channel.Offset[0] += channel.Increment[0]
 				channel.Offset[0] &= (t.SineTableSize << 16) - 1
 
@@ -45,7 +45,7 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 				left += int64(channel.Amplitude[0]) * int64(r.waveTables[waveIdx][channel.Offset[0]>>16])
 				right += int64(channel.Amplitude[1]) * int64(r.waveTables[waveIdx][channel.Offset[1]>>16])
-			case t.VoiceMonauralBeat:
+			case t.TrackMonauralBeat:
 				channel.Offset[0] += channel.Increment[0]
 				channel.Offset[0] &= (t.SineTableSize << 16) - 1
 
@@ -60,7 +60,7 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 				left += mixedSample
 				right += mixedSample
-			case t.VoiceIsochronicBeat:
+			case t.TrackIsochronicBeat:
 				channel.Offset[0] += channel.Increment[0]
 				channel.Offset[0] &= (t.SineTableSize << 16) - 1
 
@@ -84,22 +84,22 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 				left += out
 				right += out
-			case t.VoiceWhiteNoise, t.VoicePinkNoise, t.VoiceBrownNoise:
-				noiseVal := int64(r.noiseGenerator.Generate(channel.Voice.Type))
+			case t.TrackWhiteNoise, t.TrackPinkNoise, t.TrackBrownNoise:
+				noiseVal := int64(r.noiseGenerator.Generate(channel.Track.Type))
 				sampleVal := int64(channel.Amplitude[0]) * noiseVal
 
 				left += sampleVal
 				right += sampleVal
-			case t.VoiceSpinWhite, t.VoiceSpinPink, t.VoiceSpinBrown:
+			case t.TrackSpinWhite, t.TrackSpinPink, t.TrackSpinBrown:
 				channel.Offset[0] += channel.Increment[0]
 				channel.Offset[0] &= (t.SineTableSize << 16) - 1
 
 				spinPos := (channel.Increment[1] * r.waveTables[waveIdx][channel.Offset[0]>>16]) >> 24
-				spinLeft, spinRight := r.noiseGenerator.GenerateSpinEffect(channel.Voice.Type, channel.Amplitude[0], spinPos)
+				spinLeft, spinRight := r.noiseGenerator.GenerateSpinEffect(channel.Track.Type, channel.Amplitude[0], spinPos)
 
 				left += spinLeft
 				right += spinRight
-			case t.VoiceBackground:
+			case t.TrackBackground:
 				bgLeft := int64(float64(backgroundSamples[i*2]) * bgGainFactor)
 				bgRight := int64(float64(backgroundSamples[i*2+1]) * bgGainFactor)
 

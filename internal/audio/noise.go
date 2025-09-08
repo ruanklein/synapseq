@@ -5,10 +5,14 @@ import (
 )
 
 const (
-	noiseShift     = 12                                 // NoiseShift is the bit shift for noise generation
-	noiseAmplitude = t.WaveTableAmplitude << noiseShift // NoiseAmplitude is the amplitude for noise generation
-	noiseBands     = 9                                  // NoiseBands is the number of bands for noise generation
-	randMult       = 75                                 // Random multiplier for noise generation
+	// NoiseShift is the bit shift for noise generation
+	noiseShift = 12
+	// NoiseAmplitude is the amplitude for noise generation
+	noiseAmplitude = t.WaveTableAmplitude << noiseShift
+	// NoiseBands is the number of bands for noise generation
+	noiseBands = 9
+	// Random multiplier for noise generation
+	randMult = 75
 )
 
 // NoiseGenerator handles all noise generation
@@ -28,26 +32,29 @@ type NoiseGenerator struct {
 
 // pinkNoise represents a pink noise generator state
 type pinkNoise struct {
-	value     int // Current output value
-	increment int // Increment
+	// Current output value
+	value int
+	// Increment
+	increment int
 }
 
 // NewNoiseGenerator creates a new noise generator with initial seed
 func NewNoiseGenerator() *NoiseGenerator {
 	return &NoiseGenerator{
-		seed:      2, // Initial seed
+		// Initial seed
+		seed:      2,
 		brownLast: 0,
 	}
 }
 
-// Generate generates a noise sample based on the voice type
-func (ng *NoiseGenerator) Generate(vt t.VoiceType) int {
-	switch vt {
-	case t.VoiceWhiteNoise:
+// Generate generates a noise sample based on the track type
+func (ng *NoiseGenerator) Generate(tr t.TrackType) int {
+	switch tr {
+	case t.TrackWhiteNoise:
 		return ng.generateWhiteNoise()
-	case t.VoicePinkNoise:
+	case t.TrackPinkNoise:
 		return ng.generatePinkNoise()
-	case t.VoiceBrownNoise:
+	case t.TrackBrownNoise:
 		return ng.generateBrownNoise()
 	default:
 		return 0
@@ -123,7 +130,7 @@ func (ng *NoiseGenerator) generatePinkNoise() int {
 }
 
 // GenerateSpinEffect creates a spin effect for noise
-func (ng *NoiseGenerator) GenerateSpinEffect(vt t.VoiceType, a int, s int) (int64, int64) {
+func (ng *NoiseGenerator) GenerateSpinEffect(tr t.TrackType, a int, s int) (int64, int64) {
 	// Apply intensity factor to rotation value
 	amplifiedVal := int(float64(s) * 1.5)
 
@@ -142,12 +149,13 @@ func (ng *NoiseGenerator) GenerateSpinEffect(vt t.VoiceType, a int, s int) (int6
 	}
 
 	var baseNoise int
-	switch vt {
-	case t.VoiceSpinBrown:
+	switch tr {
+	case t.TrackSpinBrown:
 		baseNoise = ng.generateBrownNoise()
-	case t.VoiceSpinWhite:
+	case t.TrackSpinWhite:
 		baseNoise = ng.generateWhiteNoise()
-	default: // Pink noise spin
+	default:
+		// Pink noise spin
 		baseNoise = ng.generatePinkNoise()
 	}
 

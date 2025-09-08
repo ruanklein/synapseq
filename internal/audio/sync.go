@@ -26,55 +26,55 @@ func (r *AudioRenderer) sync(timeMs int) {
 
 	// Update each channel
 	for ch := range t.NumberOfChannels {
-		if ch >= len(r.channels) || ch >= len(period.VoiceStart) {
+		if ch >= len(r.channels) || ch >= len(period.TrackStart) {
 			return // Bounds protection
 		}
 
 		channel := &r.channels[ch]
-		v0 := period.VoiceStart[ch]
-		v1 := period.VoiceEnd[ch]
+		tr0 := period.TrackStart[ch]
+		tr1 := period.TrackEnd[ch]
 
 		// Interpolate channel parameters
-		channel.Voice.Type = v0.Type
-		channel.Voice.Amplitude = t.AmplitudeType(float64(v0.Amplitude)*(1-progress) + float64(v1.Amplitude)*progress)
-		channel.Voice.Carrier = v0.Carrier*(1-progress) + v1.Carrier*progress
-		channel.Voice.Resonance = v0.Resonance*(1-progress) + v1.Resonance*progress
-		channel.Voice.Waveform = v0.Waveform
-		channel.Voice.Intensity = t.IntensityType(float64(v0.Intensity)*(1-progress) + float64(v1.Intensity)*progress)
+		channel.Track.Type = tr0.Type
+		channel.Track.Amplitude = t.AmplitudeType(float64(tr0.Amplitude)*(1-progress) + float64(tr1.Amplitude)*progress)
+		channel.Track.Carrier = tr0.Carrier*(1-progress) + tr1.Carrier*progress
+		channel.Track.Resonance = tr0.Resonance*(1-progress) + tr1.Resonance*progress
+		channel.Track.Waveform = tr0.Waveform
+		channel.Track.Intensity = t.IntensityType(float64(tr0.Intensity)*(1-progress) + float64(tr1.Intensity)*progress)
 
-		// Reset offsets if voice type has changed
-		if channel.Type != channel.Voice.Type {
-			channel.Type = channel.Voice.Type
+		// Reset offsets if track type has changed
+		if channel.Type != channel.Track.Type {
+			channel.Type = channel.Track.Type
 			channel.Offset[0] = 0
 			channel.Offset[1] = 0
 		}
 
-		switch channel.Voice.Type {
-		case t.VoiceBinauralBeat:
-			freq1 := channel.Voice.Carrier + channel.Voice.Resonance/2
-			freq2 := channel.Voice.Carrier - channel.Voice.Resonance/2
-			channel.Amplitude[0] = int(channel.Voice.Amplitude)
-			channel.Amplitude[1] = int(channel.Voice.Amplitude)
+		switch channel.Track.Type {
+		case t.TrackBinauralBeat:
+			freq1 := channel.Track.Carrier + channel.Track.Resonance/2
+			freq2 := channel.Track.Carrier - channel.Track.Resonance/2
+			channel.Amplitude[0] = int(channel.Track.Amplitude)
+			channel.Amplitude[1] = int(channel.Track.Amplitude)
 			channel.Increment[0] = int(freq1 / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
 			channel.Increment[1] = int(freq2 / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
-		case t.VoiceMonauralBeat:
-			freqHigh := channel.Voice.Carrier + channel.Voice.Resonance/2
-			freqLow := channel.Voice.Carrier - channel.Voice.Resonance/2
-			channel.Amplitude[0] = int(channel.Voice.Amplitude)
+		case t.TrackMonauralBeat:
+			freqHigh := channel.Track.Carrier + channel.Track.Resonance/2
+			freqLow := channel.Track.Carrier - channel.Track.Resonance/2
+			channel.Amplitude[0] = int(channel.Track.Amplitude)
 			channel.Increment[0] = int(freqHigh / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
 			channel.Increment[1] = int(freqLow / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
-		case t.VoiceIsochronicBeat:
-			channel.Amplitude[0] = int(channel.Voice.Amplitude)
-			channel.Increment[0] = int(channel.Voice.Carrier / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
-			channel.Increment[1] = int(channel.Voice.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
-		case t.VoiceWhiteNoise, t.VoicePinkNoise, t.VoiceBrownNoise, t.VoiceBackground:
-			channel.Amplitude[0] = int(channel.Voice.Amplitude)
-		case t.VoiceSpinWhite, t.VoiceSpinPink, t.VoiceSpinBrown:
-			channel.Amplitude[0] = int(channel.Voice.Amplitude)
-			channel.Increment[0] = int(channel.Voice.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
+		case t.TrackIsochronicBeat:
+			channel.Amplitude[0] = int(channel.Track.Amplitude)
+			channel.Increment[0] = int(channel.Track.Carrier / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
+			channel.Increment[1] = int(channel.Track.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
+		case t.TrackWhiteNoise, t.TrackPinkNoise, t.TrackBrownNoise, t.TrackBackground:
+			channel.Amplitude[0] = int(channel.Track.Amplitude)
+		case t.TrackSpinWhite, t.TrackSpinPink, t.TrackSpinBrown:
+			channel.Amplitude[0] = int(channel.Track.Amplitude)
+			channel.Increment[0] = int(channel.Track.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
 			// Clamp carrier to a maximum of 127Hz to avoid clicks
 			spinCarrierMax := 127.0 / 1e-6 / float64(r.sampleRate)
-			clampedCarrier := channel.Voice.Carrier
+			clampedCarrier := channel.Track.Carrier
 
 			if clampedCarrier > spinCarrierMax {
 				clampedCarrier = spinCarrierMax

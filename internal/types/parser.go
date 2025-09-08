@@ -1,40 +1,74 @@
 package types
 
 const (
-	KeywordOff                     = "off"        // Represents an off state
-	KeywordSilence                 = "silence"    // Represents silence
-	KeywordComment                 = "#"          // Represents a comment
-	KeywordOption                  = "@"          // Represents an option
-	KeywordOptionSampleRate        = "samplerate" // Represents a sample rate option
-	KeywordOptionVolume            = "volume"     // Represents a volume option
-	KeywordOptionBackground        = "background" // Represents a background option
-	KeywordOptionGainLevel         = "gainlevel"  // Represents a gain level option
-	KeywordOptionGainLevelVeryLow  = "verylow"    // Represents a very low gain level option
-	KeywordOptionGainLevelLow      = "low"        // Represents a low gain level option
-	KeywordOptionGainLevelMedium   = "medium"     // Represents a medium gain level option
-	KeywordOptionGainLevelHigh     = "high"       // Represents a high gain level option
-	KeywordOptionGainLevelVeryHigh = "veryhigh"   // Represents a very high gain level option
-	KeywordWaveform                = "waveform"   // Represents a waveform
-	KeywordSine                    = "sine"       // Represents a sine wave
-	KeywordSquare                  = "square"     // Represents a square wave
-	KeywordTriangle                = "triangle"   // Represents a triangle wave
-	KeywordSawtooth                = "sawtooth"   // Represents a sawtooth wave
-	KeywordTone                    = "tone"       // Represents a tone
-	KeywordBinaural                = "binaural"   // Represents a binaural tone
-	KeywordMonaural                = "monaural"   // Represents a monaural tone
-	KeywordIsochronic              = "isochronic" // Represents an isochronic tone
-	KeywordAmplitude               = "amplitude"  // Represents an amplitude
-	KeywordNoise                   = "noise"      // Represents a noise
-	KeywordWhite                   = "white"      // Represents a white noise
-	KeywordPink                    = "pink"       // Represents a pink noise
-	KeywordBrown                   = "brown"      // Represents a brown noise
-	KeywordSpin                    = "spin"       // Represents a spin
-	KeywordWidth                   = "width"      // Represents a width
-	KeywordRate                    = "rate"       // Represents a rate
-	KeywordEffect                  = "effect"     // Represents an effect
-	KeywordBackground              = "background" // Represents a background
-	KeywordPulse                   = "pulse"      // Represents a pulse
-	KeywordIntensity               = "intensity"  // Represents an intensity
+	// Represents an off state
+	KeywordOff = "off"
+	// Represents silence
+	KeywordSilence = "silence"
+	// Represents a comment
+	KeywordComment = "#"
+	// Represents an option
+	KeywordOption = "@"
+	// Represents a sample rate option
+	KeywordOptionSampleRate = "samplerate"
+	// Represents a volume option
+	KeywordOptionVolume = "volume"
+	// Represents a background option
+	KeywordOptionBackground = "background"
+	// Represents a gain level option
+	KeywordOptionGainLevel = "gainlevel"
+	// Represents a very low gain level option
+	KeywordOptionGainLevelVeryLow = "verylow"
+	// Represents a low gain level option
+	KeywordOptionGainLevelLow = "low"
+	// Represents a medium gain level option
+	KeywordOptionGainLevelMedium = "medium"
+	// Represents a high gain level option
+	KeywordOptionGainLevelHigh = "high"
+	// Represents a very high gain level option
+	KeywordOptionGainLevelVeryHigh = "veryhigh"
+	// Represents a waveform option
+	KeywordWaveform = "waveform"
+	// Represents a sine wave
+	KeywordSine = "sine"
+	// Represents a square wave
+	KeywordSquare = "square"
+	// Represents a triangle wave
+	KeywordTriangle = "triangle"
+	// Represents a sawtooth wave
+	KeywordSawtooth = "sawtooth"
+	// Represents a tone
+	KeywordTone = "tone"
+	// Represents a binaural tone
+	KeywordBinaural = "binaural"
+	// Represents a monaural tone
+	KeywordMonaural = "monaural"
+	// Represents an isochronic tone
+	KeywordIsochronic = "isochronic"
+	// Represents an amplitude
+	KeywordAmplitude = "amplitude"
+	// Represents a noise
+	KeywordNoise = "noise"
+	// Represents a white noise
+	KeywordWhite = "white"
+	// Represents a pink noise
+	KeywordPink = "pink"
+	// Represents a brown noise
+	KeywordBrown = "brown"
+	// Represents a spin noise effect
+	KeywordSpin = "spin"
+	// Represents a width parameter
+	KeywordWidth = "width"
+	// Represents a rate parameter
+	KeywordRate = "rate"
+	// Represents an effect
+	KeywordEffect = "effect"
+	// Represents a background sound
+	KeywordBackground = "background"
+	// Represents a pulse
+	KeywordPulse = "pulse"
+	// Represents an intensity parameter
+	KeywordIntensity = "intensity"
 )
 
 // Parser defines the interface for parsing different content types
@@ -45,8 +79,8 @@ type Parser interface {
 	HasOption() bool
 	// HasPreset checks if the content is a preset
 	HasPreset() bool
-	// HasVoice checks if the content is a voice
-	HasVoice() bool
+	// HasTrack checks if the content is a track
+	HasTrack() bool
 	// HasTimeline checks if the content is a timeline
 	HasTimeline() bool
 
@@ -56,8 +90,8 @@ type Parser interface {
 	ParseOption(*Option) error
 	// ParsePreset parses a preset content
 	ParsePreset() (*Preset, error)
-	// ParseVoice parses a voice content
-	ParseVoice() (*Voice, error)
+	// ParseTrack parses a track content
+	ParseTrack() (*Track, error)
 	// ParseTimeline parses a timeline content
 	ParseTimeline(*[]Preset) (*Period, error)
 }

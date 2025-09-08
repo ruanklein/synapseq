@@ -2,11 +2,11 @@ package types
 
 import "fmt"
 
-// Period represents a time period with voice configurations
+// Period represents a time period with track configurations
 type Period struct {
 	Time       int                     // Start time (end time is ->Next->Time)
-	VoiceStart [NumberOfChannels]Voice // Start voices for each channel
-	VoiceEnd   [NumberOfChannels]Voice // End voices for each channel
+	TrackStart [NumberOfChannels]Track // Start tracks for each channel
+	TrackEnd   [NumberOfChannels]Track // End tracks for each channel
 }
 
 // TimeString returns the time of this period as a formatted string

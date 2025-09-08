@@ -6,8 +6,8 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// HasVoice checks if the current line is a voice definition
-func (ctx *TextParser) HasVoice() bool {
+// HasTrack checks if the current line is a track definition
+func (ctx *TextParser) HasTrack() bool {
 	ln := ctx.Line.Raw
 
 	if len(ln) < 3 {
@@ -17,8 +17,8 @@ func (ctx *TextParser) HasVoice() bool {
 	return ln[0] == ' ' && ln[1] == ' ' && ln[2] != ' '
 }
 
-// ParseVoice extracts and returns a Voice from the current line context
-func (ctx *TextParser) ParseVoice() (*t.Voice, error) {
+// ParseTrack extracts and returns a Track from the current line context
+func (ctx *TextParser) ParseTrack() (*t.Track, error) {
 	waveform := t.WaveformSine
 	ln := ctx.Line.Raw
 
@@ -55,7 +55,7 @@ func (ctx *TextParser) ParseVoice() (*t.Voice, error) {
 
 	var (
 		carrier, resonance, amplitude, intensity float64
-		voiceType                                t.VoiceType
+		trackType                                t.TrackType
 	)
 
 	switch first {
@@ -72,11 +72,11 @@ func (ctx *TextParser) ParseVoice() (*t.Voice, error) {
 
 		switch kind {
 		case t.KeywordBinaural:
-			voiceType = t.VoiceBinauralBeat
+			trackType = t.TrackBinauralBeat
 		case t.KeywordMonaural:
-			voiceType = t.VoiceMonauralBeat
+			trackType = t.TrackMonauralBeat
 		case t.KeywordIsochronic:
-			voiceType = t.VoiceIsochronicBeat
+			trackType = t.TrackIsochronicBeat
 		}
 
 		if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
@@ -97,11 +97,11 @@ func (ctx *TextParser) ParseVoice() (*t.Voice, error) {
 
 		switch kind {
 		case t.KeywordWhite:
-			voiceType = t.VoiceWhiteNoise
+			trackType = t.TrackWhiteNoise
 		case t.KeywordPink:
-			voiceType = t.VoicePinkNoise
+			trackType = t.TrackPinkNoise
 		case t.KeywordBrown:
-			voiceType = t.VoiceBrownNoise
+			trackType = t.TrackBrownNoise
 		}
 
 		if _, err := ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
@@ -119,11 +119,11 @@ func (ctx *TextParser) ParseVoice() (*t.Voice, error) {
 
 		switch kind {
 		case t.KeywordWhite:
-			voiceType = t.VoiceSpinWhite
+			trackType = t.TrackSpinWhite
 		case t.KeywordPink:
-			voiceType = t.VoiceSpinPink
+			trackType = t.TrackSpinPink
 		case t.KeywordBrown:
-			voiceType = t.VoiceSpinBrown
+			trackType = t.TrackSpinBrown
 		}
 
 		if _, err := ctx.Line.NextExpectOneOf(t.KeywordWidth); err != nil {
@@ -145,7 +145,7 @@ func (ctx *TextParser) ParseVoice() (*t.Voice, error) {
 			return nil, fmt.Errorf("amplitude: %w", err)
 		}
 	case t.KeywordBackground:
-		voiceType = t.VoiceBackground
+		trackType = t.TrackBackground
 		var err error
 		if _, err = ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
 			return nil, fmt.Errorf("expected %q after background: %s", t.KeywordAmplitude, ln)
@@ -153,65 +153,25 @@ func (ctx *TextParser) ParseVoice() (*t.Voice, error) {
 		if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("amplitude: %w", err)
 		}
-	case t.KeywordEffect:
-		var err error
-		kind, err := ctx.Line.NextExpectOneOf(t.KeywordSpin, t.KeywordPulse)
-		if err != nil {
-			return nil, fmt.Errorf("expected %q or %q after effect: %s", t.KeywordSpin, t.KeywordPulse, ln)
-		}
-
-		switch kind {
-		case t.KeywordSpin:
-			voiceType = t.VoiceEffectSpin
-			if _, err := ctx.Line.NextExpectOneOf(t.KeywordWidth); err != nil {
-				return nil, fmt.Errorf("expected %q after spin: %s", t.KeywordWidth, ln)
-			}
-			if carrier, err = ctx.Line.NextFloat64Strict(); err != nil {
-				return nil, fmt.Errorf("carrier: %w", err)
-			}
-			if _, err := ctx.Line.NextExpectOneOf(t.KeywordRate); err != nil {
-				return nil, fmt.Errorf("expected %q after carrier: %s", t.KeywordRate, ln)
-			}
-			if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
-				return nil, fmt.Errorf("resonance: %w", err)
-			}
-			if _, err = ctx.Line.NextExpectOneOf(t.KeywordIntensity); err != nil {
-				return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordIntensity, ln)
-			}
-			if intensity, err = ctx.Line.NextFloat64Strict(); err != nil {
-				return nil, fmt.Errorf("intensity: %w", err)
-			}
-		case t.KeywordPulse:
-			voiceType = t.VoiceEffectPulse
-			if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
-				return nil, fmt.Errorf("resonance: %w", err)
-			}
-			if _, err = ctx.Line.NextExpectOneOf(t.KeywordIntensity); err != nil {
-				return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordIntensity, ln)
-			}
-			if intensity, err = ctx.Line.NextFloat64Strict(); err != nil {
-				return nil, fmt.Errorf("intensity: %w", err)
-			}
-		}
 	default:
 		return nil, fmt.Errorf("expected %q, %q, %q, %q, or %q. Received: %s", t.KeywordTone, t.KeywordNoise, t.KeywordSpin, t.KeywordEffect, t.KeywordBackground, first)
 	}
 
 	unknown, ok := ctx.Line.Peek()
 	if ok {
-		return nil, fmt.Errorf("unexpected token after voice definition: %q", unknown)
+		return nil, fmt.Errorf("unexpected token after track definition: %q", unknown)
 	}
 
-	voice := t.Voice{
-		Type:      voiceType,
+	track := t.Track{
+		Type:      trackType,
 		Carrier:   carrier,
 		Resonance: resonance,
 		Amplitude: t.AmplitudePercentToRaw(amplitude),
 		Intensity: t.IntensityPercentToRaw(intensity),
 		Waveform:  waveform,
 	}
-	if err := voice.Validate(); err != nil {
+	if err := track.Validate(); err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
-	return &voice, nil
+	return &track, nil
 }

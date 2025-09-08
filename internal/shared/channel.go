@@ -7,7 +7,7 @@ import (
 // CountActiveChannels counts the number of active channels
 func CountActiveChannels(chs []t.Channel) int {
 	for i := len(chs) - 1; i >= 0; i-- {
-		if chs[i].Voice.Type != t.VoiceOff {
+		if chs[i].Track.Type != t.TrackOff {
 			return i + 1
 		}
 	}

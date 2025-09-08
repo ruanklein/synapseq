@@ -23,28 +23,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	// fmt.Printf("Sequence Options:\n  %+v\n\n", options.String())
-
-	// Debug periods
-	// for _, p := range periods {
-	// 	fmt.Printf("- %s\n", p.TimeString())
-	// 	for _, voice := range p.VoiceStart {
-	// 		if voice.Type != t.VoiceOff {
-	// 			fmt.Printf("\t%s\n", voice.String())
-	// 		}
-	// 	}
-	// }
-
 	// Create audio renderer
 	renderer, err := audio.NewAudioRenderer(periods, options)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating renderer: %v\n", err)
+		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}
 
 	// Render to WAV file
 	if err := renderer.RenderToWAV(outputFile); err != nil {
-		fmt.Fprintf(os.Stderr, "Error rendering audio: %v\n", err)
+		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}
 }
