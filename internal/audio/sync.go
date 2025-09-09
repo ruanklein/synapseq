@@ -36,6 +36,7 @@ func (r *AudioRenderer) sync(timeMs int) {
 
 		// Interpolate channel parameters
 		channel.Track.Type = tr0.Type
+		channel.Track.Effect.Type = tr0.Effect.Type
 		channel.Track.Amplitude = t.AmplitudeType(float64(tr0.Amplitude)*(1-progress) + float64(tr1.Amplitude)*progress)
 		channel.Track.Carrier = tr0.Carrier*(1-progress) + tr1.Carrier*progress
 		channel.Track.Resonance = tr0.Resonance*(1-progress) + tr1.Resonance*progress
@@ -67,22 +68,28 @@ func (r *AudioRenderer) sync(timeMs int) {
 			channel.Amplitude[0] = int(channel.Track.Amplitude)
 			channel.Increment[0] = int(channel.Track.Carrier / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
 			channel.Increment[1] = int(channel.Track.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
-		case t.TrackWhiteNoise, t.TrackPinkNoise, t.TrackBrownNoise, t.TrackBackground:
+		case t.TrackWhiteNoise, t.TrackPinkNoise, t.TrackBrownNoise:
 			channel.Amplitude[0] = int(channel.Track.Amplitude)
-		case t.TrackSpinWhite, t.TrackSpinPink, t.TrackSpinBrown:
+		case t.TrackBackground:
 			channel.Amplitude[0] = int(channel.Track.Amplitude)
-			channel.Increment[0] = int(channel.Track.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
-			// Clamp carrier to a maximum of 127Hz to avoid clicks
-			spinCarrierMax := 127.0 / 1e-6 / float64(r.sampleRate)
-			clampedCarrier := channel.Track.Carrier
 
-			if clampedCarrier > spinCarrierMax {
-				clampedCarrier = spinCarrierMax
+			switch channel.Track.Effect.Type {
+			case t.EffectSpin:
+				channel.Increment[0] = int(channel.Track.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
+
+				spinCarrierMax := 127.0 / 1e-6 / float64(r.sampleRate)
+				clampedCarrier := channel.Track.Carrier
+
+				if clampedCarrier > spinCarrierMax {
+					clampedCarrier = spinCarrierMax
+				}
+				if clampedCarrier < -spinCarrierMax {
+					clampedCarrier = -spinCarrierMax
+				}
+				channel.Increment[1] = int(clampedCarrier * 1e-6 * float64(r.sampleRate) * float64(1<<24) / float64(t.WaveTableAmplitude))
+			case t.EffectPulse:
+				channel.Increment[1] = int(channel.Track.Resonance / float64(r.sampleRate) * t.SineTableSize * t.PhasePrecision)
 			}
-			if clampedCarrier < -spinCarrierMax {
-				clampedCarrier = -spinCarrierMax
-			}
-			channel.Increment[1] = int(clampedCarrier * 1e-6 * float64(r.sampleRate) * float64(1<<24) / float64(t.WaveTableAmplitude))
 		}
 	}
 }
