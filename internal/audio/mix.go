@@ -17,15 +17,11 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 	// Read background audio samples if enabled
 	var backgroundSamples []int
-	var bgGainFactor float64
 
 	if r.backgroundAudio.IsEnabled() {
 		// Buffer for background audio
 		backgroundSamples = make([]int, t.BufferSize*audioChannels) // Stereo
 		r.backgroundAudio.ReadSamples(backgroundSamples, t.BufferSize*audioChannels)
-
-		// Calculate background gain factor based on gain level
-		bgGainFactor = calculateBackgroundGain(r.gainLevel)
 	}
 
 	for i := range t.BufferSize {
@@ -67,20 +63,12 @@ func (r *AudioRenderer) mix(samples []int) []int {
 				channel.Offset[1] += channel.Increment[1]
 				channel.Offset[1] &= (t.SineTableSize << 16) - 1
 
-				modVal := float64(r.waveTables[waveIdx][channel.Offset[1]>>16])
-				threshold := 0.3 * float64(t.WaveTableAmplitude)
-				den := 0.7 * float64(t.WaveTableAmplitude)
-
-				factor := 0.0
-				if modVal > threshold {
-					factor = (modVal - threshold) / den
-					factor = factor * factor * (3 - 2*factor)
-				}
+				modFactor := r.calcPulseFactor(channel)
 
 				carrier := float64(r.waveTables[waveIdx][channel.Offset[0]>>16])
 				amp := float64(channel.Amplitude[0])
 
-				out := int64(amp * carrier * factor)
+				out := int64(amp * carrier * modFactor)
 
 				left += out
 				right += out
@@ -90,25 +78,61 @@ func (r *AudioRenderer) mix(samples []int) []int {
 
 				left += sampleVal
 				right += sampleVal
-			case t.TrackSpinWhite, t.TrackSpinPink, t.TrackSpinBrown:
-				channel.Offset[0] += channel.Increment[0]
-				channel.Offset[0] &= (t.SineTableSize << 16) - 1
-
-				spinPos := (channel.Increment[1] * r.waveTables[waveIdx][channel.Offset[0]>>16]) >> 24
-				spinLeft, spinRight := r.noiseGenerator.GenerateSpinEffect(channel.Track.Type, channel.Amplitude[0], spinPos)
-
-				left += spinLeft
-				right += spinRight
 			case t.TrackBackground:
-				bgLeft := int64(float64(backgroundSamples[i*2]) * bgGainFactor)
-				bgRight := int64(float64(backgroundSamples[i*2+1]) * bgGainFactor)
+				g := float64(r.gainLevel) / 100.0
+				bgLeft := int64(float64(backgroundSamples[i*2]) * g)
+				bgRight := int64(float64(backgroundSamples[i*2+1]) * g)
 
 				backgroundAmplitude := int64(channel.Amplitude[0])
-				backgroundLeft := (bgLeft * backgroundAmplitude)
-				backgroundRight := (bgRight * backgroundAmplitude)
 
-				left += backgroundLeft
-				right += backgroundRight
+				switch channel.Track.Effect.Type {
+				case t.EffectSpin:
+					channel.Offset[0] += channel.Increment[0]
+					channel.Offset[0] &= (t.SineTableSize << 16) - 1
+
+					spinPos := (channel.Increment[1] * r.waveTables[waveIdx][channel.Offset[0]>>16]) >> 24
+
+					effectIntensity := float64(channel.Track.Intensity) * 0.7
+					amplifiedSpin := int64(float64(spinPos) * (0.5 + effectIntensity*3.5))
+
+					if amplifiedSpin > 127 {
+						amplifiedSpin = 127
+					}
+					if amplifiedSpin < -128 {
+						amplifiedSpin = -128
+					}
+
+					posVal := amplifiedSpin
+					if posVal < 0 {
+						posVal = -posVal
+					}
+
+					var spinLeft, spinRight int64
+					if amplifiedSpin >= 0 {
+						spinLeft = (bgLeft * backgroundAmplitude * (128 - posVal)) >> 7
+						spinRight = bgRight*backgroundAmplitude + ((bgLeft * backgroundAmplitude * posVal) >> 7)
+					} else {
+						spinLeft = bgLeft*backgroundAmplitude + ((bgRight * backgroundAmplitude * posVal) >> 7)
+						spinRight = (bgRight * backgroundAmplitude * (128 - posVal)) >> 7
+					}
+
+					left += spinLeft
+					right += spinRight
+				case t.EffectPulse:
+					channel.Offset[1] += channel.Increment[1]
+					channel.Offset[1] &= (t.SineTableSize << 16) - 1
+
+					modFactor := r.calcPulseFactor(channel)
+
+					effectIntensity := float64(channel.Track.Intensity) * 0.7
+					gain := (1.0 - effectIntensity) + (effectIntensity * modFactor)
+
+					left += int64(float64(bgLeft*backgroundAmplitude) * gain)
+					right += int64(float64(bgRight*backgroundAmplitude) * gain)
+				default:
+					left += bgLeft * backgroundAmplitude
+					right += bgRight * backgroundAmplitude
+				}
 			}
 		}
 
