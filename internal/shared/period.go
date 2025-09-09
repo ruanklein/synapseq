@@ -16,6 +16,7 @@ func AdjustPeriods(last, next *t.Period) error {
 		// Apply Fade-In
 		if tr0.Type == t.TrackSilence {
 			tr0.Type = tr2.Type
+			tr0.Effect.Type = tr2.Effect.Type
 			tr0.Carrier = tr2.Carrier
 			tr0.Resonance = tr2.Resonance
 			tr0.Amplitude = 0
@@ -36,26 +37,26 @@ func AdjustPeriods(last, next *t.Period) error {
 			return fmt.Errorf("channel %d cannot be turned off or on directly, use silence instead: %s --> %s", ch+1, tr1.Type.String(), tr2.Type.String())
 		}
 
-		// Validate if previus period has a track on and next period change type
-		if (tr1.Type != tr2.Type) &&
-			(tr1.Type != t.TrackOff &&
-				tr1.Type != t.TrackSilence &&
-				tr2.Type != t.TrackOff &&
-				tr2.Type != t.TrackSilence) {
-			return fmt.Errorf("channel %d cannot change track type directly, use silence instead: %s --> %s", ch+1, tr1.Type.String(), tr2.Type.String())
-		}
-
-		// Validate if previus period has a track on and next period change waveform
-		if (tr1.Waveform != tr2.Waveform) &&
-			(tr1.Type != t.TrackOff &&
-				tr1.Type != t.TrackSilence &&
-				tr2.Type != t.TrackOff &&
-				tr2.Type != t.TrackSilence) {
-			return fmt.Errorf("channel %d cannot change waveform directly, use silence instead: %s --> %s", ch+1, tr1.Waveform.String(), tr2.Waveform.String())
+		// Determine if both periods have a track on
+		if tr1.Type != t.TrackOff &&
+			tr1.Type != t.TrackSilence &&
+			tr2.Type != t.TrackOff &&
+			tr2.Type != t.TrackSilence {
+			// No slide alowed between different track types, waveforms, or effect types
+			if tr1.Type != tr2.Type {
+				return fmt.Errorf("channel %d cannot change track type directly, use silence instead: %s --> %s", ch+1, tr1.Type.String(), tr2.Type.String())
+			}
+			if tr1.Waveform != tr2.Waveform {
+				return fmt.Errorf("channel %d cannot change waveform directly, use silence instead: %s --> %s", ch+1, tr1.Waveform.String(), tr2.Waveform.String())
+			}
+			if tr1.Effect.Type != tr2.Effect.Type {
+				return fmt.Errorf("channel %d cannot change effect type directly, use silence instead: %s --> %s", ch+1, tr1.Effect.Type.String(), tr2.Effect.Type.String())
+			}
 		}
 
 		// Carry forward the track settings from the end of the last period to the start of the next period
 		tr1.Type = tr2.Type
+		tr1.Effect.Type = tr2.Effect.Type
 		tr1.Carrier = tr2.Carrier
 		tr1.Resonance = tr2.Resonance
 		tr1.Amplitude = tr2.Amplitude
