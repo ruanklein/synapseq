@@ -172,23 +172,3 @@ func (bg *BackgroundAudio) Close() error {
 func (bg *BackgroundAudio) IsEnabled() bool {
 	return bg.isEnabled
 }
-
-// CalculateBackgroundGain calculates the gain factor based on GainLevel
-func calculateBackgroundGain(gainLevel t.GainLevel) float64 {
-	// Convert dB reduction to linear gain factor
-	// gain = 10^(-dB/20)
-	switch gainLevel {
-	case t.GainLevelVeryLow: // -20dB
-		return 0.1
-	case t.GainLevelLow: // -16dB
-		return 0.158
-	case t.GainLevelMedium: // -12dB
-		return 0.25
-	case t.GainLevelHigh: // -6dB
-		return 0.5
-	case t.GainLevelVeryHigh: // 0dB
-		return 1.0
-	default:
-		return 0.25 // Default to medium
-	}
-}
