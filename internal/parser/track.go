@@ -41,8 +41,8 @@ func (ctx *TextParser) ParseTrack() (*t.Track, error) {
 			waveform = t.WaveformSawtooth
 		}
 
-		if _, err := ctx.Line.NextExpectOneOf(t.KeywordTone, t.KeywordSpin, t.KeywordEffect); err != nil {
-			return nil, fmt.Errorf("expected %q, %q, or %q after waveform type: %s", t.KeywordTone, t.KeywordSpin, t.KeywordEffect, ln)
+		if _, err := ctx.Line.NextExpectOneOf(t.KeywordTone, t.KeywordBackground); err != nil {
+			return nil, fmt.Errorf("expected %q or %q after waveform type: %s", t.KeywordTone, t.KeywordBackground, ln)
 		}
 
 		ctx.Line.RewindToken(1) // rewind to re-process the tone line
@@ -50,13 +50,15 @@ func (ctx *TextParser) ParseTrack() (*t.Track, error) {
 
 	first, ok := ctx.Line.NextToken()
 	if !ok {
-		return nil, fmt.Errorf("expected %q, %q, %q, %q, or %q: %s", t.KeywordTone, t.KeywordNoise, t.KeywordSpin, t.KeywordEffect, t.KeywordBackground, ln)
+		return nil, fmt.Errorf("expected %q, %s or %q: %s", t.KeywordTone, t.KeywordNoise, t.KeywordBackground, ln)
 	}
 
 	var (
-		carrier, resonance, amplitude, intensity float64
-		trackType                                t.TrackType
+		carrier, resonance, amplitude float64
+		trackType                     t.TrackType
 	)
+
+	effect := t.Effect{Type: t.EffectOff, Intensity: 0.0}
 
 	switch first {
 	case t.KeywordTone:
@@ -110,51 +112,65 @@ func (ctx *TextParser) ParseTrack() (*t.Track, error) {
 		if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("amplitude: %w", err)
 		}
-	case t.KeywordSpin:
-		var err error
-		kind, err := ctx.Line.NextExpectOneOf(t.KeywordWhite, t.KeywordPink, t.KeywordBrown)
-		if err != nil {
-			return nil, fmt.Errorf("expected %q, %q, or %q after spin: %s", t.KeywordWhite, t.KeywordPink, t.KeywordBrown, ln)
-		}
-
-		switch kind {
-		case t.KeywordWhite:
-			trackType = t.TrackSpinWhite
-		case t.KeywordPink:
-			trackType = t.TrackSpinPink
-		case t.KeywordBrown:
-			trackType = t.TrackSpinBrown
-		}
-
-		if _, err := ctx.Line.NextExpectOneOf(t.KeywordWidth); err != nil {
-			return nil, fmt.Errorf("expected %q after spin noise type: %s", t.KeywordWidth, ln)
-		}
-		if carrier, err = ctx.Line.NextFloat64Strict(); err != nil {
-			return nil, fmt.Errorf("carrier: %w", err)
-		}
-		if _, err := ctx.Line.NextExpectOneOf(t.KeywordRate); err != nil {
-			return nil, fmt.Errorf("expected %q after carrier: %s", t.KeywordRate, ln)
-		}
-		if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
-			return nil, fmt.Errorf("resonance: %w", err)
-		}
-		if _, err := ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
-			return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordAmplitude, ln)
-		}
-		if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
-			return nil, fmt.Errorf("amplitude: %w", err)
-		}
 	case t.KeywordBackground:
 		trackType = t.TrackBackground
-		var err error
-		if _, err = ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
-			return nil, fmt.Errorf("expected %q after background: %s", t.KeywordAmplitude, ln)
+		kind, err := ctx.Line.NextExpectOneOf(t.KeywordAmplitude, t.KeywordSpin, t.KeywordPulse)
+		if err != nil {
+			return nil, fmt.Errorf("expected %q, %q or %q after background: %s", t.KeywordAmplitude, t.KeywordSpin, t.KeywordPulse, ln)
 		}
-		if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
-			return nil, fmt.Errorf("amplitude: %w", err)
+
+		intensity := 0.0
+
+		switch kind {
+		case t.KeywordAmplitude:
+			if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
+				return nil, fmt.Errorf("amplitude: %w", err)
+			}
+		case t.KeywordSpin:
+			effect.Type = t.EffectSpin
+			if carrier, err = ctx.Line.NextFloat64Strict(); err != nil {
+				return nil, fmt.Errorf("carrier: %w", err)
+			}
+			if _, err := ctx.Line.NextExpectOneOf(t.KeywordRate); err != nil {
+				return nil, fmt.Errorf("expected %q after carrier: %s", t.KeywordRate, ln)
+			}
+			if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
+				return nil, fmt.Errorf("resonance: %w", err)
+			}
+			if _, err := ctx.Line.NextExpectOneOf(t.KeywordIntensity); err != nil {
+				return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordIntensity, ln)
+			}
+			if intensity, err = ctx.Line.NextFloat64Strict(); err != nil {
+				return nil, fmt.Errorf("intensity: %w", err)
+			}
+			if _, err := ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
+				return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordAmplitude, ln)
+			}
+			if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
+				return nil, fmt.Errorf("amplitude: %w", err)
+			}
+		case t.KeywordPulse:
+			effect.Type = t.EffectPulse
+			if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
+				return nil, fmt.Errorf("resonance: %w", err)
+			}
+			if _, err := ctx.Line.NextExpectOneOf(t.KeywordIntensity); err != nil {
+				return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordIntensity, ln)
+			}
+			if intensity, err = ctx.Line.NextFloat64Strict(); err != nil {
+				return nil, fmt.Errorf("intensity: %w", err)
+			}
+			if _, err := ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
+				return nil, fmt.Errorf("expected %q after intensity: %s", t.KeywordAmplitude, ln)
+			}
+			if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
+				return nil, fmt.Errorf("amplitude: %w", err)
+			}
 		}
+
+		effect.Intensity = t.IntensityPercentToRaw(intensity)
 	default:
-		return nil, fmt.Errorf("expected %q, %q, %q, %q, or %q. Received: %s", t.KeywordTone, t.KeywordNoise, t.KeywordSpin, t.KeywordEffect, t.KeywordBackground, first)
+		return nil, fmt.Errorf("expected %q or %q. Received: %s", t.KeywordTone, t.KeywordBackground, first)
 	}
 
 	unknown, ok := ctx.Line.Peek()
@@ -167,8 +183,8 @@ func (ctx *TextParser) ParseTrack() (*t.Track, error) {
 		Carrier:   carrier,
 		Resonance: resonance,
 		Amplitude: t.AmplitudePercentToRaw(amplitude),
-		Intensity: t.IntensityPercentToRaw(intensity),
 		Waveform:  waveform,
+		Effect:    effect,
 	}
 	if err := track.Validate(); err != nil {
 		return nil, fmt.Errorf("%w", err)
