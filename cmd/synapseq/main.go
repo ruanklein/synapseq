@@ -1,22 +1,38 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
 	"github.com/ruanklein/synapseq/internal/audio"
+	"github.com/ruanklein/synapseq/internal/cli"
 	"github.com/ruanklein/synapseq/internal/sequence"
 )
 
 func main() {
-	if len(os.Args) < 3 {
-		fmt.Fprintf(os.Stderr, "Usage: %s <input.spsq> <output.wav>\n", os.Args[0])
+	opts := cli.ParseFlags()
+
+	if opts.ShowHelp {
+		cli.Usage()
+		os.Exit(1)
+	}
+	if opts.ShowVersion {
+		fmt.Printf("SynapSeq version %s\n", cli.VERSION)
+		os.Exit(0)
+	}
+
+	args := flag.Args()
+	if len(args) != 2 {
+		fmt.Fprintf(os.Stderr, "synapseq: invalid number of arguments\n")
+		cli.Usage()
 		os.Exit(1)
 	}
 
-	inputFile := os.Args[1]
-	outputFile := os.Args[2]
+	inputFile := args[0]
+	outputFile := args[1]
 
+	// Load sequence
 	periods, options, err := sequence.LoadTextSequence(inputFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
