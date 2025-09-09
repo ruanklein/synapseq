@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	t "github.com/ruanklein/synapseq/internal/types"
@@ -62,9 +63,15 @@ func (ctx *TextParser) ParseOption(options *t.Option) error {
 				return fmt.Errorf("%v", err)
 			}
 			fullPath = strings.Replace(fullPath, "~", homeDir, 1)
+		} else {
+			cwd, err := os.Getwd()
+			if err != nil {
+				return fmt.Errorf("cannot get current working directory: %w", err)
+			}
+			fullPath = filepath.Join(cwd, fullPath)
 		}
 
-		options.BackgroundPath = fullPath
+		options.BackgroundPath = filepath.Clean(fullPath) // Normalize the path
 	case t.KeywordOptionGainLevel:
 		gainLevel, ok := ctx.Line.NextToken()
 		if !ok {
