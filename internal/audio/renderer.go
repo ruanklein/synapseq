@@ -36,6 +36,7 @@ type AudioRendererOptions struct {
 	Volume         int
 	GainLevel      t.GainLevel
 	BackgroundPath string
+	Quiet          bool
 }
 
 // NewAudioRenderer creates a new AudioRenderer instance
@@ -114,7 +115,7 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 	chunkFrames := int64(t.BufferSize)
 	framesWritten := int64(0)
 
-	statusReporter := NewStatusReporter(false)
+	statusReporter := NewStatusReporter(r.Quiet)
 	defer statusReporter.FinalStatus()
 
 	samples := make([]int, t.BufferSize*audioChannels) // Stereo: left + right

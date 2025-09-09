@@ -71,9 +71,9 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer, periodIdx int) {
 		}
 
 		// End Track
-		endStr := "\n       --"
+		endStr := "  --"
 		if !s.IsTrackEqual(&startTrack, &endTrack) {
-			endStr = "\n       -"
+			endStr = "  -"
 			if endTrack.Type != t.TrackOff && endTrack.Type != t.TrackSilence {
 				endStr = fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), endTrack.String())
 			}
