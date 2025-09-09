@@ -22,12 +22,6 @@ const (
 	TrackPinkNoise
 	// Track is brown noise
 	TrackBrownNoise
-	// Track is a spin white noise
-	TrackSpinWhite
-	// Track is a spin pink noise
-	TrackSpinPink
-	// Track is a spin brown noise
-	TrackSpinBrown
 	// Track is a background noise
 	TrackBackground
 )
@@ -45,11 +39,11 @@ func (tr TrackType) String() string {
 		return KeywordMonaural
 	case TrackIsochronicBeat:
 		return KeywordIsochronic
-	case TrackWhiteNoise, TrackSpinWhite:
+	case TrackWhiteNoise:
 		return KeywordWhite
-	case TrackPinkNoise, TrackSpinPink:
+	case TrackPinkNoise:
 		return KeywordPink
-	case TrackBrownNoise, TrackSpinBrown:
+	case TrackBrownNoise:
 		return KeywordBrown
 	case TrackBackground:
 		return KeywordBackground
@@ -58,14 +52,54 @@ func (tr TrackType) String() string {
 	}
 }
 
+// EffectType represents the type of effect applied to a background track
+type EffectType int
+
+const (
+	// Effect is off
+	EffectOff EffectType = iota
+	// Effect is spin
+	EffectSpin
+	// Effect is pulse
+	EffectPulse
+)
+
+// String returns the string representation of the EffectType
+func (et EffectType) String() string {
+	switch et {
+	case EffectOff:
+		return KeywordOff
+	case EffectSpin:
+		return KeywordSpin
+	case EffectPulse:
+		return KeywordPulse
+	default:
+		return "unknown"
+	}
+}
+
 // Track represents a track configuration
 type Track struct {
-	Type      TrackType     // Track type
-	Amplitude AmplitudeType // Amplitude level (0-4096 for 0-100%)
-	Carrier   float64       // Carrier frequency
-	Resonance float64       // Resonance frequency
-	Waveform  WaveformType  // Waveform shape
-	Intensity IntensityType // Intensity (for background effects)
+	// Track type
+	Type TrackType
+	// Amplitude level (0-4096 for 0-100%)
+	Amplitude AmplitudeType
+	// Carrier frequency
+	Carrier float64
+	// Resonance frequency
+	Resonance float64
+	// Waveform shape
+	Waveform WaveformType
+	// Effect configuration
+	Effect
+}
+
+// Effect represents a effect configuration
+type Effect struct {
+	// Effect type
+	Type EffectType
+	// Intensity (0-1.0 for 0-100%)
+	Intensity IntensityType
 }
 
 // Validate checks if the track configuration is valid
@@ -94,12 +128,18 @@ func (tr *Track) String() string {
 		return fmt.Sprintf("%s %s %s %.2f %s %.2f %s %.2f", KeywordWaveform, tr.Waveform.String(), KeywordTone, tr.Carrier, tr.Type.String(), tr.Resonance, KeywordAmplitude, tr.Amplitude.ToPercent())
 	case TrackWhiteNoise, TrackPinkNoise, TrackBrownNoise:
 		return fmt.Sprintf("%s %s %s %.2f", KeywordNoise, tr.Type.String(), KeywordAmplitude, tr.Amplitude.ToPercent())
-	case TrackSpinWhite, TrackSpinPink, TrackSpinBrown:
-		return fmt.Sprintf("%s %s %s %s %s %.2f %s %.2f %s %.2f", KeywordWaveform, tr.Waveform.String(), KeywordSpin, tr.Type.String(), KeywordWidth, tr.Carrier, KeywordRate, tr.Resonance, KeywordAmplitude, tr.Amplitude.ToPercent())
 	case TrackBackground:
-		return fmt.Sprintf("%s %s %.2f", KeywordBackground, KeywordAmplitude, tr.Amplitude.ToPercent())
+		// Special handling for background effects
+		switch tr.Effect.Type {
+		case EffectSpin:
+			return fmt.Sprintf("%s %s %s %s %.2f %s %.2f %s %.2f %s %.2f", KeywordWaveform, tr.Waveform.String(), KeywordBackground, KeywordSpin, tr.Carrier, KeywordRate, tr.Resonance, KeywordIntensity, tr.Intensity.ToPercent(), KeywordAmplitude, tr.Amplitude.ToPercent())
+		case EffectPulse:
+			return fmt.Sprintf("%s %s %s %s %.2f %s %.2f %s %.2f", KeywordWaveform, tr.Waveform.String(), KeywordBackground, KeywordPulse, tr.Resonance, KeywordIntensity, tr.Intensity.ToPercent(), KeywordAmplitude, tr.Amplitude.ToPercent())
+		default:
+			return fmt.Sprintf("%s %s %.2f", KeywordBackground, KeywordAmplitude, tr.Amplitude.ToPercent())
+		}
 	default:
-		return ""
+		return " ???"
 	}
 }
 
@@ -113,11 +153,18 @@ func (tr *Track) ShortString() string {
 			KeywordTone, tr.Carrier, tr.Type.String(), tr.Resonance, KeywordAmplitude, tr.Amplitude.ToPercent())
 	case TrackWhiteNoise, TrackPinkNoise, TrackBrownNoise:
 		return fmt.Sprintf(" (%s:%.2f)", KeywordNoise, tr.Amplitude.ToPercent())
-	case TrackSpinWhite, TrackSpinPink, TrackSpinBrown:
-		return fmt.Sprintf(" (%s:%.2f %s:%.2f %s:%.2f)",
-			KeywordSpin, tr.Carrier, KeywordRate, tr.Resonance, KeywordAmplitude, tr.Amplitude.ToPercent())
 	case TrackBackground:
-		return fmt.Sprintf(" (%s:%.2f)", KeywordAmplitude, tr.Amplitude.ToPercent())
+		// Special handling for background effects
+		switch tr.Effect.Type {
+		case EffectSpin:
+			return fmt.Sprintf(" (%s:%s %s:%.2f %s:%.2f %s:%.2f %s:%.2f)",
+				KeywordEffect, tr.Effect.Type.String(), KeywordWidth, tr.Carrier, KeywordRate, tr.Resonance, KeywordIntensity, tr.Intensity.ToPercent(), KeywordAmplitude, tr.Amplitude.ToPercent())
+		case EffectPulse:
+			return fmt.Sprintf(" (%s:%s %s:%.2f %s:%.2f %s:%.2f)",
+				KeywordEffect, tr.Effect.Type.String(), KeywordPulse, tr.Resonance, KeywordIntensity, tr.Intensity.ToPercent(), KeywordAmplitude, tr.Amplitude.ToPercent())
+		default:
+			return fmt.Sprintf(" (%s:%.2f)", KeywordAmplitude, tr.Amplitude.ToPercent())
+		}
 	default:
 		return " ???"
 	}
