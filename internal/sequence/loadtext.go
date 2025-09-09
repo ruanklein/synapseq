@@ -2,6 +2,7 @@ package sequence
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/ruanklein/synapseq/internal/parser"
 	s "github.com/ruanklein/synapseq/internal/shared"
@@ -42,7 +43,7 @@ func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
 		if ctx.HasComment() {
 			comment := ctx.ParseComment()
 			if comment != "" {
-				fmt.Printf("> %s\n", comment)
+				fmt.Fprintf(os.Stderr, "> %s\n", comment)
 			}
 			continue
 		}
