@@ -25,19 +25,39 @@ type AudioRenderer struct {
 	waveTables      [4][]int
 	noiseGenerator  *NoiseGenerator
 	backgroundAudio *BackgroundAudio
-	sampleRate      int
-	volume          int
-	gainLevel       t.GainLevel
+
+	// Embedding options
+	*AudioRendererOptions
+}
+
+// AudioRendererOptions holds options for the audio renderer
+type AudioRendererOptions struct {
+	SampleRate     int
+	Volume         int
+	GainLevel      t.GainLevel
+	BackgroundPath string
 }
 
 // NewAudioRenderer creates a new AudioRenderer instance
-func NewAudioRenderer(periods []t.Period, option *t.Option) (*AudioRenderer, error) {
-	if option == nil {
-		return nil, fmt.Errorf("audio renderer options are required")
+func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, error) {
+	if ar == nil {
+		return nil, fmt.Errorf("audio renderer options cannot be nil")
+	}
+
+	if ar.SampleRate <= 0 {
+		return nil, fmt.Errorf("invalid sample rate: %d", ar.SampleRate)
+	}
+
+	if ar.Volume < 0 || ar.Volume > 100 {
+		return nil, fmt.Errorf("volume must be between 0 and 100, got %d", ar.Volume)
+	}
+
+	if len(p) == 0 {
+		return nil, fmt.Errorf("no periods defined in the sequence")
 	}
 
 	// Initialize background audio
-	backgroundAudio, err := NewBackgroundAudio(option.BackgroundPath)
+	backgroundAudio, err := NewBackgroundAudio(ar.BackgroundPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize background audio: %w", err)
 	}
@@ -45,9 +65,9 @@ func NewAudioRenderer(periods []t.Period, option *t.Option) (*AudioRenderer, err
 	// Validate background audio parameters
 	if backgroundAudio.isEnabled {
 		bgSampleRate := backgroundAudio.sampleRate
-		if bgSampleRate != option.SampleRate {
+		if bgSampleRate != ar.SampleRate {
 			return nil, fmt.Errorf("background audio sample rate (%d Hz) does not match output sample rate (%d Hz)",
-				bgSampleRate, option.SampleRate)
+				bgSampleRate, ar.SampleRate)
 		}
 		bgChannels := backgroundAudio.channels
 		if bgChannels != audioChannels {
@@ -60,13 +80,11 @@ func NewAudioRenderer(periods []t.Period, option *t.Option) (*AudioRenderer, err
 	}
 
 	renderer := &AudioRenderer{
-		periods:         periods,
-		waveTables:      InitWaveformTables(),
-		noiseGenerator:  NewNoiseGenerator(),
-		backgroundAudio: backgroundAudio,
-		sampleRate:      option.SampleRate,
-		volume:          option.Volume,
-		gainLevel:       option.GainLevel,
+		periods:              p,
+		waveTables:           InitWaveformTables(),
+		noiseGenerator:       NewNoiseGenerator(),
+		backgroundAudio:      backgroundAudio,
+		AudioRendererOptions: ar,
 	}
 
 	return renderer, nil
@@ -85,7 +103,7 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 		defer out.Close()
 	}
 
-	enc := wav.NewEncoder(out, r.sampleRate, audioBitDepth, audioChannels, 1)
+	enc := wav.NewEncoder(out, r.SampleRate, audioBitDepth, audioChannels, 1)
 	defer enc.Close()
 
 	// Ensure background audio file is closed if opened
@@ -97,7 +115,7 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 
 	endMs := r.periods[len(r.periods)-1].Time
 
-	totalFrames := int64(math.Round(float64(endMs) * float64(r.sampleRate) / 1000.0))
+	totalFrames := int64(math.Round(float64(endMs) * float64(r.SampleRate) / 1000.0))
 	chunkFrames := int64(t.BufferSize)
 	framesWritten := int64(0)
 
@@ -108,7 +126,7 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 	audioBuf := &audio.IntBuffer{
 		Format: &audio.Format{
 			NumChannels: audioChannels,
-			SampleRate:  r.sampleRate,
+			SampleRate:  r.SampleRate,
 		},
 		Data:           samples,
 		SourceBitDepth: audioBitDepth,
@@ -116,7 +134,7 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 
 	periodIdx := 0
 	for framesWritten < totalFrames {
-		currentTimeMs := int((float64(framesWritten) * 1000.0) / float64(r.sampleRate))
+		currentTimeMs := int((float64(framesWritten) * 1000.0) / float64(r.SampleRate))
 		// Find the correct period for the current time
 		for periodIdx+1 < len(r.periods) && currentTimeMs >= r.periods[periodIdx+1].Time {
 			periodIdx++

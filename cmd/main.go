@@ -24,7 +24,12 @@ func main() {
 	}
 
 	// Create audio renderer
-	renderer, err := audio.NewAudioRenderer(periods, options)
+	renderer, err := audio.NewAudioRenderer(periods, &audio.AudioRendererOptions{
+		SampleRate:     options.SampleRate,
+		Volume:         options.Volume,
+		GainLevel:      options.GainLevel,
+		BackgroundPath: options.BackgroundPath,
+	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)

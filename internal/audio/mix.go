@@ -79,7 +79,7 @@ func (r *AudioRenderer) mix(samples []int) []int {
 				left += sampleVal
 				right += sampleVal
 			case t.TrackBackground:
-				g := float64(r.gainLevel) / 100.0
+				g := float64(r.GainLevel) / 100.0
 				bgLeft := int64(float64(backgroundSamples[i*2]) * g)
 				bgRight := int64(float64(backgroundSamples[i*2+1]) * g)
 
@@ -136,9 +136,9 @@ func (r *AudioRenderer) mix(samples []int) []int {
 			}
 		}
 
-		if r.volume != 100 {
-			left = left * int64(r.volume) / 100
-			right = right * int64(r.volume) / 100
+		if r.Volume != 100 {
+			left = left * int64(r.Volume) / 100
+			right = right * int64(r.Volume) / 100
 		}
 
 		// Apply dithering
