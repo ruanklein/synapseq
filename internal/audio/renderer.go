@@ -92,16 +92,11 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 
 // RenderToWAV renders the audio to a WAV file using go-audio/wav
 func (r *AudioRenderer) RenderToWAV(outPath string) error {
-	out := os.Stdout // Use standard output as default
-
-	if outPath != "-" {
-		var err error
-		out, err = os.Create(outPath)
-		if err != nil {
-			return fmt.Errorf("create output: %w", err)
-		}
-		defer out.Close()
+	out, err := os.Create(outPath)
+	if err != nil {
+		return fmt.Errorf("create output: %w", err)
 	}
+	defer out.Close()
 
 	enc := wav.NewEncoder(out, r.SampleRate, audioBitDepth, audioChannels, 1)
 	defer enc.Close()
