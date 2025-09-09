@@ -22,12 +22,11 @@ const (
 type AudioRenderer struct {
 	channels        [t.NumberOfChannels]t.Channel
 	periods         []t.Period
-	periodIdx       int      // Current period index
-	waveTables      [4][]int // Waveform tables for different waveforms
+	waveTables      [4][]int
 	noiseGenerator  *NoiseGenerator
 	backgroundAudio *BackgroundAudio
 	sampleRate      int
-	volume          int // Volume level (0-100)
+	volume          int
 	gainLevel       t.GainLevel
 }
 
@@ -67,7 +66,6 @@ func NewAudioRenderer(periods []t.Period, option *t.Option) (*AudioRenderer, err
 		backgroundAudio: backgroundAudio,
 		sampleRate:      option.SampleRate,
 		volume:          option.Volume,
-		periodIdx:       0,
 		gainLevel:       option.GainLevel,
 	}
 
@@ -116,11 +114,16 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 		SourceBitDepth: audioBitDepth,
 	}
 
+	periodIdx := 0
 	for framesWritten < totalFrames {
 		currentTimeMs := int((float64(framesWritten) * 1000.0) / float64(r.sampleRate))
-		r.sync(currentTimeMs)
+		// Find the correct period for the current time
+		for periodIdx+1 < len(r.periods) && currentTimeMs >= r.periods[periodIdx+1].Time {
+			periodIdx++
+		}
 
-		statusReporter.CheckPeriodChange(r)
+		r.sync(currentTimeMs, periodIdx)
+		statusReporter.CheckPeriodChange(r, periodIdx)
 
 		audioBuf.Data = r.mix(samples)
 

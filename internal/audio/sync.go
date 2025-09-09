@@ -5,20 +5,15 @@ import (
 )
 
 // sync synchronizes the audio renderer state with the current time
-func (r *AudioRenderer) sync(timeMs int) {
-	// Find the correct period for the current time
-	for r.periodIdx+1 < len(r.periods) && timeMs >= r.periods[r.periodIdx+1].Time {
-		r.periodIdx++
-	}
-
-	if r.periodIdx >= len(r.periods) {
+func (r *AudioRenderer) sync(timeMs int, periodIdx int) {
+	if periodIdx >= len(r.periods) {
 		return
 	}
 
-	period := r.periods[r.periodIdx]
+	period := r.periods[periodIdx]
 	nextTime := timeMs + 1000 // Default next time
-	if r.periodIdx+1 < len(r.periods) {
-		nextTime = r.periods[r.periodIdx+1].Time
+	if periodIdx+1 < len(r.periods) {
+		nextTime = r.periods[periodIdx+1].Time
 	}
 
 	// Calculate interpolation factor (0.0 to 1.0)

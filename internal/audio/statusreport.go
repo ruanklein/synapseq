@@ -30,19 +30,19 @@ func NewStatusReporter(quiet bool) *StatusReporter {
 }
 
 // DisplayPeriodChange shows details of the period when it changes (like dispCurrPer)
-func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer) {
+func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer, periodIdx int) {
 	if sr.quiet {
 		return
 	}
 
-	if r.periodIdx >= len(r.periods) {
+	if periodIdx >= len(r.periods) {
 		return
 	}
 
-	period := r.periods[r.periodIdx]
+	period := r.periods[periodIdx]
 	var nextPeriod *t.Period
-	if r.periodIdx+1 < len(r.periods) {
-		nextPeriod = &r.periods[r.periodIdx+1]
+	if periodIdx+1 < len(r.periods) {
+		nextPeriod = &r.periods[periodIdx+1]
 	} else {
 		// Last period - use the same as end
 		nextPeriod = &period
@@ -118,10 +118,10 @@ func (sr *StatusReporter) DisplayStatus(r *AudioRenderer, currentTimeMs int) {
 }
 
 // CheckPeriodChange checks if the period has changed and displays if necessary
-func (sr *StatusReporter) CheckPeriodChange(r *AudioRenderer) {
-	if r.periodIdx != sr.lastPeriodIdx {
-		sr.DisplayPeriodChange(r)
-		sr.lastPeriodIdx = r.periodIdx
+func (sr *StatusReporter) CheckPeriodChange(r *AudioRenderer, periodIdx int) {
+	if periodIdx != sr.lastPeriodIdx {
+		sr.DisplayPeriodChange(r, periodIdx)
+		sr.lastPeriodIdx = periodIdx
 	}
 }
 
