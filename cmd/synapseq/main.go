@@ -52,6 +52,8 @@ func main() {
 		Volume:         options.Volume,
 		GainLevel:      options.GainLevel,
 		BackgroundPath: options.BackgroundPath,
+		Quiet:          opts.Quiet,
+		Debug:          opts.Debug,
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)

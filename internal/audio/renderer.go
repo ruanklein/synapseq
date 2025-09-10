@@ -37,6 +37,7 @@ type AudioRendererOptions struct {
 	GainLevel      t.GainLevel
 	BackgroundPath string
 	Quiet          bool
+	Debug          bool
 }
 
 // NewAudioRenderer creates a new AudioRenderer instance
@@ -93,14 +94,20 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 
 // RenderToWAV renders the audio to a WAV file using go-audio/wav
 func (r *AudioRenderer) RenderToWAV(outPath string) error {
-	out, err := os.Create(outPath)
-	if err != nil {
-		return fmt.Errorf("create output: %w", err)
-	}
-	defer out.Close()
+	var out *os.File
+	var enc *wav.Encoder
 
-	enc := wav.NewEncoder(out, r.SampleRate, audioBitDepth, audioChannels, 1)
-	defer enc.Close()
+	if !r.Debug {
+		var err error
+		out, err = os.Create(outPath)
+		if err != nil {
+			return fmt.Errorf("create output: %w", err)
+		}
+		defer out.Close()
+
+		enc = wav.NewEncoder(out, r.SampleRate, audioBitDepth, audioChannels, 1)
+		defer enc.Close()
+	}
 
 	// Ensure background audio file is closed if opened
 	defer func() {
@@ -115,7 +122,7 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 	chunkFrames := int64(t.BufferSize)
 	framesWritten := int64(0)
 
-	statusReporter := NewStatusReporter(r.Quiet)
+	statusReporter := NewStatusReporter(r.Quiet && !r.Debug)
 	defer statusReporter.FinalStatus()
 
 	samples := make([]int, t.BufferSize*audioChannels) // Stereo: left + right
@@ -147,9 +154,11 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 			audioBuf.Data = audioBuf.Data[:remain*audioChannels] // stereo interleaved
 		}
 
-		if err := enc.Write(audioBuf); err != nil {
-			enc.Close()
-			return fmt.Errorf("write wav: %w", err)
+		if !r.Debug {
+			if err := enc.Write(audioBuf); err != nil {
+				enc.Close()
+				return fmt.Errorf("write wav: %w", err)
+			}
 		}
 
 		framesWritten += framesToWrite

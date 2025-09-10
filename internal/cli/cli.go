@@ -19,6 +19,8 @@ type CLIOptions struct {
 	ShowVersion bool
 	// Quiet mode, suppress non-error output
 	Quiet bool
+	// Debug mode, no wav output
+	Debug bool
 	// Show help message and exit
 	ShowHelp bool
 }
@@ -31,7 +33,8 @@ func Usage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s <input.spsq> <output.wav>\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, "Options:\n")
 	fmt.Fprintf(os.Stderr, "  -version	Show version information\n")
-	fmt.Fprintf(os.Stderr, "  -quiet    	Enable debug mode for sequences\n")
+	fmt.Fprintf(os.Stderr, "  -quiet    	Enable quiet mode\n")
+	fmt.Fprintf(os.Stderr, "  -debug    	Enable debug mode\n")
 	fmt.Fprintf(os.Stderr, "  -help 	Show help\n")
 }
 
@@ -40,6 +43,7 @@ func ParseFlags() *CLIOptions {
 	opts := &CLIOptions{}
 	flag.BoolVar(&opts.ShowVersion, "version", false, "Show version information")
 	flag.BoolVar(&opts.Quiet, "quiet", false, "Enable quiet mode")
+	flag.BoolVar(&opts.Debug, "debug", false, "Enable debug mode")
 	flag.BoolVar(&opts.ShowHelp, "help", false, "Show help")
 
 	flag.Parse()
