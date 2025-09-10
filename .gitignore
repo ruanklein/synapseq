@@ -1,19 +1,9 @@
 .DS_Store
+.vscode
 
-build/downloaded-libs/*
-build/dist/*
-build/libs/*
-build/macos-installer/*
-build/windows-installer/*
+bin/
 
-*.exe
 *.spsq
-*.wav
-*.mp3
-*.ogg
-*.log
 
 !/samples/**/*.spsq
 !/contrib/**/*.spsq
-
-.vscode/

@@ -50,8 +50,6 @@ SynapSeq uses a specific syntax to create a sequence. The syntax is based on the
 - **tone**: A `tone` is a single frequency (known as carrier frequency).
 - **noise**: A `noise` is a random signal and is used to create a background sound.
 - **background**: A `background` is a user-defined sound that is played in the background.
-- **effect**: A `effect` is a background effect that is applied to the background sound.
-- **spin**: A `spin` is a type of noise that creates a gentle, binaural-like pulsing between left and right ears.
 - **waveform**: A `waveform` is a shape of the tone.
 - **silence**: A `silence` is a period of time with no sound.
 
@@ -66,9 +64,12 @@ tone [carrier frequency] [type of brainwave entrainment] [frequency offset] ampl
 Examples:
 
 ```
-tone 400 binaural 10 amplitude 10 # for binaural beats
-tone 300 monaural 10 amplitude 10 # for monaural beats
-tone 200 isochronic 10 amplitude 10 # for isochronic tones
+# for binaural beats
+tone 400 binaural 10 amplitude 10
+# for monaural beats
+tone 300 monaural 10 amplitude 10
+# for isochronic tones
+tone 200 isochronic 10 amplitude 10
 ```
 
 #### `noise`
@@ -101,65 +102,35 @@ Examples:
 background amplitude 50
 ```
 
-#### `effect`
-
-Note: The `effect` is only valid with the `background`.
-
-`effect` provides with a two types of effects: `spin` and `pulse`.
-
-The `effect` syntax is:
+Also, you can use with effects like a `spin` and `pulse`:
 
 ```
-effect spin width [width value] rate [rate value] intensity [intensity value]
-effect pulse [pulse value] intensity [intensity value]
+background spin 300 rate 7.5 intensity 30 amplitude 50
+# Or
+background pulse 7.5 intensity 40 amplitude 50
 ```
 
-Examples:
+The **"spin"** effect creates a sensation of circular sound movement between your ears.
 
-```
-effect spin width 500 rate 1.5 intensity 80
-effect pulse 8.5 intensity 90
-```
+The **"pulse"** effect creates a rhythmic pulsing sensation by modulating the amplitude of the sound.
 
-The `effect spin` creates a same `spin` effect, but applied to the background instead of the noise.
-
-The `effect pulse` creates a pulse effect on the background.
-
-#### `spin`
-
-The `spin` syntax is:
-
-```
-spin [type of spin] width [width value] rate [rate value] amplitude [amplitude value]
-```
-
-Examples:
-
-```
-spin white width 400 rate 4.0 amplitude 10
-spin pink width 300 rate 2.0 amplitude 25
-spin brown width 200 rate 1.0 amplitude 40
-```
+Each preset can have only one background.
 
 #### `waveform`
 
 The `waveform` could be `sine`, `square`, `triangle`, `sawtooth`.
 
-Waveform is used in: `tone`, `spin`, and `effect`.
+Waveform is used in: `tone`, and `background`.
 
 Examples:
 
 ```
 waveform square tone 400 isochronic 10 amplitude 2.5
-waveform triangle spin pink width 500 rate 5.5 amplitude 10
-waveform sawtooth effect pulse 6 intensity 80
+waveform triangle background spin 500 rate 5.5 intensity 30 amplitude 10
+waveform sawtooth background pulse 6 intensity 80 amplitude 50
 ```
 
-For default, the `waveform` for `tone`, `spin`, and `effect` is `sine`.
-
-#### Notes
-
-- If the sum of the amplitude of the `tone`, `noise`, `spin`, and `background` is greater than 100, the amplitude will be normalized to 100 without any warning.
+For default, the `waveform` is `sine`.
 
 #### Presets
 
@@ -226,7 +197,7 @@ hh:mm:ss [preset name]
 
 Where `hh:mm:ss` is the time in **h**ours, **m**inutes, and **s**econds.
 
-To insert a fade in/out or silence in your timeline, you can use the reserved word **`silence`**.
+To insert a fade in/out in your timeline, you can use the reserved word **`silence`**.
 
 Examples:
 
@@ -238,55 +209,67 @@ Examples:
 00:03:00 silence
 ```
 
-This creates a fade in to alpha1 preset for 15 seconds, and keeps it alpha1 preset until 1 minute, then slides to alpha2 preset for 1 minute, and fade out to silence for 1 minute. The total duration of this sequence is 3 minutes.
+This sequence starts with a fade-in from `silence` to the `alpha1` preset over 15 seconds. It then maintains the `alpha1` preset until the 1-minute mark. At 2 minutes, it transitions (slides) smoothly from `alpha1` to `alpha2`, and finally fades out to `silence` for the last minute. The total duration of this sequence is 3 minutes.
 
-Another example:
+In SynapSeq V3+, transitions ("slides") between presets are always smooth for elements of the same type (e.g., tones, noise, background) and with matching parameters. However, automatic fade-in/fade-out between different types of tones, waveforms, or background effects is no longer performed by default.
+
+If you want to create a fade between different tone types (for example, from binaural to isochronic, or pink noise to white noise, ...), you must explicitly define how the transition should occur. There are two main ways to do this:
+
+1. **Insert a silence preset in the timeline**
+   This creates a clear fade-out and fade-in between different sound types.
+
+For example:
 
 ```
+# Presets
+ps1
+  # Track 1
+  tone 300 binaural 10 amplitude 10
+ps2
+  # Track 1
+  tone 200 isochronic 5 amplitude 8
+ps3
+  ...
+
+# Timeline
 00:00:00 silence
-00:00:30 beta
-00:01:00 beta
-00:02:00 alpha
-00:05:00 theta
-00:15:00 delta
-00:20:00 theta
-00:25:00 alpha
-00:29:00 alpha
-00:30:00 silence
+00:00:15 ps1
+00:02:00 ps1
+# Fade-out
+00:02:30 silence
+# Fade-in
+00:03:00 ps2
+...
 ```
 
-In SynapSeq, all is slide to the next preset. In other words, if you don't define a fixed time for a preset, it will slide to the next preset.
+2. **Manually control amplitudes in your presets**
+   For each track, set the amplitude to zero in the preset where it should be silent, and gradually increase or decrease the amplitude over time using the timeline.
 
-Slide is a smooth transition between presets. It is a default behavior in SynapSeq. It is valid for `tone`, `noise`, `spin`, `background`, and `effect`.
-
-But, if your next preset is a different tone of brainwave entrainment, a different waveform, effect, spin or noise, it will not slide. It will create automatically a fade in/out to the next preset.
+For example, to transition from a binaural tone to an isochronic tone without abrupt changes:
 
 Example:
 
 ```
+# Presets
 alpha1
-  tone 300 binaural 10 amplitude 10 # Voice 1 of alpha1
+  # Track 1 of alpha1
+  tone 300 binaural 10 amplitude 10
+  # Track 2 of alpha1
+  tone 300 isochronic 10 amplitude 0
 alpha2
-  tone 300 isochronic 10 amplitude 10 # Voice 1 of alpha2
+  # Track 1 of alpha2
+  tone 300 binaural 10 amplitude 0
+  # Track 2 of alpha2
+  tone 300 isochronic 10 amplitude 10
 ```
 
-In this example, the `alpha1` (with voice 1) preset has a binaural beat, and the `alpha2` (with voice 1) preset has an isochronic tone. Because the tone type is different in the same voices (voice 1), it will not slide. It will create automatically a fade in/out to the next preset.
-
-Another example:
-
-```
-theta1
-  noise brown amplitude 40 # Voice 1 of theta1
-  tone 125 binaural 7.0 amplitude 10 # Voice 2 of theta1
-theta2
-  noise pink amplitude 40 # different noise, create a fade in/out from theta1 to theta2
-  tone 125 binaural 7.0 amplitude 15 # same tone type, slide from theta1 to theta2
-```
+Here, the amplitude of each track is explicitly set to zero when it should be silent, ensuring a smooth transition. This approach applies to all types of tones, waveforms, and background effects.
 
 #### Comments
 
-You can use comments in your sequence. Comments are ignored by SynapSeq in the processing.
+Comments are only valid if they occupy an entire line by themselves; inline comments (on the same line as other elements) are not allowed and will cause a syntax error.
 
+Comments are ignored by SynapSeq during processing.
 The comments syntax is:
 
 ```
@@ -301,7 +284,7 @@ alpha
   ...
 ```
 
-If you use two `#` in the same line, your comment will printed in the output. Example:
+If you use two `#` in the same line, your comment will be printed in the output. Example:
 
 ```
 ## This is a comment that will be printed in the output
@@ -326,7 +309,8 @@ preset1
   # This is a comment for preset1
   tone 440 binaural 8 amplitude 5
 preset2
-  tone 440 binaural 10 amplitude 10 # This is a comment for preset2
+  # This is a comment for preset2
+  tone 440 binaural 10 amplitude 10
 ```
 
 ### Global Options
@@ -349,9 +333,13 @@ Examples:
 @background /path/to/background.wav
 ```
 
-The SynapSeq support `.wav`, `.ogg`, and `.mp3` files. For default, SynapSeq creates a looping for the background sound.
+The SynapSeq support `.wav` files with 24 Bit and 2 Channels.
 
-The amplitude of the background is controlled by the `background` element in the sequence.
+The sample rate also needs to be the same as the sequence. You can set it using the `@samplerate` option.
+
+For default, SynapSeq creates a looping for the background sound.
+
+The amplitude and optional spin/pulse effects of the background is controlled by the `background` element in the sequence.
 
 #### `@gainlevel`
 
@@ -402,66 +390,27 @@ The default is 44100.
 The command line syntax is:
 
 ```
-synapseq [options] [path of the sequence file]
-```
-
-If you not use the `--output` option, the output will be a test mode to check syntax of the sequence. Example:
-
-```
-synapseq sequence-file
+synapseq [options] [path of the sequence file] [path of the output file]
 ```
 
 You can use the `-` to read the sequence from the console. Example:
 
 ```
-cat sequence-file | synapseq -
+cat sequence-file | synapseq - output.wav
 ```
 
-#### `--help`
+#### `-help`
 
 Show the help and exit.
 
-#### `--quiet`
+#### `-quiet`
 
-Quiet mode.
+Quiet mode. Used to hide terminal output. Errors and comments will be displayed.
 
-#### `--output`
+#### `-debug`
 
-The syntax is:
+Debug mode. Used to check file syntax without having to generate the wav file.
 
-```
---output [path of the output file]
-```
+#### `-version`
 
-Example:
-
-```
-synapseq --output output.wav sequence-file
-```
-
-The output file is a WAV file.
-
-For UNIX systems, you can use `-` to redirect data to the console.
-Example:
-
-```
-synapseq --output - sequence-file | play - # Play the sequence directly
-```
-
-The "play" command is a command to play the audio file. It is not a command of SynapSeq.
-
-There are several tools to use with SynapSeq to play the sequence in real time, like `play` (sox), `aplay` (ALSA Linux), `ffplay` (FFmpeg), and many more.
-
-#### `--raw`
-
-The syntax is:
-
-```
---raw --output [path of the output file]
-```
-
-Generate a raw audio data file instead of a WAV file.
-
-#### `--version`
-
-Show the version and audio format support.
+Show the version.

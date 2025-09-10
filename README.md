@@ -4,12 +4,6 @@
 
 SynapSeq is a lightweight and efficient engine for sequencing audio tones for brainwave entrainment, using a simple text-based format. It helps induce states such as relaxation, meditation, and focused awareness by guiding brainwave frequencies through sound.
 
----
-
-**[Visit the official website](https://ruanklein.github.io/synapseq/)** for interactive examples, audio demonstrations, and complete documentation about the different types of brainwave entrainment.
-
----
-
 ## Table of Contents
 
 - [Quick Start Example](#quick-start-example)
@@ -55,8 +49,7 @@ theta
 Run SynapSeq to generate the audio file:
 
 ```bash
-synapseq --output relax.wav relax.spsq    # Save the audio file
-synapseq --output - relax.spsq | play -   # Or play directly (UNIX only)
+synapseq relax.spsq relax.wav
 ```
 
 The audio file will be created in the current directory.
@@ -87,140 +80,157 @@ You can find additional example scripts in the `samples/` folder of this reposit
 - `sample-isochronic.spsq` - Isochronic tones example
 - `sample-monaural.spsq` - Monaural beats example
 - `sample-noise.spsq` - Noise-based entrainment
-- `sample-spin.spsq` - Spinning frequency effects
+- `sample-background-spin.spsq` - "Spin" effect
+- `sample-background-pulse.spsq` - "Pulse" effect
 - `sample-waveform.spsq` - Custom waveform example
 
 ## Installation
 
-SynapSeq is a command-line tool, not a traditional desktop application. You can use it in two ways:
+SynapSeq is a command-line tool that needs to be compiled from source. Follow the instructions below for your operating system.
 
-### Option 1: Using Docker (Recommended)
+### Prerequisites
 
-The easiest way to use SynapSeq is with Docker, without needing to compile or install anything on your system.
+You need to install Go (v1.25 or later) and make on your system before compiling SynapSeq.
+
+#### Installing Go
+
+**macOS:**
 
 ```bash
-docker run --rm -v ./spsq:/data ruanklein/synapseq --output Relax.wav Relax.spsq
+# Using Homebrew
+brew install go
+
+# Using MacPorts
+sudo port install go
 ```
 
-In this command:
+**Linux (Ubuntu/Debian):**
 
-- `--rm` removes the container after execution
-- `-v ./spsq:/data` maps your local folder containing `.spsq` files to the container's `/data` directory
-- The SynapSeq command follows the same syntax as the compiled version
+```bash
+# Update package list
+sudo apt update
 
-Make sure your `.spsq` files are in the local folder you're mapping to `/data`.
+# Install Go
+sudo apt install golang-go make
 
-### Option 2: Compile from Source
+# Or install a newer version using snap
+sudo snap install go --classic
+```
 
-Alternatively, you can compile SynapSeq from source and use it directly from the terminal as part of your audio workflow.
+**Linux (CentOS/RHEL/Fedora):**
+
+```bash
+# For Fedora
+sudo dnf install golang make
+
+# For CentOS/RHEL
+sudo yum install golang make
+```
+
+**Windows:**
+
+```powershell
+# Using Chocolatey (install Chocolatey first from https://chocolatey.org/)
+choco install golang make
+
+# Using Scoop (install Scoop first from https://scoop.sh/)
+scoop install go make
+
+# Using winget (Windows 10/11)
+winget install GoLang.Go
+winget install GnuWin32.Make
+```
+
+**Verify installation:**
+
+```bash
+go version
+make --version
+```
 
 ## Compilation
 
-SynapSeq can be compiled for macOS, Linux, and Windows.
+SynapSeq can be compiled using the provided Makefile.
 
-### macOS
+**For UNIX systems (macOS/Linux):**
 
-Install the Xcode Command Line Tools on your system:
-
-```bash
-xcode-select --install
-```
-
-Install either [Homebrew](https://brew.sh/) or [MacPorts](https://www.macports.org/install.php) if you don't have any of them yet.
-
-If using Homebrew, install the required dependencies with:
+Simply run:
 
 ```bash
-brew install pkg-config libvorbis libmad
+make
 ```
 
-If using MacPorts, install the required dependencies with:
+This will automatically compile SynapSeq for your current operating system and architecture, creating a binary in the `bin/` directory.
+
+**For Windows:**
+
+Run:
+
+```cmd
+'C:\Program Files (x86)\GnuWin32\bin\make.exe' build-windows
+```
+
+This will generate Windows executables (`.exe`) in the `bin/` directory.
+
+### Installing the Binary
+
+After compilation, install the binary system-wide:
+
+**macOS/Linux:**
 
 ```bash
-port install pkgconfig libvorbis libmad
+sudo cp bin/synapseq /usr/local/bin/synapseq
 ```
 
-Run the build script to create the binary:
+**Windows:**
+
+```cmd
+# Run Command Prompt as Administrator
+mkdir "C:\Program Files\SynapSeq"
+copy "bin\synapseq-windows-amd64.exe" "C:\Program Files\SynapSeq\synapseq.exe"
+```
+
+Then add `C:\Program Files\SynapSeq` to your PATH environment variable.
+
+### Cross-Platform Compilation
+
+If you need to build for a different platform, use these specific commands:
+
+#### macOS
 
 ```bash
-./build/macos-build-synapseq.sh
+make build-macos
 ```
 
-The binary will be created in the `build/dist` folder.
+Creates: `bin/synapseq-macos-arm64`
 
-To install the binary system-wide:
+#### Linux
 
 ```bash
-sudo cp build/dist/synapseq-macos-arm64 /usr/local/bin/synapseq
+make build-linux
 ```
 
-### Linux
+Creates:
 
-On Ubuntu/Debian-based distributions, install the dependencies:
+- `bin/synapseq-linux-amd64`
+- `bin/synapseq-linux-arm64`
+
+#### Windows
 
 ```bash
-sudo apt-get install build-essential pkg-config libvorbis-dev libogg-dev libmad0-dev
+make build-windows
 ```
 
-Run the build script to create the binary:
+Creates:
 
-```bash
-./build/linux-build-synapseq.sh # Build a dynamic binary (recommended)
-./build/linux-build-synapseq-static.sh # Or build a static binary (optional)
-```
+- `bin/synapseq-windows-amd64.exe`
+- `bin/synapseq-windows-arm64.exe`
 
-The binary will be created in the `build/dist` folder.
+### Additional Make Commands
 
-To install the binary system-wide:
-
-```bash
-sudo cp build/dist/synapseq-linux-x86_64 /usr/local/bin/synapseq # For x86_64
-sudo cp build/dist/synapseq-linux-arm64 /usr/local/bin/synapseq # For arm64
-```
-
-### Windows
-
-On Windows, the recommended way to build SynapSeq is using [Docker](https://www.docker.com/) with WSL2.
-
-**Prerequisites:**
-
-1. Install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
-2. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
-Run this sequence of commands to build SynapSeq (x86-64 only):
-
-```bash
-docker compose -f build/compose.yml up build-windows-libs-x86-64
-docker compose -f build/compose.yml up build-windows-synapseq-x86-64
-```
-
-The `.exe` file will be created in the `build/dist` folder.
-
-#### Installing the executable
-
-To install SynapSeq system-wide on Windows:
-
-1. **Copy the executable to a permanent location (run Command Prompt as Administrator):**
-
-   ```cmd
-   mkdir "C:\Program Files\SynapSeq"
-   copy "build\dist\synapseq-windows-x86_64.exe" "C:\Program Files\SynapSeq\synapseq.exe"
-   ```
-
-2. **Add to PATH environment variable:**
-
-   - Open "Environment Variables" (search for it in Start menu)
-   - In "System Variables", find and select "Path", then click "Edit"
-   - Click "New" and add: `C:\Program Files\SynapSeq`
-   - Click "OK" to save all changes
-   - Restart your terminal/command prompt
-
-3. **Verify installation (in Command Prompt or PowerShell):**
-   ```cmd
-   synapseq --version
-   ```
-
-After installation, you can use `synapseq` from any directory in your terminal.
+- `make build` - Build for your current platform
+- `make clean` - Remove all compiled binaries
+- `make all` - Same as `make build`
 
 ## Documentation
 
@@ -246,10 +256,18 @@ If you experience or witness unacceptable behavior, please report it as describe
 
 SynapSeq is distributed under the GPL license. See the [COPYING.txt](COPYING.txt) file for details.
 
+This repository includes vendored third-party libraries under the `vendor/` directory.  
+Each vendored library retains its own license, which applies independently of the SynapSeq license.
+
 ## Contact
 
 If you have any questions, please open a topic on the [discussions](https://github.com/ruanklein/synapseq/discussions) page.
 
 ## Credits
 
-SynapSeq is based on SBaGen. See the [SBaGen project](https://uazu.net/sbagen/) for more information.
+- **SBaGen** — SynapSeq was inspired by the [SBaGen project](https://uazu.net/sbagen/) (written in C) and follows a similar workflow.  
+  SynapSeq has been completely rewritten from scratch in Go, but the conceptual foundation comes from SBaGen’s pioneering work in brainwave entrainment.
+
+- **go-audio** — This project uses parts of the [go-audio](https://github.com/go-audio) libraries for audio encoding and decoding support, which provided a solid foundation for handling WAV data in Go.
+
+We gratefully acknowledge these projects as the basis and inspiration for SynapSeq’s development.
