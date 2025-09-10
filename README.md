@@ -150,13 +150,27 @@ make --version
 
 ## Compilation
 
-SynapSeq can be compiled using the provided Makefile. For most users, simply run:
+SynapSeq can be compiled using the provided Makefile.
+
+**For UNIX systems (macOS/Linux):**
+
+Simply run:
 
 ```bash
 make
 ```
 
 This will automatically compile SynapSeq for your current operating system and architecture, creating a binary in the `bin/` directory.
+
+**For Windows:**
+
+Run:
+
+```cmd
+'C:\Program Files (x86)\GnuWin32\bin\make.exe' build-windows
+```
+
+This will generate Windows executables (`.exe`) in the `bin/` directory.
 
 ### Installing the Binary
 
@@ -173,7 +187,7 @@ sudo cp bin/synapseq /usr/local/bin/synapseq
 ```cmd
 # Run Command Prompt as Administrator
 mkdir "C:\Program Files\SynapSeq"
-copy "bin\synapseq.exe" "C:\Program Files\SynapSeq\synapseq.exe"
+copy "bin\synapseq-windows-amd64.exe" "C:\Program Files\SynapSeq\synapseq.exe"
 ```
 
 Then add `C:\Program Files\SynapSeq` to your PATH environment variable.
