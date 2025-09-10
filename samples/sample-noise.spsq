@@ -47,7 +47,9 @@ noise-three
 
 # Timeline
 00:00:00 silence
-00:00:15 noise-one
+00:00:10 noise-one
+00:00:20 silence
 00:00:30 noise-two
-00:00:45 noise-three
+00:00:40 silence
+00:00:50 noise-three
 00:01:00 silence

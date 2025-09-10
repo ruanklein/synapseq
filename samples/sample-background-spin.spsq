@@ -1,0 +1,52 @@
+## SPIN EFFECT DEMONSTRATION SEQUENCE
+## This sample demonstrates the spatial rotation effect using a pink noise background.
+## 
+## HOW SPIN WORKS:
+## The "spin" effect creates a sensation of circular sound movement between your ears
+## using the background sound chosen by the user as the base audio source.
+##
+## SPIN PARAMETERS:
+## - width: rotation width (e.g. 300Hz = smooth and wide rotation)
+## - rate: rotation speed (e.g. 1.5Hz = 1.5 rotations per second)
+## - amplitude: amplitude of the background sound (e.g. 15% amplitude)
+##
+## The spin effect works by modulating the amplitude of the background sound between left and right channels,
+## creating a sensation of circular movement. The sound "rotates" around your head.
+##
+## TEMPORAL SEQUENCE BREAKDOWN:
+## 00:00-00:15: Fade in from silence
+## 00:15-02:00: Spin effect with wide rotation (400Hz width) and moderate speed (10 rate).
+## 03:30-04:30: Spin effect with narrower rotation (200Hz width) and slower speed (5 rate).
+## 05:30-07:00: From ramp back to wide rotation (400Hz width) and moderate speed (10 rate).
+## 09:30-10:00: Fade out to silence
+## 10:00+: End of sequence
+##
+## Binaural tone added to enhance the experience with spin effect.
+##
+## USAGE TIP:
+## Use headphones to best experience the spatial rotation effect.
+## The spin effect is ideal for relaxation and can help with focus and concentration.
+##
+## For a more subtle effect, use lower Intensity values; higher values make the
+## spin sensation stronger. You can also experiment with different waveforms for
+## the background spin to make the effect more pronounced or more gentle, according
+## to your preference.
+
+@background sounds/pink-noise.wav
+
+spin-one
+  background spin 400 rate 10 intensity 45 amplitude 50
+  tone 300 binaural 10 amplitude 15
+spin-two
+  background spin 200 rate 5 intensity 75 amplitude 50
+  tone 300 binaural 5 amplitude 15
+
+00:00:00 silence
+00:00:15 spin-one
+00:02:00 spin-one
+00:03:30 spin-two
+00:04:30 spin-two
+00:05:30 spin-one
+00:07:00 spin-two
+00:09:30 spin-one
+00:10:00 silence
