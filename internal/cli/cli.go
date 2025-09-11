@@ -39,13 +39,15 @@ func Usage() {
 }
 
 // ParseFlags parses command-line flags and returns CLIOptions
-func ParseFlags() *CLIOptions {
+func ParseFlags() (*CLIOptions, []string) {
 	opts := &CLIOptions{}
-	flag.BoolVar(&opts.ShowVersion, "version", false, "Show version information")
-	flag.BoolVar(&opts.Quiet, "quiet", false, "Enable quiet mode")
-	flag.BoolVar(&opts.Debug, "debug", false, "Enable debug mode")
-	flag.BoolVar(&opts.ShowHelp, "help", false, "Show help")
+	fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+	fs.BoolVar(&opts.ShowVersion, "version", false, "Show version information")
+	fs.BoolVar(&opts.Quiet, "quiet", false, "Enable quiet mode")
+	fs.BoolVar(&opts.Debug, "debug", false, "Enable debug mode")
+	fs.BoolVar(&opts.ShowHelp, "help", false, "Show help")
 
-	flag.Parse()
-	return opts
+	// Ignore error for simplicity; you can handle it if needed
+	_ = fs.Parse(os.Args[1:])
+	return opts, fs.Args()
 }
