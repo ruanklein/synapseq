@@ -5,29 +5,27 @@ This project grows stronger with community support, whether through code, docs, 
 
 ## TL;DR (Quick Summary)
 
-- 🚀 PRs for the Go rewrite (v3) → branch: `development-v3`
-- 🛠️ PRs for the C version (v2) → branch: `development` (bug fixes, docs, build scripts only)
-- 🎵 Sequence files (`.spsq`) → see [`contrib/README.md`](./contrib/README.md)
+🚀 The `main` branch contains the latest Go (V3) codebase.  
+🔀 All pull requests (PRs) should target the `development` branch.  
+🎵 Sequence files (`.spsq`) → see [`contrib/README.md`](./contrib/README.md)
+
+🗂️ The legacy C code (V2, inherited from SBaGen) is available in the `v2` branch. If you wish to view, modify, or fork the old version, use that branch.
 
 ---
 
 ## Contribution Policy
 
-### Version 3.x (Go Rewrite)
+### Version 3.x (Go)
 
-- The current focus for version 3.0 (branch: `development-v3`) is the faithful porting of the original C code to idiomatic Go.
-- **Only PRs that port code from C to Go, following the requirements and conventions described in [`ROADMAP.md`](./ROADMAP.md), will be accepted at this stage.**
-- New features will only be considered starting in version **3.1+**, after the port is complete.
-- Please open your PRs against `development-v3`.
+- The `main` branch contains the latest Go (V3) codebase.
+- All new features, bug fixes, and improvements should be submitted as PRs to the `development` branch.
+- Follow Go best practices and maintain clean, readable code.
+- Ensure backward compatibility when possible.
 
-### Version 2.x (C Codebase)
+### Version 2.x (C, legacy)
 
-- The current C version (`synapseq.c`) is in **maintenance mode**.
-- We still welcome contributions that add value for users:
-  - **Bug fixes**
-  - **Documentation improvements**
-  - **Build scripts or integration tweaks** to support more systems and tools
-- All PRs for the C codebase must target the `development` branch.
+- The legacy C codebase (V2, inherited from SBaGen) is available in the `v2` branch.
+- No new features will be accepted for V2. Only maintenance or forks should use this branch.
 
 ---
 
@@ -57,11 +55,12 @@ Following this format keeps the commit history clear and enables automated chang
 
 ✅ Before opening a PR, please make sure:
 
-- [ ] Your PR targets the correct branch (`development-v3` for Go, `development` for C).
-- [ ] You followed the conventions in [`ROADMAP.md`](./ROADMAP.md) (v3).
+- [ ] Your PR targets the correct branch (`development` for Go V3, `v2` for legacy C code).
 - [ ] You wrote clear, descriptive commit messages (see above).
 - [ ] Tests (if applicable) run successfully.
 - [ ] Your changes are limited to the scope of the PR (no unrelated edits).
+- [ ] Code follows Go best practices and conventions (for V3 contributions).
+- [ ] Documentation is updated if your changes affect user-facing features.
 
 ---
 
