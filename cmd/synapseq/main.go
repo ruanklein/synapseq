@@ -8,7 +8,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
@@ -18,7 +17,7 @@ import (
 )
 
 func main() {
-	opts := cli.ParseFlags()
+	opts, args := cli.ParseFlags()
 
 	if opts.ShowHelp {
 		cli.Usage()
@@ -29,7 +28,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	args := flag.Args()
 	if len(args) != 2 {
 		fmt.Fprintf(os.Stderr, "synapseq: invalid number of arguments\n")
 		cli.Usage()
