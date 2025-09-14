@@ -33,3 +33,28 @@ func TestHasComment(t *testing.T) {
 		}
 	}
 }
+
+func TestParseComment(t *testing.T) {
+	tests := []struct {
+		line     string
+		expected string
+	}{
+		{"# This is a comment", ""},
+		{"// Another comment", ""},
+		{"No comment here", ""},
+		{"#Comment without space", ""},
+		{"   # Indented comment", ""},
+		{"## Double Comment!", "Double Comment!"},
+		{"  ## Indented double Comment!", "Indented double Comment!"},
+		{"##", " "},
+		{"# First part // not a comment", ""},
+	}
+
+	for _, test := range tests {
+		ctx := NewTextParser(test.line)
+		result := ctx.ParseComment()
+		if result != test.expected {
+			t.Errorf("For line '%s', expected ParseComment() to be '%s' but got '%s'", test.line, test.expected, result)
+		}
+	}
+}
