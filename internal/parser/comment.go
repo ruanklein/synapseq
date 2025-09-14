@@ -27,7 +27,12 @@ func (ctx *TextParser) ParseComment() string {
 		return ""
 	}
 	if len(tok) >= 2 && string(tok[1]) == t.KeywordComment {
-		return fmt.Sprintf("%s %s", tok[2:], strings.Join(ctx.Line.Tokens[1:], " "))
+		comment := fmt.Sprintf("%s %s", tok[2:], strings.Join(ctx.Line.Tokens[1:], " "))
+		// Trim leading/trailing whitespace if there's more than just the ##
+		if len(comment) > 1 {
+			comment = strings.TrimSpace(comment)
+		}
+		return comment
 	}
 	return ""
 }
