@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-func TestParseFlags(t *testing.T) {
+func TestParseFlags(ts *testing.T) {
 	originalArgs := os.Args
 	defer func() { os.Args = originalArgs }()
 
@@ -47,14 +47,14 @@ func TestParseFlags(t *testing.T) {
 		os.Args = test.args
 		opts, args := ParseFlags()
 		if *opts != *test.expected {
-			t.Errorf("For args %v, expected %+v but got %+v", test.args, test.expected, opts)
+			ts.Errorf("For args %v, expected %+v but got %+v", test.args, test.expected, opts)
 		}
 		if len(args) != len(test.expectedArgs) {
-			t.Errorf("For args %v, expected args %v but got %v", test.args, test.expectedArgs, args)
+			ts.Errorf("For args %v, expected args %v but got %v", test.args, test.expectedArgs, args)
 		} else {
 			for i := range args {
 				if args[i] != test.expectedArgs[i] {
-					t.Errorf("For args %v, expected args %v but got %v", test.args, test.expectedArgs, args)
+					ts.Errorf("For args %v, expected args %v but got %v", test.args, test.expectedArgs, args)
 					break
 				}
 			}
@@ -65,7 +65,7 @@ func TestParseFlags(t *testing.T) {
 	os.Args = []string{"cmd", "-invalid"}
 	defer func() {
 		if r := recover(); r != nil {
-			t.Errorf("ParseFlags panicked on invalid flag: %v", r)
+			ts.Errorf("ParseFlags panicked on invalid flag: %v", r)
 		}
 	}()
 	_, _ = ParseFlags()
