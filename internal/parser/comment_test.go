@@ -8,53 +8,55 @@
 package parser
 
 import (
+	"fmt"
+	"strings"
 	"testing"
+
+	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-func TestHasComment(t *testing.T) {
+func TestHasComment(ts *testing.T) {
 	tests := []struct {
 		line     string
 		expected bool
 	}{
-		{"# This is a comment", true},
-		{"// Another comment", false},
+		{fmt.Sprintf("%s This is a comment", t.KeywordComment), true},
 		{"No comment here", false},
-		{"#Comment without space", true},
-		{"   # Indented comment", true},
-		{"## Double Comment!", true},
-		{"  ## Indented double Comment!", true},
+		{fmt.Sprintf("%sComment without space", t.KeywordComment), true},
+		{fmt.Sprintf("   %s Indented comment", t.KeywordComment), true},
+		{fmt.Sprintf("%s Double Comment!", strings.Repeat(t.KeywordComment, 2)), true},
+		{fmt.Sprintf("  %s Indented double Comment!", strings.Repeat(t.KeywordComment, 2)), true},
 	}
 
 	for _, test := range tests {
 		ctx := NewTextParser(test.line)
 		result := ctx.HasComment()
 		if result != test.expected {
-			t.Errorf("For line '%s', expected HasComment() to be %v but got %v", test.line, test.expected, result)
+			ts.Errorf("For line '%s', expected HasComment() to be %v but got %v", test.line, test.expected, result)
 		}
 	}
 }
 
-func TestParseComment(t *testing.T) {
+func TestParseComment(ts *testing.T) {
 	tests := []struct {
 		line     string
 		expected string
 	}{
-		{"# This is a comment", ""},
-		{"// Another comment", ""},
+		{fmt.Sprintf("%s This is a comment", t.KeywordComment), ""},
 		{"No comment here", ""},
-		{"#Comment without space", ""},
-		{"   # Indented comment", ""},
-		{"## Double Comment!", "Double Comment!"},
-		{"  ## Indented double Comment!", "Indented double Comment!"},
-		{"##", " "},
-		{"# First part // not a comment", ""},
+		{fmt.Sprintf("%sComment without space", t.KeywordComment), ""},
+		{fmt.Sprintf("   %s Indented comment", t.KeywordComment), ""},
+		{fmt.Sprintf("%s Double Comment!", strings.Repeat(t.KeywordComment, 2)), "Double Comment!"},
+		{fmt.Sprintf("  %s Indented double Comment!", strings.Repeat(t.KeywordComment, 2)), "Indented double Comment!"},
+		{strings.Repeat(t.KeywordComment, 2), " "},
+		{fmt.Sprintf("%s First part // not a comment", t.KeywordComment), ""},
 	}
 
 	for _, test := range tests {
 		ctx := NewTextParser(test.line)
 		result := ctx.ParseComment()
 		if result != test.expected {
-			t.Errorf("For line '%s', expected ParseComment() to be '%s' but got '%s'", test.line, test.expected, result)
+			ts.Errorf("For line '%s', expected ParseComment() to be '%s' but got '%s'", test.line, test.expected, result)
 		}
 	}
 }
