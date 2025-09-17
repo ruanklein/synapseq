@@ -33,3 +33,35 @@ func TestHasOption(ts *testing.T) {
 		}
 	}
 }
+
+func TestParseOption(ts *testing.T) {
+	defaultOptions := t.Option{
+		SampleRate:     44100,
+		Volume:         100,
+		GainLevel:      t.GainLevelMedium,
+		BackgroundPath: "",
+	}
+
+	// Test valid options
+	tests := []struct {
+		line     string
+		expected t.Option
+	}{
+		{fmt.Sprintf("%svolume 50", t.KeywordOption), t.Option{SampleRate: defaultOptions.SampleRate, Volume: 50, GainLevel: defaultOptions.GainLevel, BackgroundPath: defaultOptions.BackgroundPath}},
+		{fmt.Sprintf("%ssamplerate 48000", t.KeywordOption), t.Option{SampleRate: 48000, Volume: defaultOptions.Volume, GainLevel: defaultOptions.GainLevel, BackgroundPath: defaultOptions.BackgroundPath}},
+		{fmt.Sprintf("%sgainlevel low", t.KeywordOption), t.Option{SampleRate: defaultOptions.SampleRate, Volume: defaultOptions.Volume, GainLevel: t.GainLevelLow, BackgroundPath: defaultOptions.BackgroundPath}},
+	}
+
+	for _, test := range tests {
+		option := defaultOptions
+		ctx := NewTextParser(test.line)
+		if err := ctx.ParseOption(&option); err != nil {
+			ts.Errorf("For line '%s', unexpected error: %v", test.line, err)
+			continue
+		}
+
+		if option != test.expected {
+			ts.Errorf("For line '%s', expected option %+v but got %+v", test.line, test.expected, option)
+		}
+	}
+}
