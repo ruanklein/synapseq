@@ -9,6 +9,8 @@ package parser
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	t "github.com/ruanklein/synapseq/internal/types"
@@ -35,25 +37,30 @@ func TestHasOption(ts *testing.T) {
 }
 
 func TestParseOption(ts *testing.T) {
-	defaultOptions := t.Option{
-		SampleRate:     44100,
-		Volume:         100,
-		GainLevel:      t.GainLevelMedium,
-		BackgroundPath: "",
+	// Fake path for testing background option
+	backgroundFile := "noise.wav"
+	cwd, err := os.Getwd()
+	if err != nil {
+		ts.Errorf("cannot get current working directory")
 	}
-
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		ts.Errorf("cannot get user home directory")
+	}
 	// Test valid options
 	tests := []struct {
 		line     string
 		expected t.Option
 	}{
-		{fmt.Sprintf("%svolume 50", t.KeywordOption), t.Option{SampleRate: defaultOptions.SampleRate, Volume: 50, GainLevel: defaultOptions.GainLevel, BackgroundPath: defaultOptions.BackgroundPath}},
-		{fmt.Sprintf("%ssamplerate 48000", t.KeywordOption), t.Option{SampleRate: 48000, Volume: defaultOptions.Volume, GainLevel: defaultOptions.GainLevel, BackgroundPath: defaultOptions.BackgroundPath}},
-		{fmt.Sprintf("%sgainlevel low", t.KeywordOption), t.Option{SampleRate: defaultOptions.SampleRate, Volume: defaultOptions.Volume, GainLevel: t.GainLevelLow, BackgroundPath: defaultOptions.BackgroundPath}},
+		{fmt.Sprintf("%svolume 50", t.KeywordOption), t.Option{Volume: 50}},
+		{fmt.Sprintf("%ssamplerate 48000", t.KeywordOption), t.Option{SampleRate: 48000}},
+		{fmt.Sprintf("%sgainlevel low", t.KeywordOption), t.Option{GainLevel: t.GainLevelLow}},
+		{fmt.Sprintf("%sbackground testdata/%s", t.KeywordOption, backgroundFile), t.Option{BackgroundPath: filepath.Join(cwd+"/testdata/", backgroundFile)}},
+		{fmt.Sprintf("%sbackground ~/Downloads/%s", t.KeywordOption, backgroundFile), t.Option{BackgroundPath: filepath.Join(homeDir+"/Downloads/", backgroundFile)}},
 	}
 
 	for _, test := range tests {
-		option := defaultOptions
+		option := t.Option{}
 		ctx := NewTextParser(test.line)
 		if err := ctx.ParseOption(&option); err != nil {
 			ts.Errorf("For line '%s', unexpected error: %v", test.line, err)
