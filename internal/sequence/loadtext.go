@@ -64,6 +64,10 @@ func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
 			if err = ctx.ParseOption(options); err != nil {
 				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
+			// Validate options
+			if err = options.Validate(); err != nil {
+				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+			}
 			continue
 		}
 
