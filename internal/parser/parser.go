@@ -9,6 +9,7 @@ package parser
 
 import (
 	"fmt"
+	"math"
 	"slices"
 	"strconv"
 	"strings"
@@ -80,6 +81,17 @@ func (ctx *lineContext) NextFloat64Strict() (float64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("invalid float: %q", tok)
 	}
+
+	// Reject NaN and Inf values
+	if math.IsNaN(f) || math.IsInf(f, 0) {
+		return 0, fmt.Errorf("invalid float (NaN or Inf): %q", tok)
+	}
+
+	// Reject scientific notation (e.g., 1e10)
+	if strings.ContainsAny(tok, "eE") {
+		return 0, fmt.Errorf("scientific notation not allowed: %q", tok)
+	}
+
 	return f, nil
 }
 
