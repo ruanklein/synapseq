@@ -8,22 +8,41 @@
 package parser
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
 func TestHasTrack(ts *testing.T) {
+	trLnTone := (&t.Track{
+		Type:      t.TrackBinauralBeat,
+		Carrier:   440,
+		Resonance: 10,
+		Amplitude: t.AmplitudePercentToRaw(4),
+	}).String()
+
+	trLnNoise := (&t.Track{
+		Type:      t.TrackPinkNoise,
+		Amplitude: t.AmplitudePercentToRaw(30),
+	}).String()
+
+	trLnBackground := (&t.Track{
+		Type:      t.TrackBackground,
+		Amplitude: t.AmplitudePercentToRaw(50),
+	}).String()
+
 	tests := []struct {
 		line     string
 		expected bool
 	}{
-		{"  tone 300 binaural 10 amplitude 10", true},
-		{"  noise pink amplitude 30", true},
-		{"  background amplitude 50", true},
-		{" tone 300 binaural 10 amplitude 10", false},
-		{"   tone 300 binaural 10 amplitude 10", false},
-		{"tone 300 binaural 10 amplitude 10", false},
+		{fmt.Sprintf("  %s", trLnTone), true},
+		{fmt.Sprintf("  %s", trLnNoise), true},
+		{fmt.Sprintf("  %s", trLnBackground), true},
+		{fmt.Sprintf(" %s", trLnTone), false},
+		{fmt.Sprintf("   %s", trLnTone), false},
+		{trLnTone, false},
 		{"", false},
 		{"   ", false},
 	}
@@ -38,60 +57,85 @@ func TestHasTrack(ts *testing.T) {
 }
 
 func TestParseTrack_Tones(ts *testing.T) {
-	tests := []struct {
-		line       string
-		wantType   t.TrackType
-		wantWF     t.WaveformType
-		carrier    float64
-		resonance  float64
-		amplitudeP float64
-	}{
-		{"  tone 300 binaural 10 amplitude 15", t.TrackBinauralBeat, t.WaveformSine, 300, 10, 15},
-		{"  tone 440 monaural 11 amplitude 20", t.TrackMonauralBeat, t.WaveformSine, 440, 11, 20},
-		{"  tone 220 isochronic 8 amplitude 5", t.TrackIsochronicBeat, t.WaveformSine, 220, 8, 5},
-		{"  waveform triangle tone 300 binaural 10 amplitude 15", t.TrackBinauralBeat, t.WaveformTriangle, 300, 10, 15},
+	trs := []*t.Track{
+		{
+			Type:      t.TrackBinauralBeat,
+			Carrier:   300,
+			Resonance: 10,
+			Amplitude: t.AmplitudePercentToRaw(15),
+		},
+		{
+			Type:      t.TrackMonauralBeat,
+			Carrier:   440,
+			Resonance: 11,
+			Amplitude: t.AmplitudePercentToRaw(20),
+		},
+		{
+			Type:      t.TrackIsochronicBeat,
+			Carrier:   220,
+			Resonance: 8,
+			Amplitude: t.AmplitudePercentToRaw(5),
+		},
+		{
+			Type:      t.TrackBinauralBeat,
+			Carrier:   300,
+			Resonance: 10,
+			Amplitude: t.AmplitudePercentToRaw(15),
+			Waveform:  t.WaveformTriangle,
+		},
 	}
 
-	for _, tt := range tests {
+	// Helper to format track without extra waveform
+	fmtLine := func(tr *t.Track) string {
+		return strings.Join(strings.Fields(tr.String())[2:], " ")
+	}
+
+	tests := []struct {
+		line      string
+		wantTrack t.Track
+	}{
+		{fmtLine(trs[0]), *trs[0]},
+		{fmtLine(trs[1]), *trs[1]},
+		{fmtLine(trs[2]), *trs[2]},
+		{trs[3].String(), *trs[3]},
+	}
+
+	for i, tt := range tests {
 		ctx := NewTextParser(tt.line)
 		tr, err := ctx.ParseTrack()
 		if err != nil {
 			ts.Errorf("For line '%s', unexpected error: %v", tt.line, err)
 			continue
 		}
-		if tr.Type != tt.wantType {
-			ts.Errorf("For line '%s', want Type %v, got %v", tt.line, tt.wantType, tr.Type)
-		}
-		if tr.Waveform != tt.wantWF {
-			ts.Errorf("For line '%s', want Waveform %v, got %v", tt.line, tt.wantWF, tr.Waveform)
-		}
-		if tr.Carrier != tt.carrier {
-			ts.Errorf("For line '%s', want Carrier %.4f, got %.4f", tt.line, tt.carrier, tr.Carrier)
-		}
-		if tr.Resonance != tt.resonance {
-			ts.Errorf("For line '%s', want Resonance %.4f, got %.4f", tt.line, tt.resonance, tr.Resonance)
-		}
-		if tr.Effect.Type != t.EffectOff {
-			ts.Errorf("For line '%s', want Effect Off, got %v", tt.line, tr.Effect.Type)
-		}
-		if tr.Effect.Intensity != t.IntensityPercentToRaw(0) {
-			ts.Errorf("For line '%s', want Intensity 0, got %.4f", tt.line, tr.Effect.Intensity)
-		}
-		if tr.Amplitude != t.AmplitudePercentToRaw(tt.amplitudeP) {
-			ts.Errorf("For line '%s', want Amplitude raw %.4f, got %.4f", tt.line, t.AmplitudePercentToRaw(tt.amplitudeP), tr.Amplitude)
+		if *tr != tt.wantTrack {
+			ts.Errorf("Test %d: For line '%s', expected track %+v but got %+v", i, tt.line, tt.wantTrack, *tr)
 		}
 	}
 }
 
 func TestParseTrack_Noise(ts *testing.T) {
+	trs := []*t.Track{
+		{
+			Type:      t.TrackWhiteNoise,
+			Amplitude: t.AmplitudePercentToRaw(5),
+		},
+		{
+			Type:      t.TrackPinkNoise,
+			Amplitude: t.AmplitudePercentToRaw(40),
+		},
+		{
+			Type:      t.TrackBrownNoise,
+			Amplitude: t.AmplitudePercentToRaw(15),
+		},
+	}
+
 	tests := []struct {
-		line       string
-		wantType   t.TrackType
-		amplitudeP float64
+		line      string
+		wantTrack t.Track
 	}{
-		{"  noise white amplitude 5", t.TrackWhiteNoise, 5},
-		{"  noise pink amplitude 40", t.TrackPinkNoise, 40},
-		{"  noise brown amplitude 15", t.TrackBrownNoise, 15},
+		{trs[0].String(), *trs[0]},
+		{trs[1].String(), *trs[1]},
+		{trs[2].String(), *trs[2]},
 	}
 
 	for _, tt := range tests {
@@ -101,33 +145,53 @@ func TestParseTrack_Noise(ts *testing.T) {
 			ts.Errorf("For line '%s', unexpected error: %v", tt.line, err)
 			continue
 		}
-		if tr.Type != tt.wantType {
-			ts.Errorf("For line '%s', want Type %v, got %v", tt.line, tt.wantType, tr.Type)
-		}
-		if tr.Waveform != t.WaveformSine {
-			ts.Errorf("For line '%s', want default waveform sine, got %v", tt.line, tr.Waveform)
-		}
-		if tr.Amplitude != t.AmplitudePercentToRaw(tt.amplitudeP) {
-			ts.Errorf("For line '%s', want Amplitude raw %.4f, got %.4f", tt.line, t.AmplitudePercentToRaw(tt.amplitudeP), tr.Amplitude)
+		if *tr != tt.wantTrack {
+			ts.Errorf("For line '%s', expected track %+v but got %+v", tt.line, tt.wantTrack, *tr)
 		}
 	}
 }
 
 func TestParseTrack_Background(ts *testing.T) {
+	trs := []*t.Track{
+		{
+			Type:      t.TrackBackground,
+			Amplitude: t.AmplitudePercentToRaw(50),
+		},
+		{
+			Type:      t.TrackBackground,
+			Carrier:   200,
+			Resonance: 5,
+			Effect:    t.Effect{Type: t.EffectSpin, Intensity: t.IntensityPercentToRaw(75)},
+			Amplitude: t.AmplitudePercentToRaw(50),
+		},
+		{
+			Type:      t.TrackBackground,
+			Resonance: 2.5,
+			Effect:    t.Effect{Type: t.EffectPulse, Intensity: t.IntensityPercentToRaw(60)},
+			Amplitude: t.AmplitudePercentToRaw(40),
+		},
+		{
+			Type:      t.TrackBackground,
+			Resonance: 2.5,
+			Effect:    t.Effect{Type: t.EffectPulse, Intensity: t.IntensityPercentToRaw(60)},
+			Amplitude: t.AmplitudePercentToRaw(40),
+			Waveform:  t.WaveformSquare,
+		},
+		{
+			Type:      t.TrackBackground,
+			Amplitude: t.AmplitudePercentToRaw(33),
+		},
+	}
+
 	tests := []struct {
-		line       string
-		wantWF     t.WaveformType
-		wantType   t.TrackType
-		wantEff    t.EffectType
-		carrier    float64
-		resonance  float64
-		intensityP float64
-		amplitudeP float64
+		line      string
+		wantTrack t.Track
 	}{
-		{"  background amplitude 50", t.WaveformSine, t.TrackBackground, t.EffectOff, 0, 0, 0, 50},
-		{"  background spin 200 rate 5 intensity 75 amplitude 50", t.WaveformSine, t.TrackBackground, t.EffectSpin, 200, 5, 75, 50},
-		{"  background pulse 2.5 intensity 60 amplitude 40", t.WaveformSine, t.TrackBackground, t.EffectPulse, 0, 2.5, 60, 40},
-		{"  waveform sawtooth background amplitude 33", t.WaveformSawtooth, t.TrackBackground, t.EffectOff, 0, 0, 0, 33},
+		{trs[0].String(), *trs[0]},
+		{trs[1].String(), *trs[1]},
+		{trs[2].String(), *trs[2]},
+		{trs[3].String(), *trs[3]},
+		{trs[4].String(), *trs[4]},
 	}
 
 	for _, tt := range tests {
@@ -137,26 +201,8 @@ func TestParseTrack_Background(ts *testing.T) {
 			ts.Errorf("For line '%s', unexpected error: %v", tt.line, err)
 			continue
 		}
-		if tr.Type != tt.wantType {
-			ts.Errorf("For line '%s', want Type %v, got %v", tt.line, tt.wantType, tr.Type)
-		}
-		if tr.Waveform != tt.wantWF {
-			ts.Errorf("For line '%s', want Waveform %v, got %v", tt.line, tt.wantWF, tr.Waveform)
-		}
-		if tr.Effect.Type != tt.wantEff {
-			ts.Errorf("For line '%s', want Effect %v, got %v", tt.line, tt.wantEff, tr.Effect.Type)
-		}
-		if tr.Carrier != tt.carrier {
-			ts.Errorf("For line '%s', want Carrier %.4f, got %.4f", tt.line, tt.carrier, tr.Carrier)
-		}
-		if tr.Resonance != tt.resonance {
-			ts.Errorf("For line '%s', want Resonance %.4f, got %.4f", tt.line, tt.resonance, tr.Resonance)
-		}
-		if tr.Effect.Intensity != t.IntensityPercentToRaw(tt.intensityP) {
-			ts.Errorf("For line '%s', want Intensity raw %.4f, got %.4f", tt.line, t.IntensityPercentToRaw(tt.intensityP), tr.Effect.Intensity)
-		}
-		if tr.Amplitude != t.AmplitudePercentToRaw(tt.amplitudeP) {
-			ts.Errorf("For line '%s', want Amplitude raw %.4f, got %.4f", tt.line, t.AmplitudePercentToRaw(tt.amplitudeP), tr.Amplitude)
+		if *tr != tt.wantTrack {
+			ts.Errorf("For line '%s', expected track %+v but got %+v", tt.line, tt.wantTrack, *tr)
 		}
 	}
 }
