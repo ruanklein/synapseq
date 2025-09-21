@@ -8,17 +8,29 @@
 package parser
 
 import (
+	"fmt"
+	"strings"
 	"testing"
+
+	t "github.com/ruanklein/synapseq/internal/types"
 )
 
 func TestPeek(ts *testing.T) {
+	// Create a sample track string line
+	trLn := (&t.Track{
+		Type:      t.TrackBinauralBeat,
+		Carrier:   440,
+		Resonance: 10,
+		Amplitude: t.AmplitudePercentToRaw(4),
+	}).String()
+
 	tests := []struct {
 		line          string
 		expectedToken string
 		expectedOk    bool
 	}{
-		{"waveform sine tone 440 binaural 10 amplitude 04", "waveform", true},
-		{"   waveform sine tone 440 binaural 10 amplitude 04", "waveform", true},
+		{trLn, t.KeywordWaveform, true},
+		{fmt.Sprintf("   %s", trLn), t.KeywordWaveform, true},
 		{"", "", false},
 		{"   ", "", false},
 	}
@@ -33,12 +45,21 @@ func TestPeek(ts *testing.T) {
 }
 
 func TestNextToken(ts *testing.T) {
+	// Create a sample track string line
+	trLn := (&t.Track{
+		Type:      t.TrackBinauralBeat,
+		Carrier:   440,
+		Resonance: 10,
+		Amplitude: t.AmplitudePercentToRaw(4),
+	}).String()
+	trLnFields := strings.Fields(trLn)
+
 	tests := []struct {
 		line           string
 		expectedTokens []string
 	}{
-		{"waveform sine tone 440 binaural 10 amplitude 04", []string{"waveform", "sine", "tone", "440", "binaural", "10", "amplitude", "04"}},
-		{"   waveform sine tone 440 binaural 10 amplitude 04", []string{"waveform", "sine", "tone", "440", "binaural", "10", "amplitude", "04"}},
+		{trLn, trLnFields},
+		{fmt.Sprintf("   %s", trLn), trLnFields},
 		{"", []string{}},
 		{"   ", []string{}},
 	}
@@ -66,8 +87,14 @@ func TestNextToken(ts *testing.T) {
 }
 
 func TestRewindToken(ts *testing.T) {
-	line := "waveform sine tone 440 binaural 10 amplitude 04"
-	ctx := NewTextParser(line)
+	// Create a sample track string line
+	trLn := (&t.Track{
+		Type:      t.TrackBinauralBeat,
+		Carrier:   440,
+		Resonance: 10,
+		Amplitude: t.AmplitudePercentToRaw(4),
+	}).String()
+	ctx := NewTextParser(trLn)
 
 	// Read first three tokens
 	for range 3 {
@@ -82,8 +109,8 @@ func TestRewindToken(ts *testing.T) {
 
 	// Next token should be the second token
 	token, ok := ctx.Line.NextToken()
-	if !ok || token != "sine" {
-		ts.Errorf("Expected 'sine' after rewind, got '%s'", token)
+	if !ok || token != t.KeywordSine {
+		ts.Errorf("Expected '%s' after rewind, got '%s'", t.KeywordSine, token)
 	}
 
 	// Rewind more than available tokens
@@ -91,22 +118,44 @@ func TestRewindToken(ts *testing.T) {
 
 	// Next token should be the first token
 	token, ok = ctx.Line.NextToken()
-	if !ok || token != "waveform" {
-		ts.Errorf("Expected 'waveform' after rewind to start, got '%s'", token)
+	if !ok || token != t.KeywordWaveform {
+		ts.Errorf("Expected '%s' after rewind to start, got '%s'", t.KeywordWaveform, token)
 	}
 }
 
 func TestNextExpectOneOf(ts *testing.T) {
+	trLnTone := (&t.Track{
+		Type:      t.TrackBinauralBeat,
+		Carrier:   440,
+		Resonance: 10,
+		Amplitude: t.AmplitudePercentToRaw(4),
+	}).String()
+
+	trLnNoisePink := (&t.Track{
+		Type:      t.TrackPinkNoise,
+		Amplitude: t.AmplitudePercentToRaw(40),
+	}).String()
+
+	trLnNoiseWhite := (&t.Track{
+		Type:      t.TrackWhiteNoise,
+		Amplitude: t.AmplitudePercentToRaw(5),
+	}).String()
+
+	trLnBackground := (&t.Track{
+		Type:      t.TrackBackground,
+		Amplitude: t.AmplitudePercentToRaw(50),
+	}).String()
+
 	tests := []struct {
 		line          string
 		wants         []string
 		expectedToken string
 		expectError   bool
 	}{
-		{"waveform sine tone 440 binaural 10 amplitude 04", []string{"waveform", "noise"}, "waveform", false},
-		{"noise pink amplitude 40", []string{"background", "noise"}, "noise", false},
-		{"noise white amplitude 05", []string{"triangle", "background"}, "", true},
-		{"background amplitude 50", []string{"noise", "waveform"}, "", true},
+		{trLnTone, []string{t.KeywordWaveform, t.KeywordNoise}, t.KeywordWaveform, false},
+		{trLnNoisePink, []string{t.KeywordBackground, t.KeywordNoise}, t.KeywordNoise, false},
+		{trLnNoiseWhite, []string{t.KeywordTriangle, t.KeywordBackground}, "", true},
+		{trLnBackground, []string{t.KeywordNoise, t.KeywordWaveform}, "", true},
 	}
 
 	for _, test := range tests {
