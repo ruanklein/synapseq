@@ -33,16 +33,27 @@ func Usage() {
 	fmt.Fprintf(os.Stderr, "Usage: synapseq [options] <input-file.spsq> <output-file.wav>\n")
 }
 
+// Help prints the help message
+func Help() {
+	Usage()
+	fmt.Fprintf(os.Stderr, "Options:\n")
+	fmt.Fprintf(os.Stderr, "  -version       Show version information\n")
+	fmt.Fprintf(os.Stderr, "  -quiet         Enable quiet mode (suppress non-error output)\n")
+	fmt.Fprintf(os.Stderr, "  -debug         Enable debug mode (no wav output)\n")
+	fmt.Fprintf(os.Stderr, "  -help          Show this help message\n")
+}
+
+// ShowVersion prints the version information
+func ShowVersion() {
+	fmt.Printf("SynapSeq version %s\n", VERSION)
+}
+
 // ParseFlags parses command-line flags and returns CLIOptions
 func ParseFlags() (*CLIOptions, []string, error) {
 	opts := &CLIOptions{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
-	fs.Usage = func() {
-		Usage()
-		fmt.Fprintf(os.Stderr, "Options:\n")
-		fs.PrintDefaults()
-	}
+	fs.Usage = Help
 
 	fs.BoolVar(&opts.ShowVersion, "version", false, "Show version information")
 	fs.BoolVar(&opts.Quiet, "quiet", false, "Enable quiet mode")

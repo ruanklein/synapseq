@@ -23,11 +23,11 @@ func main() {
 	}
 
 	if opts.ShowHelp {
-		cli.Usage()
+		cli.Help()
 		os.Exit(0)
 	}
 	if opts.ShowVersion {
-		fmt.Printf("SynapSeq version %s\n", cli.VERSION)
+		cli.ShowVersion()
 		os.Exit(0)
 	}
 
