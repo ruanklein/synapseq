@@ -53,6 +53,9 @@ func (r *AudioRenderer) sync(timeMs int, periodIdx int) {
 		}
 
 		switch channel.Track.Type {
+		case t.TrackPureTone:
+			channel.Amplitude[0] = int(channel.Track.Amplitude)
+			channel.Increment[0] = int(channel.Track.Carrier / float64(r.SampleRate) * t.SineTableSize * t.PhasePrecision)
 		case t.TrackBinauralBeat:
 			freq1 := channel.Track.Carrier + channel.Track.Resonance/2
 			freq2 := channel.Track.Carrier - channel.Track.Resonance/2

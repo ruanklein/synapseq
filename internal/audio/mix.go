@@ -37,6 +37,12 @@ func (r *AudioRenderer) mix(samples []int) []int {
 			waveIdx := int(channel.Track.Waveform)
 
 			switch channel.Track.Type {
+			case t.TrackPureTone:
+				channel.Offset[0] += channel.Increment[0]
+				channel.Offset[0] &= (t.SineTableSize << 16) - 1
+
+				left += int64(channel.Amplitude[0]) * int64(r.waveTables[waveIdx][channel.Offset[0]>>16])
+				right += int64(channel.Amplitude[0]) * int64(r.waveTables[waveIdx][channel.Offset[0]>>16])
 			case t.TrackBinauralBeat:
 				channel.Offset[0] += channel.Increment[0]
 				channel.Offset[0] &= (t.SineTableSize << 16) - 1

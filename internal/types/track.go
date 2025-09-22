@@ -17,6 +17,8 @@ const (
 	TrackOff TrackType = iota
 	// Track is silence
 	TrackSilence
+	// Track is a pure tone (no beat)
+	TrackPureTone
 	// Track is a binaural beat
 	TrackBinauralBeat
 	// Track is a monaural beat
@@ -40,6 +42,8 @@ func (tr TrackType) String() string {
 		return KeywordOff
 	case TrackSilence:
 		return KeywordSilence
+	case TrackPureTone:
+		return KeywordTone
 	case TrackBinauralBeat:
 		return KeywordBinaural
 	case TrackMonauralBeat:
@@ -131,6 +135,8 @@ func (tr *Track) String() string {
 	switch tr.Type {
 	case TrackOff, TrackSilence:
 		return "- -"
+	case TrackPureTone:
+		return fmt.Sprintf("%s %s %s %.2f %s %.2f", KeywordWaveform, tr.Waveform.String(), KeywordTone, tr.Carrier, KeywordAmplitude, tr.Amplitude.ToPercent())
 	case TrackBinauralBeat, TrackMonauralBeat, TrackIsochronicBeat:
 		return fmt.Sprintf("%s %s %s %.2f %s %.2f %s %.2f", KeywordWaveform, tr.Waveform.String(), KeywordTone, tr.Carrier, tr.Type.String(), tr.Resonance, KeywordAmplitude, tr.Amplitude.ToPercent())
 	case TrackWhiteNoise, TrackPinkNoise, TrackBrownNoise:
@@ -155,7 +161,7 @@ func (tr *Track) ShortString() string {
 	switch tr.Type {
 	case TrackOff, TrackSilence:
 		return " -"
-	case TrackBinauralBeat, TrackMonauralBeat, TrackIsochronicBeat:
+	case TrackPureTone, TrackBinauralBeat, TrackMonauralBeat, TrackIsochronicBeat:
 		return fmt.Sprintf(" (%s:%.2f %s:%.2f %s:%.2f)",
 			KeywordTone, tr.Carrier, tr.Type.String(), tr.Resonance, KeywordAmplitude, tr.Amplitude.ToPercent())
 	case TrackWhiteNoise, TrackPinkNoise, TrackBrownNoise:
