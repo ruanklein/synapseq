@@ -333,6 +333,12 @@ Examples:
 @background /path/to/background.wav
 ```
 
+You can use `~` to import audio from your home directory:
+
+```
+@background ~/Downloads/rain.wav
+```
+
 The SynapSeq support `.wav` files with 24 Bit and 2 Channels.
 
 The sample rate also needs to be the same as the sequence. You can set it using the `@samplerate` option.
