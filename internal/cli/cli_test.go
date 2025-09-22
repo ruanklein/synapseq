@@ -45,7 +45,11 @@ func TestParseFlags(ts *testing.T) {
 
 	for _, test := range tests {
 		os.Args = test.args
-		opts, args := ParseFlags()
+		opts, args, err := ParseFlags()
+		if err != nil {
+			ts.Errorf("For args %v, unexpected error: %v", test.args, err)
+			continue
+		}
 		if *opts != *test.expected {
 			ts.Errorf("For args %v, expected %+v but got %+v", test.args, test.expected, opts)
 		}
@@ -61,12 +65,9 @@ func TestParseFlags(ts *testing.T) {
 		}
 	}
 
-	// Test invalid flag parsing (should not panic)
+	// Test invalid flag parsing should return an error (no panic)
 	os.Args = []string{"cmd", "-invalid"}
-	defer func() {
-		if r := recover(); r != nil {
-			ts.Errorf("ParseFlags panicked on invalid flag: %v", r)
-		}
-	}()
-	_, _ = ParseFlags()
+	if _, _, err := ParseFlags(); err == nil {
+		ts.Errorf("expected error for invalid flag, got nil")
+	}
 }
