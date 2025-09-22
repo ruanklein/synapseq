@@ -161,7 +161,9 @@ func (tr *Track) ShortString() string {
 	switch tr.Type {
 	case TrackOff, TrackSilence:
 		return " -"
-	case TrackPureTone, TrackBinauralBeat, TrackMonauralBeat, TrackIsochronicBeat:
+	case TrackPureTone:
+		return fmt.Sprintf(" (%s:%.2f %s:%.2f)", KeywordTone, tr.Carrier, KeywordAmplitude, tr.Amplitude.ToPercent())
+	case TrackBinauralBeat, TrackMonauralBeat, TrackIsochronicBeat:
 		return fmt.Sprintf(" (%s:%.2f %s:%.2f %s:%.2f)",
 			KeywordTone, tr.Carrier, tr.Type.String(), tr.Resonance, KeywordAmplitude, tr.Amplitude.ToPercent())
 	case TrackWhiteNoise, TrackPinkNoise, TrackBrownNoise:
