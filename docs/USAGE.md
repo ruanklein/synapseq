@@ -55,7 +55,7 @@ SynapSeq uses a specific syntax to create a sequence. The syntax is based on the
 
 #### `tone`
 
-The `tone` syntax is:
+The `tone` syntax for Binaural/Monaural/Isochronic is:
 
 ```
 tone [carrier frequency] [type of brainwave entrainment] [frequency offset] amplitude [amplitude value]
@@ -70,6 +70,8 @@ tone 400 binaural 10 amplitude 10
 tone 300 monaural 10 amplitude 10
 # for isochronic tones
 tone 200 isochronic 10 amplitude 10
+# for carrier only (no method)
+tone 100 amplitude 10
 ```
 
 #### `noise`
