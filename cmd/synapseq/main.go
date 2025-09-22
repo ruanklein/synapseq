@@ -41,14 +41,22 @@ func main() {
 	outputFile := args[1]
 
 	// Load sequence
-	periods, options, err := sequence.LoadTextSequence(inputFile)
+	result, err := sequence.LoadTextSequence(inputFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}
 
+	if !opts.Quiet {
+		for _, c := range result.Comments {
+			fmt.Fprintf(os.Stderr, "> %s\n", c)
+		}
+	}
+
+	options := result.Options
+
 	// Create audio renderer
-	renderer, err := audio.NewAudioRenderer(periods, &audio.AudioRendererOptions{
+	renderer, err := audio.NewAudioRenderer(result.Periods, &audio.AudioRendererOptions{
 		SampleRate:     options.SampleRate,
 		Volume:         options.Volume,
 		GainLevel:      options.GainLevel,

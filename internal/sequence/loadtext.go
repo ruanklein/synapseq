@@ -9,22 +9,27 @@ package sequence
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/ruanklein/synapseq/internal/parser"
 	s "github.com/ruanklein/synapseq/internal/shared"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
+// LoadResult holds the result of loading a sequence
+type LoadResult struct {
+	Periods  []t.Period
+	Options  *t.Option
+	Comments []string
+}
+
 // LoadTextSequence loads a sequence from a text file
-func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
+func LoadTextSequence(fileName string) (*LoadResult, error) {
 	file, err := LoadFile(fileName)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error loading sequence file: %v", err)
+		return nil, fmt.Errorf("error loading sequence file: %v", err)
 	}
 
 	presets := make([]t.Preset, 0, t.MaxPresets)
-	var periods []t.Period
 
 	// Initialize built-in presets
 	presets = append(presets, *t.NewBuiltinSilencePreset())
@@ -36,6 +41,11 @@ func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
 		BackgroundPath: "",
 		GainLevel:      t.GainLevelMedium,
 	}
+
+	var (
+		periods  []t.Period
+		comments []string
+	)
 
 	// Parse each line in the file
 	for file.NextLine() {
@@ -50,7 +60,8 @@ func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
 		if ctx.HasComment() {
 			comment := ctx.ParseComment()
 			if comment != "" {
-				fmt.Fprintf(os.Stderr, "> %s\n", comment)
+				comments = append(comments, comment)
+				// fmt.Fprintf(os.Stderr, "> %s\n", comment)
 			}
 			continue
 		}
@@ -58,15 +69,15 @@ func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
 		// Option line
 		if ctx.HasOption() {
 			if len(presets) > 1 {
-				return nil, nil, fmt.Errorf("line %d: options must be defined before any preset", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: options must be defined before any preset", file.CurrentLineNumber)
 			}
 
 			if err = ctx.ParseOption(options); err != nil {
-				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 			// Validate options
 			if err = options.Validate(); err != nil {
-				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 			continue
 		}
@@ -74,22 +85,22 @@ func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
 		// Preset definition
 		if ctx.HasPreset() {
 			if len(presets) >= t.MaxPresets {
-				return nil, nil, fmt.Errorf("line %d: maximum number of presets reached", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: maximum number of presets reached", file.CurrentLineNumber)
 			}
 
 			if len(periods) > 0 {
-				return nil, nil, fmt.Errorf("line %d: preset definitions must be before any timeline definitions", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: preset definitions must be before any timeline definitions", file.CurrentLineNumber)
 			}
 
 			preset, err := ctx.ParsePreset()
 			if err != nil {
-				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
 			pName := preset.String()
 			p := s.FindPreset(pName, presets)
 			if p != nil {
-				return nil, nil, fmt.Errorf("line %d: duplicate preset definition: %s", file.CurrentLineNumber, pName)
+				return nil, fmt.Errorf("line %d: duplicate preset definition: %s", file.CurrentLineNumber, pName)
 			}
 
 			presets = append(presets, *preset)
@@ -99,26 +110,26 @@ func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
 		// Track line
 		if ctx.HasTrack() {
 			if len(presets) == 1 { // 1 = silence preset
-				return nil, nil, fmt.Errorf("line %d: track defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
+				return nil, fmt.Errorf("line %d: track defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
 			}
 
 			if len(periods) > 0 {
-				return nil, nil, fmt.Errorf("line %d: track definitions must be before any timeline definitions", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: track definitions must be before any timeline definitions", file.CurrentLineNumber)
 			}
 
 			lastPreset := &presets[len(presets)-1]
 			trackIndex, err := s.AllocateTrack(lastPreset)
 			if err != nil {
-				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
 			track, err := ctx.ParseTrack()
 			if err != nil {
-				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
 			if track.Type == t.TrackBackground && options.BackgroundPath == "" {
-				return nil, nil, fmt.Errorf("line %d: background track defined but no background audio file specified in options", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: background track defined but no background audio file specified in options", file.CurrentLineNumber)
 			}
 
 			lastPreset.Track[trackIndex] = *track
@@ -128,27 +139,27 @@ func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
 		// Timeline
 		if ctx.HasTimeline() {
 			if len(presets) == 1 { // 1 = silence preset
-				return nil, nil, fmt.Errorf("line %d: timeline defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
+				return nil, fmt.Errorf("line %d: timeline defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
 			}
 
 			period, err := ctx.ParseTimeline(&presets)
 			if err != nil {
-				return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 
 			if len(periods) == 0 && period.Time != 0 {
-				return nil, nil, fmt.Errorf("line %d: first timeline must start at 00:00:00", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: first timeline must start at 00:00:00", file.CurrentLineNumber)
 			}
 
 			if len(periods) > 0 {
 				lastPeriod := &periods[len(periods)-1]
 
 				if lastPeriod.Time >= period.Time {
-					return nil, nil, fmt.Errorf("line %d: timeline %s overlaps with previous timeline %s", file.CurrentLineNumber, period.TimeString(), lastPeriod.TimeString())
+					return nil, fmt.Errorf("line %d: timeline %s overlaps with previous timeline %s", file.CurrentLineNumber, period.TimeString(), lastPeriod.TimeString())
 				}
 
 				if err := s.AdjustPeriods(lastPeriod, period); err != nil {
-					return nil, nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+					return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 				}
 			}
 
@@ -156,29 +167,33 @@ func LoadTextSequence(fileName string) ([]t.Period, *t.Option, error) {
 			continue
 		}
 
-		return nil, nil, fmt.Errorf("line %d: invalid syntax: %s", file.CurrentLineNumber, ctx.Line.Raw)
+		return nil, fmt.Errorf("line %d: invalid syntax: %s", file.CurrentLineNumber, ctx.Line.Raw)
 	}
 
 	// Validate if has one preset (1 = silence preset)
 	if len(presets) == 1 {
-		return nil, nil, fmt.Errorf("no presets defined")
+		return nil, fmt.Errorf("no presets defined")
 	}
 
 	// Validate each preset (skip silence preset)
 	for i := 1; i < len(presets); i++ {
 		p := &presets[i]
 		if s.IsPresetEmpty(p) {
-			return nil, nil, fmt.Errorf("preset %q is empty", presets[i].String())
+			return nil, fmt.Errorf("preset %q is empty", presets[i].String())
 		}
 		if n := s.NumBackgroundTracks(p); n > 1 {
-			return nil, nil, fmt.Errorf("preset %q has %d background tracks; only one background track is allowed per preset", presets[i].String(), n)
+			return nil, fmt.Errorf("preset %q has %d background tracks; only one background track is allowed per preset", presets[i].String(), n)
 		}
 	}
 
 	// Validate if has more than two Periods
 	if len(periods) < 2 {
-		return nil, nil, fmt.Errorf("at least two periods must be defined")
+		return nil, fmt.Errorf("at least two periods must be defined")
 	}
 
-	return periods, options, nil
+	return &LoadResult{
+		Periods:  periods,
+		Options:  options,
+		Comments: comments,
+	}, nil
 }
