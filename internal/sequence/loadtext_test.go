@@ -227,6 +227,42 @@ func TestLoadTextSequence_Error_MaxPresets(ts *testing.T) {
 	}
 }
 
+func TestLoadTextSequence_Comments(ts *testing.T) {
+	seq := `
+## This is a comment on at the top
+
+# Presets
+alpha
+  tone 100 binaural 1 amplitude 1
+
+## Another comment line
+
+# Timeline
+00:00:00 alpha
+##Another comment line in between
+00:01:00 alpha
+`
+	path := writeSeqFile(ts, seq)
+	result, err := LoadTextSequence(path)
+	if err != nil {
+		ts.Fatalf("LoadTextSequence with comments error: %v", err)
+	}
+
+	cmms := result.Comments
+	if cmms == nil || len(cmms) != 3 {
+		ts.Fatalf("expected 2 comment blocks, got %d", len(cmms))
+	}
+	if cmms[0] != "This is a comment on at the top" {
+		ts.Fatalf("unexpected first comment block: %q", cmms[0])
+	}
+	if cmms[1] != "Another comment line" {
+		ts.Fatalf("unexpected second comment block: %q", cmms[1])
+	}
+	if cmms[2] != "Another comment line in between" {
+		ts.Fatalf("unexpected third comment block: %q", cmms[2])
+	}
+}
+
 func TestLoadTextSequence_Error_PresetEmpty(ts *testing.T) {
 	seq := `
 alpha
