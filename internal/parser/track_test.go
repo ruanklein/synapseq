@@ -83,6 +83,12 @@ func TestParseTrack_Tones(ts *testing.T) {
 			Amplitude: t.AmplitudePercentToRaw(15),
 			Waveform:  t.WaveformTriangle,
 		},
+		{
+			Type:      t.TrackPureTone,
+			Carrier:   350,
+			Amplitude: t.AmplitudePercentToRaw(10),
+			Waveform:  t.WaveformSquare,
+		},
 	}
 
 	// Helper to format track without extra waveform
@@ -98,6 +104,7 @@ func TestParseTrack_Tones(ts *testing.T) {
 		{fmtLine(trs[1]), *trs[1]},
 		{fmtLine(trs[2]), *trs[2]},
 		{trs[3].String(), *trs[3]},
+		{trs[4].String(), *trs[4]},
 	}
 
 	for i, tt := range tests {
