@@ -33,6 +33,9 @@ type AudioRenderer struct {
 	noiseGenerator  *NoiseGenerator
 	backgroundAudio *BackgroundAudio
 
+	dither0 uint16
+	dither1 uint16
+
 	// Embedding options
 	*AudioRendererOptions
 }
@@ -93,6 +96,8 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 		waveTables:           InitWaveformTables(),
 		noiseGenerator:       NewNoiseGenerator(),
 		backgroundAudio:      backgroundAudio,
+		dither0:              1,
+		dither1:              0,
 		AudioRendererOptions: ar,
 	}
 

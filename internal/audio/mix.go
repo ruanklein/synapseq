@@ -13,13 +13,11 @@ import (
 
 // mix generates a stereo audio sample by mixing all channels
 func (r *AudioRenderer) mix(samples []int) []int {
-	// Simple linear congruential generator for dithering
-	var ditherState uint32 = 0x12345678
-
 	// Function to get the next dither value
 	nextDither := func() int64 {
-		ditherState = ditherState*1103515245 + 12345
-		return int64(int32(ditherState>>16) - 32768)
+		r.dither0 = r.dither1
+		r.dither1 = uint16((uint32(r.dither0)*0x660D + 0xF35F) & 0xFFFF)
+		return int64(int32(r.dither1) - 32768) // ~[-32768..32767]
 	}
 
 	// Read background audio samples if enabled
@@ -80,7 +78,13 @@ func (r *AudioRenderer) mix(samples []int) []int {
 				left += out
 				right += out
 			case t.TrackWhiteNoise, t.TrackPinkNoise, t.TrackBrownNoise:
-				noiseVal := int64(r.noiseGenerator.Generate(channel.Track.Type))
+				// Use pre-generated pink noise sample for efficiency
+				noiseVal := int64(r.noiseGenerator.Generate(t.TrackPinkNoise))
+				if channel.Track.Type != t.TrackPinkNoise {
+					noiseVal = int64(r.noiseGenerator.Generate(channel.Track.Type))
+				}
+
+				// Scale noise by amplitude
 				sampleVal := int64(channel.Amplitude[0]) * noiseVal
 
 				left += sampleVal
