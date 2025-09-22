@@ -17,11 +17,14 @@ import (
 )
 
 func main() {
-	opts, args := cli.ParseFlags()
+	opts, args, err := cli.ParseFlags()
+	if err != nil {
+		os.Exit(2)
+	}
 
 	if opts.ShowHelp {
 		cli.Usage()
-		os.Exit(1)
+		os.Exit(0)
 	}
 	if opts.ShowVersion {
 		fmt.Printf("SynapSeq version %s\n", cli.VERSION)
