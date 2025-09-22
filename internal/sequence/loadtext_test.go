@@ -89,16 +89,19 @@ beta
 `
 	path := writeSeqFile(ts, seq)
 
-	periods, opts, err := LoadTextSequence(path)
+	result, err := LoadTextSequence(path)
 	if err != nil {
 		ts.Fatalf("LoadTextSequence error: %v", err)
 	}
+	opts := result.Options
 	if opts.SampleRate != 48000 || opts.Volume != 80 || opts.GainLevel != t.GainLevelHigh {
 		ts.Fatalf("unexpected options: %+v", *opts)
 	}
 	if opts.BackgroundPath != bgPath {
 		ts.Fatalf("unexpected background path: got %q want %q", opts.BackgroundPath, bgPath)
 	}
+
+	periods := result.Periods
 	if len(periods) != 2 {
 		ts.Fatalf("expected 2 periods, got %d", len(periods))
 	}
@@ -137,7 +140,7 @@ func TestLoadTextSequence_Error_TimelineBeforePreset(ts *testing.T) {
 00:00:00 alpha
 `
 	path := writeSeqFile(ts, seq)
-	_, _, err := LoadTextSequence(path)
+	_, err := LoadTextSequence(path)
 	if err == nil {
 		ts.Fatalf("expected error for timeline before preset")
 	}
@@ -150,7 +153,7 @@ alpha
 @volume 80
 `
 	path := writeSeqFile(ts, seq)
-	_, _, err := LoadTextSequence(path)
+	_, err := LoadTextSequence(path)
 	if err == nil {
 		ts.Fatalf("expected error for options after preset")
 	}
@@ -164,7 +167,7 @@ alpha
 00:01:00 alpha
 `
 	path := writeSeqFile(ts, seq)
-	_, _, err := LoadTextSequence(path)
+	_, err := LoadTextSequence(path)
 	if err == nil {
 		ts.Fatalf("expected error for first timeline not 00:00:00")
 	}
@@ -179,7 +182,7 @@ alpha
 00:00:30 alpha
 `
 	path := writeSeqFile(ts, seq)
-	_, _, err := LoadTextSequence(path)
+	_, err := LoadTextSequence(path)
 	if err == nil {
 		ts.Fatalf("expected error for overlapping timeline")
 	}
@@ -191,7 +194,7 @@ alpha
   background amplitude 10
 `
 	path := writeSeqFile(ts, seq)
-	_, _, err := LoadTextSequence(path)
+	_, err := LoadTextSequence(path)
 	if err == nil {
 		ts.Fatalf("expected error for background track without background option")
 	}
@@ -203,7 +206,7 @@ alpha
 alpha
 `
 	path := writeSeqFile(ts, seq)
-	_, _, err := LoadTextSequence(path)
+	_, err := LoadTextSequence(path)
 	if err == nil {
 		ts.Fatalf("expected error for duplicate preset")
 	}
@@ -218,7 +221,7 @@ func TestLoadTextSequence_Error_MaxPresets(ts *testing.T) {
 	}
 	b.WriteString("overflow\n")
 	path := writeSeqFile(ts, b.String())
-	_, _, err := LoadTextSequence(path)
+	_, err := LoadTextSequence(path)
 	if err == nil {
 		ts.Fatalf("expected error for maximum number of presets reached")
 	}
@@ -231,7 +234,7 @@ alpha
 00:01:00 alpha
 `
 	path := writeSeqFile(ts, seq)
-	_, _, err := LoadTextSequence(path)
+	_, err := LoadTextSequence(path)
 	if err == nil {
 		ts.Fatalf("expected error for empty preset")
 	}
@@ -252,7 +255,7 @@ alpha
 00:01:00 alpha
 `
 	path := writeSeqFile(ts, seq)
-	_, _, err := LoadTextSequence(path)
+	_, err := LoadTextSequence(path)
 	if err == nil {
 		ts.Fatalf("expected error for multiple background tracks in a preset")
 	}
@@ -265,7 +268,7 @@ alpha
 00:00:00 alpha
 `
 	path := writeSeqFile(ts, seq)
-	_, _, err := LoadTextSequence(path)
+	_, err := LoadTextSequence(path)
 	if err == nil {
 		ts.Fatalf("expected error for less than two periods")
 	}
