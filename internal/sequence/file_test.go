@@ -71,46 +71,6 @@ func TestLoadFile_FromFilePath(ts *testing.T) {
 	sf.Close()
 }
 
-func TestLoadFile_FromStdin(ts *testing.T) {
-	want := []string{"a", "b"}
-	path := writeTempFile(ts, "stdin.spsq", want)
-
-	orig := os.Stdin
-	f, err := os.Open(path)
-	if err != nil {
-		ts.Fatalf("open temp file: %v", err)
-	}
-	defer func() {
-		f.Close()
-		os.Stdin = orig
-	}()
-
-	os.Stdin = f
-	sf, err := LoadFile("-")
-	if err != nil {
-		ts.Fatalf("LoadFile(-) error: %v", err)
-	}
-	if sf.file != nil {
-		ts.Errorf("for '-', expected sf.file=nil, got non-nil")
-	}
-
-	var got []string
-	for sf.NextLine() {
-		got = append(got, sf.CurrentLine)
-	}
-	if len(got) != len(want) {
-		ts.Fatalf("expected %d lines from stdin, got %d", len(want), len(got))
-	}
-	for i := range want {
-		if got[i] != want[i] {
-			ts.Errorf("stdin line %d: expected %q, got %q", i+1, want[i], got[i])
-		}
-	}
-
-	// No-op close when file is nil
-	sf.Close()
-}
-
 func TestLoadFile_NotFound(ts *testing.T) {
 	if _, err := LoadFile(filepath.Join(ts.TempDir(), "missing.spsq")); err == nil {
 		ts.Errorf("expected error for missing file, got nil")

@@ -23,15 +23,6 @@ type SequenceFile struct {
 
 // LoadFile loads a sequence file
 func LoadFile(fileName string) (*SequenceFile, error) {
-	var file *os.File
-
-	if fileName == "-" {
-		return &SequenceFile{
-			scanner: bufio.NewScanner(os.Stdin),
-			file:    file,
-		}, nil
-	}
-
 	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("%v", err)

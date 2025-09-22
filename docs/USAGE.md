@@ -401,12 +401,6 @@ The command line syntax is:
 synapseq [options] [path of the sequence file] [path of the output file]
 ```
 
-You can use the `-` to read the sequence from the console. Example:
-
-```
-cat sequence-file | synapseq - output.wav
-```
-
 #### `-help`
 
 Show the help and exit.
