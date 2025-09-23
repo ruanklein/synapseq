@@ -69,6 +69,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if outputFile == "-" && !opts.Debug {
+		renderer.RenderRaw(os.Stdout)
+		return
+	}
+
 	// Render to WAV file
 	if err := renderer.RenderToWAV(outputFile); err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)

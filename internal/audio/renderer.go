@@ -10,10 +10,8 @@ package audio
 import (
 	"fmt"
 	"math"
-	"os"
 
 	"github.com/go-audio/audio"
-	"github.com/go-audio/wav"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
@@ -104,23 +102,8 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 	return renderer, nil
 }
 
-// RenderToWAV renders the audio to a WAV file using go-audio/wav
-func (r *AudioRenderer) RenderToWAV(outPath string) error {
-	var out *os.File
-	var enc *wav.Encoder
-
-	if !r.Debug {
-		var err error
-		out, err = os.Create(outPath)
-		if err != nil {
-			return fmt.Errorf("create output: %w", err)
-		}
-		defer out.Close()
-
-		enc = wav.NewEncoder(out, r.SampleRate, audioBitDepth, audioChannels, 1)
-		defer enc.Close()
-	}
-
+// Render generates the audio and passes buffers to the consume function
+func (r *AudioRenderer) Render(consume func(buf *audio.IntBuffer) error) error {
 	// Ensure background audio file is closed if opened
 	defer func() {
 		if r.backgroundAudio != nil {
@@ -129,7 +112,6 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 	}()
 
 	endMs := r.periods[len(r.periods)-1].Time
-
 	totalFrames := int64(math.Round(float64(endMs) * float64(r.SampleRate) / 1000.0))
 	chunkFrames := int64(t.BufferSize)
 	framesWritten := int64(0)
@@ -166,10 +148,9 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 			audioBuf.Data = audioBuf.Data[:remain*audioChannels] // stereo interleaved
 		}
 
-		if !r.Debug {
-			if err := enc.Write(audioBuf); err != nil {
-				enc.Close()
-				return fmt.Errorf("write wav: %w", err)
+		if consume != nil {
+			if err := consume(audioBuf); err != nil {
+				return fmt.Errorf("failed to consume audio buffer: %w", err)
 			}
 		}
 
