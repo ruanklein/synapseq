@@ -148,7 +148,7 @@ All Go code must be formatted using [`gofmt`](https://pkg.go.dev/cmd/gofmt). Ple
 
 - ~~Implement WAV header and PCM data writing using Go's binary writing utilities~~ (go-audio library used instead).
 - ✅ Ensure correct handling of sample rate, bit depth, and stereo channels.
-- ✅ Support output to file ~~or stdout as in the original~~ (functionality removed as it only works on Unix)
+- ✅ Support output to file ~~or stdout as in the original~~ (used RAW instead of WAV)
 
 ---
 

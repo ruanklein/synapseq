@@ -401,6 +401,34 @@ The command line syntax is:
 synapseq [options] [path of the sequence file] [path of the output file]
 ```
 
+Example:
+
+```
+synapseq sample-binaural.spsq sample-binaural.wav
+```
+
+You can use `-` to open sequence from stdin:
+
+```
+cat example.spsq | synapseq - output.wav
+```
+
+On \*nix systems, you can also play a sequence in RAW format using other audio tools, such as ffplay or the play command from the sox package. Example:
+
+```
+synapseq sample-binaural.spsq - | play -t raw -r 44100 -e signed-integer -b 24 -c 2 -
+```
+
+If you want to use another tool to process the output, keep in mind that the audio is emitted in RAW format with the following parameters:
+
+- **Type**: RAW
+- **Sample Rate**: 44100 Hz (default, but can be changed using the `@samplerate` option in the session file)
+- **Encoding**: Signed Integer
+- **Bit Depth**: 24
+- **Channels**: 2 (stereo)
+
+Any software used to handle the output must be explicitly configured with these parameters to correctly interpret the audio stream.
+
 #### `-help`
 
 Show the help and exit.
