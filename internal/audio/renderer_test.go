@@ -8,6 +8,7 @@
 package audio
 
 import (
+	"bytes"
 	"errors"
 	"math"
 	"os"
@@ -19,7 +20,7 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-func TestAudioRenderer_RenderToWAV_Integration(ts *testing.T) {
+func TestAudioRenderer_RenderWav_Integration(ts *testing.T) {
 	// Create test periods (2 seconds total) with different track types
 	var p0, p1, p2 t.Period
 
@@ -93,8 +94,8 @@ func TestAudioRenderer_RenderToWAV_Integration(ts *testing.T) {
 	outPath := filepath.Join(tempDir, "test_output.wav")
 
 	// Render to WAV
-	if err := renderer.RenderToWAV(outPath); err != nil {
-		ts.Fatalf("RenderToWAV failed: %v", err)
+	if err := renderer.RenderWav(outPath); err != nil {
+		ts.Fatalf("RenderWav failed: %v", err)
 	}
 
 	// Validate the generated WAV file
@@ -156,7 +157,7 @@ func TestAudioRenderer_RenderToWAV_Integration(ts *testing.T) {
 	}
 }
 
-func TestAudioRenderer_RenderToWAV_WithBackground(ts *testing.T) {
+func TestAudioRenderer_RenderWav_WithBackground(ts *testing.T) {
 	// Create a simple test WAV file as background
 	tempDir := ts.TempDir()
 	bgPath := filepath.Join(tempDir, "background.wav")
@@ -218,8 +219,8 @@ func TestAudioRenderer_RenderToWAV_WithBackground(ts *testing.T) {
 	}
 
 	outPath := filepath.Join(tempDir, "test_with_bg.wav")
-	if err := renderer.RenderToWAV(outPath); err != nil {
-		ts.Fatalf("RenderToWAV with background failed: %v", err)
+	if err := renderer.RenderWav(outPath); err != nil {
+		ts.Fatalf("RenderWav with background failed: %v", err)
 	}
 
 	// Basic validation
@@ -228,7 +229,7 @@ func TestAudioRenderer_RenderToWAV_WithBackground(ts *testing.T) {
 	}
 }
 
-func TestAudioRenderer_RenderToWAV_DebugMode(ts *testing.T) {
+func TestAudioRenderer_RenderWav_DebugMode(ts *testing.T) {
 	var p0, pEnd t.Period
 	p0.Time = 0
 	p0.TrackStart[0] = t.Track{
@@ -260,8 +261,8 @@ func TestAudioRenderer_RenderToWAV_DebugMode(ts *testing.T) {
 	outPath := filepath.Join(tempDir, "debug_test.wav")
 
 	// In debug mode, this should not create a file
-	if err := renderer.RenderToWAV(outPath); err != nil {
-		ts.Fatalf("RenderToWAV in debug mode failed: %v", err)
+	if err := renderer.RenderWav(outPath); err != nil {
+		ts.Fatalf("RenderWav in debug mode failed: %v", err)
 	}
 
 	// File should not exist in debug mode
@@ -430,5 +431,118 @@ func TestAudioRenderer_Render_NilConsumer(ts *testing.T) {
 
 	if err := r.Render(nil); err != nil {
 		ts.Fatalf("Render with nil consumer failed: %v", err)
+	}
+}
+
+func TestRenderRaw_WritesExpectedBytesAndRestoresQuiet(ts *testing.T) {
+	sr := 44100
+	endMs := 200
+
+	var p0, pEnd t.Period
+	p0.Time = 0
+	p0.TrackStart[0] = t.Track{
+		Type:      t.TrackMonauralBeat,
+		Carrier:   220,
+		Resonance: 7,
+		Amplitude: t.AmplitudePercentToRaw(20),
+		Waveform:  t.WaveformSine,
+	}
+	p0.TrackEnd[0] = p0.TrackStart[0]
+	pEnd.Time = endMs
+
+	periods := []t.Period{p0, pEnd}
+
+	opts := &AudioRendererOptions{
+		SampleRate: sr,
+		Volume:     90,
+		GainLevel:  t.GainLevelMedium,
+		Quiet:      false,
+		Debug:      false,
+	}
+
+	r, err := NewAudioRenderer(periods, opts)
+	if err != nil {
+		ts.Fatalf("NewAudioRenderer failed: %v", err)
+	}
+
+	var buf bytes.Buffer
+	origQuiet := r.Quiet
+
+	if err := r.RenderRaw(&buf); err != nil {
+		ts.Fatalf("RenderRaw failed: %v", err)
+	}
+
+	if r.Quiet != origQuiet {
+		ts.Fatalf("Quiet should be restored to %v, got %v", origQuiet, r.Quiet)
+	}
+
+	totalFrames := int64(math.Round(float64(endMs) * float64(sr) / 1000.0))
+	expectedBytes := totalFrames * int64(audioChannels*3)
+	got := int64(buf.Len())
+	if got != expectedBytes {
+		ts.Fatalf("byte length mismatch: got %d, want %d", got, expectedBytes)
+	}
+
+	raw := buf.Bytes()
+	const maxSamplesToCheck = 2000
+	foundNonZero := false
+	limit := maxSamplesToCheck * 3
+	if limit > len(raw) {
+		limit = len(raw)
+	}
+	for i := 0; i+2 < limit; i += 3 {
+		v := int32(raw[i]) | int32(raw[i+1])<<8 | int32(raw[i+2])<<16
+		// Sign-extend 24-bit
+		if v&0x00800000 != 0 {
+			v |= ^int32(0x00FFFFFF)
+		}
+		if v != 0 {
+			foundNonZero = true
+			break
+		}
+	}
+	if !foundNonZero {
+		ts.Fatalf("no non-zero samples found in first %d samples", maxSamplesToCheck)
+	}
+}
+
+type failingWriter struct{}
+
+func (f *failingWriter) Write(p []byte) (int, error) {
+	return 0, errors.New("sink failure")
+}
+
+func TestRenderRaw_PropagatesWriteError(ts *testing.T) {
+	sr := 44100
+	endMs := 50
+
+	var p0, pEnd t.Period
+	p0.Time = 0
+	p0.TrackStart[0] = t.Track{
+		Type:      t.TrackIsochronicBeat,
+		Carrier:   10,
+		Resonance: 2,
+		Amplitude: t.AmplitudePercentToRaw(15),
+		Waveform:  t.WaveformTriangle,
+	}
+	p0.TrackEnd[0] = p0.TrackStart[0]
+	pEnd.Time = endMs
+
+	opts := &AudioRendererOptions{
+		SampleRate: sr,
+		Volume:     80,
+		GainLevel:  t.GainLevelMedium,
+		Quiet:      false,
+		Debug:      false,
+	}
+
+	r, err := NewAudioRenderer([]t.Period{p0, pEnd}, opts)
+	if err != nil {
+		ts.Fatalf("NewAudioRenderer failed: %v", err)
+	}
+
+	err = r.RenderRaw(&failingWriter{})
+	if err == nil {
+		ts.Fatalf("expected error from writer, got nil")
 	}
 }
