@@ -79,7 +79,7 @@ func main() {
 	}
 
 	// Render to WAV file
-	if err := renderer.RenderToWAV(outputFile); err != nil {
+	if err := renderer.RenderWav(outputFile); err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}

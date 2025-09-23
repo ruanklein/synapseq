@@ -15,8 +15,8 @@ import (
 	"github.com/go-audio/wav"
 )
 
-// RenderToWAV renders the audio to a WAV file using go-audio/wav
-func (r *AudioRenderer) RenderToWAV(outPath string) error {
+// RenderWav renders the audio to a WAV file using go-audio/wav
+func (r *AudioRenderer) RenderWav(outPath string) error {
 	// If in debug mode, render to stdout (nil writer)
 	if r.Debug {
 		return r.Render(nil)
