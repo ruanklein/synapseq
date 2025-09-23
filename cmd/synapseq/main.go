@@ -69,7 +69,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if outputFile == "-" && !opts.Debug {
+	if outputFile == "-" {
+		if opts.Debug {
+			fmt.Fprintf(os.Stderr, "synapseq: cannot use debug mode with raw output to stdout\n")
+			os.Exit(1)
+		}
 		renderer.RenderRaw(os.Stdout)
 		return
 	}
