@@ -15,6 +15,7 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
+// RenderRaw renders the audio to a raw PCM stream (24-bit little-endian)
 func (r *AudioRenderer) RenderRaw(w io.Writer) error {
 	origQuiet := r.Quiet
 	r.Quiet = true
