@@ -8,6 +8,8 @@
 package audio
 
 import (
+	"errors"
+	"math"
 	"os"
 	"path/filepath"
 	"testing"
@@ -265,5 +267,168 @@ func TestAudioRenderer_RenderToWAV_DebugMode(ts *testing.T) {
 	// File should not exist in debug mode
 	if _, err := os.Stat(outPath); err == nil {
 		ts.Fatalf("File should not be created in debug mode")
+	}
+}
+
+func TestAudioRenderer_Render_CallbacksAndSizes(ts *testing.T) {
+	sr := 44100
+
+	endMs := 1234
+	totalFrames := int64(math.Round(float64(endMs) * float64(sr) / 1000.0))
+
+	var p0, pEnd t.Period
+	p0.Time = 0
+	p0.TrackStart[0] = t.Track{
+		Type:      t.TrackMonauralBeat,
+		Carrier:   220,
+		Resonance: 5,
+		Amplitude: t.AmplitudePercentToRaw(20),
+		Waveform:  t.WaveformSine,
+	}
+	p0.TrackEnd[0] = p0.TrackStart[0]
+	pEnd.Time = endMs
+
+	periods := []t.Period{p0, pEnd}
+
+	opts := &AudioRendererOptions{
+		SampleRate: sr,
+		Volume:     80,
+		GainLevel:  t.GainLevelMedium,
+		Quiet:      true,
+		Debug:      false,
+	}
+
+	r, err := NewAudioRenderer(periods, opts)
+	if err != nil {
+		ts.Fatalf("NewAudioRenderer failed: %v", err)
+	}
+
+	var lens []int
+	calls := 0
+	var formatChecked bool
+
+	consume := func(buf *audio.IntBuffer) error {
+		if !formatChecked {
+			if buf.Format == nil {
+				ts.Fatalf("Buffer format is nil")
+			}
+			if buf.Format.SampleRate != sr {
+				ts.Fatalf("SampleRate mismatch: got %d, want %d", buf.Format.SampleRate, sr)
+			}
+			if buf.Format.NumChannels != audioChannels {
+				ts.Fatalf("NumChannels mismatch: got %d, want %d", buf.Format.NumChannels, audioChannels)
+			}
+			if buf.SourceBitDepth != audioBitDepth {
+				ts.Fatalf("BitDepth mismatch: got %d, want %d", buf.SourceBitDepth, audioBitDepth)
+			}
+			formatChecked = true
+		}
+		lens = append(lens, len(buf.Data))
+		calls++
+		return nil
+	}
+
+	if err := r.Render(consume); err != nil {
+		ts.Fatalf("Render failed: %v", err)
+	}
+
+	chunk := int64(t.BufferSize)
+	full := int(totalFrames / chunk)
+	rem := int(totalFrames % chunk)
+
+	expected := make([]int, 0, full+1)
+	for i := 0; i < full; i++ {
+		expected = append(expected, t.BufferSize*audioChannels)
+	}
+	if rem > 0 {
+		expected = append(expected, rem*audioChannels)
+	}
+
+	if calls != len(expected) {
+		ts.Fatalf("Expected %d callbacks, got %d", len(expected), calls)
+	}
+	for i := range expected {
+		if lens[i] != expected[i] {
+			ts.Fatalf("Chunk %d size mismatch: got %d, want %d", i, lens[i], expected[i])
+		}
+	}
+}
+
+func TestAudioRenderer_Render_PropagatesError(ts *testing.T) {
+	sr := 44100
+	endMs := 2000
+
+	var p0, pEnd t.Period
+	p0.Time = 0
+	p0.TrackStart[0] = t.Track{
+		Type:      t.TrackBinauralBeat,
+		Carrier:   200,
+		Resonance: 7,
+		Amplitude: t.AmplitudePercentToRaw(10),
+		Waveform:  t.WaveformSine,
+	}
+	p0.TrackEnd[0] = p0.TrackStart[0]
+	pEnd.Time = endMs
+	periods := []t.Period{p0, pEnd}
+
+	opts := &AudioRendererOptions{
+		SampleRate: sr,
+		Volume:     100,
+		GainLevel:  t.GainLevelMedium,
+		Quiet:      true,
+		Debug:      false,
+	}
+
+	r, err := NewAudioRenderer(periods, opts)
+	if err != nil {
+		ts.Fatalf("NewAudioRenderer failed: %v", err)
+	}
+
+	targetErr := errors.New("sink failure")
+	consume := func(buf *audio.IntBuffer) error {
+		return targetErr
+	}
+
+	err = r.Render(consume)
+	if err == nil {
+		ts.Fatalf("Expected error from consumer, got nil")
+	}
+	if !errors.Is(err, targetErr) {
+		ts.Fatalf("Expected wrapped target error, got: %v", err)
+	}
+}
+
+func TestAudioRenderer_Render_NilConsumer(ts *testing.T) {
+	sr := 44100
+	endMs := 2000
+
+	var p0, pEnd t.Period
+	p0.Time = 0
+	p0.TrackStart[0] = t.Track{
+		Type:      t.TrackIsochronicBeat,
+		Carrier:   10,
+		Resonance: 2,
+		Amplitude: t.AmplitudePercentToRaw(15),
+		Waveform:  t.WaveformTriangle,
+	}
+	p0.TrackEnd[0] = p0.TrackStart[0]
+	pEnd.Time = endMs
+	periods := []t.Period{p0, pEnd}
+
+	opts := &AudioRendererOptions{
+		SampleRate: sr,
+		Volume:     90,
+		GainLevel:  t.GainLevelMedium,
+		Quiet:      true,
+		Debug:      false,
+	}
+
+	r, err := NewAudioRenderer(periods, opts)
+	if err != nil {
+		ts.Fatalf("NewAudioRenderer failed: %v", err)
+	}
+
+	if err := r.Render(nil); err != nil {
+		ts.Fatalf("Render with nil consumer failed: %v", err)
 	}
 }
