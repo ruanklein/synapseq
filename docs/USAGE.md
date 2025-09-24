@@ -122,7 +122,7 @@ Each preset can have only one background.
 
 The `waveform` could be `sine`, `square`, `triangle`, `sawtooth`.
 
-Waveform is used in: `tone`, and `background`.
+Waveform is used in: `tone` and `background` (with effects).
 
 Examples:
 
