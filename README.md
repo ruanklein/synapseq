@@ -152,7 +152,7 @@ make --version
 
 SynapSeq can be compiled using the provided Makefile.
 
-**For UNIX systems (macOS/Linux):**
+**For macOS and Linux:**
 
 Simply run:
 
@@ -167,20 +167,22 @@ This will automatically compile SynapSeq for your current operating system and a
 Run:
 
 ```cmd
-'C:\Program Files (x86)\GnuWin32\bin\make.exe' build-windows
+make build-windows
 ```
 
 This will generate Windows executables (`.exe`) in the `bin/` directory.
 
 ### Installing the Binary
 
-After compilation, install the binary system-wide:
+After compilation, you can install the binary system-wide:
 
 **macOS/Linux:**
 
 ```bash
-sudo cp bin/synapseq /usr/local/bin/synapseq
+sudo make install
 ```
+
+This will install the SynapSeq binary to `/usr/local/bin/synapseq`.
 
 **Windows:**
 
@@ -265,9 +267,7 @@ If you have any questions, please open a topic on the [discussions](https://gith
 
 ## Credits
 
-- **SBaGen** — SynapSeq was inspired by the [SBaGen project](https://uazu.net/sbagen/) (written in C) and follows a similar workflow.  
-  SynapSeq has been completely rewritten from scratch in Go, but the conceptual foundation comes from SBaGen’s pioneering work in brainwave entrainment.
+- **SBaGen+** — SynapSeq V2.x was a direct continuation of [SBaGen+](https://github.com/ruanklein/sbagen-plus), a project that modernized and extended the original [SBaGen engine](https://uazu.net/sbagen/).
+  Starting from V3, SynapSeq has been completely rewritten from scratch in Go, with a minimalist and forward-looking design. It no longer depends on any SBaGen or SBaGen+ code.
 
 - **go-audio** — This project uses parts of the [go-audio](https://github.com/go-audio) libraries for audio encoding and decoding support, which provided a solid foundation for handling WAV data in Go.
-
-We gratefully acknowledge these projects as the basis and inspiration for SynapSeq’s development.
