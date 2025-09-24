@@ -13,6 +13,7 @@ SynapSeq is a lightweight and efficient engine for sequencing audio tones for br
   - [Linux](#linux)
   - [Windows](#windows)
 - [Documentation](#documentation)
+- [FAQ](#faq)
 - [Contributing](#contributing)
   - [Code of Conduct](#code-of-conduct)
 - [License](#license)
@@ -237,6 +238,10 @@ Creates:
 ## Documentation
 
 For detailed information on all features and advanced usage, see the [USAGE.md](docs/USAGE.md) file.
+
+## FAQ
+
+For answers to common questions about SynapSeq and brainwave entrainment, see the [FAQ](docs/FAQ.md).
 
 ## Contributing
 
