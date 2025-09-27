@@ -1,7 +1,7 @@
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
  *
- * Copyright (c) 2025 Ruan <https://ruan.sh/>
+ * Copyright (c) 2025 Ruan
  * Licensed under GNU GPL v2. See COPYING.txt for details.
  */
 
@@ -15,10 +15,32 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/go-audio/audio"
-	"github.com/go-audio/wav"
+	"github.com/gopxl/beep/v2"
+	bwav "github.com/gopxl/beep/v2/wav"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
+
+// constStreamer é um beep.Streamer simples que emite um valor constante por N frames.
+type constStreamer struct {
+	framesLeft int
+	val        float64
+}
+
+func (cs *constStreamer) Stream(samples [][2]float64) (n int, ok bool) {
+	n = len(samples)
+	if n > cs.framesLeft {
+		n = cs.framesLeft
+	}
+	for i := 0; i < n; i++ {
+		samples[i][0] = cs.val
+		samples[i][1] = cs.val
+	}
+	cs.framesLeft -= n
+	ok = cs.framesLeft > 0
+	return
+}
+
+func (cs *constStreamer) Err() error { return nil }
 
 func TestAudioRenderer_RenderWav_Integration(ts *testing.T) {
 	// Create test periods (2 seconds total) with different track types
@@ -105,21 +127,20 @@ func TestAudioRenderer_RenderWav_Integration(ts *testing.T) {
 	}
 	defer file.Close()
 
-	decoder := wav.NewDecoder(file)
-	if !decoder.IsValidFile() {
-		ts.Fatalf("Generated file is not a valid WAV")
+	s, f, err := bwav.Decode(file)
+	if err != nil {
+		ts.Fatalf("Decode failed: %v", err)
 	}
+	defer s.Close()
 
-	if decoder.SampleRate != uint32(options.SampleRate) {
-		ts.Fatalf("Sample rate mismatch: got %d, want %d", decoder.SampleRate, options.SampleRate)
+	if int(f.SampleRate) != options.SampleRate {
+		ts.Fatalf("Sample rate mismatch: got %d, want %d", f.SampleRate, options.SampleRate)
 	}
-
-	if decoder.NumChans != audioChannels {
-		ts.Fatalf("Channel count mismatch: got %d, want %d", decoder.NumChans, audioChannels)
+	if f.NumChannels != audioChannels {
+		ts.Fatalf("Channel count mismatch: got %d, want %d", f.NumChannels, audioChannels)
 	}
-
-	if decoder.BitDepth != audioBitDepth {
-		ts.Fatalf("Bit depth mismatch: got %d, want %d", decoder.BitDepth, audioBitDepth)
+	if f.Precision*8 != audioBitDepth {
+		ts.Fatalf("Bit depth mismatch: got %d, want %d", f.Precision*8, audioBitDepth)
 	}
 
 	// Verify file size is reasonable for 2 seconds of audio
@@ -127,32 +148,33 @@ func TestAudioRenderer_RenderWav_Integration(ts *testing.T) {
 	if err != nil {
 		ts.Fatalf("Failed to stat file: %v", err)
 	}
-
-	expectedMinSize := int64(2 * options.SampleRate * audioChannels * audioBitDepth / 8) // ~2 seconds of raw PCM
-	if stat.Size() < expectedMinSize/2 {                                                 // Allow some margin for headers/compression
+	expectedMinSize := int64(2 * options.SampleRate * audioChannels * audioBitDepth / 8)
+	if stat.Size() < expectedMinSize/2 {
 		ts.Fatalf("Generated file too small: got %d bytes, expected at least %d", stat.Size(), expectedMinSize/2)
 	}
 
 	// Read and verify some audio data exists (non-zero samples)
-	decoder.Rewind()
-	audioBuf, err := decoder.FullPCMBuffer()
-	if err != nil {
-		ts.Fatalf("Failed to read audio data: %v", err)
+	if err := s.Seek(0); err != nil {
+		ts.Fatalf("Seek to start failed: %v", err)
 	}
-
-	if len(audioBuf.Data) == 0 {
-		ts.Fatalf("Audio buffer is empty")
-	}
-
-	// Check that we have non-zero samples (basic sanity check)
-	hasNonZero := false
-	for _, sample := range audioBuf.Data[:1000] { // Check first 1000 samples
-		if sample != 0 {
-			hasNonZero = true
+	foundNonZero := false
+	buf := make([][2]float64, 4096)
+	for i := 0; i < 8 && !foundNonZero; i++ {
+		n, ok := s.Stream(buf)
+		for j := 0; j < n; j++ {
+			if buf[j][0] != 0 || buf[j][1] != 0 {
+				foundNonZero = true
+				break
+			}
+		}
+		if !ok {
 			break
 		}
 	}
-	if !hasNonZero {
+	if err := s.Err(); err != nil {
+		ts.Fatalf("Stream error: %v", err)
+	}
+	if !foundNonZero {
 		ts.Fatalf("All samples are zero - audio generation may be broken")
 	}
 }
@@ -162,34 +184,22 @@ func TestAudioRenderer_RenderWav_WithBackground(ts *testing.T) {
 	tempDir := ts.TempDir()
 	bgPath := filepath.Join(tempDir, "background.wav")
 
-	// Create a minimal background WAV file
 	bgFile, err := os.Create(bgPath)
 	if err != nil {
 		ts.Fatalf("Failed to create background file: %v", err)
 	}
+	defer bgFile.Close()
 
-	bgEnc := wav.NewEncoder(bgFile, 44100, audioBitDepth, audioChannels, 1)
-
-	// Generate 1 second of simple background audio
-	bgSamples := make([]int, 44100*audioChannels) // 1 second stereo
-	for i := range bgSamples {
-		bgSamples[i] = 1000 // Simple constant value
-	}
-
-	bgBuf := &audio.IntBuffer{
-		Format: &audio.Format{
-			NumChannels: audioChannels,
-			SampleRate:  44100,
-		},
-		Data:           bgSamples,
-		SourceBitDepth: audioBitDepth,
-	}
-
-	if err := bgEnc.Write(bgBuf); err != nil {
+	const sr = 44100
+	format := beep.Format{SampleRate: beep.SampleRate(sr), NumChannels: audioChannels, Precision: audioBitDepth / 8}
+	val := float64(1000) / 8388608.0
+	cs := &constStreamer{framesLeft: sr, val: val}
+	if err := bwav.Encode(bgFile, cs, format); err != nil {
 		ts.Fatalf("Failed to write background: %v", err)
 	}
-	bgEnc.Close()
-	bgFile.Close()
+	if _, err := bgFile.Seek(0, 0); err != nil {
+		ts.Fatalf("Failed to rewind background file: %v", err)
+	}
 
 	// Create test period with background track
 	var p0, pEnd t.Period
@@ -306,25 +316,9 @@ func TestAudioRenderer_Render_CallbacksAndSizes(ts *testing.T) {
 
 	var lens []int
 	calls := 0
-	var formatChecked bool
 
-	consume := func(buf *audio.IntBuffer) error {
-		if !formatChecked {
-			if buf.Format == nil {
-				ts.Fatalf("Buffer format is nil")
-			}
-			if buf.Format.SampleRate != sr {
-				ts.Fatalf("SampleRate mismatch: got %d, want %d", buf.Format.SampleRate, sr)
-			}
-			if buf.Format.NumChannels != audioChannels {
-				ts.Fatalf("NumChannels mismatch: got %d, want %d", buf.Format.NumChannels, audioChannels)
-			}
-			if buf.SourceBitDepth != audioBitDepth {
-				ts.Fatalf("BitDepth mismatch: got %d, want %d", buf.SourceBitDepth, audioBitDepth)
-			}
-			formatChecked = true
-		}
-		lens = append(lens, len(buf.Data))
+	consume := func(data []int) error {
+		lens = append(lens, len(data))
 		calls++
 		return nil
 	}
@@ -386,7 +380,7 @@ func TestAudioRenderer_Render_PropagatesError(ts *testing.T) {
 	}
 
 	targetErr := errors.New("sink failure")
-	consume := func(buf *audio.IntBuffer) error {
+	consume := func(_ []int) error {
 		return targetErr
 	}
 

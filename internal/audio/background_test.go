@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/go-audio/wav"
+	bwav "github.com/gopxl/beep/v2/wav"
 )
 
 func mustReadWavAll(t *testing.T, path string) ([]int, uint32, int, int) {
@@ -22,15 +22,46 @@ func mustReadWavAll(t *testing.T, path string) ([]int, uint32, int, int) {
 		t.Fatalf("open wav: %v", err)
 	}
 	defer f.Close()
-	dec := wav.NewDecoder(f)
-	if !dec.IsValidFile() {
-		t.Fatalf("invalid wav: %s", path)
-	}
-	buf, err := dec.FullPCMBuffer()
+
+	s, fmt, err := bwav.Decode(f)
 	if err != nil {
-		t.Fatalf("read wav: %v", err)
+		t.Fatalf("decode wav: %v", err)
 	}
-	return buf.Data, dec.SampleRate, int(dec.NumChans), int(dec.BitDepth)
+	defer s.Close()
+
+	// Stream all frames and convert to interleaved int24 samples to match BackgroundAudio
+	var data []int
+	const scale = 8388608.0 // 2^23
+	buf := make([][2]float64, 4096)
+	for {
+		n, ok := s.Stream(buf)
+		for i := 0; i < n; i++ {
+			l := int(buf[i][0] * scale)
+			r := int(buf[i][1] * scale)
+			if l > audioMaxValue {
+				l = audioMaxValue
+			}
+			if l < audioMinValue {
+				l = audioMinValue
+			}
+			if r > audioMaxValue {
+				r = audioMaxValue
+			}
+			if r < audioMinValue {
+				r = audioMinValue
+			}
+			data = append(data, l, r)
+		}
+		if !ok {
+			break
+		}
+	}
+	if err := s.Err(); err != nil {
+		t.Fatalf("stream error: %v", err)
+	}
+
+	// Return data, sample rate, channels, bit depth
+	return data, uint32(fmt.SampleRate), fmt.NumChannels, fmt.Precision * 8
 }
 
 func TestBackgroundAudio_LoadReadAndLoop(t *testing.T) {
