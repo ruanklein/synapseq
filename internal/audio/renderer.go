@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/go-audio/audio"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
@@ -103,7 +102,7 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 }
 
 // Render generates the audio and passes buffers to the consume function
-func (r *AudioRenderer) Render(consume func(buf *audio.IntBuffer) error) error {
+func (r *AudioRenderer) Render(consume func(samples []int) error) error {
 	// Ensure background audio file is closed if opened
 	defer func() {
 		if r.backgroundAudio != nil {
@@ -119,17 +118,10 @@ func (r *AudioRenderer) Render(consume func(buf *audio.IntBuffer) error) error {
 	statusReporter := NewStatusReporter(r.Quiet && !r.Debug)
 	defer statusReporter.FinalStatus()
 
-	samples := make([]int, t.BufferSize*audioChannels) // Stereo: left + right
-	audioBuf := &audio.IntBuffer{
-		Format: &audio.Format{
-			NumChannels: audioChannels,
-			SampleRate:  r.SampleRate,
-		},
-		Data:           samples,
-		SourceBitDepth: audioBitDepth,
-	}
-
+	// Stereo: left + right
+	samples := make([]int, t.BufferSize*audioChannels)
 	periodIdx := 0
+
 	for framesWritten < totalFrames {
 		currentTimeMs := int((float64(framesWritten) * 1000.0) / float64(r.SampleRate))
 		// Find the correct period for the current time
@@ -140,16 +132,17 @@ func (r *AudioRenderer) Render(consume func(buf *audio.IntBuffer) error) error {
 		r.sync(currentTimeMs, periodIdx)
 		statusReporter.CheckPeriodChange(r, periodIdx)
 
-		audioBuf.Data = r.mix(samples)
+		data := r.mix(samples)
 
 		framesToWrite := chunkFrames
 		if remain := totalFrames - framesWritten; remain < chunkFrames {
 			framesToWrite = remain
-			audioBuf.Data = audioBuf.Data[:remain*audioChannels] // stereo interleaved
+			// stereo interleaved
+			data = data[:remain*audioChannels]
 		}
 
 		if consume != nil {
-			if err := consume(audioBuf); err != nil {
+			if err := consume(data); err != nil {
 				return fmt.Errorf("failed to consume audio buffer: %w", err)
 			}
 		}

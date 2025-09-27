@@ -11,7 +11,6 @@ import (
 	"bufio"
 	"io"
 
-	"github.com/go-audio/audio"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
@@ -25,15 +24,15 @@ func (r *AudioRenderer) RenderRaw(w io.Writer) error {
 	// 3 bytes per sample (24-bit)
 	out := make([]byte, t.BufferSize*audioChannels*3)
 
-	err := r.Render(func(buf *audio.IntBuffer) error {
-		need := len(buf.Data) * 3
+	err := r.Render(func(samples []int) error {
+		need := len(samples) * 3
 		if cap(out) < need {
 			out = make([]byte, need)
 		}
 		b := out[:need]
 
 		j := 0
-		for _, s := range buf.Data {
+		for _, s := range samples {
 			if s > audioMaxValue {
 				s = audioMaxValue
 			} else if s < audioMinValue {
