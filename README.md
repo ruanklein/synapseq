@@ -13,9 +13,11 @@ SynapSeq is a lightweight and efficient engine for sequencing audio tones for br
   - [Linux](#linux)
   - [Windows](#windows)
 - [Documentation](#documentation)
+- [FAQ](#faq)
 - [Contributing](#contributing)
   - [Code of Conduct](#code-of-conduct)
 - [License](#license)
+  - [Third-Party License](#third-party-licenses)
 - [Contact](#contact)
 - [Credits](#credits)
 
@@ -152,7 +154,7 @@ make --version
 
 SynapSeq can be compiled using the provided Makefile.
 
-**For UNIX systems (macOS/Linux):**
+**For macOS and Linux:**
 
 Simply run:
 
@@ -167,20 +169,22 @@ This will automatically compile SynapSeq for your current operating system and a
 Run:
 
 ```cmd
-'C:\Program Files (x86)\GnuWin32\bin\make.exe' build-windows
+make build-windows
 ```
 
 This will generate Windows executables (`.exe`) in the `bin/` directory.
 
 ### Installing the Binary
 
-After compilation, install the binary system-wide:
+After compilation, you can install the binary system-wide:
 
 **macOS/Linux:**
 
 ```bash
-sudo cp bin/synapseq /usr/local/bin/synapseq
+sudo make install
 ```
+
+This will install the SynapSeq binary to `/usr/local/bin/synapseq`.
 
 **Windows:**
 
@@ -236,6 +240,10 @@ Creates:
 
 For detailed information on all features and advanced usage, see the [USAGE.md](docs/USAGE.md) file.
 
+## FAQ
+
+For answers to common questions about SynapSeq and brainwave entrainment, see the [FAQ](docs/FAQ.md).
+
 ## Contributing
 
 We welcome contributions!
@@ -254,10 +262,26 @@ If you experience or witness unacceptable behavior, please report it as describe
 
 ## License
 
-SynapSeq is distributed under the GPL license. See the [COPYING.txt](COPYING.txt) file for details.
+SynapSeq is distributed under the GPL v2 license. See the [COPYING.txt](COPYING.txt) file for details.
 
-This repository includes vendored third-party libraries under the `vendor/` directory.  
-Each vendored library retains its own license, which applies independently of the SynapSeq license.
+### Third-Party Licenses
+
+SynapSeq makes use of third-party libraries, which remain under their own licenses.  
+All original code in SynapSeq is licensed under the GNU GPL v2, but the following components are included and redistributed under their respective terms:
+
+- **[beep](https://github.com/gopxl/beep)**  
+  License: MIT  
+  Copyright © 2017–present Contributors
+
+  Used for audio encoding/decoding.
+
+- **[pkg/errors](https://github.com/pkg/errors)**  
+  License: BSD 2-Clause  
+  Copyright © 2015 Dave Cheney
+
+  Used indirectly via `beep` for error wrapping and stack trace utilities.
+
+All third-party copyright notices and licenses are preserved in this repository in compliance with their original terms.
 
 ## Contact
 
@@ -265,9 +289,5 @@ If you have any questions, please open a topic on the [discussions](https://gith
 
 ## Credits
 
-- **SBaGen** — SynapSeq was inspired by the [SBaGen project](https://uazu.net/sbagen/) (written in C) and follows a similar workflow.  
-  SynapSeq has been completely rewritten from scratch in Go, but the conceptual foundation comes from SBaGen’s pioneering work in brainwave entrainment.
-
-- **go-audio** — This project uses parts of the [go-audio](https://github.com/go-audio) libraries for audio encoding and decoding support, which provided a solid foundation for handling WAV data in Go.
-
-We gratefully acknowledge these projects as the basis and inspiration for SynapSeq’s development.
+- **SBaGen+** — SynapSeq V2.x was a direct continuation of [SBaGen+](https://github.com/ruanklein/sbagen-plus), a project that modernized and extended the original [SBaGen engine](https://uazu.net/sbagen/).
+  Starting from V3, SynapSeq has been completely rewritten from scratch in Go, with a minimalist and forward-looking design. It no longer depends on any SBaGen or SBaGen+ code.

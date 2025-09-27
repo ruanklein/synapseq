@@ -111,10 +111,5 @@ func (ctx *TextParser) ParseOption(options *t.Option) error {
 		}
 	}
 
-	// Validate options
-	if err := options.Validate(); err != nil {
-		return fmt.Errorf("%v", err)
-	}
-
 	return nil
 }

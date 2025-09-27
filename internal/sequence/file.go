@@ -32,7 +32,8 @@ func LoadFile(fileName string) (*SequenceFile, error) {
 		}, nil
 	}
 
-	file, err := os.Open(fileName)
+	var err error
+	file, err = os.Open(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("%v", err)
 	}

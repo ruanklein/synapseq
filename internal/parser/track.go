@@ -74,9 +74,9 @@ func (ctx *TextParser) ParseTrack() (*t.Track, error) {
 			return nil, fmt.Errorf("carrier: %w", err)
 		}
 
-		kind, err := ctx.Line.NextExpectOneOf(t.KeywordBinaural, t.KeywordMonaural, t.KeywordIsochronic)
+		kind, err := ctx.Line.NextExpectOneOf(t.KeywordBinaural, t.KeywordMonaural, t.KeywordIsochronic, t.KeywordAmplitude)
 		if err != nil {
-			return nil, fmt.Errorf("expected %q, %q, or %q after carrier: %s", t.KeywordBinaural, t.KeywordMonaural, t.KeywordIsochronic, ln)
+			return nil, fmt.Errorf("expected %q, %q, %q or %q after carrier: %s", t.KeywordBinaural, t.KeywordMonaural, t.KeywordIsochronic, t.KeywordAmplitude, ln)
 		}
 
 		switch kind {
@@ -86,14 +86,19 @@ func (ctx *TextParser) ParseTrack() (*t.Track, error) {
 			trackType = t.TrackMonauralBeat
 		case t.KeywordIsochronic:
 			trackType = t.TrackIsochronicBeat
+		case t.KeywordAmplitude:
+			trackType = t.TrackPureTone
 		}
 
-		if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
-			return nil, fmt.Errorf("resonance: %w", err)
+		if trackType != t.TrackPureTone {
+			if resonance, err = ctx.Line.NextFloat64Strict(); err != nil {
+				return nil, fmt.Errorf("resonance: %w", err)
+			}
+			if _, err := ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
+				return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordAmplitude, ln)
+			}
 		}
-		if _, err := ctx.Line.NextExpectOneOf(t.KeywordAmplitude); err != nil {
-			return nil, fmt.Errorf("expected %q after resonance: %s", t.KeywordAmplitude, ln)
-		}
+
 		if amplitude, err = ctx.Line.NextFloat64Strict(); err != nil {
 			return nil, fmt.Errorf("amplitude: %w", err)
 		}

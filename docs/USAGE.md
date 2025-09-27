@@ -55,7 +55,7 @@ SynapSeq uses a specific syntax to create a sequence. The syntax is based on the
 
 #### `tone`
 
-The `tone` syntax is:
+The `tone` syntax for Binaural/Monaural/Isochronic is:
 
 ```
 tone [carrier frequency] [type of brainwave entrainment] [frequency offset] amplitude [amplitude value]
@@ -70,6 +70,8 @@ tone 400 binaural 10 amplitude 10
 tone 300 monaural 10 amplitude 10
 # for isochronic tones
 tone 200 isochronic 10 amplitude 10
+# for carrier only (no method)
+tone 100 amplitude 10
 ```
 
 #### `noise`
@@ -120,7 +122,7 @@ Each preset can have only one background.
 
 The `waveform` could be `sine`, `square`, `triangle`, `sawtooth`.
 
-Waveform is used in: `tone`, and `background`.
+Waveform is used in: `tone` and `background` (with effects).
 
 Examples:
 
@@ -333,6 +335,12 @@ Examples:
 @background /path/to/background.wav
 ```
 
+You can use `~` to import audio from your home directory:
+
+```
+@background ~/Downloads/rain.wav
+```
+
 The SynapSeq support `.wav` files with 24 Bit and 2 Channels.
 
 The sample rate also needs to be the same as the sequence. You can set it using the `@samplerate` option.
@@ -393,11 +401,33 @@ The command line syntax is:
 synapseq [options] [path of the sequence file] [path of the output file]
 ```
 
-You can use the `-` to read the sequence from the console. Example:
+Example:
 
 ```
-cat sequence-file | synapseq - output.wav
+synapseq sample-binaural.spsq sample-binaural.wav
 ```
+
+You can use `-` to open sequence from stdin:
+
+```
+cat example.spsq | synapseq - output.wav
+```
+
+On \*nix systems, you can also play a sequence in RAW format using other audio tools, such as ffplay or the play command from the sox package. Example:
+
+```
+synapseq sample-binaural.spsq - | play -t raw -r 44100 -e signed-integer -b 24 -c 2 -
+```
+
+If you want to use another tool to process the output, keep in mind that the audio is emitted in RAW format with the following parameters:
+
+- **Type**: RAW
+- **Sample Rate**: 44100 Hz (default, but can be changed using the `@samplerate` option in the session file)
+- **Encoding**: Signed Integer
+- **Bit Depth**: 24
+- **Channels**: 2 (stereo)
+
+Any software used to handle the output must be explicitly configured with these parameters to correctly interpret the audio stream.
 
 #### `-help`
 

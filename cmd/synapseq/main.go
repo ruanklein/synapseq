@@ -8,7 +8,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
@@ -18,18 +17,20 @@ import (
 )
 
 func main() {
-	opts := cli.ParseFlags()
+	opts, args, err := cli.ParseFlags()
+	if err != nil {
+		os.Exit(2)
+	}
 
 	if opts.ShowHelp {
-		cli.Usage()
-		os.Exit(1)
+		cli.Help()
+		os.Exit(0)
 	}
 	if opts.ShowVersion {
-		fmt.Printf("SynapSeq version %s\n", cli.VERSION)
+		cli.ShowVersion()
 		os.Exit(0)
 	}
 
-	args := flag.Args()
 	if len(args) != 2 {
 		fmt.Fprintf(os.Stderr, "synapseq: invalid number of arguments\n")
 		cli.Usage()
@@ -40,14 +41,22 @@ func main() {
 	outputFile := args[1]
 
 	// Load sequence
-	periods, options, err := sequence.LoadTextSequence(inputFile)
+	result, err := sequence.LoadTextSequence(inputFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}
 
+	if !opts.Quiet {
+		for _, c := range result.Comments {
+			fmt.Fprintf(os.Stderr, "> %s\n", c)
+		}
+	}
+
+	options := result.Options
+
 	// Create audio renderer
-	renderer, err := audio.NewAudioRenderer(periods, &audio.AudioRendererOptions{
+	renderer, err := audio.NewAudioRenderer(result.Periods, &audio.AudioRendererOptions{
 		SampleRate:     options.SampleRate,
 		Volume:         options.Volume,
 		GainLevel:      options.GainLevel,
@@ -60,8 +69,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	if outputFile == "-" {
+		if opts.Debug {
+			fmt.Fprintf(os.Stderr, "synapseq: cannot use debug mode with raw output to stdout\n")
+			os.Exit(1)
+		}
+		renderer.RenderRaw(os.Stdout)
+		return
+	}
+
 	// Render to WAV file
-	if err := renderer.RenderToWAV(outputFile); err != nil {
+	if err := renderer.RenderWav(outputFile); err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}

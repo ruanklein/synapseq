@@ -10,10 +10,7 @@ package audio
 import (
 	"fmt"
 	"math"
-	"os"
 
-	"github.com/go-audio/audio"
-	"github.com/go-audio/wav"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
@@ -32,6 +29,9 @@ type AudioRenderer struct {
 	waveTables      [4][]int
 	noiseGenerator  *NoiseGenerator
 	backgroundAudio *BackgroundAudio
+
+	dither0 uint16
+	dither1 uint16
 
 	// Embedding options
 	*AudioRendererOptions
@@ -93,29 +93,16 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 		waveTables:           InitWaveformTables(),
 		noiseGenerator:       NewNoiseGenerator(),
 		backgroundAudio:      backgroundAudio,
+		dither0:              1,
+		dither1:              0,
 		AudioRendererOptions: ar,
 	}
 
 	return renderer, nil
 }
 
-// RenderToWAV renders the audio to a WAV file using go-audio/wav
-func (r *AudioRenderer) RenderToWAV(outPath string) error {
-	var out *os.File
-	var enc *wav.Encoder
-
-	if !r.Debug {
-		var err error
-		out, err = os.Create(outPath)
-		if err != nil {
-			return fmt.Errorf("create output: %w", err)
-		}
-		defer out.Close()
-
-		enc = wav.NewEncoder(out, r.SampleRate, audioBitDepth, audioChannels, 1)
-		defer enc.Close()
-	}
-
+// Render generates the audio and passes buffers to the consume function
+func (r *AudioRenderer) Render(consume func(samples []int) error) error {
 	// Ensure background audio file is closed if opened
 	defer func() {
 		if r.backgroundAudio != nil {
@@ -124,7 +111,6 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 	}()
 
 	endMs := r.periods[len(r.periods)-1].Time
-
 	totalFrames := int64(math.Round(float64(endMs) * float64(r.SampleRate) / 1000.0))
 	chunkFrames := int64(t.BufferSize)
 	framesWritten := int64(0)
@@ -132,17 +118,10 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 	statusReporter := NewStatusReporter(r.Quiet && !r.Debug)
 	defer statusReporter.FinalStatus()
 
-	samples := make([]int, t.BufferSize*audioChannels) // Stereo: left + right
-	audioBuf := &audio.IntBuffer{
-		Format: &audio.Format{
-			NumChannels: audioChannels,
-			SampleRate:  r.SampleRate,
-		},
-		Data:           samples,
-		SourceBitDepth: audioBitDepth,
-	}
-
+	// Stereo: left + right
+	samples := make([]int, t.BufferSize*audioChannels)
 	periodIdx := 0
+
 	for framesWritten < totalFrames {
 		currentTimeMs := int((float64(framesWritten) * 1000.0) / float64(r.SampleRate))
 		// Find the correct period for the current time
@@ -153,18 +132,18 @@ func (r *AudioRenderer) RenderToWAV(outPath string) error {
 		r.sync(currentTimeMs, periodIdx)
 		statusReporter.CheckPeriodChange(r, periodIdx)
 
-		audioBuf.Data = r.mix(samples)
+		data := r.mix(samples)
 
 		framesToWrite := chunkFrames
 		if remain := totalFrames - framesWritten; remain < chunkFrames {
 			framesToWrite = remain
-			audioBuf.Data = audioBuf.Data[:remain*audioChannels] // stereo interleaved
+			// stereo interleaved
+			data = data[:remain*audioChannels]
 		}
 
-		if !r.Debug {
-			if err := enc.Write(audioBuf); err != nil {
-				enc.Close()
-				return fmt.Errorf("write wav: %w", err)
+		if consume != nil {
+			if err := consume(data); err != nil {
+				return fmt.Errorf("failed to consume audio buffer: %w", err)
 			}
 		}
 

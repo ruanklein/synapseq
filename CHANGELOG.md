@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.1]
+
+- Replaced audio dependency: migrated from go-audio to gopxl/beep v2 for WAV encoding/decoding and streaming.
+  - Updated RenderWav to use beep/wav encoder.
+  - Updated background WAV decoder to beep/wav and adapted internal read loop.
+  - Reworked Render to provide interleaved int24 samples directly (no go-audio types).
+  - Updated RenderRaw and all audio tests to drop go-audio completely.
+- Licensing note: go-audio’s Apache-2.0 license is not compatible with SynapSeq’s GPLv2-only licensing. The new dependency (beep) uses a permissive license compatible with GPLv2.
+- The 3.0.0 release/tag was removed from the repository to prevent distributing artifacts built with the previous, incompatible dependency set. Version 3.0.1 supersedes 3.0.0.
+- Added "pure" (no beats) tones.
+
 ## [3.0.0]
 
 - Fully rewritten from scratch in Go (previous versions were based on C code).

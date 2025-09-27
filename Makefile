@@ -3,12 +3,15 @@ BIN_DIR := bin
 GO_BUILD_FLAGS := -ldflags="-s -w"
 MAIN := cmd/synapseq/main.go
 
-.PHONY: all build clean build-windows build-linux build-macos prepare
+.PHONY: all build clean build-windows build-linux build-macos prepare test
 
 all: build
 
 prepare:
 	mkdir -p $(BIN_DIR)
+
+test:
+	go test -v ./...
 
 build: prepare
 	go build $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME) $(MAIN)
@@ -23,6 +26,9 @@ build-linux: prepare
 
 build-macos: prepare
 	GOOS=darwin GOARCH=arm64 go build $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-macos-arm64 $(MAIN)
+
+install:
+	cp $(BIN_DIR)/$(BIN_NAME) /usr/local/bin/$(BIN_NAME)
 
 clean:
 	rm -rf $(BIN_DIR)
