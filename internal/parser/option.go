@@ -16,6 +16,26 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
+// getFullPath expands ~ to the user's home directory and returns the absolute path
+func getFullPath(path string) (string, error) {
+	var fullPath string
+	if path[0] == '~' {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("%v", err)
+		}
+		fullPath = strings.Replace(path, "~", homeDir, 1)
+	} else {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return "", fmt.Errorf("%w", err)
+		}
+		fullPath = filepath.Join(cwd, path)
+	}
+
+	return filepath.Clean(fullPath), nil
+}
+
 // HasOption checks if the first element is an option
 func (ctx *TextParser) HasOption() bool {
 	ln := ctx.Line.Raw
@@ -57,28 +77,22 @@ func (ctx *TextParser) ParseOption(options *t.Option) error {
 			return fmt.Errorf("volume: %v", err)
 		}
 		options.Volume = volume
-	case t.KeywordOptionBackground:
+	case t.KeywordOptionBackground, t.KeywordOptionPresetList:
 		_, ok := ctx.Line.NextToken()
 		if !ok {
-			return fmt.Errorf("expected background path: %s", ln)
+			return fmt.Errorf("expected path: %s", ln)
 		}
 
-		fullPath := strings.Join(ctx.Line.Tokens[1:], " ")
-		if fullPath[0] == '~' {
-			homeDir, err := os.UserHomeDir()
-			if err != nil {
-				return fmt.Errorf("%v", err)
-			}
-			fullPath = strings.Replace(fullPath, "~", homeDir, 1)
+		fullPath, err := getFullPath(strings.Join(ctx.Line.Tokens[1:], " "))
+		if err != nil {
+			return fmt.Errorf("path: %v", err)
+		}
+
+		if option == t.KeywordBackground {
+			options.BackgroundPath = fullPath
 		} else {
-			cwd, err := os.Getwd()
-			if err != nil {
-				return fmt.Errorf("cannot get current working directory: %w", err)
-			}
-			fullPath = filepath.Join(cwd, fullPath)
+			options.PresetPath = fullPath
 		}
-
-		options.BackgroundPath = filepath.Clean(fullPath) // Normalize the path
 	case t.KeywordOptionGainLevel:
 		gainLevel, ok := ctx.Line.NextToken()
 		if !ok {

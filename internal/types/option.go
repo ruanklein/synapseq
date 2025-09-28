@@ -17,6 +17,7 @@ type Option struct {
 	SampleRate     int       // Sample rate (e.g., 44100)
 	Volume         int       // Volume level (0-100 for 0-100%)
 	BackgroundPath string    // Path to the background audio file
+	PresetPath     string    // Path to the preset configuration file
 	GainLevel      GainLevel // Gain level (20, 16, 12, 6, 0) for audio processing
 }
 
@@ -31,6 +32,11 @@ func (o *Option) Validate() error {
 	if o.BackgroundPath != "" {
 		if _, err := os.Stat(o.BackgroundPath); os.IsNotExist(err) {
 			return fmt.Errorf("background path does not exist: %s", o.BackgroundPath)
+		}
+	}
+	if o.PresetPath != "" {
+		if _, err := os.Stat(o.PresetPath); os.IsNotExist(err) {
+			return fmt.Errorf("preset path does not exist: %s", o.PresetPath)
 		}
 	}
 	return nil

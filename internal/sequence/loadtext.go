@@ -30,6 +30,8 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 	}
 
 	presets := make([]t.Preset, 0, t.MaxPresets)
+	// For preset loading from file
+	loadedPresets := false
 
 	// Initialize built-in presets
 	presets = append(presets, *t.NewBuiltinSilencePreset())
@@ -79,6 +81,17 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 			if err = options.Validate(); err != nil {
 				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
+
+			// Load presets from file if specified in options and not already loaded
+			if options.PresetPath != "" && !loadedPresets {
+				fpresets, err := loadPresets(options.PresetPath)
+				if err != nil {
+					return nil, fmt.Errorf("%v", err)
+				}
+				presets = append(presets, fpresets...)
+				loadedPresets = true
+			}
+
 			continue
 		}
 
@@ -173,6 +186,10 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 	// Validate if has one preset (1 = silence preset)
 	if len(presets) == 1 {
 		return nil, fmt.Errorf("no presets defined")
+	}
+
+	if len(presets) > t.MaxPresets {
+		return nil, fmt.Errorf("maximum number of presets exceeded: %d > %d", len(presets), t.MaxPresets)
 	}
 
 	// Validate each preset (skip silence preset)

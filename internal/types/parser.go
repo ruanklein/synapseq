@@ -22,6 +22,8 @@ const (
 	KeywordOptionVolume = "volume"
 	// Represents a background option
 	KeywordOptionBackground = "background"
+	// Represents a presetlist option
+	KeywordOptionPresetList = "presetlist"
 	// Represents a gain level option
 	KeywordOptionGainLevel = "gainlevel"
 	// Represents a very low gain level option
