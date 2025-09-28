@@ -188,10 +188,6 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 		return nil, fmt.Errorf("no presets defined")
 	}
 
-	if len(presets) > t.MaxPresets {
-		return nil, fmt.Errorf("maximum number of presets exceeded: %d > %d", len(presets), t.MaxPresets)
-	}
-
 	// Validate each preset (skip silence preset)
 	for i := 1; i < len(presets); i++ {
 		p := &presets[i]
