@@ -309,3 +309,58 @@ alpha
 		ts.Fatalf("expected error for less than two periods")
 	}
 }
+
+func TestLoadTextSequence_LoadsExternalPreset(ts *testing.T) {
+	dir := ts.TempDir()
+
+	presetRel := "external-presets.spsq"
+	presetPath := filepath.Join(dir, presetRel)
+	presetContent := `
+# Presets
+preparation
+  noise pink amplitude 50
+  tone 300 binaural 10 amplitude 10
+`
+	if err := os.WriteFile(presetPath, []byte(presetContent+"\n"), 0o600); err != nil {
+		ts.Fatalf("write external presets: %v", err)
+	}
+
+	seqContent := "# Options\n@presetlist " + presetRel + "\n\n# Timeline\n00:00:00 preparation\n00:01:00 preparation\n"
+	seqPath := filepath.Join(dir, "seq.spsq")
+	if err := os.WriteFile(seqPath, []byte(strings.TrimSpace(seqContent)+"\n"), 0o600); err != nil {
+		ts.Fatalf("write temp sequence: %v", err)
+	}
+
+	oldwd, _ := os.Getwd()
+	if err := os.Chdir(dir); err != nil {
+		ts.Fatalf("chdir to temp dir: %v", err)
+	}
+	defer func() { _ = os.Chdir(oldwd) }()
+
+	result, err := LoadTextSequence(seqPath)
+	if err != nil {
+		ts.Fatalf("LoadTextSequence with external presets error: %v", err)
+	}
+
+	if len(result.Periods) != 2 {
+		ts.Fatalf("expected 2 periods, got %d", len(result.Periods))
+	}
+
+	wantNoise := t.Track{
+		Type:      t.TrackPinkNoise,
+		Amplitude: t.AmplitudePercentToRaw(50),
+	}
+	wantTone := t.Track{
+		Type:      t.TrackBinauralBeat,
+		Carrier:   300,
+		Resonance: 10,
+		Amplitude: t.AmplitudePercentToRaw(10),
+	}
+
+	if !hasTrack(result.Periods[0].TrackStart, wantNoise) || !hasTrack(result.Periods[0].TrackStart, wantTone) {
+		ts.Fatalf("missing preparation tracks in period[0]: %+v", result.Periods[0].TrackStart)
+	}
+	if !hasTrack(result.Periods[1].TrackStart, wantNoise) || !hasTrack(result.Periods[1].TrackStart, wantTone) {
+		ts.Fatalf("missing preparation tracks in period[1]: %+v", result.Periods[1].TrackStart)
+	}
+}
