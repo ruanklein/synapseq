@@ -44,7 +44,7 @@ Yes! Use the `@background` option at the top of your sequence file to specify a 
 
 ### Is there a graphical interface for SynapSeq, or is one planned?
 
-At its core, SynapSeq works either as a command-line tool (CLI) or as a library. There are currently no plans to develop an official Graphical User Interface (GUI) for SynapSeq. However, nothing prevents the community from creating a GUI that uses SynapSeq as its engine. If you are interested in developing one, or have already done so, åI’d be glad to hear about it, so it can be mentioned and linked as a complementary project to the SynapSeq core.
+At the moment, there are no plans to develop an official Graphical User Interface (GUI) for SynapSeq. In the future, however, this may be considered as a separate project, keeping the SynapSeq core independent. Meanwhile, the community is free to create GUIs that use SynapSeq as their engine. If you are working on one, or have already developed one, I’d be glad to know, so it can be mentioned and linked as a complementary project to the SynapSeq core.
 
 ---
 
