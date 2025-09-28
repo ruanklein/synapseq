@@ -42,6 +42,10 @@ SynapSeq outputs 24-bit stereo WAV files by default. You can also pipe raw audio
 
 Yes! Use the `@background` option at the top of your sequence file to specify a WAV file as background. See [USAGE](USAGE.md#background) for details.
 
+### Is there a graphical interface for SynapSeq, or is one planned?
+
+At its core, SynapSeq works either as a command-line tool (CLI) or as a library. There are currently no plans to develop an official Graphical User Interface (GUI) for SynapSeq. However, nothing prevents the community from creating a GUI that uses SynapSeq as its engine. If you are interested in developing one, or have already done so, åI’d be glad to hear about it, so it can be mentioned and linked as a complementary project to the SynapSeq core.
+
 ---
 
 ## Sequence Creation
