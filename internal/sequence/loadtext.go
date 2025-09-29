@@ -30,17 +30,18 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 	}
 
 	presets := make([]t.Preset, 0, t.MaxPresets)
-	// For preset loading from file
-	loadedPresets := false
 
 	// Initialize built-in presets
 	presets = append(presets, *t.NewBuiltinSilencePreset())
 
+	// Options can only be defined on the top of the file, before any presets
+	optionsLocked := false
 	// Initialize audio options
 	options := &t.Option{
 		SampleRate:     44100,
 		Volume:         100,
 		BackgroundPath: "",
+		PresetPath:     "",
 		GainLevel:      t.GainLevelMedium,
 	}
 
@@ -70,8 +71,8 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 
 		// Option line
 		if ctx.HasOption() {
-			if len(presets) > 1 {
-				return nil, fmt.Errorf("line %d: options must be defined before any preset", file.CurrentLineNumber)
+			if optionsLocked {
+				return nil, fmt.Errorf("line %d: options must be defined on the top of the file, before any presets or timelines", file.CurrentLineNumber)
 			}
 
 			if err = ctx.ParseOption(options); err != nil {
@@ -83,13 +84,13 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 			}
 
 			// Load presets from file if specified in options and not already loaded
-			if options.PresetPath != "" && !loadedPresets {
+			if options.PresetPath != "" {
 				fpresets, err := loadPresets(options.PresetPath)
 				if err != nil {
 					return nil, fmt.Errorf("%v", err)
 				}
 				presets = append(presets, fpresets...)
-				loadedPresets = true
+				options.PresetPath = ""
 			}
 
 			continue
@@ -97,6 +98,8 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 
 		// Preset definition
 		if ctx.HasPreset() {
+			optionsLocked = true
+
 			if len(presets) >= t.MaxPresets {
 				return nil, fmt.Errorf("line %d: maximum number of presets reached", file.CurrentLineNumber)
 			}
@@ -122,6 +125,8 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 
 		// Track line
 		if ctx.HasTrack() {
+			optionsLocked = true
+
 			if len(presets) == 1 { // 1 = silence preset
 				return nil, fmt.Errorf("line %d: track defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
 			}
@@ -151,6 +156,8 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 
 		// Timeline
 		if ctx.HasTimeline() {
+			optionsLocked = true
+
 			if len(presets) == 1 { // 1 = silence preset
 				return nil, fmt.Errorf("line %d: timeline defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
 			}
