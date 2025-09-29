@@ -9,7 +9,6 @@ package types
 
 import (
 	"fmt"
-	"os"
 )
 
 // Option represents configuration options for audio processing.
@@ -28,16 +27,6 @@ func (o *Option) Validate() error {
 	}
 	if o.Volume < 0 || o.Volume > 100 {
 		return fmt.Errorf("invalid volume: %d", o.Volume)
-	}
-	if o.BackgroundPath != "" {
-		if _, err := os.Stat(o.BackgroundPath); os.IsNotExist(err) {
-			return fmt.Errorf("background path does not exist: %s", o.BackgroundPath)
-		}
-	}
-	if o.PresetPath != "" {
-		if _, err := os.Stat(o.PresetPath); os.IsNotExist(err) {
-			return fmt.Errorf("preset path does not exist: %s", o.PresetPath)
-		}
 	}
 	return nil
 }
