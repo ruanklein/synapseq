@@ -83,9 +83,16 @@ func (ctx *TextParser) ParseOption(options *t.Option) error {
 			return fmt.Errorf("expected path: %s", ln)
 		}
 
-		fullPath, err := getFullPath(strings.Join(ctx.Line.Tokens[1:], " "))
-		if err != nil {
-			return fmt.Errorf("path: %v", err)
+		content := strings.Join(ctx.Line.Tokens[1:], " ")
+		isRemote := strings.HasPrefix(content, "http://") || strings.HasPrefix(content, "https://")
+
+		fullPath := content
+		if !isRemote {
+			var err error
+			fullPath, err = getFullPath(content)
+			if err != nil {
+				return fmt.Errorf("path: %v", err)
+			}
 		}
 
 		if option == t.KeywordBackground {
