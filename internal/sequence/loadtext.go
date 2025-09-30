@@ -15,13 +15,6 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// LoadResult holds the result of loading a sequence
-type LoadResult struct {
-	Periods  []t.Period
-	Options  *t.Option
-	Comments []string
-}
-
 // LoadTextSequence loads a sequence from a text file
 func LoadTextSequence(fileName string) (*LoadResult, error) {
 	file, err := LoadFile(fileName)
