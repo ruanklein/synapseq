@@ -12,12 +12,26 @@ import (
 	"fmt"
 	"os"
 
+	s "github.com/ruanklein/synapseq/internal/shared"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-func LoadJSONSequence(filename string) (*LoadResult, error) {
-	var result LoadResult
+// Helper to initialize tracks
+func initializeTracks(typ t.TrackType) [t.NumberOfChannels]t.Track {
+	var tracks [t.NumberOfChannels]t.Track
+	for ch := range t.NumberOfChannels {
+		tracks[ch].Type = typ
+		tracks[ch].Carrier = 0.0
+		tracks[ch].Resonance = 0.0
+		tracks[ch].Amplitude = 0.0
+		tracks[ch].Waveform = t.WaveformSine
+		tracks[ch].Effect = t.Effect{Type: t.EffectOff, Intensity: 0.0}
+	}
+	return tracks
+}
 
+// LoadJSONSequence loads and parses a JSON sequence file
+func LoadJSONSequence(filename string) (*LoadResult, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("error reading JSON file: %v", err)
@@ -63,6 +77,11 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 		return nil, fmt.Errorf("%v", err)
 	}
 
+	// Initialize built-in silence
+	silenceTracks := initializeTracks(t.TrackSilence)
+	// Initialize off tracks
+	offTracks := initializeTracks(t.TrackOff)
+
 	var periods []t.Period
 	for idx, seq := range jsonInput.Sequence {
 		if idx == 0 && seq.Time != 0 {
@@ -72,7 +91,106 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 			return nil, fmt.Errorf("timeline %d time must be greater than previous timeline time", idx+1)
 		}
 
+		if len(seq.Elements) == 0 {
+			period := t.Period{
+				Time:       seq.Time,
+				TrackStart: silenceTracks,
+				TrackEnd:   silenceTracks,
+			}
+			var lastPeriod *t.Period
+			if len(periods) > 0 {
+				lastPeriod = &periods[len(periods)-1]
+			}
+			if lastPeriod != nil {
+				if err := s.AdjustPeriods(lastPeriod, &period); err != nil {
+					return nil, fmt.Errorf("%v", err)
+				}
+			}
+			periods = append(periods, period)
+			continue
+		}
+
+		tracks := offTracks
+		for ch, el := range seq.Elements {
+			var mode t.TrackType
+			// Get mode
+			switch el.Mode {
+			case t.KeywordBinaural:
+				mode = t.TrackBinauralBeat
+			case t.KeywordMonaural:
+				mode = t.TrackMonauralBeat
+			case t.KeywordIsochronic:
+				mode = t.TrackIsochronicBeat
+			case t.KeywordWhite:
+				mode = t.TrackWhiteNoise
+			case t.KeywordPink:
+				mode = t.TrackPinkNoise
+			case t.KeywordBrown:
+				mode = t.TrackBrownNoise
+			case t.KeywordPure: // Pure tone
+				mode = t.TrackPureTone
+			default:
+				fmt.Println(idx, el)
+				return nil, fmt.Errorf("invalid tone mode: %s", el.Mode)
+			}
+
+			waveForm := t.WaveformSine
+			if el.Kind == t.KeywordTone {
+				switch el.Waveform {
+				case t.KeywordSine:
+					waveForm = t.WaveformSine
+				case t.KeywordSquare:
+					waveForm = t.WaveformSquare
+				case t.KeywordTriangle:
+					waveForm = t.WaveformTriangle
+				case t.KeywordSawtooth:
+					waveForm = t.WaveformSawtooth
+				default:
+					return nil, fmt.Errorf("invalid waveform type: %s", el.Waveform)
+				}
+
+				if el.Carrier < 0 {
+					return nil, fmt.Errorf("carrier frequency must be greater than 0Hz")
+				}
+				if el.Resonance < 0 {
+					return nil, fmt.Errorf("resonance frequency cannot be negative")
+				}
+			}
+
+			if el.Amplitude < 0 || el.Amplitude > 100 {
+				return nil, fmt.Errorf("amplitude must be between 0 and 100")
+			}
+
+			tracks[ch].Type = mode
+			tracks[ch].Carrier = el.Carrier
+			tracks[ch].Resonance = el.Resonance
+			tracks[ch].Amplitude = t.AmplitudePercentToRaw(el.Amplitude)
+			tracks[ch].Waveform = waveForm
+
+			// Process Period
+			period := t.Period{
+				Time:       seq.Time,
+				TrackStart: tracks,
+				TrackEnd:   tracks,
+			}
+
+			// Adjust previous period end if needed
+			var lastPeriod *t.Period
+			if len(periods) > 0 {
+				lastPeriod = &periods[len(periods)-1]
+			}
+			if lastPeriod != nil {
+				if err := s.AdjustPeriods(lastPeriod, &period); err != nil {
+					return nil, fmt.Errorf("%v", err)
+				}
+			}
+			periods = append(periods, period)
+		}
 	}
 
-	return &result, nil
+	return &LoadResult{
+		Periods:  periods,
+		Options:  options,
+		Comments: nil,
+	}, nil
 }
