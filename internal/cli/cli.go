@@ -40,7 +40,6 @@ func Help() {
 	Usage()
 	fmt.Fprintf(os.Stderr, "Options:\n")
 	fmt.Fprintf(os.Stderr, "  -version       Show version information\n")
-	fmt.Fprintf(os.Stderr, "  -text          Read input as text format (default)\n")
 	fmt.Fprintf(os.Stderr, "  -json          Read input as JSON format\n")
 	fmt.Fprintf(os.Stderr, "  -quiet         Enable quiet mode (suppress non-error output)\n")
 	fmt.Fprintf(os.Stderr, "  -debug         Enable debug mode (no wav output)\n")
