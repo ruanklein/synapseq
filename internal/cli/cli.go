@@ -23,6 +23,8 @@ type CLIOptions struct {
 	Debug bool
 	// Show help message and exit
 	ShowHelp bool
+	// Read input as JSON format
+	FormatJSON bool
 }
 
 // Usage prints the usage information
@@ -38,6 +40,8 @@ func Help() {
 	Usage()
 	fmt.Fprintf(os.Stderr, "Options:\n")
 	fmt.Fprintf(os.Stderr, "  -version       Show version information\n")
+	fmt.Fprintf(os.Stderr, "  -text          Read input as text format (default)\n")
+	fmt.Fprintf(os.Stderr, "  -json          Read input as JSON format\n")
 	fmt.Fprintf(os.Stderr, "  -quiet         Enable quiet mode (suppress non-error output)\n")
 	fmt.Fprintf(os.Stderr, "  -debug         Enable debug mode (no wav output)\n")
 	fmt.Fprintf(os.Stderr, "  -help          Show this help message\n")
@@ -56,6 +60,7 @@ func ParseFlags() (*CLIOptions, []string, error) {
 	fs.Usage = Help
 
 	fs.BoolVar(&opts.ShowVersion, "version", false, "Show version information")
+	fs.BoolVar(&opts.FormatJSON, "json", false, "Read input as JSON format")
 	fs.BoolVar(&opts.Quiet, "quiet", false, "Enable quiet mode")
 	fs.BoolVar(&opts.Debug, "debug", false, "Enable debug mode")
 	fs.BoolVar(&opts.ShowHelp, "help", false, "Show help")

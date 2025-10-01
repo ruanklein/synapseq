@@ -40,11 +40,23 @@ func main() {
 	inputFile := args[0]
 	outputFile := args[1]
 
-	// Load sequence
-	result, err := sequence.LoadTextSequence(inputFile)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-		os.Exit(1)
+	var result *sequence.LoadResult
+	if opts.FormatJSON {
+		// Load JSON sequence
+		var err error
+		result, err = sequence.LoadJSONSequence(inputFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+	} else {
+		// Load text sequence
+		var err error
+		result, err = sequence.LoadTextSequence(inputFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	if !opts.Quiet {
