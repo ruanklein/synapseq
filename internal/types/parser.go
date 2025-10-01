@@ -78,6 +78,8 @@ const (
 	KeywordPulse = "pulse"
 	// Represents an intensity parameter
 	KeywordIntensity = "intensity"
+	// Represents an pure tone
+	KeywordPure = "pure"
 )
 
 // Parser defines the interface for parsing different content types
