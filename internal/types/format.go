@@ -36,7 +36,7 @@ type FormatElement struct {
 // FormatSequenceEntry represents a single entry in the sequence format
 type FormatSequenceEntry struct {
 	Time     int                             `json:"time" xml:"time,attr"`
-	Elements [NumberOfChannels]FormatElement `json:"track" xml:"track>element"`
+	Elements [NumberOfChannels]FormatElement `json:"elements" xml:"track>element"`
 }
 
 // SynapSeqInput represents the overall structure of a SynapSeq sequence file
