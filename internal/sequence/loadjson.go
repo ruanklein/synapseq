@@ -112,6 +112,10 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 
 		tracks := offTracks
 		for ch, el := range seq.Elements {
+			if el.Kind == "" {
+				continue
+			}
+
 			var mode t.TrackType
 			// Get mode
 			switch el.Mode {
@@ -130,7 +134,6 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 			case t.KeywordPure: // Pure tone
 				mode = t.TrackPureTone
 			default:
-				fmt.Println(idx, el)
 				return nil, fmt.Errorf("invalid tone mode: %s", el.Mode)
 			}
 
@@ -166,26 +169,26 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 			tracks[ch].Resonance = el.Resonance
 			tracks[ch].Amplitude = t.AmplitudePercentToRaw(el.Amplitude)
 			tracks[ch].Waveform = waveForm
-
-			// Process Period
-			period := t.Period{
-				Time:       seq.Time,
-				TrackStart: tracks,
-				TrackEnd:   tracks,
-			}
-
-			// Adjust previous period end if needed
-			var lastPeriod *t.Period
-			if len(periods) > 0 {
-				lastPeriod = &periods[len(periods)-1]
-			}
-			if lastPeriod != nil {
-				if err := s.AdjustPeriods(lastPeriod, &period); err != nil {
-					return nil, fmt.Errorf("%v", err)
-				}
-			}
-			periods = append(periods, period)
 		}
+
+		// Process Period
+		period := t.Period{
+			Time:       seq.Time,
+			TrackStart: tracks,
+			TrackEnd:   tracks,
+		}
+
+		// Adjust previous period end if needed
+		var lastPeriod *t.Period
+		if len(periods) > 0 {
+			lastPeriod = &periods[len(periods)-1]
+		}
+		if lastPeriod != nil {
+			if err := s.AdjustPeriods(lastPeriod, &period); err != nil {
+				return nil, fmt.Errorf("%v", err)
+			}
+		}
+		periods = append(periods, period)
 	}
 
 	return &LoadResult{
