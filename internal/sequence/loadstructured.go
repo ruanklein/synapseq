@@ -52,8 +52,8 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 		return nil, fmt.Errorf("unsupported format: %s (use json | xml)", format)
 	}
 
-	if len(input.Sequence) == 0 {
-		return nil, fmt.Errorf("no sequence data found in input file")
+	if len(input.Sequence) < 2 {
+		return nil, fmt.Errorf("not enough sequence data found in input file")
 	}
 
 	// Initialize audio options
