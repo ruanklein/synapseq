@@ -9,6 +9,7 @@ package sequence
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"os"
 
@@ -30,26 +31,35 @@ func initializeTracks() [t.NumberOfChannels]t.Track {
 	return tracks
 }
 
-// LoadJSONSequence loads and parses a JSON sequence file
-func LoadJSONSequence(filename string) (*LoadResult, error) {
+// LoadStructuredSequence loads and parses a json/xml sequence file
+func LoadStructuredSequence(filename string, format string) (*LoadResult, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("error reading JSON file: %v", err)
 	}
 
-	var jsonInput t.SynapSeqInput
-	if err := json.Unmarshal(data, &jsonInput); err != nil {
-		return nil, fmt.Errorf("error unmarshalling JSON: %v", err)
+	var input t.SynapSeqInput
+	switch format {
+	case "json":
+		if err := json.Unmarshal(data, &input); err != nil {
+			return nil, fmt.Errorf("error unmarshalling JSON: %v", err)
+		}
+	case "xml":
+		if err := xml.Unmarshal(data, &input); err != nil {
+			return nil, fmt.Errorf("error unmarshalling XML: %v", err)
+		}
+	default:
+		return nil, fmt.Errorf("unsupported format: %s (use json | xml)", format)
 	}
 
-	if len(jsonInput.Sequence) == 0 {
-		return nil, fmt.Errorf("no sequence data found in JSON")
+	if len(input.Sequence) == 0 {
+		return nil, fmt.Errorf("no sequence data found in input file")
 	}
 
 	// Initialize audio options
 	options := &t.Option{
-		SampleRate: jsonInput.Options.Samplerate,
-		Volume:     jsonInput.Options.Volume,
+		SampleRate: input.Options.Samplerate,
+		Volume:     input.Options.Volume,
 	}
 
 	if err := options.Validate(); err != nil {
@@ -60,11 +70,11 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 	offTracks := initializeTracks()
 
 	var periods []t.Period
-	for idx, seq := range jsonInput.Sequence {
+	for idx, seq := range input.Sequence {
 		if idx == 0 && seq.Time != 0 {
 			return nil, fmt.Errorf("first timeline must start at 0ms (00:00:00)")
 		}
-		if idx >= 1 && seq.Time <= jsonInput.Sequence[idx-1].Time {
+		if idx >= 1 && seq.Time <= input.Sequence[idx-1].Time {
 			return nil, fmt.Errorf("timeline %d time must be greater than previous timeline time", idx+1)
 		}
 		if len(seq.Elements.Tones)+len(seq.Elements.Noises) > t.NumberOfChannels {
@@ -165,11 +175,9 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 		periods = append(periods, period)
 	}
 
-	description := jsonInput.Description
-
 	return &LoadResult{
 		Periods:  periods,
 		Options:  options,
-		Comments: description,
+		Comments: input.Description,
 	}, nil
 }

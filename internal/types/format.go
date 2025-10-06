@@ -15,8 +15,8 @@ type FormatOptions struct {
 
 // FormatElement represents a single element in the sequence format
 type FormatElement struct {
-	Tones  []FormatToneElement  `json:"tones,omitempty" xml:"tones,omitempty"`
-	Noises []FormatNoiseElement `json:"noises,omitempty" xml:"noises,omitempty"`
+	Tones  []FormatToneElement  `json:"tones,omitempty" xml:"tone,omitempty"`
+	Noises []FormatNoiseElement `json:"noises,omitempty" xml:"noise,omitempty"`
 }
 
 // FormatToneElement represents a tone element in the sequence format

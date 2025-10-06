@@ -41,10 +41,16 @@ func main() {
 	outputFile := args[1]
 
 	var result *sequence.LoadResult
-	if opts.FormatJSON {
-		// Load JSON sequence
+	if opts.FormatJSON || opts.FormatXML {
+		var format string
+		if opts.FormatJSON {
+			format = "json"
+		} else {
+			format = "xml"
+		}
+		// Load structured sequence
 		var err error
-		result, err = sequence.LoadJSONSequence(inputFile)
+		result, err = sequence.LoadStructuredSequence(inputFile, format)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)
