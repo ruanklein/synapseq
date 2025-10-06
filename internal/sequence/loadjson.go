@@ -17,10 +17,10 @@ import (
 )
 
 // Helper to initialize tracks
-func initializeTracks(typ t.TrackType) [t.NumberOfChannels]t.Track {
+func initializeTracks() [t.NumberOfChannels]t.Track {
 	var tracks [t.NumberOfChannels]t.Track
 	for ch := range t.NumberOfChannels {
-		tracks[ch].Type = typ
+		tracks[ch].Type = t.TrackOff
 		tracks[ch].Carrier = 0.0
 		tracks[ch].Resonance = 0.0
 		tracks[ch].Amplitude = 0.0
@@ -46,41 +46,18 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 		return nil, fmt.Errorf("no sequence data found in JSON")
 	}
 
-	gainLevel := t.GainLevelMedium
-	if jsonInput.Options.GainLevel != "" {
-		switch jsonInput.Options.GainLevel {
-		case t.KeywordOptionGainLevelVeryLow:
-			gainLevel = t.GainLevelVeryLow
-		case t.KeywordOptionGainLevelLow:
-			gainLevel = t.GainLevelLow
-		case t.KeywordOptionGainLevelMedium:
-			gainLevel = t.GainLevelMedium
-		case t.KeywordOptionGainLevelHigh:
-			gainLevel = t.GainLevelHigh
-		case t.KeywordOptionGainLevelVeryHigh:
-			gainLevel = t.GainLevelVeryHigh
-		default:
-			return nil, fmt.Errorf("invalid gain level: %s", jsonInput.Options.GainLevel)
-		}
-	}
-
 	// Initialize audio options
 	options := &t.Option{
-		SampleRate:     jsonInput.Options.Samplerate,
-		Volume:         jsonInput.Options.Volume,
-		BackgroundPath: jsonInput.Options.BackgroundPath,
-		PresetPath:     jsonInput.Options.PresetPath,
-		GainLevel:      gainLevel,
+		SampleRate: jsonInput.Options.Samplerate,
+		Volume:     jsonInput.Options.Volume,
 	}
 
 	if err := options.Validate(); err != nil {
 		return nil, fmt.Errorf("%v", err)
 	}
 
-	// Initialize built-in silence
-	silenceTracks := initializeTracks(t.TrackSilence)
 	// Initialize off tracks
-	offTracks := initializeTracks(t.TrackOff)
+	offTracks := initializeTracks()
 
 	var periods []t.Period
 	for idx, seq := range jsonInput.Sequence {
@@ -90,85 +67,83 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 		if idx >= 1 && seq.Time <= jsonInput.Sequence[idx-1].Time {
 			return nil, fmt.Errorf("timeline %d time must be greater than previous timeline time", idx+1)
 		}
-
-		if len(seq.Elements) == 0 {
-			period := t.Period{
-				Time:       seq.Time,
-				TrackStart: silenceTracks,
-				TrackEnd:   silenceTracks,
-			}
-			var lastPeriod *t.Period
-			if len(periods) > 0 {
-				lastPeriod = &periods[len(periods)-1]
-			}
-			if lastPeriod != nil {
-				if err := s.AdjustPeriods(lastPeriod, &period); err != nil {
-					return nil, fmt.Errorf("%v", err)
-				}
-			}
-			periods = append(periods, period)
-			continue
+		if len(seq.Elements.Tones)+len(seq.Elements.Noises) > t.NumberOfChannels {
+			return nil, fmt.Errorf("too many elements defined (max %d)", t.NumberOfChannels)
 		}
 
 		tracks := offTracks
-		for ch, el := range seq.Elements {
-			if el.Kind == "" {
-				continue
-			}
+		trackIdx := 0
 
+		for _, tone := range seq.Elements.Tones {
 			var mode t.TrackType
 			// Get mode
-			switch el.Mode {
+			switch tone.Mode {
 			case t.KeywordBinaural:
 				mode = t.TrackBinauralBeat
 			case t.KeywordMonaural:
 				mode = t.TrackMonauralBeat
 			case t.KeywordIsochronic:
 				mode = t.TrackIsochronicBeat
+			case t.KeywordPure:
+				mode = t.TrackPureTone
+			default:
+				return nil, fmt.Errorf("invalid tone mode: %s", tone.Mode)
+			}
+
+			var waveForm t.WaveformType
+			switch tone.Waveform {
+			case t.KeywordSine:
+				waveForm = t.WaveformSine
+			case t.KeywordSquare:
+				waveForm = t.WaveformSquare
+			case t.KeywordTriangle:
+				waveForm = t.WaveformTriangle
+			case t.KeywordSawtooth:
+				waveForm = t.WaveformSawtooth
+			default:
+				return nil, fmt.Errorf("invalid waveform type: %s", tone.Waveform)
+			}
+
+			tr := t.Track{
+				Type:      mode,
+				Carrier:   tone.Carrier,
+				Resonance: tone.Resonance,
+				Amplitude: t.AmplitudePercentToRaw(tone.Amplitude),
+				Waveform:  waveForm,
+			}
+
+			if err := tr.Validate(); err != nil {
+				return nil, fmt.Errorf("%v", err)
+			}
+
+			tracks[trackIdx] = tr
+			trackIdx++
+		}
+		for _, noise := range seq.Elements.Noises {
+			var mode t.TrackType
+			// Get mode
+			switch noise.Mode {
 			case t.KeywordWhite:
 				mode = t.TrackWhiteNoise
 			case t.KeywordPink:
 				mode = t.TrackPinkNoise
 			case t.KeywordBrown:
 				mode = t.TrackBrownNoise
-			case t.KeywordPure: // Pure tone
-				mode = t.TrackPureTone
 			default:
-				return nil, fmt.Errorf("invalid tone mode: %s", el.Mode)
+				return nil, fmt.Errorf("invalid noise mode: %s", noise.Mode)
 			}
 
-			waveForm := t.WaveformSine
-			if el.Kind == t.KeywordTone {
-				switch el.Waveform {
-				case t.KeywordSine:
-					waveForm = t.WaveformSine
-				case t.KeywordSquare:
-					waveForm = t.WaveformSquare
-				case t.KeywordTriangle:
-					waveForm = t.WaveformTriangle
-				case t.KeywordSawtooth:
-					waveForm = t.WaveformSawtooth
-				default:
-					return nil, fmt.Errorf("invalid waveform type: %s", el.Waveform)
-				}
-
-				if el.Carrier < 0 {
-					return nil, fmt.Errorf("carrier frequency must be greater than 0Hz")
-				}
-				if el.Resonance < 0 {
-					return nil, fmt.Errorf("resonance frequency cannot be negative")
-				}
+			tr := t.Track{
+				Type:      mode,
+				Amplitude: t.AmplitudePercentToRaw(noise.Amplitude),
 			}
 
-			if el.Amplitude < 0 || el.Amplitude > 100 {
-				return nil, fmt.Errorf("amplitude must be between 0 and 100")
+			if err := tr.Validate(); err != nil {
+				return nil, fmt.Errorf("%v", err)
 			}
 
-			tracks[ch].Type = mode
-			tracks[ch].Carrier = el.Carrier
-			tracks[ch].Resonance = el.Resonance
-			tracks[ch].Amplitude = t.AmplitudePercentToRaw(el.Amplitude)
-			tracks[ch].Waveform = waveForm
+			tracks[trackIdx] = tr
+			trackIdx++
 		}
 
 		// Process Period
@@ -177,7 +152,6 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 			TrackStart: tracks,
 			TrackEnd:   tracks,
 		}
-
 		// Adjust previous period end if needed
 		var lastPeriod *t.Period
 		if len(periods) > 0 {
@@ -191,9 +165,11 @@ func LoadJSONSequence(filename string) (*LoadResult, error) {
 		periods = append(periods, period)
 	}
 
+	description := jsonInput.Description
+
 	return &LoadResult{
 		Periods:  periods,
 		Options:  options,
-		Comments: nil,
+		Comments: description,
 	}, nil
 }
