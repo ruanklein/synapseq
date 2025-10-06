@@ -77,14 +77,14 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 		if idx >= 1 && seq.Time <= input.Sequence[idx-1].Time {
 			return nil, fmt.Errorf("timeline %d time must be greater than previous timeline time", idx+1)
 		}
-		if len(seq.Elements.Tones)+len(seq.Elements.Noises) > t.NumberOfChannels {
+		if len(seq.Track.Tones)+len(seq.Track.Noises) > t.NumberOfChannels {
 			return nil, fmt.Errorf("too many elements defined (max %d)", t.NumberOfChannels)
 		}
 
 		tracks := offTracks
 		trackIdx := 0
 
-		for _, tone := range seq.Elements.Tones {
+		for _, tone := range seq.Track.Tones {
 			var mode t.TrackType
 			// Get mode
 			switch tone.Mode {
@@ -129,7 +129,7 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 			tracks[trackIdx] = tr
 			trackIdx++
 		}
-		for _, noise := range seq.Elements.Noises {
+		for _, noise := range seq.Track.Noises {
 			var mode t.TrackType
 			// Get mode
 			switch noise.Mode {

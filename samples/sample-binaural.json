@@ -40,7 +40,7 @@
     "sequence": [
         {
             "time": 0,
-            "elements": {
+            "track": {
                 "tones": [
                     {
                         "mode": "binaural",
@@ -60,7 +60,7 @@
         },
         {
             "time": 15000,
-            "elements": {
+            "track": {
                 "tones": [
                     {
                         "mode": "binaural",
@@ -80,7 +80,7 @@
         },
         {
             "time": 60000,
-            "elements": {
+            "track": {
                 "tones": [
                     {
                         "mode": "binaural",
@@ -100,7 +100,7 @@
         },
         {
             "time": 150000,
-            "elements": {
+            "track": {
                 "tones": [
                     {
                         "mode": "binaural",
@@ -120,7 +120,7 @@
         },
         {
             "time": 240000,
-            "elements": {
+            "track": {
                 "tones": [
                     {
                         "mode": "binaural",
@@ -140,7 +140,7 @@
         },
         {
             "time": 330000,
-            "elements": {
+            "track": {
                 "tones": [
                     {
                         "mode": "binaural",
@@ -160,7 +160,7 @@
         },
         {
             "time": 420000,
-            "elements": {
+            "track": {
                 "tones": [
                     {
                         "mode": "binaural",

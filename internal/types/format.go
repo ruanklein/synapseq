@@ -13,14 +13,14 @@ type FormatOptions struct {
 	Volume     int `json:"volume" xml:"volume"`
 }
 
-// FormatElement represents a single element in the sequence format
-type FormatElement struct {
-	Tones  []FormatToneElement  `json:"tones,omitempty" xml:"tone,omitempty"`
-	Noises []FormatNoiseElement `json:"noises,omitempty" xml:"noise,omitempty"`
+// FormatTrack represents a single element in the sequence format
+type FormatTrack struct {
+	Tones  []FormatToneTrack  `json:"tones,omitempty" xml:"tone,omitempty"`
+	Noises []FormatNoiseTrack `json:"noises,omitempty" xml:"noise,omitempty"`
 }
 
-// FormatToneElement represents a tone element in the sequence format
-type FormatToneElement struct {
+// FormatToneTrack represents a tone element in the sequence format
+type FormatToneTrack struct {
 	Mode      string  `json:"mode,omitempty" xml:"mode,attr,omitempty"`
 	Carrier   float64 `json:"carrier,omitempty" xml:"carrier,attr,omitempty"`
 	Resonance float64 `json:"resonance,omitempty" xml:"resonance,attr,omitempty"`
@@ -28,16 +28,16 @@ type FormatToneElement struct {
 	Waveform  string  `json:"waveform,omitempty" xml:"waveform,attr,omitempty"`
 }
 
-// FormatNoiseElement represents a noise element in the sequence format
-type FormatNoiseElement struct {
+// FormatNoiseTrack represents a noise element in the sequence format
+type FormatNoiseTrack struct {
 	Mode      string  `json:"mode,omitempty" xml:"mode,attr,omitempty"`
 	Amplitude float64 `json:"amplitude,omitempty" xml:"amplitude,attr,omitempty"`
 }
 
 // FormatSequenceEntry represents a single entry in the sequence format
 type FormatSequenceEntry struct {
-	Time     int           `json:"time" xml:"time,attr"`
-	Elements FormatElement `json:"elements" xml:"elements>element"`
+	Time  int         `json:"time" xml:"time,attr"`
+	Track FormatTrack `json:"track" xml:"track"`
 }
 
 // SynapSeqInput represents the overall structure of a SynapSeq sequence file

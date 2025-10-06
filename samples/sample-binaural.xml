@@ -39,60 +39,46 @@
   </options>
   <sequence>
     <entry time="0">
-      <elements>
-        <element>
+      <track>
           <tone mode="binaural" carrier="250" resonance="8" amplitude="0" waveform="sine"></tone>
           <noise mode="pink" amplitude="0"></noise>
-        </element>
-      </elements>
+      </track>
     </entry>
     <entry time="15000">
-      <elements>
-        <element>
+      <track>
           <tone mode="binaural" carrier="250" resonance="8" amplitude="15" waveform="sine"></tone>
           <noise mode="pink" amplitude="30"></noise>
-        </element>
-      </elements>
+      </track>
     </entry>
     <entry time="60000">
-      <elements>
-        <element>
+      <track>
           <tone mode="binaural" carrier="250" resonance="8" amplitude="15" waveform="sine"></tone>
           <noise mode="pink" amplitude="30"></noise>
-        </element>
-      </elements>
+      </track>
     </entry>
     <entry time="150000">
-      <elements>
-        <element>
+      <track>
           <tone mode="binaural" carrier="250" resonance="9" amplitude="15" waveform="sine"></tone>
           <noise mode="pink" amplitude="25"></noise>
-        </element>
-      </elements>
+      </track>
     </entry>
     <entry time="240000">
-      <elements>
-        <element>
+      <track>
           <tone mode="binaural" carrier="250" resonance="10" amplitude="15" waveform="sine"></tone>
           <noise mode="pink" amplitude="20"></noise>
-        </element>
-      </elements>
+      </track>
     </entry>
     <entry time="330000">
-      <elements>
-        <element>
+      <track>
           <tone mode="binaural" carrier="250" resonance="11" amplitude="15" waveform="sine"></tone>
           <noise mode="pink" amplitude="15"></noise>
-        </element>
-      </elements>
+      </track>
     </entry>
     <entry time="420000">
-      <elements>
-        <element>
+      <track>
           <tone mode="binaural" carrier="250" resonance="11" amplitude="0" waveform="sine"></tone>
           <noise mode="pink" amplitude="0"></noise>
-        </element>
-      </elements>
+      </track>
     </entry>
   </sequence>
 </SynapSeqInput>
