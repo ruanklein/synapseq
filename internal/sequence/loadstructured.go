@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/goccy/go-yaml"
+
 	s "github.com/ruanklein/synapseq/internal/shared"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
@@ -47,6 +49,10 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 	case "xml":
 		if err := xml.Unmarshal(data, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling XML: %v", err)
+		}
+	case "yaml":
+		if err := yaml.Unmarshal(data, &input); err != nil {
+			return nil, fmt.Errorf("error unmarshalling YAML: %v", err)
 		}
 	default:
 		return nil, fmt.Errorf("unsupported format: %s (use json | xml)", format)

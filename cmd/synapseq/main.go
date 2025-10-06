@@ -41,12 +41,14 @@ func main() {
 	outputFile := args[1]
 
 	var result *sequence.LoadResult
-	if opts.FormatJSON || opts.FormatXML {
+	if opts.FormatJSON || opts.FormatXML || opts.FormatYAML {
 		var format string
 		if opts.FormatJSON {
 			format = "json"
-		} else {
+		} else if opts.FormatXML {
 			format = "xml"
+		} else {
+			format = "yaml"
 		}
 		// Load structured sequence
 		var err error
