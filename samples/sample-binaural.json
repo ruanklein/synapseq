@@ -1,0 +1,182 @@
+{
+    "description": [
+        "BINAURAL BEATS DEMONSTRATION SEQUENCE",
+        "This sample demonstrates binaural beat technology for brainwave entrainment",
+        "using alpha frequencies (8-11Hz) with a 250Hz carrier tone.",
+        "HOW BINAURAL BEATS WORK:",
+        "Binaural beats occur when two slightly different frequencies are played separately",
+        "in each ear. The brain perceives a third \"phantom\" beat at the difference frequency.",
+        "TECHNICAL PROCESS:",
+        "- Left ear: 250Hz carrier frequency",
+        "- Right ear: 250Hz + binaural frequency (e.g., 250Hz + 8Hz = 258Hz)",
+        "- Brain perceives: 8Hz beating pattern (the difference between the two frequencies)",
+        "- This 8Hz pattern can influence brainwave activity and mental states",
+        "ALPHA BRAINWAVE RANGE (8-14Hz):",
+        "- 8Hz: Deep relaxation, light meditation, creativity enhancement",
+        "- 9Hz: Enhanced focus, calm awareness, stress reduction",
+        "- 10Hz: Classic alpha state, relaxed alertness, improved learning",
+        "- 11Hz: Increased mental clarity, bridge to beta frequencies",
+        "PINK NOISE BACKGROUND:",
+        "Pink noise provides a natural masking sound that enhances the binaural effect",
+        "and creates a more pleasant listening experience. The amplitude gradually",
+        "decreases throughout the session to emphasize the binaural tones.",
+        "TEMPORAL SEQUENCE BREAKDOWN:",
+        "00:00-00:15: Initial silence",
+        "00:15-02:30: 8Hz BINAURAL - deep relaxation and creative state induction",
+        "02:30-04:00: 9Hz BINAURAL - transitioning to enhanced focus and calm awareness",
+        "04:00-05:30: 10Hz BINAURAL - classic alpha state for optimal learning",
+        "05:30-07:00: 11Hz BINAURAL - mental clarity and preparation for higher states",
+        "07:00+: End of sequence",
+        "USAGE TIPS:",
+        "- Use stereo headphones for optimal binaural beat perception",
+        "- Find a quiet environment to minimize distractions",
+        "- This progressive alpha sequence is ideal for study sessions, meditation, or creative work",
+        "- The gradual frequency increase helps maintain alertness while staying relaxed"
+    ],
+    "options": {
+        "samplerate": 44100,
+        "volume": 100
+    },
+    "sequence": [
+        {
+            "time": 0,
+            "elements": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 8,
+                        "amplitude": 0,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 0
+                    }
+                ]
+            }
+        },
+        {
+            "time": 15000,
+            "elements": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 8,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 30
+                    }
+                ]
+            }
+        },
+        {
+            "time": 60000,
+            "elements": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 8,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 30
+                    }
+                ]
+            }
+        },
+        {
+            "time": 150000,
+            "elements": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 9,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 25
+                    }
+                ]
+            }
+        },
+        {
+            "time": 240000,
+            "elements": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 10,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 20
+                    }
+                ]
+            }
+        },
+        {
+            "time": 330000,
+            "elements": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 11,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 15
+                    }
+                ]
+            }
+        },
+        {
+            "time": 420000,
+            "elements": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 11,
+                        "amplitude": 0,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 0
+                    }
+                ]
+            }
+        }
+    ]
+}
