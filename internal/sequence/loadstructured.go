@@ -33,7 +33,7 @@ func initializeTracks() [t.NumberOfChannels]t.Track {
 	return tracks
 }
 
-// LoadStructuredSequence loads and parses a json/xml sequence file
+// LoadStructuredSequence loads and parses a json/xml/yaml sequence file
 func LoadStructuredSequence(filename string, format string) (*LoadResult, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -55,7 +55,7 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 			return nil, fmt.Errorf("error unmarshalling YAML: %v", err)
 		}
 	default:
-		return nil, fmt.Errorf("unsupported format: %s (use json | xml)", format)
+		return nil, fmt.Errorf("unsupported format: %s (use json | xml | yaml)", format)
 	}
 
 	if len(input.Sequence) < 2 {
