@@ -11,7 +11,10 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
+	"strings"
 
 	"github.com/goccy/go-yaml"
 
@@ -19,7 +22,10 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// Helper to initialize tracks
+// maxStructuredFileSize defines the maximum file size (128KB)
+const maxStructuredFileSize = 128 * 1024
+
+// initializeTracks initializes an array of off tracks
 func initializeTracks() [t.NumberOfChannels]t.Track {
 	var tracks [t.NumberOfChannels]t.Track
 	for ch := range t.NumberOfChannels {
@@ -33,11 +39,75 @@ func initializeTracks() [t.NumberOfChannels]t.Track {
 	return tracks
 }
 
+// contentTypeAllowed checks if the content type is allowed for the given format
+func contentTypeAllowed(format, ct string) bool {
+	ct = strings.ToLower(strings.TrimSpace(strings.Split(ct, ";")[0]))
+	switch format {
+	case "json":
+		return ct == "application/json" || ct == "text/json" || strings.HasSuffix(ct, "+json")
+	case "xml":
+		return ct == "application/xml" || ct == "text/xml" || strings.HasSuffix(ct, "+xml")
+	case "yaml", "yml":
+		// YAML can sometimes be served as various content types
+		return ct == "application/x-yaml" ||
+			ct == "application/yaml" ||
+			ct == "text/yaml" ||
+			ct == "text/x-yaml" ||
+			strings.HasSuffix(ct, "+yaml") ||
+			strings.HasSuffix(ct, "+yml")
+	default:
+		return false
+	}
+}
+
+// readRemoteStructured loads a remote structured file with content type validation
+func readRemoteStructured(url, format string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching remote file: %v", err)
+	}
+	defer resp.Body.Close()
+
+	ct := resp.Header.Get("Content-Type")
+	if !contentTypeAllowed(format, ct) {
+		return nil, fmt.Errorf("invalid content-type for %s: %s", format, ct)
+	}
+
+	data, err := io.ReadAll(io.LimitReader(resp.Body, maxStructuredFileSize))
+	if err != nil {
+		return nil, fmt.Errorf("error reading remote file: %v", err)
+	}
+	return data, nil
+}
+
 // LoadStructuredSequence loads and parses a json/xml/yaml sequence file
 func LoadStructuredSequence(filename string, format string) (*LoadResult, error) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, fmt.Errorf("error reading JSON file: %v", err)
+	var data []byte
+	if filename == "-" {
+		reader := io.LimitReader(os.Stdin, maxStructuredFileSize)
+		var err error
+		data, err = io.ReadAll(reader)
+		if err != nil {
+			return nil, fmt.Errorf("error reading stdin: %v", err)
+		}
+	} else if strings.HasPrefix(filename, "http://") || strings.HasPrefix(filename, "https://") {
+		var err error
+		data, err = readRemoteStructured(filename, format)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Local file
+		file, err := os.Open(filename)
+		if err != nil {
+			return nil, fmt.Errorf("error opening %s file: %v", format, err)
+		}
+		defer file.Close()
+
+		data, err = io.ReadAll(io.LimitReader(file, maxStructuredFileSize))
+		if err != nil {
+			return nil, fmt.Errorf("error reading %s file: %v", format, err)
+		}
 	}
 
 	var input t.SynapSeqInput
