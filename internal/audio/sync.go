@@ -8,6 +8,8 @@
 package audio
 
 import (
+	"math"
+
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
@@ -25,6 +27,13 @@ func (r *AudioRenderer) sync(timeMs int, periodIdx int) {
 
 	// Calculate interpolation factor (0.0 to 1.0)
 	progress := float64(timeMs-period.Time) / float64(nextTime-period.Time)
+	// Clamp progress between 0 and 1
+	if progress < 0 {
+		progress = 0
+	}
+	if progress > 1 {
+		progress = 1
+	}
 
 	// Update each channel
 	for ch := range t.NumberOfChannels {
@@ -37,14 +46,27 @@ func (r *AudioRenderer) sync(timeMs int, periodIdx int) {
 		tr1 := period.TrackEnd[ch]
 
 		// Interpolate channel parameters
+		alpha := progress
+		switch period.Slide {
+		case t.SlideEaseOut:
+			alpha = math.Log1p(math.Expm1(t.SlideCurveK)*progress) / t.SlideCurveK
+		case t.SlideEaseIn:
+			alpha = math.Expm1(t.SlideCurveK*progress) / math.Expm1(t.SlideCurveK)
+		case t.SlideSmooth:
+			// Normalized sigmoid
+			raw := 1.0 / (1.0 + math.Exp(-t.SlideCurveK*(progress-0.5)))
+			min := 1.0 / (1.0 + math.Exp(t.SlideCurveK*0.5))
+			max := 1.0 / (1.0 + math.Exp(-t.SlideCurveK*0.5))
+			alpha = (raw - min) / (max - min)
+		}
+
 		channel.Track.Type = tr0.Type
 		channel.Track.Effect.Type = tr0.Effect.Type
-		channel.Track.Amplitude = t.AmplitudeType(float64(tr0.Amplitude)*(1-progress) + float64(tr1.Amplitude)*progress)
-		channel.Track.Carrier = tr0.Carrier*(1-progress) + tr1.Carrier*progress
-		channel.Track.Resonance = tr0.Resonance*(1-progress) + tr1.Resonance*progress
+		channel.Track.Amplitude = t.AmplitudeType(float64(tr0.Amplitude)*(1-alpha) + float64(tr1.Amplitude)*alpha)
+		channel.Track.Carrier = tr0.Carrier*(1-alpha) + tr1.Carrier*alpha
+		channel.Track.Resonance = tr0.Resonance*(1-alpha) + tr1.Resonance*alpha
 		channel.Track.Waveform = tr0.Waveform
-		channel.Track.Intensity = t.IntensityType(float64(tr0.Intensity)*(1-progress) + float64(tr1.Intensity)*progress)
-
+		channel.Track.Intensity = t.IntensityType(float64(tr0.Intensity)*(1-alpha) + float64(tr1.Intensity)*alpha)
 		// Reset offsets if track type has changed
 		if channel.Type != channel.Track.Type {
 			channel.Type = channel.Track.Type

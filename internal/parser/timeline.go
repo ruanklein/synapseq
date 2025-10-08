@@ -85,9 +85,35 @@ func (ctx *TextParser) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
 		return nil, fmt.Errorf("expected preset name, got EOF: %s", ln)
 	}
 
+	slideType := t.SlideSteady // default slide type
+	slide, ok := ctx.Line.NextToken()
+	if ok {
+		if strings.ToLower(slide) != t.KeywordSlide {
+			return nil, fmt.Errorf("expected 'slide' keyword, got %q: %s", slide, ln)
+		}
+
+		slideMode, ok := ctx.Line.NextToken()
+		if !ok {
+			return nil, fmt.Errorf("expected slide mode after 'slide', got EOF: %s", ln)
+		}
+
+		switch strings.ToLower(slideMode) {
+		case t.KeywordSlideSteady:
+			slideType = t.SlideSteady
+		case t.KeywordSlideEaseOut:
+			slideType = t.SlideEaseOut
+		case t.KeywordSlideEaseIn:
+			slideType = t.SlideEaseIn
+		case t.KeywordSlideSmooth:
+			slideType = t.SlideSmooth
+		default:
+			return nil, fmt.Errorf("unknown slide mode %q: %s", slideMode, ln)
+		}
+	}
+
 	unknown, ok := ctx.Line.Peek()
 	if ok {
-		return nil, fmt.Errorf("unexpected token after timeline definition: %q", unknown)
+		return nil, fmt.Errorf("unexpected token on timeline %q: %s", unknown, ln)
 	}
 
 	p := s.FindPreset(strings.ToLower(tok), *presets)
@@ -99,6 +125,7 @@ func (ctx *TextParser) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
 		Time:       timeMs,
 		TrackStart: p.Track,
 		TrackEnd:   p.Track,
+		Slide:      slideType,
 	}
 
 	return period, nil
