@@ -40,6 +40,7 @@
     "sequence": [
         {
             "time": 0,
+            "transition": "steady",
             "track": {
                 "tones": [
                     {
@@ -60,6 +61,7 @@
         },
         {
             "time": 15000,
+            "transition": "steady",
             "track": {
                 "tones": [
                     {
@@ -80,6 +82,7 @@
         },
         {
             "time": 60000,
+            "transition": "steady",
             "track": {
                 "tones": [
                     {
@@ -100,6 +103,7 @@
         },
         {
             "time": 150000,
+            "transition": "steady",
             "track": {
                 "tones": [
                     {
@@ -120,6 +124,7 @@
         },
         {
             "time": 240000,
+            "transition": "steady",
             "track": {
                 "tones": [
                     {
@@ -140,6 +145,7 @@
         },
         {
             "time": 330000,
+            "transition": "steady",
             "track": {
                 "tones": [
                     {
@@ -160,6 +166,7 @@
         },
         {
             "time": 420000,
+            "transition": "steady",
             "track": {
                 "tones": [
                     {

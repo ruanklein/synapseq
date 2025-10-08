@@ -36,6 +36,7 @@ options:
   volume: 100
 sequence:
   - time: 0
+    transition: steady
     track:
       tones:
         - mode: binaural
@@ -47,6 +48,7 @@ sequence:
         - mode: pink
           amplitude: 0
   - time: 15000
+    transition: steady
     track:
       tones:
         - mode: binaural
@@ -58,6 +60,7 @@ sequence:
         - mode: pink
           amplitude: 30
   - time: 60000
+    transition: steady
     track:
       tones:
         - mode: binaural
@@ -69,6 +72,7 @@ sequence:
         - mode: pink
           amplitude: 30
   - time: 150000
+    transition: steady
     track:
       tones:
         - mode: binaural
@@ -80,6 +84,7 @@ sequence:
         - mode: pink
           amplitude: 25
   - time: 240000
+    transition: steady
     track:
       tones:
         - mode: binaural
@@ -91,6 +96,7 @@ sequence:
         - mode: pink
           amplitude: 20
   - time: 330000
+    transition: steady
     track:
       tones:
         - mode: binaural
@@ -102,6 +108,7 @@ sequence:
         - mode: pink
           amplitude: 15
   - time: 420000
+    transition: steady
     track:
       tones:
         - mode: binaural

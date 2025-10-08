@@ -38,43 +38,43 @@
     <volume>100</volume>
   </options>
   <sequence>
-    <entry time="0">
+    <entry time="0" transition="steady">
       <track>
           <tone mode="binaural" carrier="250" resonance="8" amplitude="0" waveform="sine"></tone>
           <noise mode="pink" amplitude="0"></noise>
       </track>
     </entry>
-    <entry time="15000">
+    <entry time="15000" transition="steady">
       <track>
           <tone mode="binaural" carrier="250" resonance="8" amplitude="15" waveform="sine"></tone>
           <noise mode="pink" amplitude="30"></noise>
       </track>
     </entry>
-    <entry time="60000">
+    <entry time="60000" transition="steady">
       <track>
           <tone mode="binaural" carrier="250" resonance="8" amplitude="15" waveform="sine"></tone>
           <noise mode="pink" amplitude="30"></noise>
       </track>
     </entry>
-    <entry time="150000">
+    <entry time="150000" transition="steady">
       <track>
           <tone mode="binaural" carrier="250" resonance="9" amplitude="15" waveform="sine"></tone>
           <noise mode="pink" amplitude="25"></noise>
       </track>
     </entry>
-    <entry time="240000">
+    <entry time="240000" transition="steady">
       <track>
           <tone mode="binaural" carrier="250" resonance="10" amplitude="15" waveform="sine"></tone>
           <noise mode="pink" amplitude="20"></noise>
       </track>
     </entry>
-    <entry time="330000">
+    <entry time="330000" transition="steady">
       <track>
           <tone mode="binaural" carrier="250" resonance="11" amplitude="15" waveform="sine"></tone>
           <noise mode="pink" amplitude="15"></noise>
       </track>
     </entry>
-    <entry time="420000">
+    <entry time="420000" transition="steady">
       <track>
           <tone mode="binaural" carrier="250" resonance="11" amplitude="0" waveform="sine"></tone>
           <noise mode="pink" amplitude="0"></noise>
