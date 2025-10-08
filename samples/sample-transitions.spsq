@@ -54,9 +54,11 @@
 
 # Presets
 high
+  noise pink amplitude 25
   tone 400 binaural 12 amplitude 50
 
 low
+  noise pink amplitude 25
   tone 150 binaural 2 amplitude 10
 
 # Timeline
