@@ -80,16 +80,16 @@ const (
 	KeywordIntensity = "intensity"
 	// Represents an pure tone
 	KeywordPure = "pure"
-	// Represents a slide type
-	KeywordSlide = "slide"
-	// Represents a steady slide
-	KeywordSlideSteady = "steady"
-	// Represents a ease-out slide
-	KeywordSlideEaseOut = "ease-out"
-	// Represents an ease-in slide
-	KeywordSlideEaseIn = "ease-in"
-	// Represents a smooth slide
-	KeywordSlideSmooth = "smooth"
+	// Represents a transition type
+	KeywordTransition = "transition"
+	// Represents a steady transition
+	KeywordTransitionSteady = "steady"
+	// Represents a ease-out transition
+	KeywordTransitionEaseOut = "ease-out"
+	// Represents an ease-in transition
+	KeywordTransitionEaseIn = "ease-in"
+	// Represents a smooth transition
+	KeywordTransitionSmooth = "smooth"
 )
 
 // Parser defines the interface for parsing different content types

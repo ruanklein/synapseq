@@ -1,15 +1,15 @@
-## SLIDE CURVES
+## TRANSITION CURVES
 ## 
-## Slides control how audio parameters transition between two states over time.
+## Transitions control how audio parameters transition between two states over time.
 ## The system calculates an interpolation factor α (alpha) from 0 to 1, then applies:
 ##   value = (1-α) * start + α * end
 ##
-## What changes with slides:
+## What changes with a transition:
 ##   - Numerical parameters: amplitude, carrier frequency, resonance, intensity
 ##   - What doesn't crossfade: tone type (binaural/monaural/etc.) and waveform
 ##     These switch instantly according to the destination preset
 ##
-## Four slide types:
+## Four transitions types:
 ##
 ## 1. LINEAR (steady) - Constant rate of change (default)
 ##    α(x) = x
@@ -39,7 +39,7 @@
 ##    - Ideal for smooth, organic transitions between states
 ##
 ## Curvature parameter k:
-##   - Default: k = 6.0 (types.SlideCurveK)
+##   - Default: k = 6.0
 ##   - Higher k = more pronounced curve (stronger difference between start/end)
 ##   - Lower k = gentler curve (approaches linear)
 ##
@@ -62,12 +62,12 @@ low
 # Timeline
 00:00:00 silence
 00:00:15 high
-00:01:00 high slide steady
+00:01:00 high transition steady
 00:03:00 low
-00:04:00 low slide ease-out
+00:04:00 low transition ease-out
 00:06:00 high
-00:07:00 high slide ease-in
+00:07:00 high transition ease-in
 00:09:00 low
-00:09:30 low slide smooth
+00:09:30 low transition smooth
 00:11:30 high
 00:12:00 silence

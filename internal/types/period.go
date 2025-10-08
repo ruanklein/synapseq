@@ -9,29 +9,29 @@ package types
 
 import "fmt"
 
-// SlideCurveK is the curve constant for logarithmic and exponential slides
-const SlideCurveK = 6.0
+// TransitionCurveK is the curve constant for logarithmic, exponential, and sigmoid transitions
+const TransitionCurveK = 6.0
 
-// SlideType defines the type of slide for track transitions
-type SlideType int
+// TransitionType defines the type of slide for track transitions
+type TransitionType int
 
 const (
-	SlideSteady SlideType = iota
-	SlideEaseOut
-	SlideEaseIn
-	SlideSmooth
+	TransitionSteady TransitionType = iota
+	TransitionEaseOut
+	TransitionEaseIn
+	TransitionSmooth
 )
 
-// String returns the string representation of the SlideType
-func (s SlideType) String() string {
+// String returns the string representation of the TransitionType
+func (s TransitionType) String() string {
 	switch s {
-	case SlideSteady:
+	case TransitionSteady:
 		return "steady"
-	case SlideEaseOut:
+	case TransitionEaseOut:
 		return "ease-out"
-	case SlideEaseIn:
+	case TransitionEaseIn:
 		return "ease-in"
-	case SlideSmooth:
+	case TransitionSmooth:
 		return "smooth"
 	default:
 		return "unknown"
@@ -43,7 +43,7 @@ type Period struct {
 	Time       int                     // Start time (end time is ->Next->Time)
 	TrackStart [NumberOfChannels]Track // Start tracks for each channel
 	TrackEnd   [NumberOfChannels]Track // End tracks for each channel
-	Slide      SlideType               // Slide type for transitions
+	Transition TransitionType          // Transition type
 }
 
 // TimeString returns the time of this period as a formatted string

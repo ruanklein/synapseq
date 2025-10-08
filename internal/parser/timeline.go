@@ -85,29 +85,30 @@ func (ctx *TextParser) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
 		return nil, fmt.Errorf("expected preset name, got EOF: %s", ln)
 	}
 
-	slideType := t.SlideSteady // default slide type
-	slide, ok := ctx.Line.NextToken()
+	// default transition type
+	transitionType := t.TransitionSteady
+	transition, ok := ctx.Line.NextToken()
 	if ok {
-		if strings.ToLower(slide) != t.KeywordSlide {
-			return nil, fmt.Errorf("expected 'slide' keyword, got %q: %s", slide, ln)
+		if strings.ToLower(transition) != t.KeywordTransition {
+			return nil, fmt.Errorf("expected 'slide' keyword, got %q: %s", transition, ln)
 		}
 
-		slideMode, ok := ctx.Line.NextToken()
+		transitionMode, ok := ctx.Line.NextToken()
 		if !ok {
 			return nil, fmt.Errorf("expected slide mode after 'slide', got EOF: %s", ln)
 		}
 
-		switch strings.ToLower(slideMode) {
-		case t.KeywordSlideSteady:
-			slideType = t.SlideSteady
-		case t.KeywordSlideEaseOut:
-			slideType = t.SlideEaseOut
-		case t.KeywordSlideEaseIn:
-			slideType = t.SlideEaseIn
-		case t.KeywordSlideSmooth:
-			slideType = t.SlideSmooth
+		switch strings.ToLower(transitionMode) {
+		case t.KeywordTransitionSteady:
+			transitionType = t.TransitionSteady
+		case t.KeywordTransitionEaseOut:
+			transitionType = t.TransitionEaseOut
+		case t.KeywordTransitionEaseIn:
+			transitionType = t.TransitionEaseIn
+		case t.KeywordTransitionSmooth:
+			transitionType = t.TransitionSmooth
 		default:
-			return nil, fmt.Errorf("unknown slide mode %q: %s", slideMode, ln)
+			return nil, fmt.Errorf("unknown slide mode %q: %s", transitionMode, ln)
 		}
 	}
 
@@ -125,7 +126,7 @@ func (ctx *TextParser) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
 		Time:       timeMs,
 		TrackStart: p.Track,
 		TrackEnd:   p.Track,
-		Slide:      slideType,
+		Transition: transitionType,
 	}
 
 	return period, nil

@@ -47,16 +47,16 @@ func (r *AudioRenderer) sync(timeMs int, periodIdx int) {
 
 		// Interpolate channel parameters
 		alpha := progress
-		switch period.Slide {
-		case t.SlideEaseOut:
-			alpha = math.Log1p(math.Expm1(t.SlideCurveK)*progress) / t.SlideCurveK
-		case t.SlideEaseIn:
-			alpha = math.Expm1(t.SlideCurveK*progress) / math.Expm1(t.SlideCurveK)
-		case t.SlideSmooth:
+		switch period.Transition {
+		case t.TransitionEaseOut:
+			alpha = math.Log1p(math.Expm1(t.TransitionCurveK)*progress) / t.TransitionCurveK
+		case t.TransitionEaseIn:
+			alpha = math.Expm1(t.TransitionCurveK*progress) / math.Expm1(t.TransitionCurveK)
+		case t.TransitionSmooth:
 			// Normalized sigmoid
-			raw := 1.0 / (1.0 + math.Exp(-t.SlideCurveK*(progress-0.5)))
-			min := 1.0 / (1.0 + math.Exp(t.SlideCurveK*0.5))
-			max := 1.0 / (1.0 + math.Exp(-t.SlideCurveK*0.5))
+			raw := 1.0 / (1.0 + math.Exp(-t.TransitionCurveK*(progress-0.5)))
+			min := 1.0 / (1.0 + math.Exp(t.TransitionCurveK*0.5))
+			max := 1.0 / (1.0 + math.Exp(-t.TransitionCurveK*0.5))
 			alpha = (raw - min) / (max - min)
 		}
 
