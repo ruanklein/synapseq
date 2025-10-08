@@ -36,8 +36,9 @@ type FormatNoiseTrack struct {
 
 // FormatSequenceEntry represents a single entry in the sequence format
 type FormatSequenceEntry struct {
-	Time  int         `json:"time" xml:"time,attr" yaml:"time"`
-	Track FormatTrack `json:"track" xml:"track" yaml:"track"`
+	Time       int         `json:"time" xml:"time,attr" yaml:"time"`
+	Transition string      `json:"transition,omitempty" xml:"transition,attr,omitempty" yaml:"transition,omitempty"`
+	Track      FormatTrack `json:"track" xml:"track" yaml:"track"`
 }
 
 // SynapSeqInput represents the overall structure of a SynapSeq sequence file

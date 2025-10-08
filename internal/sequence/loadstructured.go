@@ -232,11 +232,26 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 			trackIdx++
 		}
 
+		var transition t.TransitionType
+		switch seq.Transition {
+		case t.KeywordTransitionSteady:
+			transition = t.TransitionSteady
+		case t.KeywordTransitionEaseIn:
+			transition = t.TransitionEaseIn
+		case t.KeywordTransitionEaseOut:
+			transition = t.TransitionEaseOut
+		case t.KeywordTransitionSmooth:
+			transition = t.TransitionSmooth
+		default:
+			return nil, fmt.Errorf("invalid transition type: %s", seq.Transition)
+		}
+
 		// Process Period
 		period := t.Period{
 			Time:       seq.Time,
 			TrackStart: tracks,
 			TrackEnd:   tracks,
+			Transition: transition,
 		}
 		// Adjust previous period end if needed
 		var lastPeriod *t.Period
