@@ -62,7 +62,7 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer, periodIdx int) {
 	}
 
 	// Line 1: Current period (start)
-	line1 := fmt.Sprintf("- %s [%s] → %s",
+	line1 := fmt.Sprintf("- %s [%s] -> %s",
 		period.TimeString(),
 		period.Transition.String(),
 		nextPeriod.TimeString())
@@ -82,9 +82,9 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer, periodIdx int) {
 		// End Track (only if different)
 		if !s.IsTrackEqual(&startTrack, &endTrack) {
 			if endTrack.Type != t.TrackOff && endTrack.Type != t.TrackSilence {
-				line2 += fmt.Sprintf("\n   →  %s", endTrack.String())
+				line2 += fmt.Sprintf("\n   ->  %s", endTrack.String())
 			} else {
-				line2 += "\n   →  --"
+				line2 += "\n   ->  --"
 			}
 		}
 	}
