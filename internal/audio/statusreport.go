@@ -62,10 +62,10 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer, periodIdx int) {
 	}
 
 	// Line 1: Current period (start)
-	line1 := fmt.Sprintf("- %s [%s] -> %s",
+	line1 := fmt.Sprintf("- %s -> %s (%s)",
 		period.TimeString(),
-		period.Transition.String(),
-		nextPeriod.TimeString())
+		nextPeriod.TimeString(),
+		period.Transition.String())
 
 	// Line 2: Start tracks (indented)
 	line2 := ""
