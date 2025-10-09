@@ -80,8 +80,6 @@ const (
 	KeywordIntensity = "intensity"
 	// Represents an pure tone
 	KeywordPure = "pure"
-	// Represents a transition type
-	KeywordTransition = "transition"
 	// Represents a steady transition
 	KeywordTransitionSteady = "steady"
 	// Represents a ease-out transition

@@ -64,12 +64,12 @@ low
 # Timeline
 00:00:00 silence
 00:00:15 high
-00:01:00 high transition steady
+00:01:00 high steady
 00:03:00 low
-00:04:00 low transition ease-out
+00:04:00 low ease-out
 00:06:00 high
-00:07:00 high transition ease-in
+00:07:00 high ease-in
 00:09:00 low
-00:09:30 low transition smooth
+00:09:30 low smooth
 00:11:30 high
 00:12:00 silence
