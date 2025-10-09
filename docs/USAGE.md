@@ -267,6 +267,189 @@ alpha2
 
 Here, the amplitude of each track is explicitly set to zero when it should be silent, ensuring a smooth transition. This approach applies to all types of tones, waveforms, and background effects.
 
+#### Transitions
+
+Transitions control how audio parameters change between two presets over time. When you move from one preset to another in the timeline, SynapSeq smoothly interpolates numerical parameters like amplitude, carrier frequency, resonance, and intensity.
+
+The transition syntax is:
+
+```
+hh:mm:ss [preset name] [transition type]
+```
+
+Where `[transition type]` can be: `steady`, `ease-out`, `ease-in`, or `smooth`.
+
+**What changes with transitions:**
+
+- Numerical parameters: amplitude, carrier frequency, resonance, intensity
+- What doesn't crossfade: tone type (binaural/monaural/isochronic) and waveform shape
+
+These properties switch instantly according to the destination preset.
+
+##### Transition Types
+
+SynapSeq offers four types of transitions, each designed to support different phases of brainwave entrainment:
+
+###### 1. STEADY (default)
+
+The steady transition provides a constant rate of change throughout the entire transition period.
+
+```
+Progress:  0% ──── 25% ──── 50% ──── 75% ──── 100%
+                 (uniform change)
+
+Transition wave:
+20Hz ════════════════════════════════════════════════ 5Hz
+     constant rate throughout
+```
+
+**Characteristics:**
+
+- Uniform progression from start to finish
+- Neutral, mechanical feel
+- Predictable and consistent
+
+**Best for:**
+
+- Testing and debugging sequences
+- When you want predictable, linear changes
+- Technical or experimental sequences
+
+**Brainwave entrainment benefit:** Provides a steady, predictable stimulus that works well as a baseline reference, though it may be more noticeable to the brain than natural transitions.
+
+###### 2. EASE-OUT (logarithmic)
+
+The ease-out transition starts with rapid change and gradually slows down, creating a smooth landing.
+
+```
+Progress:  0% ──── 60% ──── 80% ──── 90% ──── 100%
+             (fast start, gentle ending)
+
+Transition wave:
+20Hz ══════════════════════════════════════════ 5Hz
+     fast change ──── gradually slower ──── very gentle
+
+     0%    15%        35%            60%         85%    100%
+```
+
+**Characteristics:**
+
+- Most change happens early in the transition
+- Gradually decelerates as it approaches the target
+- Like a car smoothly braking to a stop
+
+**Best for:**
+
+- Transitioning from high to low frequencies (e.g., beta → theta)
+- Relaxation and meditation entry
+- Any transition toward slower, deeper states
+
+**Brainwave entrainment benefit:** Mimics the natural process of falling asleep or entering relaxation. The rapid initial change captures the brain's attention and begins the shift, while the gentle ending allows the nervous system to stabilize comfortably in the new state without resistance.
+
+###### 3. EASE-IN (exponential)
+
+The ease-in transition starts gently and accelerates toward the end, creating a smooth departure.
+
+```
+Progress:  0% ──── 10% ──── 20% ──── 40% ──── 100%
+             (gentle start, fast ending)
+
+Transition wave:
+20Hz ══════════════════════════════════════════ 5Hz
+     very gentle ──── gradually faster ──── rapid change
+
+     0%    15%            40%          65%        85%   100%
+```
+
+**Characteristics:**
+
+- Starts slowly and gradually accelerates
+- Most change happens near the end
+- Like a car smoothly accelerating from a stop
+
+**Best for:**
+
+- Transitioning from low to high frequencies (e.g., theta → beta)
+- Awakening and activation sequences
+- Any transition toward faster, alert states
+
+**Brainwave entrainment benefit:** Mirrors the natural awakening process. The gentle start avoids shocking the nervous system when emerging from deep states, while the accelerating finish firmly establishes the new alert state without leaving residual drowsiness.
+
+###### 4. SMOOTH (sigmoid)
+
+The smooth transition provides the most natural feeling, with gentle starts and endings, and faster change in the middle.
+
+```
+Progress:  0% ──── 20% ──── 50% ──── 80% ──── 100%
+             (slow → fast → slow, S-shaped)
+
+Transition wave:
+20Hz ═╗                                    ╔═ 5Hz
+      ║           ╱──────────╲            ║
+      ║          ╱            ╲           ║
+      ╚═════════════════════════════════════╝
+      gentle    rapid      rapid    gentle
+
+      0%   5%      25%       50%      75%   95%  100%
+```
+
+**Characteristics:**
+
+- Starts slowly (ease-in)
+- Accelerates in the middle
+- Ends slowly (ease-out)
+- S-shaped curve, most natural and organic
+
+**Best for:**
+
+- General-purpose transitions in any direction
+- Maximum comfort and minimal perception
+- Therapeutic and meditative sessions
+- When you want the smoothest possible transition
+
+**Brainwave entrainment benefit:** Provides the most comfortable and natural-feeling transition. The gentle start and end minimize perception of change, while the middle acceleration ensures the transition completes smoothly. This approach mimics natural processes and feels organic to the nervous system, making it ideal for therapeutic and meditative applications. Based on principles of neural adaptation, this is considered the most effective transition for brainwave entrainment, though more research is needed to quantify these benefits.
+
+##### Transition Examples
+
+```
+# Presets
+awake
+  tone 250 binaural 14 amplitude 40  # Low beta (relaxed alertness)
+
+deep
+  tone 200 binaural 4 amplitude 20   # Theta (deep meditation)
+
+# Timeline
+00:00:00 silence
+00:00:30 awake
+
+# Entering meditation - use EASE-OUT
+# Rapid initial shift, gentle stabilization in deep state
+00:01:00 awake ease-out
+00:06:00 deep
+
+# Maintain deep meditation
+00:10:00 deep
+
+# Awakening - use EASE-IN
+# Gentle emergence, firm arrival in alert state
+00:10:30 deep ease-in
+00:15:00 awake
+
+00:16:00 silence
+```
+
+```
+# Natural, comfortable transition - use SMOOTH
+00:00:00 silence
+00:00:30 preset1
+00:05:00 preset1 smooth
+00:10:00 preset2
+00:12:00 silence
+```
+
+If no transition type is specified, **steady** (linear) is used by default.
+
 #### Comments
 
 Comments are only valid if they occupy an entire line by themselves; inline comments (on the same line as other elements) are not allowed and will cause a syntax error.
