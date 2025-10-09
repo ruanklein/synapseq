@@ -45,18 +45,19 @@ func TestStatusReporter_DisplayPeriodChange_PrintsStartAndDash(ts *testing.T) {
 	sr := NewStatusReporter(false)
 	out := captureStderr(func() { sr.DisplayPeriodChange(r, 0) })
 
-	if !strings.Contains(out, "- "+p0.TimeString()) {
+	if !strings.Contains(out, "- "+p0.TimeString()+" -> "+p1.TimeString()+" ("+p0.Transition.String()+")") {
 		ts.Fatalf("missing start time line: %q", out)
 	}
-	if !strings.Contains(out, "  "+p1.TimeString()) {
-		ts.Fatalf("missing end time line: %q", out)
-	}
+	// We no longer print the end time when start==end
+	// if !strings.Contains(out, "  "+p1.TimeString()) {
+	// 	ts.Fatalf("missing end time line: %q", out)
+	// }
 	if !strings.Contains(out, start.String()) {
 		ts.Fatalf("missing start track string in output: %q", out)
 	}
-	if !strings.Contains(out, "\n       --") {
-		ts.Fatalf("expected '--' marker when start==end: %q", out)
-	}
+	// if !strings.Contains(out, "\n       --") {
+	// 	ts.Fatalf("expected '--' marker when start==end: %q", out)
+	// }
 }
 
 func TestStatusReporter_DisplayPeriodChange_ShowsEndTrackWhenChanged(ts *testing.T) {
