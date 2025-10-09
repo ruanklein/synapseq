@@ -62,36 +62,35 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer, periodIdx int) {
 	}
 
 	// Line 1: Current period (start)
-	line1 := fmt.Sprintf("- %s transition %s", period.TimeString(), period.Transition.String())
+	line1 := fmt.Sprintf("- %s [%s] → %s",
+		period.TimeString(),
+		period.Transition.String(),
+		nextPeriod.TimeString())
 
-	// Line 2: Next period (end)
-	line2 := fmt.Sprintf("  %s ", nextPeriod.TimeString())
+	// Line 2: Start tracks (indented)
+	line2 := ""
 
 	for ch := range s.CountActiveChannels(r.channels[:]) {
 		startTrack := period.TrackStart[ch]
 		endTrack := period.TrackEnd[ch]
 
 		// Start Track
-		startStr := ""
 		if startTrack.Type != t.TrackOff && startTrack.Type != t.TrackSilence {
-			startStr = fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), startTrack.String())
+			line2 += fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), startTrack.String())
 		}
 
-		// End Track
-		endStr := "\n       --"
+		// End Track (only if different)
 		if !s.IsTrackEqual(&startTrack, &endTrack) {
-			endStr = "\n       -"
 			if endTrack.Type != t.TrackOff && endTrack.Type != t.TrackSilence {
-				endStr = fmt.Sprintf("\n%s %s", strings.Repeat(" ", 6), endTrack.String())
+				line2 += fmt.Sprintf("\n   →  %s", endTrack.String())
+			} else {
+				line2 += "\n   →  --"
 			}
 		}
-
-		line1 += startStr
-		line2 += endStr
 	}
 
 	// Show the lines
-	fmt.Fprintf(os.Stderr, "%s\n%s\n", line1, line2)
+	fmt.Fprintf(os.Stderr, "%s%s\n", line1, line2)
 }
 
 // DisplayStatus show the current status line
