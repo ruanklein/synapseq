@@ -73,6 +73,7 @@ func TestLoadStructured_JSON_Standalone(ts *testing.T) {
   "sequence": [
     {
       "time": 0,
+	  "transition": "steady",
       "track": {
         "tones": [
           { "mode": "binaural", "carrier": 250, "resonance": 8, "amplitude": 0, "waveform": "sine" }
@@ -84,6 +85,7 @@ func TestLoadStructured_JSON_Standalone(ts *testing.T) {
     },
     {
       "time": 15000,
+	  "transition": "steady",
       "track": {
         "tones": [
           { "mode": "binaural", "carrier": 250, "resonance": 8, "amplitude": 15, "waveform": "sine" }
@@ -144,13 +146,13 @@ func TestLoadStructured_XML_Standalone(ts *testing.T) {
     <volume>100</volume>
   </options>
   <sequence>
-    <entry time="0">
+    <entry time="0" transition="steady">
       <track>
         <tone mode="binaural" carrier="250" resonance="8" amplitude="0" waveform="sine"/>
         <noise mode="pink" amplitude="0"/>
       </track>
     </entry>
-    <entry time="15000">
+    <entry time="15000" transition="steady">
       <track>
         <tone mode="binaural" carrier="250" resonance="8" amplitude="15" waveform="sine"/>
         <noise mode="pink" amplitude="30"/>
@@ -204,6 +206,7 @@ options:
   volume: 100
 sequence:
   - time: 0
+    transition: steady
     track:
       tones:
         - mode: binaural
@@ -215,6 +218,7 @@ sequence:
         - mode: pink
           amplitude: 0
   - time: 15000
+    transition: steady
     track:
       tones:
         - mode: binaural
@@ -274,6 +278,7 @@ func sampleContentFor(format string) string {
   "sequence": [
     {
       "time": 0,
+	  "transition": "steady",
       "track": {
         "tones": [
           { "mode": "binaural", "carrier": 250, "resonance": 8, "amplitude": 0, "waveform": "sine" }
@@ -285,6 +290,7 @@ func sampleContentFor(format string) string {
     },
     {
       "time": 15000,
+	  "transition": "steady",
       "track": {
         "tones": [
           { "mode": "binaural", "carrier": 250, "resonance": 8, "amplitude": 15, "waveform": "sine" }
@@ -307,13 +313,13 @@ func sampleContentFor(format string) string {
     <volume>100</volume>
   </options>
   <sequence>
-    <entry time="0">
+    <entry time="0" transition="steady">
       <track>
         <tone mode="binaural" carrier="250" resonance="8" amplitude="0" waveform="sine"/>
         <noise mode="pink" amplitude="0"/>
       </track>
     </entry>
-    <entry time="15000">
+    <entry time="15000" transition="steady">
       <track>
         <tone mode="binaural" carrier="250" resonance="8" amplitude="15" waveform="sine"/>
         <noise mode="pink" amplitude="30"/>
@@ -329,6 +335,7 @@ options:
   volume: 100
 sequence:
   - time: 0
+    transition: steady
     track:
       tones:
         - mode: binaural
@@ -340,6 +347,7 @@ sequence:
         - mode: pink
           amplitude: 0
   - time: 15000
+    transition: steady
     track:
       tones:
         - mode: binaural
@@ -512,7 +520,7 @@ func TestLoadStructured_JSON_FileTooLarge(t *testing.T) {
 	// Generate a JSON file larger than maxStructuredFileSize
 	over := maxStructuredFileSize + 1024 // 1KB over the limit
 	huge := strings.Repeat("A", over)
-	json := fmt.Sprintf(`{"description":["%s"],"options":{"samplerate":44100,"volume":100},"sequence":[{"time":0,"track":{"tones":[{"mode":"binaural","carrier":250,"resonance":8,"amplitude":0,"waveform":"sine"}]}}]}`, huge)
+	json := fmt.Sprintf(`{"description":["%s"],"options":{"samplerate":44100,"volume":100},"sequence":[{"time":0,"transition":"steady","track":{"tones":[{"mode":"binaural","carrier":250,"resonance":8,"amplitude":0,"waveform":"sine"}]}}]}`, huge)
 
 	p := writeTemp(t, "too-big.json", json)
 
