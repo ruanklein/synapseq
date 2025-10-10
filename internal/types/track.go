@@ -134,7 +134,7 @@ func (tr *Track) Validate() error {
 func (tr *Track) String() string {
 	switch tr.Type {
 	case TrackOff, TrackSilence:
-		return "- -"
+		return "--"
 	case TrackPureTone:
 		return fmt.Sprintf("%s %s %s %.2f %s %.2f", KeywordWaveform, tr.Waveform.String(), KeywordTone, tr.Carrier, KeywordAmplitude, tr.Amplitude.ToPercent())
 	case TrackBinauralBeat, TrackMonauralBeat, TrackIsochronicBeat:
