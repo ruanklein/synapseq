@@ -68,7 +68,7 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 	// Initialize background audio
 	backgroundAudio, err := NewBackgroundAudio(ar.BackgroundPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize background audio: %w", err)
+		return nil, err
 	}
 
 	// Validate background audio parameters
