@@ -6,6 +6,7 @@
 - [Introduction to Brainwave Entrainment](#introduction-to-brainwave-entrainment)
 - [Understanding the Syntax](#understanding-the-syntax)
 - [Command Line](#command-line)
+- [Notes](#notes)
 
 ## Introduction to SynapSeq
 
@@ -524,13 +525,21 @@ You can use `~` to import audio from your home directory:
 @background ~/Downloads/rain.wav
 ```
 
-The SynapSeq support `.wav` files with 24 Bit and 2 Channels.
+You can also load background audio directly from the web using HTTP or HTTPS URLs:
 
-The sample rate also needs to be the same as the sequence. You can set it using the `@samplerate` option.
+```
+@background https://example.com/sounds/rain.wav
+```
 
-For default, SynapSeq creates a looping for the background sound.
+**Background Audio Requirements:**
+
+- SynapSeq supports `.wav` files with 24 Bit and 2 Channels
+- The sample rate must match the sequence sample rate (set with `@samplerate` option)
+- SynapSeq automatically creates a looping effect for background sounds
 
 The amplitude and optional spin/pulse effects of the background is controlled by the `background` element in the sequence.
+
+For information about file size limits and Content-Type validation when using HTTP/HTTPS URLs, see the [Notes](#notes) section.
 
 #### `@gainlevel`
 
@@ -576,6 +585,45 @@ The syntax is:
 
 The default is 44100.
 
+#### `@presetlist`
+
+The `@presetlist` option allows you to import presets from external files, enabling preset reuse across multiple sequences. This is particularly useful for creating modular, reusable session components.
+
+The syntax is:
+
+```
+@presetlist [path to preset file]
+```
+
+**Basic Usage Examples:**
+
+Local file:
+
+```
+@presetlist /path/to/my-presets.spsq
+```
+
+From home directory:
+
+```
+@presetlist ~/sequences/relaxation-presets.spsq
+```
+
+From the web (HTTP/HTTPS):
+
+```
+@presetlist https://example.com/presets/focus-presets.spsq
+```
+
+See the `samples/` directory for practical examples of preset file usage, including `presets-relax.spsq`, `presets-focus.spsq`, and their usage in session files like `sample-genesis.spsq`.
+
+**Important Notes:**
+
+- Preset names must be unique across all imported files and local definitions
+- Only preset definitions are imported from preset files
+- Timeline sections, global options (e.g., `@background`, `@samplerate`), and background elements in preset files will trigger a syntax error
+- Background audio must be defined in the main sequence file using the `@background` option, not within preset files
+
 ## Command Line
 
 The command line syntax is:
@@ -596,6 +644,12 @@ You can use `-` to open sequence from stdin:
 cat example.spsq | synapseq - output.wav
 ```
 
+You can also use HTTP or HTTPS URLs to load sequences directly from the web:
+
+```
+synapseq https://example.com/sequences/my-sequence.spsq output.wav
+```
+
 On \*nix systems, you can also play a sequence in RAW format using other audio tools, such as ffplay or the play command from the sox package. Example:
 
 ```
@@ -612,6 +666,51 @@ If you want to use another tool to process the output, keep in mind that the aud
 
 Any software used to handle the output must be explicitly configured with these parameters to correctly interpret the audio stream.
 
+#### `-json`
+
+Parse the input file as JSON format.
+
+```
+synapseq -json sequence.json output.wav
+```
+
+You can also use stdin or HTTP/HTTPS URLs:
+
+```
+cat sequence.json | synapseq -json - output.wav
+synapseq -json https://example.com/sequence.json output.wav
+```
+
+#### `-xml`
+
+Parse the input file as XML format.
+
+```
+synapseq -xml sequence.xml output.wav
+```
+
+You can also use stdin or HTTP/HTTPS URLs:
+
+```
+cat sequence.xml | synapseq -xml - output.wav
+synapseq -xml https://example.com/sequence.xml output.wav
+```
+
+#### `-yaml`
+
+Parse the input file as YAML format.
+
+```
+synapseq -yaml sequence.yaml output.wav
+```
+
+You can also use stdin or HTTP/HTTPS URLs:
+
+```
+cat sequence.yaml | synapseq -yaml - output.wav
+synapseq -yaml https://example.com/sequence.yaml output.wav
+```
+
 #### `-help`
 
 Show the help and exit.
@@ -627,3 +726,67 @@ Debug mode. Used to check file syntax without having to generate the wav file.
 #### `-version`
 
 Show the version.
+
+## Notes
+
+### File Size Limits
+
+SynapSeq enforces different file size limits depending on the file type:
+
+- **Text format (`.spsq`)**: Maximum **32 KB** per file
+
+  - Applies to: sequence files and preset files loaded with `@presetlist`
+  - Files larger than 32 KB will be truncated
+
+- **Structured formats (JSON, XML, YAML)**: Maximum **128 KB** per file
+
+  - Applies to: files loaded with `-json`, `-xml`, or `-yaml` flags
+  - Files larger than 128 KB will be rejected
+
+- **Background audio files (`.wav`)**: Maximum **10 MB** per file
+  - Applies to: files loaded with `@background` option
+  - Files larger than 10 MB will be read up to the 10 MB limit; the rest will be ignored
+
+### Channel Limits
+
+The total number of tones and noises per timestamp cannot exceed **16 channels**. This limit applies to all formats (text and structured).
+
+### Content-Type Validation for HTTP/HTTPS URLs
+
+When loading files from web URLs, SynapSeq validates the `Content-Type` header returned by the server. If the Content-Type does not match the expected format, the request will be rejected.
+
+#### Text Format Files (.spsq)
+
+For sequence files and preset files loaded via HTTP/HTTPS, the server must return:
+
+- `text/plain`
+
+#### Structured Format Files
+
+**JSON files** must return one of:
+
+- `application/json`
+- `text/json`
+- Any Content-Type ending with `+json` (e.g., `application/vnd.api+json`)
+
+**XML files** must return one of:
+
+- `application/xml`
+- `text/xml`
+- Any Content-Type ending with `+xml` (e.g., `application/atom+xml`)
+
+**YAML files** must return one of:
+
+- `application/x-yaml`
+- `application/yaml`
+- `text/yaml`
+- `text/x-yaml`
+- Any Content-Type ending with `+yaml` or `+yml`
+
+#### Background Audio Files (.wav)
+
+For background audio files loaded via HTTP/HTTPS, the server must return one of:
+
+- `audio/wav`
+- `audio/x-wav`
+- `audio/wave`
