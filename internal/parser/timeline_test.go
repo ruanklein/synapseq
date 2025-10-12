@@ -161,7 +161,7 @@ func TestParseTimelineWithTransitions(ts *testing.T) {
 		{"00:03:00 alpha smooth", false, 180_000, t.TransitionSmooth},
 		{"01:00:00 alpha smooth", false, 3_600_000, t.TransitionSmooth},
 
-		// Sem transition (steady default)
+		// Empty transition (steady default)
 		{"00:00:00 alpha", false, 0, t.TransitionSteady},
 		{"00:10:00 alpha", false, 600_000, t.TransitionSteady},
 
