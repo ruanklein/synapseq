@@ -8,6 +8,8 @@
 package audio
 
 import (
+	"math"
+
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
@@ -96,11 +98,24 @@ func (r *AudioRenderer) mix(samples []int) []int {
 				left += sampleVal
 				right += sampleVal
 			case t.TrackBackground:
-				g := float64(r.GainLevel) / 100.0
-				bgLeft := int64(float64(backgroundSamples[i*2]) * g)
-				bgRight := int64(float64(backgroundSamples[i*2+1]) * g)
+				// Gain factor from dB to linear (0.0..1.0)
+				// -20dB = 0.1, -12dB ≈ 0.251, -6dB ≈ 0.5, 0dB = 1.0
+				dbValue := -float64(r.GainLevel)
+				g := math.Pow(10, dbValue/20.0)
 
-				backgroundAmplitude := int64(channel.Amplitude[0])
+				// Background audio sample (stereo interleaved)
+				bgLFloat := float64(backgroundSamples[i*2]) * g
+				bgRFloat := float64(backgroundSamples[i*2+1]) * g
+
+				// Amplitude scaling (0..256)
+				// Divide by 16 to convert 0..4096 to 0..256
+				// This allows finer control over background volume
+				// without exceeding int64 limits during mixing
+				bgAmp := float64(channel.Amplitude[0]) / 16.0 // 0..256
+
+				// Final background sample values
+				bgL := int64(bgLFloat * bgAmp)
+				bgR := int64(bgRFloat * bgAmp)
 
 				switch channel.Track.Effect.Type {
 				case t.EffectSpin:
@@ -110,45 +125,59 @@ func (r *AudioRenderer) mix(samples []int) []int {
 					spinPos := (channel.Increment[1] * r.waveTables[waveIdx][channel.Offset[0]>>16]) >> 24
 
 					effectIntensity := float64(channel.Track.Intensity) * 0.7
-					amplifiedSpin := int64(float64(spinPos) * (0.5 + effectIntensity*3.5))
+					spinGain := 0.5 + effectIntensity*3.5
 
-					if amplifiedSpin > 127 {
-						amplifiedSpin = 127
+					ampSpin := int64(float64(spinPos) * spinGain)
+					if ampSpin > 127 {
+						ampSpin = 127
 					}
-					if amplifiedSpin < -128 {
-						amplifiedSpin = -128
+					if ampSpin < -128 {
+						ampSpin = -128
 					}
 
-					posVal := amplifiedSpin
+					posVal := ampSpin
 					if posVal < 0 {
 						posVal = -posVal
 					}
+					if posVal > 128 {
+						posVal = 128
+					}
 
 					var spinLeft, spinRight int64
-					if amplifiedSpin >= 0 {
-						spinLeft = (bgLeft * backgroundAmplitude * (128 - posVal)) >> 7
-						spinRight = bgRight*backgroundAmplitude + ((bgLeft * backgroundAmplitude * posVal) >> 7)
+					if ampSpin >= 0 {
+						// L = BG_L * (128 - pos)/128
+						// R = BG_R + BG_L * pos/128
+						spinLeft = (bgL * (128 - posVal)) >> 7
+						spinRight = bgR + ((bgL * posVal) >> 7)
 					} else {
-						spinLeft = bgLeft*backgroundAmplitude + ((bgRight * backgroundAmplitude * posVal) >> 7)
-						spinRight = (bgRight * backgroundAmplitude * (128 - posVal)) >> 7
+						// L = BG_L + BG_R * pos/128
+						// R = BG_R * (128 - pos)/128
+						spinLeft = bgL + ((bgR * posVal) >> 7)
+						spinRight = (bgR * (128 - posVal)) >> 7
 					}
 
 					left += spinLeft
 					right += spinRight
+
 				case t.EffectPulse:
+					// LFO for pulse modulation
 					channel.Offset[1] += channel.Increment[1]
 					channel.Offset[1] &= (t.SineTableSize << 16) - 1
 
+					// 0..1
 					modFactor := r.calcPulseFactor(channel)
 
+					// Mix the effect (0..1) weighted by intensity
 					effectIntensity := float64(channel.Track.Intensity) * 0.7
 					gain := (1.0 - effectIntensity) + (effectIntensity * modFactor)
 
-					left += int64(float64(bgLeft*backgroundAmplitude) * gain)
-					right += int64(float64(bgRight*backgroundAmplitude) * gain)
+					left += int64(float64(bgL) * gain)
+					right += int64(float64(bgR) * gain)
+
 				default:
-					left += bgLeft * backgroundAmplitude
-					right += bgRight * backgroundAmplitude
+					// BG without effect
+					left += bgL
+					right += bgR
 				}
 			}
 		}
