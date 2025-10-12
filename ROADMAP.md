@@ -155,7 +155,7 @@ All Go code must be formatted using [`gofmt`](https://pkg.go.dev/cmd/gofmt). Ple
 ## 🔄 9. CLI and Library Interface
 
 - ✅ Design a CLI using Go's `flag` for command-line options.
-- ❌ **TO DO:** Expose core functionality as a Go package for use in other projects (not just CLI).
+- ❌ ~~Expose core functionality as a Go package for use in other projects (not just CLI)~~.
 - ✅ Ensure clear separation between CLI and core logic.
 
 ---
