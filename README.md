@@ -188,6 +188,28 @@ copy "bin\synapseq-windows-amd64.exe" "C:\Program Files\SynapSeq\synapseq.exe"
 
 Then add `C:\Program Files\SynapSeq` to your PATH environment variable.
 
+### Installing Documentation (Optional)
+
+**macOS/Linux:**
+
+You can generate and install a man page for offline documentation:
+
+```bash
+# Generate the man page (requires pandoc)
+make man
+
+# Install the man page system-wide
+sudo make install-man
+```
+
+After installation, you can access the documentation with:
+
+```bash
+man synapseq
+```
+
+**Note:** The `man` target requires [pandoc](https://pandoc.org/) to be installed on your system.
+
 ### Cross-Platform Compilation
 
 If you need to build for a different platform, use these specific commands:
@@ -225,8 +247,10 @@ Creates:
 ### Additional Make Commands
 
 - `make build` - Build for your current platform
-- `make clean` - Remove all compiled binaries
+- `make clean` - Remove all compiled binaries and generated documentation
 - `make all` - Same as `make build`
+- `make man` - Generate man page documentation (requires pandoc)
+- `make install-man` - Install man page system-wide (requires pandoc and sudo)
 
 ## Documentation
 
