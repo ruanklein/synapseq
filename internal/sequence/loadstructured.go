@@ -14,6 +14,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/goccy/go-yaml"
@@ -132,10 +133,57 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 		return nil, fmt.Errorf("not enough sequence data found in input file")
 	}
 
+	var backgroundPath string
+	if input.Options.Background != "" {
+		path := input.Options.Background
+		isRemote := strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://")
+
+		// Handle remote URL and home directory
+		if isRemote {
+			backgroundPath = path
+		} else if path[0] == '~' {
+			homeDir, err := os.UserHomeDir()
+			if err != nil {
+				return nil, err
+			}
+			backgroundPath = strings.Replace(path, "~", homeDir, 1)
+		} else {
+			cwd, err := os.Getwd()
+			if err != nil {
+				return nil, err
+			}
+			backgroundPath = filepath.Join(cwd, path)
+		}
+
+		if !isRemote {
+			backgroundPath = filepath.Clean(backgroundPath)
+		}
+	}
+
+	gainLevel := t.GainLevelVeryHigh
+	if input.Options.GainLevel != "" {
+		switch strings.ToLower(strings.TrimSpace(input.Options.GainLevel)) {
+		case t.KeywordOptionGainLevelVeryLow:
+			gainLevel = t.GainLevelVeryLow
+		case t.KeywordOptionGainLevelLow:
+			gainLevel = t.GainLevelLow
+		case t.KeywordOptionGainLevelMedium:
+			gainLevel = t.GainLevelMedium
+		case t.KeywordOptionGainLevelHigh:
+			gainLevel = t.GainLevelHigh
+		case t.KeywordOptionGainLevelVeryHigh:
+			gainLevel = t.GainLevelVeryHigh
+		default:
+			return nil, fmt.Errorf("invalid gain level: %s", input.Options.GainLevel)
+		}
+	}
+
 	// Initialize audio options
 	options := &t.Option{
-		SampleRate: input.Options.Samplerate,
-		Volume:     input.Options.Volume,
+		SampleRate:     input.Options.Samplerate,
+		Volume:         input.Options.Volume,
+		BackgroundPath: backgroundPath,
+		GainLevel:      gainLevel,
 	}
 
 	if err := options.Validate(); err != nil {
@@ -229,6 +277,74 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 			}
 
 			tracks[trackIdx] = tr
+			trackIdx++
+		}
+
+		if backgroundPath != "" {
+			if seq.Track.Background == nil {
+				return nil, fmt.Errorf("background audio defined but no background settings found in timeline %d", idx+1)
+			}
+
+			var waveForm t.WaveformType
+			switch seq.Track.Background.Waveform {
+			case t.KeywordSine:
+				waveForm = t.WaveformSine
+			case t.KeywordSquare:
+				waveForm = t.WaveformSquare
+			case t.KeywordTriangle:
+				waveForm = t.WaveformTriangle
+			case t.KeywordSawtooth:
+				waveForm = t.WaveformSawtooth
+			default:
+				return nil, fmt.Errorf("invalid background waveform type: %s", seq.Track.Background.Waveform)
+			}
+
+			effect := t.Effect{Type: t.EffectOff, Intensity: 0.0}
+			if seq.Track.Background.Effect != nil {
+				effect.Intensity = t.IntensityPercentToRaw(seq.Track.Background.Effect.Intensity)
+
+				if seq.Track.Background.Effect.Spin != nil {
+					effect.Type = t.EffectSpin
+				} else if seq.Track.Background.Effect.Pulse != nil {
+					effect.Type = t.EffectPulse
+				} else {
+					return nil, fmt.Errorf("invalid background effect type")
+				}
+			}
+
+			var bgTrack t.Track
+			switch effect.Type {
+			case t.EffectSpin:
+				bgTrack = t.Track{
+					Type:      t.TrackBackground,
+					Carrier:   seq.Track.Background.Effect.Spin.Width,
+					Resonance: seq.Track.Background.Effect.Spin.Rate,
+					Amplitude: t.AmplitudePercentToRaw(seq.Track.Background.Amplitude),
+					Waveform:  waveForm,
+					Effect:    effect,
+				}
+			case t.EffectPulse:
+				bgTrack = t.Track{
+					Type:      t.TrackBackground,
+					Resonance: seq.Track.Background.Effect.Pulse.Resonance,
+					Amplitude: t.AmplitudePercentToRaw(seq.Track.Background.Amplitude),
+					Waveform:  waveForm,
+					Effect:    effect,
+				}
+			default:
+				bgTrack = t.Track{
+					Type:      t.TrackBackground,
+					Amplitude: t.AmplitudePercentToRaw(seq.Track.Background.Amplitude),
+					Waveform:  waveForm,
+					Effect:    effect,
+				}
+			}
+
+			if err := bgTrack.Validate(); err != nil {
+				return nil, fmt.Errorf("%v", err)
+			}
+
+			tracks[trackIdx] = bgTrack
 			trackIdx++
 		}
 

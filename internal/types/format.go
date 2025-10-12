@@ -9,14 +9,17 @@ package types
 
 // FormatOptions holds the options for the sequence format
 type FormatOptions struct {
-	Samplerate int `json:"samplerate" xml:"samplerate" yaml:"samplerate"`
-	Volume     int `json:"volume" xml:"volume" yaml:"volume"`
+	Samplerate int    `json:"samplerate" xml:"samplerate" yaml:"samplerate"`
+	Volume     int    `json:"volume" xml:"volume" yaml:"volume"`
+	Background string `json:"background,omitempty" xml:"background,omitempty" yaml:"background,omitempty"`
+	GainLevel  string `json:"gainlevel,omitempty" xml:"gainlevel,omitempty" yaml:"gainlevel,omitempty"`
 }
 
 // FormatTrack represents a single element in the sequence format
 type FormatTrack struct {
-	Tones  []FormatToneTrack  `json:"tones,omitempty" xml:"tone,omitempty" yaml:"tones"`
-	Noises []FormatNoiseTrack `json:"noises,omitempty" xml:"noise,omitempty" yaml:"noises"`
+	Tones      []FormatToneTrack  `json:"tones,omitempty" xml:"tone,omitempty" yaml:"tones"`
+	Noises     []FormatNoiseTrack `json:"noises,omitempty" xml:"noise,omitempty" yaml:"noises"`
+	Background *FormatBackground  `json:"background,omitempty" xml:"background,omitempty" yaml:"background,omitempty"`
 }
 
 // FormatToneTrack represents a tone element in the sequence format
@@ -32,6 +35,31 @@ type FormatToneTrack struct {
 type FormatNoiseTrack struct {
 	Mode      string  `json:"mode,omitempty" xml:"mode,attr,omitempty" yaml:"mode"`
 	Amplitude float64 `json:"amplitude,omitempty" xml:"amplitude,attr,omitempty" yaml:"amplitude"`
+}
+
+// FormatBackground represents the background audio settings in the sequence format
+type FormatBackground struct {
+	Amplitude float64       `json:"amplitude,omitempty" xml:"amplitude,attr,omitempty" yaml:"amplitude"`
+	Waveform  string        `json:"waveform,omitempty" xml:"waveform,attr,omitempty" yaml:"waveform"`
+	Effect    *FormatEffect `json:"effect,omitempty" xml:"effect,omitempty" yaml:"effect,omitempty"`
+}
+
+// FormatEffect represents audio effects that can be applied to tones or background audio
+type FormatEffect struct {
+	Intensity float64            `json:"intensity,omitempty" xml:"intensity,attr,omitempty" yaml:"intensity"`
+	Spin      *FormatEffectSpin  `json:"spin,omitempty" xml:"spin,omitempty" yaml:"spin,omitempty"`
+	Pulse     *FormatEffectPulse `json:"pulse,omitempty" xml:"pulse,omitempty" yaml:"pulse,omitempty"`
+}
+
+// FormatEffectSpin represents a spinning effect with width and rate parameters
+type FormatEffectSpin struct {
+	Width float64 `json:"width,omitempty" xml:"width,attr,omitempty" yaml:"width"`
+	Rate  float64 `json:"rate,omitempty" xml:"rate,attr,omitempty" yaml:"rate"`
+}
+
+// FormatEffectPulse represents a pulsing effect with resonance parameter
+type FormatEffectPulse struct {
+	Resonance float64 `json:"resonance,omitempty" xml:"resonance,attr,omitempty" yaml:"resonance"`
 }
 
 // FormatSequenceEntry represents a single entry in the sequence format
