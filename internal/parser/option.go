@@ -86,6 +86,10 @@ func (ctx *TextParser) ParseOption(options *t.Option) error {
 		content := strings.Join(ctx.Line.Tokens[1:], " ")
 		isRemote := strings.HasPrefix(content, "http://") || strings.HasPrefix(content, "https://")
 
+		if content == "-" {
+			return fmt.Errorf("stdin (-) is not supported for background or preset list")
+		}
+
 		fullPath := content
 		if !isRemote {
 			var err error

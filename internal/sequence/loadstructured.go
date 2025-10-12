@@ -138,6 +138,10 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 		path := input.Options.Background
 		isRemote := strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://")
 
+		if path == "-" {
+			return nil, fmt.Errorf("stdin (-) is not supported for background audio")
+		}
+
 		// Handle remote URL and home directory
 		if isRemote {
 			backgroundPath = path
