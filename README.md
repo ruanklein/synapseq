@@ -287,23 +287,44 @@ All original code in SynapSeq is licensed under the GNU GPL v2, but the followin
 
 - **[beep](https://github.com/gopxl/beep)**  
   License: MIT  
-  Copyright © 2017–present Contributors
-
   Used for audio encoding/decoding.
+
+- **[go-yaml](https://github.com/goccy/go-yaml)**  
+  License: MIT  
+  Used for YAML parsing and processing.
 
 - **[pkg/errors](https://github.com/pkg/errors)**  
   License: BSD 2-Clause  
-  Copyright © 2015 Dave Cheney
-
   Used indirectly via `beep` for error wrapping and stack trace utilities.
 
 All third-party copyright notices and licenses are preserved in this repository in compliance with their original terms.
 
 ## Contact
 
-If you have any questions, please open a topic on the [discussions](https://github.com/ruanklein/synapseq/discussions) page.
+We'd love to hear from you! Here's how to get in touch:
 
-## Credits
+### Issues (Bug Reports & Feature Requests)
 
-- **SBaGen+** — SynapSeq V2.x was a direct continuation of [SBaGen+](https://github.com/ruanklein/sbagen-plus), a project that modernized and extended the original [SBaGen engine](https://uazu.net/sbagen/).
-  Starting from V3, SynapSeq has been completely rewritten from scratch in Go, with a minimalist and forward-looking design. It no longer depends on any SBaGen or SBaGen+ code.
+Use [GitHub Issues](https://github.com/ruanklein/synapseq/issues) for:
+
+- Bug reports and technical problems
+- Feature requests and enhancement suggestions
+- Documentation improvements
+
+### Discussions (Questions & Community)
+
+Use [GitHub Discussions](https://github.com/ruanklein/synapseq/discussions) for:
+
+- General questions and support (e.g., "How do I use `@presetlist`?")
+- Help with your sequences (e.g., "My sequence isn't working, can you help?")
+- Sharing your own sequences and presets with the community
+- Discussing ideas and best practices
+- Showcasing creative use cases
+
+### Quick Guidelines
+
+- **Found a bug?** → Open an Issue
+- **Want a new feature?** → Open an Issue
+- **Need help or have questions?** → Start a Discussion
+- **Want to share your sequences?** → Post in Discussions
+- **General feedback or ideas?** → Start a Discussion
