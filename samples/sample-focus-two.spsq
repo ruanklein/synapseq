@@ -1,0 +1,18 @@
+## FOCUS SESSION - PART TWO
+## Goal: sustain focus and increase alertness
+
+# Options
+@presetlist presets-focus.spsq
+
+# Presets
+deep-focus
+  noise brown amplitude 20
+  tone 320 isochronic 16 amplitude 22
+
+# Timeline
+00:00:00 silence
+00:00:15 focus
+00:02:30 deep-focus
+00:05:00 alert
+00:08:00 deep-focus
+00:10:00 silence

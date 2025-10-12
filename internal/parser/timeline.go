@@ -85,9 +85,27 @@ func (ctx *TextParser) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
 		return nil, fmt.Errorf("expected preset name, got EOF: %s", ln)
 	}
 
+	// default transition type
+	transitionType := t.TransitionSteady
+	transition, ok := ctx.Line.NextToken()
+	if ok {
+		switch transition {
+		case t.KeywordTransitionSteady:
+			transitionType = t.TransitionSteady
+		case t.KeywordTransitionEaseOut:
+			transitionType = t.TransitionEaseOut
+		case t.KeywordTransitionEaseIn:
+			transitionType = t.TransitionEaseIn
+		case t.KeywordTransitionSmooth:
+			transitionType = t.TransitionSmooth
+		default:
+			return nil, fmt.Errorf("unknown transition mode %q: %s", transition, ln)
+		}
+	}
+
 	unknown, ok := ctx.Line.Peek()
 	if ok {
-		return nil, fmt.Errorf("unexpected token after timeline definition: %q", unknown)
+		return nil, fmt.Errorf("unexpected token on timeline %q: %s", unknown, ln)
 	}
 
 	p := s.FindPreset(strings.ToLower(tok), *presets)
@@ -99,6 +117,7 @@ func (ctx *TextParser) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
 		Time:       timeMs,
 		TrackStart: p.Track,
 		TrackEnd:   p.Track,
+		Transition: transitionType,
 	}
 
 	return period, nil

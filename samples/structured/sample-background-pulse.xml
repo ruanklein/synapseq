@@ -1,0 +1,135 @@
+<SynapSeqInput>
+  <description>
+    <line>PULSE EFFECT DEMONSTRATION SEQUENCE</line>
+    <line>This sample demonstrates the pulse effect using a pink noise background.</line>
+    <line></line>
+    <line>HOW PULSE WORKS:</line>
+    <line>The "pulse" effect creates a rhythmic pulsing sensation by modulating the amplitude of the</line>
+    <line>background sound chosen by the user.</line>
+    <line></line>
+    <line>PULSE PARAMETERS:</line>
+    <line>- rate: pulse frequency (e.g. 10Hz = 10 pulses per second)</line>
+    <line>- intensity: depth of amplitude modulation (e.g. 50 = moderate pulsing)</line>
+    <line>- amplitude: amplitude of the background sound (e.g. 50% amplitude)</line>
+    <line></line>
+    <line>The pulse effect works by modulating the amplitude of the background sound in a rhythmic pattern,</line>
+    <line>creating a sensation of isochronic pulses. The sound "pulses" evenly, ideal for focus and relaxation.</line>
+    <line></line>
+    <line>TEMPORAL SEQUENCE BREAKDOWN:</line>
+    <line>00:00-00:15: Fade in from silence</line>
+    <line>00:15-02:00: Pulse effect with moderate rate (10Hz) and intensity (50).</line>
+    <line>03:30-04:30: Pulse effect with slower rate (5Hz) and lower intensity (35).</line>
+    <line>05:30-07:00: From ramp back to moderate rate (10Hz) and intensity (50).</line>
+    <line>09:30-10:00: Fade out to silence</line>
+    <line>10:00+: End of sequence</line>
+    <line></line>
+    <line>Monaural tone added to enhance the experience with pulse effect.</line>
+    <line></line>
+    <line>USAGE TIP:</line>
+    <line>Use headphones to best experience the pulse effect.</line>
+    <line>The pulse effect is ideal for relaxation and can help with focus and concentration.</line>
+    <line></line>
+    <line>For a more subtle effect, use lower Intensity values; higher values make the</line>
+    <line>pulsating sensation stronger. You can also experiment with different waveforms for</line>
+    <line>the background pulse to make the effect more pronounced or more gentle, according</line>
+    <line>to your preference.</line>
+  </description>
+  <options>
+    <samplerate>44100</samplerate>
+    <volume>100</volume>
+    <background>sounds/pink-noise.wav</background>
+    <gainlevel>veryhigh</gainlevel>
+  </options>
+  <sequence>
+    <entry time="0" transition="steady">
+      <track>
+        <tone mode="monaural" carrier="300" resonance="10" amplitude="0" waveform="sine"></tone>
+        <background amplitude="0" waveform="sine">
+          <effect intensity="50">
+            <pulse resonance="10"></pulse>
+          </effect>
+        </background>
+      </track>
+    </entry>
+    <entry time="15000" transition="steady">
+      <track>
+        <tone mode="monaural" carrier="300" resonance="10" amplitude="15" waveform="sine"></tone>
+        <background amplitude="50" waveform="sine">
+          <effect intensity="50">
+            <pulse resonance="10"></pulse>
+          </effect>
+        </background>
+      </track>
+    </entry>
+    <entry time="120000" transition="steady">
+      <track>
+        <tone mode="monaural" carrier="300" resonance="10" amplitude="15" waveform="sine"></tone>
+        <background amplitude="50" waveform="sine">
+          <effect intensity="50">
+            <pulse resonance="10"></pulse>
+          </effect>
+        </background>
+      </track>
+    </entry>
+    <entry time="210000" transition="steady">
+      <track>
+        <tone mode="monaural" carrier="300" resonance="5" amplitude="15" waveform="sine"></tone>
+        <background amplitude="50" waveform="sine">
+          <effect intensity="35">
+            <pulse resonance="5"></pulse>
+          </effect>
+        </background>
+      </track>
+    </entry>
+    <entry time="270000" transition="steady">
+      <track>
+        <tone mode="monaural" carrier="300" resonance="5" amplitude="15" waveform="sine"></tone>
+        <background amplitude="50" waveform="sine">
+          <effect intensity="35">
+            <pulse resonance="5"></pulse>
+          </effect>
+        </background>
+      </track>
+    </entry>
+    <entry time="330000" transition="steady">
+      <track>
+        <tone mode="monaural" carrier="300" resonance="10" amplitude="15" waveform="sine"></tone>
+        <background amplitude="50" waveform="sine">
+          <effect intensity="50">
+            <pulse resonance="10"></pulse>
+          </effect>
+        </background>
+      </track>
+    </entry>
+    <entry time="420000" transition="steady">
+      <track>
+        <tone mode="monaural" carrier="300" resonance="5" amplitude="15" waveform="sine"></tone>
+        <background amplitude="50" waveform="sine">
+          <effect intensity="35">
+            <pulse resonance="5"></pulse>
+          </effect>
+        </background>
+      </track>
+    </entry>
+    <entry time="570000" transition="steady">
+      <track>
+        <tone mode="monaural" carrier="300" resonance="10" amplitude="15" waveform="sine"></tone>
+        <background amplitude="50" waveform="sine">
+          <effect intensity="50">
+            <pulse resonance="10"></pulse>
+          </effect>
+        </background>
+      </track>
+    </entry>
+    <entry time="600000" transition="steady">
+      <track>
+        <tone mode="monaural" carrier="300" resonance="10" amplitude="0" waveform="sine"></tone>
+        <background amplitude="0" waveform="sine">
+          <effect intensity="50">
+            <pulse resonance="10"></pulse>
+          </effect>
+        </background>
+      </track>
+    </entry>
+  </sequence>
+</SynapSeqInput>

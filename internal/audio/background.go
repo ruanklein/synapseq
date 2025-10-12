@@ -8,25 +8,34 @@
 package audio
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gopxl/beep/v2"
 	bwav "github.com/gopxl/beep/v2/wav"
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
+// Max background file size: 10MB
+const maxBackgroundFileSize = 10 * 1024 * 1024
+
 // BackgroundAudio handles background WAV file playback with looping
 type BackgroundAudio struct {
 	filePath      string
-	file          *os.File
 	decoder       beep.StreamSeekCloser
 	sampleRate    int
 	channels      int
 	bitDepth      int
 	isEnabled     bool
 	hasReachedEOF bool
+
+	// Cache of the loaded file data
+	cachedData []byte
+
 	// Buffer for reading samples
 	buffer     []int
 	bufferSize int
@@ -44,7 +53,11 @@ func NewBackgroundAudio(filePath string) (*BackgroundAudio, error) {
 		isEnabled:  true,
 	}
 
-	if err := bg.openFile(); err != nil {
+	if err := bg.loadAndCache(); err != nil {
+		return nil, err
+	}
+
+	if err := bg.openFromCache(); err != nil {
 		return nil, fmt.Errorf("failed to open background file: %w", err)
 	}
 
@@ -52,21 +65,74 @@ func NewBackgroundAudio(filePath string) (*BackgroundAudio, error) {
 	return bg, nil
 }
 
-// openFile opens and initializes the WAV file
-func (bg *BackgroundAudio) openFile() error {
-	var err error
-	bg.file, err = os.Open(bg.filePath)
-	if err != nil {
-		return fmt.Errorf("cannot open file %s: %w", bg.filePath, err)
+// allowedWavContentType checks Content-Type for WAV
+func allowedWavContentType(ct string) bool {
+	ct = strings.ToLower(strings.TrimSpace(strings.Split(ct, ";")[0]))
+	switch ct {
+	case "audio/wav", "audio/x-wav", "audio/wave":
+		return true
+	default:
+		return false
+	}
+}
+
+// loadAndCache loads the file (local or remote) into memory cache
+func (bg *BackgroundAudio) loadAndCache() error {
+	if bg.cachedData != nil {
+		return nil
 	}
 
-	s, f, err := bwav.Decode(bg.file)
+	var data []byte
+	if strings.HasPrefix(bg.filePath, "http://") || strings.HasPrefix(bg.filePath, "https://") {
+		// Load from remote URL
+		resp, err := http.Get(bg.filePath)
+		if err != nil {
+			return fmt.Errorf("error fetching remote background: %w", err)
+		}
+		defer resp.Body.Close()
+
+		ct := resp.Header.Get("Content-Type")
+		if !allowedWavContentType(ct) {
+			return fmt.Errorf("invalid content-type for WAV: %s", ct)
+		}
+
+		// Limit read to maxBackgroundFileSize
+		data, err = io.ReadAll(io.LimitReader(resp.Body, maxBackgroundFileSize))
+		if err != nil {
+			return fmt.Errorf("error reading remote background: %w", err)
+		}
+	} else {
+		// Load from local file
+		file, err := os.Open(bg.filePath)
+		if err != nil {
+			return fmt.Errorf("cannot open file %s: %w", bg.filePath, err)
+		}
+		defer file.Close()
+
+		// Limit read to maxBackgroundFileSize
+		data, err = io.ReadAll(io.LimitReader(file, maxBackgroundFileSize))
+		if err != nil {
+			return fmt.Errorf("error reading file: %w", err)
+		}
+	}
+
+	bg.cachedData = data
+	return nil
+}
+
+// openFromCache opens a decoder from the cached data
+func (bg *BackgroundAudio) openFromCache() error {
+	if bg.cachedData == nil {
+		return fmt.Errorf("no cached data available")
+	}
+
+	reader := bytes.NewReader(bg.cachedData)
+	s, f, err := bwav.Decode(reader)
 	if err != nil {
-		bg.file.Close()
 		return fmt.Errorf("invalid WAV file: %s: %w", bg.filePath, err)
 	}
-	bg.decoder = s
 
+	bg.decoder = s
 	bg.sampleRate = int(f.SampleRate)
 	bg.channels = f.NumChannels
 	bg.bitDepth = f.Precision * 8
@@ -75,24 +141,20 @@ func (bg *BackgroundAudio) openFile() error {
 	return nil
 }
 
-// restart reopens the file for looping
+// restart reopens the decoder from cache for looping
 func (bg *BackgroundAudio) restart() error {
 	if !bg.isEnabled {
 		return nil
 	}
 
-	// Close current decoder and file
+	// Close current decoder
 	if bg.decoder != nil {
 		_ = bg.decoder.Close()
 		bg.decoder = nil
 	}
-	if bg.file != nil {
-		_ = bg.file.Close()
-		bg.file = nil
-	}
 
-	// Reopen file
-	if err := bg.openFile(); err != nil {
+	// Reopen from cache
+	if err := bg.openFromCache(); err != nil {
 		return fmt.Errorf("failed to restart background file: %w", err)
 	}
 
@@ -226,14 +288,11 @@ func (bg *BackgroundAudio) readFromDecoder(samples []int, maxSamples int) (int, 
 	return outN, nil
 }
 
-// Close closes the background audio file
+// Close closes the background audio decoder
 func (bg *BackgroundAudio) Close() error {
 	bg.isEnabled = false
 	if bg.decoder != nil {
-		_ = bg.decoder.Close()
-	}
-	if bg.file != nil {
-		return bg.file.Close()
+		return bg.decoder.Close()
 	}
 	return nil
 }

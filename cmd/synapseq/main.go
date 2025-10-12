@@ -33,18 +33,38 @@ func main() {
 
 	if len(args) != 2 {
 		fmt.Fprintf(os.Stderr, "synapseq: invalid number of arguments\n")
-		cli.Usage()
+		cli.Help()
 		os.Exit(1)
 	}
 
 	inputFile := args[0]
 	outputFile := args[1]
 
-	// Load sequence
-	result, err := sequence.LoadTextSequence(inputFile)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-		os.Exit(1)
+	var result *sequence.LoadResult
+	if opts.FormatJSON || opts.FormatXML || opts.FormatYAML {
+		var format string
+		if opts.FormatJSON {
+			format = "json"
+		} else if opts.FormatXML {
+			format = "xml"
+		} else {
+			format = "yaml"
+		}
+		// Load structured sequence
+		var err error
+		result, err = sequence.LoadStructuredSequence(inputFile, format)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+	} else {
+		// Load text sequence
+		var err error
+		result, err = sequence.LoadTextSequence(inputFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	if !opts.Quiet {

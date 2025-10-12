@@ -68,7 +68,7 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 	// Initialize background audio
 	backgroundAudio, err := NewBackgroundAudio(ar.BackgroundPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize background audio: %w", err)
+		return nil, err
 	}
 
 	// Validate background audio parameters
@@ -115,12 +115,16 @@ func (r *AudioRenderer) Render(consume func(samples []int) error) error {
 	chunkFrames := int64(t.BufferSize)
 	framesWritten := int64(0)
 
-	statusReporter := NewStatusReporter(r.Quiet && !r.Debug)
+	statusReporter := NewStatusReporter(r.Quiet)
 	defer statusReporter.FinalStatus()
 
 	// Stereo: left + right
 	samples := make([]int, t.BufferSize*audioChannels)
 	periodIdx := 0
+
+	if r.Debug && !r.Quiet {
+		fmt.Printf("\n*** Debug mode enabled. No audio output will be generated. ***\n\n")
+	}
 
 	for framesWritten < totalFrames {
 		currentTimeMs := int((float64(framesWritten) * 1000.0) / float64(r.SampleRate))

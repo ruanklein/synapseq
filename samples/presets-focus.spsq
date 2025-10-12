@@ -1,0 +1,16 @@
+# CUSTOM PRESETS - FOCUS SESSION
+# This file is not a complete session by itself.
+# It is intended to be included in other session files.
+# See @presetlist option in documentation.
+
+activation
+  noise brown amplitude 25
+  tone 300 isochronic 12 amplitude 15
+
+focus
+  noise brown amplitude 20
+  tone 350 isochronic 14 amplitude 18
+
+alert
+  noise brown amplitude 15
+  tone 400 isochronic 18 amplitude 20

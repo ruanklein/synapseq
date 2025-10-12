@@ -4,13 +4,7 @@
 
 ### What is SynapSeq?
 
-SynapSeq is an efficient engine for brainwave entrainment, designed to generate audio sequences that guide brainwave states using a simple, human-readable text format. It can be used as a command-line tool (CLI) or as a library, allowing integration into other projects and workflows. SynapSeq helps users create custom soundscapes for meditation, relaxation, focus, and altered states of consciousness.
-
-### What is the difference between SBaGen, SBaGen+, and SynapSeq?
-
-- **SBaGen**: The original C-based brainwave generator, released in the early 2000s. It introduced text-based scripting for brainwave sequences but has a complex syntax and legacy codebase.
-- **SBaGen+**: A modernized and extended fork of SBaGen, adding new features, many of which were requested by SBaGen users and implemented based on the original project's TODO list (such as isochronic tones, custom waveforms, and more). Maintained by the SynapSeq author as an intermediate step.
-- **SynapSeq**: A complete rewrite in Go, focused on minimalism, explicit control, and ease of use. SynapSeq does **not** depend on SBaGen or SBaGen+ code and offers a simpler, more readable syntax, advanced features (custom waveforms, background audio, smooth transitions), and improved maintainability.
+SynapSeq is an efficient engine for brainwave entrainment, designed to generate audio sequences that guide brainwave states using a simple, human-readable text format. It is a command-line tool (CLI) that can be easily integrated into other projects and workflows. SynapSeq helps users create custom soundscapes for meditation, relaxation, focus, and altered states of consciousness.
 
 ### How do I install SynapSeq?
 
@@ -40,7 +34,28 @@ SynapSeq outputs 24-bit stereo WAV files by default. You can also pipe raw audio
 
 ### Can I use my own background sounds?
 
-Yes! Use the `@background` option at the top of your sequence file to specify a WAV file as background. See [USAGE](USAGE.md#background) for details.
+Yes! Use the `@background` option at the top of your sequence file to specify a WAV file as background:
+
+```
+@background /path/to/background.wav
+```
+
+**Requirements and behavior:**
+
+- The WAV file must be **24-bit stereo** with the same sample rate as your sequence (default: 44100 Hz)
+- Maximum file size: **10 MB**
+- SynapSeq automatically **creates a loop** of the background audio, repeating it continuously throughout your session
+- You can control the background amplitude and apply effects (spin, pulse) in your presets
+
+See [USAGE](USAGE.md#background) for more details.
+
+### Can I use more than one background audio?
+
+No, SynapSeq supports only **one background audio file** per sequence via the `@background` option. If you need multiple background sounds or layers, you should pre-mix them into a single WAV file using audio editing software (like Audacity) before using it with SynapSeq.
+
+### Is there a graphical interface for SynapSeq, or is one planned?
+
+At the moment, there are no plans to develop an official Graphical User Interface (GUI) for SynapSeq. In the future, however, this may be considered as a separate project, keeping the SynapSeq core independent. Meanwhile, the community is free to create GUIs that use SynapSeq as their engine. If you are working on one, or have already developed one, I’d be glad to know, so it can be mentioned and linked as a complementary project to the SynapSeq core.
 
 ---
 
@@ -124,6 +139,101 @@ You can also control its amplitude and apply effects like spin or pulse in your 
 
 SynapSeq will show an error and refuse to generate audio. Always follow the syntax rules described in the [USAGE](USAGE.md) guide to avoid mistakes. Pay attention to indentation, comments, and the structure of presets and timeline.
 
+### Should I use JSON, XML, or YAML formats instead of the text format (.spsq)?
+
+For most users, **the text format (.spsq) is recommended**. It is:
+
+- **Easier to write and read** - Less verbose and more human-friendly
+- **Faster to create** - Uses presets to avoid repetition and speed up workflow
+- **Better for iteration** - Quick edits and experimentation
+- **More intuitive** - Designed for hand-authoring sequences
+
+**Structured formats (JSON, XML, YAML) are best when:**
+
+- Generating sequences programmatically (scripts, automation, pipelines)
+- Integrating with APIs or web services
+- Building graphical user interfaces (GUIs) that output sequences
+- Working with tools that require machine-readable formats
+- Need schema validation or strict data structure
+
+**Key differences:**
+
+- Text format supports `@presetlist` for reusing presets across multiple sequences
+- Text format allows comments with `#` and `##` for documentation
+- Structured formats require explicit definition of all channel states per timestamp
+- Structured formats do not support presets - every state must be fully defined
+
+**Example comparison:**
+
+Text format (concise):
+
+```
+alpha
+  tone 250 binaural 10 amplitude 10
+
+00:00:00 silence
+00:00:15 alpha
+00:05:00 silence
+```
+
+JSON equivalent (verbose):
+
+```json
+{
+  "sequence": [
+    {
+      "time": 0,
+      "transition": "steady",
+      "track": {
+        "tones": [
+          {
+            "mode": "binaural",
+            "carrier": 250,
+            "resonance": 10,
+            "amplitude": 0,
+            "waveform": "sine"
+          }
+        ]
+      }
+    },
+    {
+      "time": 15000,
+      "transition": "steady",
+      "track": {
+        "tones": [
+          {
+            "mode": "binaural",
+            "carrier": 250,
+            "resonance": 10,
+            "amplitude": 10,
+            "waveform": "sine"
+          }
+        ]
+      }
+    },
+    {
+      "time": 300000,
+      "transition": "steady",
+      "track": {
+        "tones": [
+          {
+            "mode": "binaural",
+            "carrier": 250,
+            "resonance": 10,
+            "amplitude": 0,
+            "waveform": "sine"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+**Note:** In structured formats, silence is achieved by setting amplitude to 0, not by using empty arrays.
+
+See [samples/structured/README.md](../samples/structured/README.md) for structured format documentation and examples.
+
 ---
 
 ## Brainwave Entrainment
@@ -171,22 +281,30 @@ For most people, brainwave entrainment is considered safe when used responsibly.
 
 ### I listened to a brainwave audio I created but didn't feel anything. What could be wrong?
 
-There are several factors that can affect your experience with brainwave entrainment:
+Brainwave entrainment is a subtle process that varies from person to person. Several factors can affect your experience:
 
-- **Technical issues:**
-  - Make sure you are using the correct method (e.g., headphones for binaural beats).
-  - For binaural beats, the quality of your headphones is especially important; cheap or low-quality headphones may not reproduce the subtle frequency differences needed for the effect. For isochronic tones and monaural beats, both headphones and speakers can be used, but the equipment should have decent frequency response and minimal distortion. You don't need expensive or professional gear, just avoid very cheap or poor-quality devices.
-  - Check that the frequencies used are appropriate for your desired state (see frequency guide above).
-  - Ensure the audio is not too quiet or distorted; use proper amplitude and volume settings.
-  - Avoid converting to low-quality formats (like low-bitrate MP3), which can reduce effectiveness.
-- **Personal and environmental factors:**
-  - Find a quiet, comfortable place free from distractions.
-  - Allow yourself time to relax and focus; effects may take several minutes to be noticed.
-  - Some people are more sensitive to brainwave entrainment than others; results can vary.
-  - Avoid multitasking or using the audio while working or driving.
-  - Try different frequencies, durations, or methods (binaural, monaural, isochronic) to see what works best for you.
+**Equipment & Technical Issues:**
 
-**Remember**: brainwave entrainment is a subtle process and may require experimentation and patience. If you still don't notice effects, try adjusting your approach, your equipment, or consult resources on meditation and relaxation techniques.
+- **Headphones required** for binaural beats (decent quality, not cheap earbuds)
+- Use appropriate frequencies for your goal (see frequency guide above)
+- Avoid low-quality formats (use high-bitrate MP3 or keep WAV)
+- Check amplitude and volume settings (not too quiet, not distorted)
+
+**Environment & Approach:**
+
+- Find a quiet, comfortable, distraction-free place
+- Allow 5-10 minutes for effects to be noticed
+- Avoid multitasking or using while working/driving
+- Results vary by individual sensitivity
+
+**Tips for better results:**
+
+- Experiment with different methods (binaural, monaural, isochronic)
+- Try different frequencies and durations
+- Combine with meditation or relaxation techniques
+- Be patient and approach with an open mind
+
+**Remember**: Effects are subtle and require experimentation. If you still don't notice results, adjust your approach or equipment.
 
 ### Why should I use noise (white, pink, brown) as background? Isn't it just annoying static?
 
@@ -220,9 +338,25 @@ Most evidence points to benefits for stress reduction, mood improvement, and sle
 
 ## Usage, Licensing, and Distribution
 
-### Can I use SynapSeq as a library in my own project?
+### Can I integrate SynapSeq into my own project?
 
-Yes, SynapSeq can be used as a library in your own projects. However, please note that SynapSeq is licensed under the GPL v2. This means that if you use SynapSeq as a library in your project, **your entire project must also comply with the GPL v2 license**. In particular, you cannot use SynapSeq as a library in closed-source or proprietary software. For commercial use, your project must be open source and distributed under a compatible license. Always review the GPL v2 terms before integrating SynapSeq into your application.
+Yes! SynapSeq is designed to be used as a **command-line tool (CLI)** that can be easily integrated into other projects through:
+
+- **Process execution**: Call `synapseq` from your application using subprocess/exec calls
+- **Pipeline integration**: Use stdin/stdout for streaming input and output
+- **Automation scripts**: Integrate into build pipelines, web services, or batch processing
+- **GUI wrappers**: Build graphical interfaces that invoke the CLI
+- **HTTP APIs**: Build web services that generate and stream audio on-demand
+
+**For practical integration examples, see:**
+
+- **[scripts/README.md](../scripts/README.md)** - Complete integration guide with two ready-to-use Python examples:
+  - **Programmatic JSON generation**: Generate sequences dynamically based on parameters
+  - **HTTP streaming server**: Real-time audio streaming via web API with HTML5 player
+
+These examples demonstrate both offline generation and real-time streaming patterns, covering the most common integration scenarios.
+
+**Important licensing note**: SynapSeq is licensed under GPL v2. While you can freely use the CLI tool in any project, if you modify or distribute the SynapSeq source code itself, your modifications must also be released under GPL v2.
 
 ### Can I sell audio tracks generated with SynapSeq?
 

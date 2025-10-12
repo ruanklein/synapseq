@@ -22,6 +22,64 @@ This project grows stronger with community support, whether through code, docs, 
 - Follow Go best practices and maintain clean, readable code.
 - Ensure backward compatibility when possible.
 
+#### Git Flow Workflow
+
+SynapSeq V3 follows the **Git Flow** branching model:
+
+**Main Branches:**
+
+- `main` - Production-ready code, stable releases only
+- `development` - Integration branch for features, next release preparation
+
+**Supporting Branches:**
+
+- `feature/*` - New features (branched from `development`)
+- `bugfix/*` - Bug fixes (branched from `development`)
+- `hotfix/*` - Critical fixes for production (branched from `main`)
+- `release/*` - Release preparation (branched from `development`)
+
+**Workflow:**
+
+1. **For new features:**
+
+   ```bash
+   git checkout development
+   git pull origin development
+   git checkout -b feature/my-new-feature
+   # Make your changes
+   git add .
+   git commit -m "feat: add my new feature"
+   git push origin feature/my-new-feature
+   # Open PR to development branch
+   ```
+
+2. **For bug fixes:**
+
+   ```bash
+   git checkout development
+   git pull origin development
+   git checkout -b bugfix/fix-issue-description
+   # Fix the bug
+   git add .
+   git commit -m "fix: correct issue description"
+   git push origin bugfix/fix-issue-description
+   # Open PR to development branch
+   ```
+
+3. **For hotfixes (critical production issues):**
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b hotfix/critical-fix
+   # Fix the critical issue
+   git add .
+   git commit -m "fix: critical issue description"
+   git push origin hotfix/critical-fix
+   # Open PR to main branch (will be merged back to development)
+   ```
+
+**Important:** Always create PRs to the `development` branch for regular contributions. Only hotfixes should target `main`.
+
 ### Version 2.x (C, legacy)
 
 - The legacy C codebase (V2, inherited from SBaGen) is available in the `v2` branch.
@@ -51,13 +109,42 @@ Following this format keeps the commit history clear and enables automated chang
 
 ---
 
+## Running Tests
+
+SynapSeq includes unit and integration tests to ensure code quality and prevent regressions.
+
+### Running All Tests
+
+```bash
+make test
+```
+
+This command runs all unit and integration tests in the project using Go's testing framework.
+
+### Writing Tests
+
+When contributing code, please:
+
+- Add unit tests for new functions and features
+- Update existing tests if you modify behavior
+- Ensure all tests pass before submitting your PR
+- Follow Go testing conventions (files ending in `_test.go`)
+- Use table-driven tests when appropriate for better coverage
+
+Example test locations:
+
+- `internal/audio/*_test.go` - Audio processing tests
+- `internal/parser/*_test.go` - Parser and syntax tests
+- `internal/sequence/*_test.go` - Sequence loading tests
+
 ## Pull Request Guidelines
 
 ✅ Before opening a PR, please make sure:
 
 - [ ] Your PR targets the correct branch (`development` for Go V3, `v2` for legacy C code).
 - [ ] You wrote clear, descriptive commit messages (see above).
-- [ ] Tests (if applicable) run successfully.
+- [ ] All tests pass successfully (`make test`).
+- [ ] You added tests for new features or bug fixes.
 - [ ] Your changes are limited to the scope of the PR (no unrelated edits).
 - [ ] Code follows Go best practices and conventions (for V3 contributions).
 - [ ] Documentation is updated if your changes affect user-facing features.

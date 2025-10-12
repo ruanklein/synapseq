@@ -76,15 +76,7 @@ Phases:
 
 ### More Examples
 
-You can find additional example scripts in the `samples/` folder of this repository. These include various types of brainwave entrainment sequences that you can download and test:
-
-- `sample-binaural.spsq` - Binaural beats example
-- `sample-isochronic.spsq` - Isochronic tones example
-- `sample-monaural.spsq` - Monaural beats example
-- `sample-noise.spsq` - Noise-based entrainment
-- `sample-background-spin.spsq` - "Spin" effect
-- `sample-background-pulse.spsq` - "Pulse" effect
-- `sample-waveform.spsq` - Custom waveform example
+You can find additional example scripts in the `samples/` folder of this repository. See the [samples/README.md](samples/README.md) for detailed information about each example.
 
 ## Installation
 
@@ -131,16 +123,34 @@ sudo yum install golang make
 
 **Windows:**
 
+For Windows users, we recommend using **Git Bash** or **WSL2** (Windows Subsystem for Linux) instead of PowerShell or CMD, as the Makefile requires Unix-like shell commands.
+
+**Option 1: Git Bash (Recommended for simplicity)**
+
+1. Download and install [Git for Windows](https://git-scm.com/download/win) (includes Git Bash)
+2. Install [Chocolatey](https://chocolatey.org/install) (package manager for Windows)
+3. Open PowerShell as Administrator and install Go and make:
+
 ```powershell
-# Using Chocolatey (install Chocolatey first from https://chocolatey.org/)
-choco install golang make
+choco install golang make -y
+```
 
-# Using Scoop (install Scoop first from https://scoop.sh/)
-scoop install go make
+4. Close and reopen your terminal, then verify installation in Git Bash:
 
-# Using winget (Windows 10/11)
-winget install GoLang.Go
-winget install GnuWin32.Make
+```bash
+go version
+make --version
+```
+
+**Option 2: WSL2 (Recommended for full Linux experience)**
+
+1. Install WSL2 following [Microsoft's guide](https://learn.microsoft.com/en-us/windows/wsl/install)
+2. Install Ubuntu from Microsoft Store
+3. Open Ubuntu terminal and run:
+
+```bash
+sudo apt update
+sudo apt install golang-go make
 ```
 
 **Verify installation:**
@@ -164,11 +174,11 @@ make
 
 This will automatically compile SynapSeq for your current operating system and architecture, creating a binary in the `bin/` directory.
 
-**For Windows:**
+**For Windows (using Git Bash or WSL2):**
 
-Run:
+Open Git Bash or your WSL2 terminal and run:
 
-```cmd
+```bash
 make build-windows
 ```
 
@@ -186,15 +196,74 @@ sudo make install
 
 This will install the SynapSeq binary to `/usr/local/bin/synapseq`.
 
-**Windows:**
+**Windows (Git Bash or WSL2):**
 
-```cmd
-# Run Command Prompt as Administrator
-mkdir "C:\Program Files\SynapSeq"
-copy "bin\synapseq-windows-amd64.exe" "C:\Program Files\SynapSeq\synapseq.exe"
+Using Git Bash (run as Administrator):
+
+```bash
+mkdir -p "/c/Program Files/SynapSeq"
+cp bin/synapseq-windows-amd64.exe "/c/Program Files/SynapSeq/synapseq.exe"
 ```
 
-Then add `C:\Program Files\SynapSeq` to your PATH environment variable.
+Or using WSL2, you can copy to a Windows directory:
+
+```bash
+mkdir -p "/mnt/c/Program Files/SynapSeq"
+cp bin/synapseq-windows-amd64.exe "/mnt/c/Program Files/SynapSeq/synapseq.exe"
+```
+
+**Adding to PATH:**
+
+After copying the executable, add `C:\Program Files\SynapSeq` to your PATH environment variable.
+
+_Option 1: Using PowerShell (run as Administrator):_
+
+```powershell
+# Add to PATH permanently for current user
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\SynapSeq", "User")
+
+# Or add for all users (requires Administrator)
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\SynapSeq", "Machine")
+```
+
+_Option 2: Using Windows Settings (GUI):_
+
+1. Open **Start Menu** and search for "Environment Variables"
+2. Click **"Edit the system environment variables"**
+3. Click **"Environment Variables..."** button
+4. Under **"User variables"** or **"System variables"**, find and select **"Path"**
+5. Click **"Edit..."**
+6. Click **"New"**
+7. Add: `C:\Program Files\SynapSeq`
+8. Click **"OK"** on all dialogs
+
+After adding to PATH, **restart your terminal** and verify:
+
+```bash
+synapseq --version
+```
+
+### Installing Documentation (Optional)
+
+**macOS/Linux:**
+
+You can generate and install a man page for offline documentation:
+
+```bash
+# Generate the man page (requires pandoc)
+make man
+
+# Install the man page system-wide
+sudo make install-man
+```
+
+After installation, you can access the documentation with:
+
+```bash
+man synapseq
+```
+
+**Note:** The `man` target requires [pandoc](https://pandoc.org/) to be installed on your system.
 
 ### Cross-Platform Compilation
 
@@ -233,8 +302,10 @@ Creates:
 ### Additional Make Commands
 
 - `make build` - Build for your current platform
-- `make clean` - Remove all compiled binaries
+- `make clean` - Remove all compiled binaries and generated documentation
 - `make all` - Same as `make build`
+- `make man` - Generate man page documentation (requires pandoc)
+- `make install-man` - Install man page system-wide (requires pandoc and sudo)
 
 ## Documentation
 
@@ -271,23 +342,44 @@ All original code in SynapSeq is licensed under the GNU GPL v2, but the followin
 
 - **[beep](https://github.com/gopxl/beep)**  
   License: MIT  
-  Copyright © 2017–present Contributors
-
   Used for audio encoding/decoding.
+
+- **[go-yaml](https://github.com/goccy/go-yaml)**  
+  License: MIT  
+  Used for YAML parsing and processing.
 
 - **[pkg/errors](https://github.com/pkg/errors)**  
   License: BSD 2-Clause  
-  Copyright © 2015 Dave Cheney
-
   Used indirectly via `beep` for error wrapping and stack trace utilities.
 
 All third-party copyright notices and licenses are preserved in this repository in compliance with their original terms.
 
 ## Contact
 
-If you have any questions, please open a topic on the [discussions](https://github.com/ruanklein/synapseq/discussions) page.
+We'd love to hear from you! Here's how to get in touch:
 
-## Credits
+### Issues (Bug Reports & Feature Requests)
 
-- **SBaGen+** — SynapSeq V2.x was a direct continuation of [SBaGen+](https://github.com/ruanklein/sbagen-plus), a project that modernized and extended the original [SBaGen engine](https://uazu.net/sbagen/).
-  Starting from V3, SynapSeq has been completely rewritten from scratch in Go, with a minimalist and forward-looking design. It no longer depends on any SBaGen or SBaGen+ code.
+Use [GitHub Issues](https://github.com/ruanklein/synapseq/issues) for:
+
+- Bug reports and technical problems
+- Feature requests and enhancement suggestions
+- Documentation improvements
+
+### Discussions (Questions & Community)
+
+Use [GitHub Discussions](https://github.com/ruanklein/synapseq/discussions) for:
+
+- General questions and support (e.g., "How do I use `@presetlist`?")
+- Help with your sequences (e.g., "My sequence isn't working, can you help?")
+- Sharing your own sequences and presets with the community
+- Discussing ideas and best practices
+- Showcasing creative use cases
+
+### Quick Guidelines
+
+- **Found a bug?** → Open an Issue
+- **Want a new feature?** → Open an Issue
+- **Need help or have questions?** → Start a Discussion
+- **Want to share your sequences?** → Post in Discussions
+- **General feedback or ideas?** → Start a Discussion

@@ -22,6 +22,8 @@ const (
 	KeywordOptionVolume = "volume"
 	// Represents a background option
 	KeywordOptionBackground = "background"
+	// Represents a presetlist option
+	KeywordOptionPresetList = "presetlist"
 	// Represents a gain level option
 	KeywordOptionGainLevel = "gainlevel"
 	// Represents a very low gain level option
@@ -76,6 +78,16 @@ const (
 	KeywordPulse = "pulse"
 	// Represents an intensity parameter
 	KeywordIntensity = "intensity"
+	// Represents an pure tone
+	KeywordPure = "pure"
+	// Represents a steady transition
+	KeywordTransitionSteady = "steady"
+	// Represents a ease-out transition
+	KeywordTransitionEaseOut = "ease-out"
+	// Represents an ease-in transition
+	KeywordTransitionEaseIn = "ease-in"
+	// Represents a smooth transition
+	KeywordTransitionSmooth = "smooth"
 )
 
 // Parser defines the interface for parsing different content types

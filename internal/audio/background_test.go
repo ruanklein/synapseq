@@ -8,6 +8,8 @@
 package audio
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
@@ -158,8 +160,221 @@ func TestBackgroundAudio_DisabledAndClose(t *testing.T) {
 	}
 }
 
+func TestBackgroundAudio_RemoteWAV(t *testing.T) {
+	// Read local WAV file to serve
+	path := filepath.Join("testdata", "noise.wav")
+	wavData, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("failed to read test WAV: %v", err)
+	}
+
+	// Create test server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "audio/wav")
+		w.Write(wavData)
+	}))
+	defer server.Close()
+
+	// Load from remote URL
+	bg, err := NewBackgroundAudio(server.URL)
+	if err != nil {
+		t.Fatalf("NewBackgroundAudio remote: %v", err)
+	}
+	defer bg.Close()
+
+	if !bg.IsEnabled() {
+		t.Fatalf("expected enabled background for remote")
+	}
+
+	// Verify cache was populated
+	if bg.cachedData == nil {
+		t.Fatalf("expected cachedData to be populated")
+	}
+	if len(bg.cachedData) != len(wavData) {
+		t.Fatalf("cached data size mismatch: got %d want %d", len(bg.cachedData), len(wavData))
+	}
+
+	// Read some samples to verify it works
+	buf := make([]int, 1024)
+	n, err := bg.ReadSamples(buf, len(buf))
+	if err != nil {
+		t.Fatalf("ReadSamples remote error: %v", err)
+	}
+	if n != len(buf) {
+		t.Fatalf("ReadSamples remote count: got %d want %d", n, len(buf))
+	}
+
+	// Verify non-zero samples
+	hasNonZero := false
+	for _, v := range buf {
+		if v != 0 {
+			hasNonZero = true
+			break
+		}
+	}
+	if !hasNonZero {
+		t.Fatalf("expected non-zero samples from remote WAV")
+	}
+}
+
+func TestBackgroundAudio_RemoteInvalidContentType(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("not a wav file"))
+	}))
+	defer server.Close()
+
+	_, err := NewBackgroundAudio(server.URL)
+	if err == nil {
+		t.Fatalf("expected error for invalid content-type")
+	}
+	if !contains(err.Error(), "invalid content-type") {
+		t.Fatalf("expected content-type error, got: %v", err)
+	}
+}
+
+func TestBackgroundAudio_Remote10MBLimit(ts *testing.T) {
+	// Create a server that serves more than 10MB
+	const size = 12 * 1024 * 1024 // 12MB
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "audio/wav")
+		// Write a simple WAV header (44 bytes) + data
+		header := make([]byte, 44)
+		copy(header[0:4], "RIFF")
+		copy(header[8:12], "WAVE")
+		copy(header[12:16], "fmt ")
+		// fmt chunk size
+		header[16] = 16
+		// PCM format (1)
+		header[20] = 1
+		// 2 channels
+		header[22] = 2
+		// 44100 sample rate
+		header[24] = 0x44
+		header[25] = 0xac
+		// byte rate
+		header[28] = 0x10
+		header[29] = 0xb1
+		header[30] = 0x02
+		// block align
+		header[32] = 4
+		// bits per sample
+		header[34] = 16
+		// data chunk
+		copy(header[36:40], "data")
+		// data size (size - 44)
+		dataSize := size - 44
+		header[40] = byte(dataSize)
+		header[41] = byte(dataSize >> 8)
+		header[42] = byte(dataSize >> 16)
+		header[43] = byte(dataSize >> 24)
+
+		w.Write(header)
+		// Write more data to exceed 10MB
+		chunk := make([]byte, 1024*1024) // 1MB chunks
+		for i := 0; i < size-44; i += len(chunk) {
+			remaining := size - 44 - i
+			if remaining < len(chunk) {
+				w.Write(chunk[:remaining])
+			} else {
+				w.Write(chunk)
+			}
+		}
+	}))
+	defer server.Close()
+
+	bg, err := NewBackgroundAudio(server.URL)
+	if err != nil {
+		ts.Fatalf("NewBackgroundAudio 10MB limit: %v", err)
+	}
+	defer bg.Close()
+
+	// Verify that only 10MB was read
+	if len(bg.cachedData) != maxBackgroundFileSize {
+		ts.Fatalf("expected cached data to be limited to %d bytes, got %d", maxBackgroundFileSize, len(bg.cachedData))
+	}
+}
+
+func TestBackgroundAudio_Local10MBLimit(ts *testing.T) {
+	// Create a temporary WAV file larger than 10MB
+	tmpDir := ts.TempDir()
+	path := filepath.Join(tmpDir, "large.wav")
+
+	f, err := os.Create(path)
+	if err != nil {
+		ts.Fatalf("failed to create temp file: %v", err)
+	}
+
+	const size = 12 * 1024 * 1024 // 12MB
+	// Write WAV header
+	header := make([]byte, 44)
+	copy(header[0:4], "RIFF")
+	copy(header[8:12], "WAVE")
+	copy(header[12:16], "fmt ")
+	header[16] = 16
+	header[20] = 1
+	header[22] = 2
+	header[24] = 0x44
+	header[25] = 0xac
+	header[28] = 0x10
+	header[29] = 0xb1
+	header[30] = 0x02
+	header[32] = 4
+	header[34] = 16
+	copy(header[36:40], "data")
+	dataSize := size - 44
+	header[40] = byte(dataSize)
+	header[41] = byte(dataSize >> 8)
+	header[42] = byte(dataSize >> 16)
+	header[43] = byte(dataSize >> 24)
+
+	if _, err := f.Write(header); err != nil {
+		ts.Fatalf("failed to write header: %v", err)
+	}
+
+	// Write data
+	chunk := make([]byte, 1024*1024) // 1MB chunks
+	for i := 0; i < size-44; i += len(chunk) {
+		remaining := size - 44 - i
+		if remaining < len(chunk) {
+			if _, err := f.Write(chunk[:remaining]); err != nil {
+				ts.Fatalf("failed to write data: %v", err)
+			}
+		} else {
+			if _, err := f.Write(chunk); err != nil {
+				ts.Fatalf("failed to write data: %v", err)
+			}
+		}
+	}
+	f.Close()
+
+	bg, err := NewBackgroundAudio(path)
+	if err != nil {
+		ts.Fatalf("NewBackgroundAudio local 10MB limit: %v", err)
+	}
+	defer bg.Close()
+
+	// Verify that only 10MB was read
+	if len(bg.cachedData) != maxBackgroundFileSize {
+		ts.Fatalf("expected cached data to be limited to %d bytes, got %d", maxBackgroundFileSize, len(bg.cachedData))
+	}
+}
+
 func TestBackgroundAudio_InvalidPath(t *testing.T) {
 	if _, err := NewBackgroundAudio(filepath.Join("testdata", "missing.wav")); err == nil {
 		t.Fatalf("expected error for missing background file")
 	}
+}
+
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && containsHelper(s, substr))
+}
+
+func containsHelper(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }
