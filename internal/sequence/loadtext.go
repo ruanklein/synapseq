@@ -35,7 +35,7 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 		Volume:         100,
 		BackgroundPath: "",
 		PresetPath:     "",
-		GainLevel:      t.GainLevelMedium,
+		GainLevel:      t.GainLevelVeryHigh,
 	}
 
 	var (
