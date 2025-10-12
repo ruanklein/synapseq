@@ -123,16 +123,34 @@ sudo yum install golang make
 
 **Windows:**
 
+For Windows users, we recommend using **Git Bash** or **WSL2** (Windows Subsystem for Linux) instead of PowerShell or CMD, as the Makefile requires Unix-like shell commands.
+
+**Option 1: Git Bash (Recommended for simplicity)**
+
+1. Download and install [Git for Windows](https://git-scm.com/download/win) (includes Git Bash)
+2. Install [Chocolatey](https://chocolatey.org/install) (package manager for Windows)
+3. Open PowerShell as Administrator and install Go and make:
+
 ```powershell
-# Using Chocolatey (install Chocolatey first from https://chocolatey.org/)
-choco install golang make
+choco install golang make -y
+```
 
-# Using Scoop (install Scoop first from https://scoop.sh/)
-scoop install go make
+4. Close and reopen your terminal, then verify installation in Git Bash:
 
-# Using winget (Windows 10/11)
-winget install GoLang.Go
-winget install GnuWin32.Make
+```bash
+go version
+make --version
+```
+
+**Option 2: WSL2 (Recommended for full Linux experience)**
+
+1. Install WSL2 following [Microsoft's guide](https://learn.microsoft.com/en-us/windows/wsl/install)
+2. Install Ubuntu from Microsoft Store
+3. Open Ubuntu terminal and run:
+
+```bash
+sudo apt update
+sudo apt install golang-go make
 ```
 
 **Verify installation:**
@@ -156,11 +174,11 @@ make
 
 This will automatically compile SynapSeq for your current operating system and architecture, creating a binary in the `bin/` directory.
 
-**For Windows:**
+**For Windows (using Git Bash or WSL2):**
 
-Run:
+Open Git Bash or your WSL2 terminal and run:
 
-```cmd
+```bash
 make build-windows
 ```
 
@@ -178,15 +196,52 @@ sudo make install
 
 This will install the SynapSeq binary to `/usr/local/bin/synapseq`.
 
-**Windows:**
+**Windows (Git Bash or WSL2):**
 
-```cmd
-# Run Command Prompt as Administrator
-mkdir "C:\Program Files\SynapSeq"
-copy "bin\synapseq-windows-amd64.exe" "C:\Program Files\SynapSeq\synapseq.exe"
+Using Git Bash (run as Administrator):
+
+```bash
+mkdir -p "/c/Program Files/SynapSeq"
+cp bin/synapseq-windows-amd64.exe "/c/Program Files/SynapSeq/synapseq.exe"
 ```
 
-Then add `C:\Program Files\SynapSeq` to your PATH environment variable.
+Or using WSL2, you can copy to a Windows directory:
+
+```bash
+mkdir -p "/mnt/c/Program Files/SynapSeq"
+cp bin/synapseq-windows-amd64.exe "/mnt/c/Program Files/SynapSeq/synapseq.exe"
+```
+
+**Adding to PATH:**
+
+After copying the executable, add `C:\Program Files\SynapSeq` to your PATH environment variable.
+
+_Option 1: Using PowerShell (run as Administrator):_
+
+```powershell
+# Add to PATH permanently for current user
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\SynapSeq", "User")
+
+# Or add for all users (requires Administrator)
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\SynapSeq", "Machine")
+```
+
+_Option 2: Using Windows Settings (GUI):_
+
+1. Open **Start Menu** and search for "Environment Variables"
+2. Click **"Edit the system environment variables"**
+3. Click **"Environment Variables..."** button
+4. Under **"User variables"** or **"System variables"**, find and select **"Path"**
+5. Click **"Edit..."**
+6. Click **"New"**
+7. Add: `C:\Program Files\SynapSeq`
+8. Click **"OK"** on all dialogs
+
+After adding to PATH, **restart your terminal** and verify:
+
+```bash
+synapseq --version
+```
 
 ### Installing Documentation (Optional)
 
