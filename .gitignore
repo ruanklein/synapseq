@@ -9,3 +9,5 @@ bin/
 !/contrib/**/*.spsq
 
 docs/manpage
+scripts/generated
+    
