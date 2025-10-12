@@ -415,10 +415,12 @@ Transition wave:
 ```
 # Presets
 awake
-  tone 250 binaural 14 amplitude 40  # Low beta (relaxed alertness)
+  # Low beta (relaxed alertness)
+  tone 250 binaural 14 amplitude 40
 
 deep
-  tone 200 binaural 4 amplitude 20   # Theta (deep meditation)
+  # Theta (deep meditation)
+  tone 200 binaural 4 amplitude 20
 
 # Timeline
 00:00:00 silence
@@ -428,9 +430,6 @@ deep
 # Rapid initial shift, gentle stabilization in deep state
 00:01:00 awake ease-out
 00:06:00 deep
-
-# Maintain deep meditation
-00:10:00 deep
 
 # Awakening - use EASE-IN
 # Gentle emergence, firm arrival in alert state
@@ -559,7 +558,7 @@ The levels are:
 - `high`: set the gain to the -6db
 - `veryhigh`: set the gain to the 0db (without gain)
 
-The `veryhigh` level is the default and is applied to the `@background` sound to avoid any distortion. If you don't want any gain level, you can set the `@gainlevel` to `veryhigh`, this is normal gain of the background sound.
+The `veryhigh` level is the default.
 
 #### `@volume`
 

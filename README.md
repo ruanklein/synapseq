@@ -76,15 +76,7 @@ Phases:
 
 ### More Examples
 
-You can find additional example scripts in the `samples/` folder of this repository. These include various types of brainwave entrainment sequences that you can download and test:
-
-- `sample-binaural.spsq` - Binaural beats example
-- `sample-isochronic.spsq` - Isochronic tones example
-- `sample-monaural.spsq` - Monaural beats example
-- `sample-noise.spsq` - Noise-based entrainment
-- `sample-background-spin.spsq` - "Spin" effect
-- `sample-background-pulse.spsq` - "Pulse" effect
-- `sample-waveform.spsq` - Custom waveform example
+You can find additional example scripts in the `samples/` folder of this repository. See the [samples/README.md](samples/README.md) for detailed information about each example.
 
 ## Installation
 
