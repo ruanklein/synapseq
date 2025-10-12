@@ -557,9 +557,9 @@ The levels are:
 - `low`: set the gain to the -16db
 - `medium`: set the gain to the -12db
 - `high`: set the gain to the -6db
-- `veryhigh`: set the gain to the 0db
+- `veryhigh`: set the gain to the 0db (without gain)
 
-The `medium` level is the default and is applied to the `@background` sound to avoid any distortion. If you don't want any gain level, you can set the `@gainlevel` to `veryhigh`, this is normal gain of the background sound.
+The `veryhigh` level is the default and is applied to the `@background` sound to avoid any distortion. If you don't want any gain level, you can set the `@gainlevel` to `veryhigh`, this is normal gain of the background sound.
 
 #### `@volume`
 
