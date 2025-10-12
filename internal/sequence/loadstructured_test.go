@@ -528,3 +528,479 @@ func TestLoadStructured_JSON_FileTooLarge(t *testing.T) {
 		t.Fatalf("expected error for file > %d bytes, got nil", maxStructuredFileSize)
 	}
 }
+
+// ...existing code...
+
+func TestLoadStructured_JSON_WithBackground(ts *testing.T) {
+	json := `{
+  "description": ["Background test with pulse effect"],
+  "options": {
+    "samplerate": 44100,
+    "volume": 100,
+    "background": "sounds/pink-noise.wav",
+    "gainlevel": "veryhigh"
+  },
+  "sequence": [
+    {
+      "time": 0,
+      "transition": "steady",
+      "track": {
+        "tones": [
+          { "mode": "monaural", "carrier": 300, "resonance": 10, "amplitude": 0, "waveform": "sine" }
+        ],
+        "background": {
+          "amplitude": 0,
+          "waveform": "sine",
+          "effect": {
+            "intensity": 50,
+            "pulse": {
+              "resonance": 10
+            }
+          }
+        }
+      }
+    },
+    {
+      "time": 15000,
+      "transition": "smooth",
+      "track": {
+        "tones": [
+          { "mode": "monaural", "carrier": 300, "resonance": 10, "amplitude": 15, "waveform": "sine" }
+        ],
+        "background": {
+          "amplitude": 50,
+          "waveform": "sine",
+          "effect": {
+            "intensity": 50,
+            "pulse": {
+              "resonance": 10
+            }
+          }
+        }
+      }
+    }
+  ]
+}`
+	p := writeTemp(ts, "bg-pulse.json", json)
+
+	res, err := LoadStructuredSequence(p, "json")
+	if err != nil {
+		ts.Fatalf("LoadStructuredSequence(json with background) error: %v", err)
+	}
+
+	if res.Options.SampleRate != 44100 || res.Options.Volume != 100 {
+		ts.Fatalf("unexpected options: %+v", *res.Options)
+	}
+	if !strings.HasSuffix(res.Options.BackgroundPath, "sounds/pink-noise.wav") {
+		ts.Fatalf("expected background to end with 'sounds/pink-noise.wav', got %q", res.Options.BackgroundPath)
+	}
+	if res.Options.GainLevel != t.GainLevelVeryHigh {
+		ts.Fatalf("expected gainlevel veryhigh, got %v", res.Options.GainLevel)
+	}
+
+	if len(res.Periods) != 2 {
+		ts.Fatalf("expected 2 periods, got %d", len(res.Periods))
+	}
+	assertIncreasing(ts, periodTimes(res.Periods))
+
+	// Check transition type
+	if res.Periods[1].Transition != t.TransitionSmooth {
+		ts.Fatalf("expected smooth transition, got %v", res.Periods[1].Transition)
+	}
+
+	// Verify background track with pulse effect
+	found := false
+	for _, track := range res.Periods[1].TrackStart {
+		if track.Type == t.TrackBackground &&
+			track.Amplitude == t.AmplitudePercentToRaw(50) &&
+			track.Effect.Type == t.EffectPulse &&
+			track.Resonance == 10 {
+			found = true
+			break
+		}
+	}
+	if !found {
+		ts.Fatalf("missing expected background track with pulse effect in period[1]")
+	}
+}
+
+func TestLoadStructured_XML_WithBackground(ts *testing.T) {
+	xml := `<?xml version="1.0" encoding="UTF-8"?>
+<SynapSeqInput>
+  <description>
+    <line>Background test with spin effect</line>
+  </description>
+  <options>
+    <samplerate>44100</samplerate>
+    <volume>100</volume>
+    <background>sounds/pink-noise.wav</background>
+    <gainlevel>veryhigh</gainlevel>
+  </options>
+  <sequence>
+    <entry time="0" transition="steady">
+      <track>
+        <tone mode="binaural" carrier="300" resonance="10" amplitude="0" waveform="sine"></tone>
+        <background amplitude="0" waveform="sine">
+          <effect intensity="45">
+            <spin width="400" rate="10"></spin>
+          </effect>
+        </background>
+      </track>
+    </entry>
+    <entry time="15000" transition="ease-in">
+      <track>
+        <tone mode="binaural" carrier="300" resonance="10" amplitude="15" waveform="sine"></tone>
+        <background amplitude="50" waveform="sine">
+          <effect intensity="45">
+            <spin width="400" rate="10"></spin>
+          </effect>
+        </background>
+      </track>
+    </entry>
+  </sequence>
+</SynapSeqInput>`
+	p := writeTemp(ts, "bg-spin.xml", xml)
+
+	res, err := LoadStructuredSequence(p, "xml")
+	if err != nil {
+		ts.Fatalf("LoadStructuredSequence(xml with background) error: %v", err)
+	}
+
+	if res.Options.SampleRate != 44100 || res.Options.Volume != 100 {
+		ts.Fatalf("unexpected options: %+v", *res.Options)
+	}
+	if !strings.HasSuffix(res.Options.BackgroundPath, "sounds/pink-noise.wav") {
+		ts.Fatalf("expected background to end with 'sounds/pink-noise.wav', got %q", res.Options.BackgroundPath)
+	}
+	if res.Options.GainLevel != t.GainLevelVeryHigh {
+		ts.Fatalf("expected gainlevel veryhigh, got %v", res.Options.GainLevel)
+	}
+
+	if len(res.Periods) != 2 {
+		ts.Fatalf("expected 2 periods, got %d", len(res.Periods))
+	}
+	assertIncreasing(ts, periodTimes(res.Periods))
+
+	// Check transition type
+	if res.Periods[1].Transition != t.TransitionEaseIn {
+		ts.Fatalf("expected ease-in transition, got %v", res.Periods[1].Transition)
+	}
+
+	// Verify background track with spin effect
+	found := false
+	for _, track := range res.Periods[1].TrackStart {
+		if track.Type == t.TrackBackground &&
+			track.Amplitude == t.AmplitudePercentToRaw(50) &&
+			track.Effect.Type == t.EffectSpin &&
+			track.Carrier == 400 &&
+			track.Resonance == 10 {
+			found = true
+			break
+		}
+	}
+	if !found {
+		ts.Fatalf("missing expected background track with spin effect in period[1]")
+	}
+}
+
+func TestLoadStructured_YAML_WithBackground(ts *testing.T) {
+	yaml := `description:
+  - Background test with pulse effect
+options:
+  samplerate: 44100
+  volume: 100
+  background: sounds/pink-noise.wav
+  gainlevel: veryhigh
+sequence:
+  - time: 0
+    transition: steady
+    track:
+      tones:
+        - mode: monaural
+          carrier: 300
+          resonance: 10
+          amplitude: 0
+          waveform: sine
+      background:
+        amplitude: 0
+        waveform: sine
+        effect:
+          intensity: 50
+          pulse:
+            resonance: 10
+  - time: 15000
+    transition: ease-out
+    track:
+      tones:
+        - mode: monaural
+          carrier: 300
+          resonance: 10
+          amplitude: 15
+          waveform: sine
+      background:
+        amplitude: 50
+        waveform: sine
+        effect:
+          intensity: 50
+          pulse:
+            resonance: 10
+`
+	p := writeTemp(ts, "bg-pulse.yaml", yaml)
+
+	res, err := LoadStructuredSequence(p, "yaml")
+	if err != nil {
+		ts.Fatalf("LoadStructuredSequence(yaml with background) error: %v", err)
+	}
+
+	if res.Options.SampleRate != 44100 || res.Options.Volume != 100 {
+		ts.Fatalf("unexpected options: %+v", *res.Options)
+	}
+	if !strings.HasSuffix(res.Options.BackgroundPath, "sounds/pink-noise.wav") {
+		ts.Fatalf("expected background to end with 'sounds/pink-noise.wav', got %q", res.Options.BackgroundPath)
+	}
+	if res.Options.GainLevel != t.GainLevelVeryHigh {
+		ts.Fatalf("expected gainlevel veryhigh, got %v", res.Options.GainLevel)
+	}
+
+	if len(res.Periods) != 2 {
+		ts.Fatalf("expected 2 periods, got %d", len(res.Periods))
+	}
+	assertIncreasing(ts, periodTimes(res.Periods))
+
+	// Check transition type
+	if res.Periods[1].Transition != t.TransitionEaseOut {
+		ts.Fatalf("expected ease-out transition, got %v", res.Periods[1].Transition)
+	}
+
+	// Verify background track with pulse effect
+	found := false
+	for _, track := range res.Periods[1].TrackStart {
+		if track.Type == t.TrackBackground &&
+			track.Amplitude == t.AmplitudePercentToRaw(50) &&
+			track.Effect.Type == t.EffectPulse &&
+			track.Resonance == 10 {
+			found = true
+			break
+		}
+	}
+	if !found {
+		ts.Fatalf("missing expected background track with pulse effect in period[1]")
+	}
+}
+
+func TestLoadStructured_JSON_BackgroundWithVaryingIntensity(ts *testing.T) {
+	json := `{
+  "description": ["Background test with varying pulse intensity"],
+  "options": {
+    "samplerate": 44100,
+    "volume": 100,
+    "background": "sounds/pink-noise.wav"
+  },
+  "sequence": [
+    {
+      "time": 0,
+      "transition": "steady",
+      "track": {
+        "background": {
+          "amplitude": 50,
+          "waveform": "sine",
+          "effect": {
+            "intensity": 60,
+            "pulse": {
+              "resonance": 8
+            }
+          }
+        }
+      }
+    },
+    {
+      "time": 30000,
+      "transition": "smooth",
+      "track": {
+        "background": {
+          "amplitude": 50,
+          "waveform": "sine",
+          "effect": {
+            "intensity": 30,
+            "pulse": {
+              "resonance": 8
+            }
+          }
+        }
+      }
+    }
+  ]
+}`
+	p := writeTemp(ts, "bg-varying-intensity.json", json)
+
+	res, err := LoadStructuredSequence(p, "json")
+	if err != nil {
+		ts.Fatalf("LoadStructuredSequence(json with varying intensity) error: %v", err)
+	}
+
+	if len(res.Periods) != 2 {
+		ts.Fatalf("expected 2 periods, got %d", len(res.Periods))
+	}
+
+	// Verify first period has higher intensity
+	found := false
+	for _, track := range res.Periods[0].TrackStart {
+		if track.Type == t.TrackBackground &&
+			track.Effect.Type == t.EffectPulse &&
+			track.Effect.Intensity == t.IntensityPercentToRaw(60) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		ts.Fatalf("missing expected background track with high intensity in period[0]")
+	}
+
+	// Verify second period has lower intensity
+	found = false
+	for _, track := range res.Periods[1].TrackStart {
+		if track.Type == t.TrackBackground &&
+			track.Effect.Type == t.EffectPulse &&
+			track.Effect.Intensity == t.IntensityPercentToRaw(30) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		ts.Fatalf("missing expected background track with low intensity in period[1]")
+	}
+}
+
+func TestLoadStructured_XML_BackgroundWithoutEffect(ts *testing.T) {
+	xml := `<?xml version="1.0" encoding="UTF-8"?>
+<SynapSeqInput>
+  <description>
+    <line>Background test without effects</line>
+  </description>
+  <options>
+    <samplerate>44100</samplerate>
+    <volume>100</volume>
+    <background>sounds/pink-noise.wav</background>
+  </options>
+  <sequence>
+    <entry time="0" transition="steady">
+      <track>
+        <background amplitude="0" waveform="square"></background>
+      </track>
+    </entry>
+    <entry time="15000" transition="steady">
+      <track>
+        <background amplitude="40" waveform="square"></background>
+      </track>
+    </entry>
+  </sequence>
+</SynapSeqInput>`
+	p := writeTemp(ts, "bg-no-effect.xml", xml)
+
+	res, err := LoadStructuredSequence(p, "xml")
+	if err != nil {
+		ts.Fatalf("LoadStructuredSequence(xml background without effect) error: %v", err)
+	}
+
+	if len(res.Periods) != 2 {
+		ts.Fatalf("expected 2 periods, got %d", len(res.Periods))
+	}
+
+	// Verify background track without effect
+	found := false
+	for _, track := range res.Periods[1].TrackStart {
+		if track.Type == t.TrackBackground &&
+			track.Amplitude == t.AmplitudePercentToRaw(40) &&
+			track.Waveform == t.WaveformSquare &&
+			track.Effect.Type == t.EffectOff {
+			found = true
+			break
+		}
+	}
+	if !found {
+		ts.Fatalf("missing expected background track without effects")
+	}
+}
+
+func TestLoadStructured_YAML_BackgroundWithDifferentIntensities(ts *testing.T) {
+	yaml := `description:
+  - Background test with varying intensities on same waveform
+options:
+  samplerate: 44100
+  volume: 100
+  background: sounds/pink-noise.wav
+sequence:
+  - time: 0
+    transition: steady
+    track:
+      background:
+        amplitude: 0
+        waveform: sine
+        effect:
+          intensity: 40
+          pulse:
+            resonance: 6
+  - time: 15000
+    transition: smooth
+    track:
+      background:
+        amplitude: 30
+        waveform: sine
+        effect:
+          intensity: 40
+          pulse:
+            resonance: 6
+  - time: 30000
+    transition: smooth
+    track:
+      background:
+        amplitude: 30
+        waveform: sine
+        effect:
+          intensity: 70
+          pulse:
+            resonance: 6
+`
+	p := writeTemp(ts, "bg-intensities.yaml", yaml)
+
+	res, err := LoadStructuredSequence(p, "yaml")
+	if err != nil {
+		ts.Fatalf("LoadStructuredSequence(yaml with intensities) error: %v", err)
+	}
+
+	if len(res.Periods) != 3 {
+		ts.Fatalf("expected 3 periods, got %d", len(res.Periods))
+	}
+
+	// Check period[1] has lower intensity
+	foundLowIntensity := false
+	for _, track := range res.Periods[1].TrackStart {
+		if track.Type == t.TrackBackground &&
+			track.Waveform == t.WaveformSine &&
+			track.Effect.Type == t.EffectPulse &&
+			track.Effect.Intensity == t.IntensityPercentToRaw(40) &&
+			track.Amplitude > 0 {
+			foundLowIntensity = true
+			break
+		}
+	}
+	if !foundLowIntensity {
+		ts.Fatalf("missing expected low intensity background in period[1]")
+	}
+
+	// Check period[2] has higher intensity
+	foundHighIntensity := false
+	for _, track := range res.Periods[2].TrackStart {
+		if track.Type == t.TrackBackground &&
+			track.Waveform == t.WaveformSine &&
+			track.Effect.Type == t.EffectPulse &&
+			track.Effect.Intensity == t.IntensityPercentToRaw(70) &&
+			track.Amplitude > 0 {
+			foundHighIntensity = true
+			break
+		}
+	}
+	if !foundHighIntensity {
+		ts.Fatalf("missing expected high intensity background in period[2]")
+	}
+}
