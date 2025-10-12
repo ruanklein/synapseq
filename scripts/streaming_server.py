@@ -191,7 +191,7 @@ class StreamingHandler(BaseHTTPRequestHandler):
             freq = params.get('freq', ['10'])[0]
             duration = params.get('duration', ['5'])[0]
             mode = params.get('mode', ['binaural'])[0]
-            sys.stderr.write(f"\n📻 Streaming request: freq={freq}Hz, duration={duration}min, mode={mode}\n")
+            sys.stderr.write(f"\nStreaming request: freq={freq}Hz, duration={duration}min, mode={mode}\n")
             
             # Generate sequence
             sequence = create_streaming_sequence(params)
