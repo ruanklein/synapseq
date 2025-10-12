@@ -33,7 +33,7 @@ func main() {
 
 	if len(args) != 2 {
 		fmt.Fprintf(os.Stderr, "synapseq: invalid number of arguments\n")
-		cli.Usage()
+		cli.Help()
 		os.Exit(1)
 	}
 
