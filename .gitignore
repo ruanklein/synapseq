@@ -7,3 +7,5 @@ bin/
 
 !/samples/**/*.spsq
 !/contrib/**/*.spsq
+
+docs/manpage
