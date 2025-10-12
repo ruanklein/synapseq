@@ -23,37 +23,42 @@ Examples (using JSON; the same applies to -xml and -yaml):
 
 ## Format overview
 
-Root object:
-
-- description: array of strings (converted from lines starting with "##" in .spsq).
-- options:
-  - samplerate: integer (e.g., 44100)
-  - volume: integer 0–100
-  - background: string (optional) — path to background audio file (WAV). Can be a local file path, home directory path (~), or HTTP/HTTPS URL.
-  - gainlevel: string (optional) — one of: low, medium, high, veryhigh (default: veryhigh)
-- sequence: array of entries, each entry:
-  - time: integer milliseconds (first must be 0, strictly increasing)
-  - transition: steady | ease-out | ease-in | smooth
-  - track:
-    - tones: array of tone objects
-      - mode: binaural | monaural | isochronic | pure
-      - carrier: Hz (float)
-      - resonance: Hz (float) — for beats
-      - amplitude: 0–100 (float)
-      - waveform: sine | square | triangle | sawtooth
-    - noises: array of noise objects
-      - mode: white | pink | brown
-      - amplitude: 0–100 (float)
-    - background: object (optional) — background audio modulation
-      - amplitude: 0–100 (float)
-      - waveform: sine | square | triangle | sawtooth
-      - effect: object (optional)
-        - intensity: 0–100 (float) — effect depth
-        - spin: object (optional) — spatial rotation effect
-          - width: Hz (float) — rotation width
-          - rate: Hz (float) — rotation speed
-        - pulse: object (optional) — rhythmic pulsing effect
-          - resonance: Hz (float) — pulse frequency
+```
+Root object
+├── description: array of strings (converted from lines starting with "##" in .spsq)
+├── options
+│   ├── samplerate: integer (e.g., 44100)
+│   ├── volume: integer 0–100
+│   ├── background: string (optional) — path to background audio file (WAV)
+│   │                Can be a local file path, home directory path (~), or HTTP/HTTPS URL
+│   └── gainlevel: string (optional) — one of: low, medium, high, veryhigh (default: veryhigh)
+└── sequence: array of entries
+    └── entry
+        ├── time: integer milliseconds (first must be 0, strictly increasing)
+        ├── transition: steady | ease-out | ease-in | smooth
+        └── track
+            ├── tones: array of tone objects
+            │   └── tone
+            │       ├── mode: binaural | monaural | isochronic | pure
+            │       ├── carrier: Hz (float)
+            │       ├── resonance: Hz (float) — for beats
+            │       ├── amplitude: 0–100 (float)
+            │       └── waveform: sine | square | triangle | sawtooth
+            ├── noises: array of noise objects
+            │   └── noise
+            │       ├── mode: white | pink | brown
+            │       └── amplitude: 0–100 (float)
+            └── background: object (optional) — background audio modulation
+                ├── amplitude: 0–100 (float)
+                ├── waveform: sine | square | triangle | sawtooth
+                └── effect: object (optional)
+                    ├── intensity: 0–100 (float) — effect depth
+                    ├── spin: object (optional) — spatial rotation effect
+                    │   ├── width: Hz (float) — rotation width
+                    │   └── rate: Hz (float) — rotation speed
+                    └── pulse: object (optional) — rhythmic pulsing effect
+                        └── resonance: Hz (float) — pulse frequency
+```
 
 Notes:
 
