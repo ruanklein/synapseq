@@ -65,7 +65,9 @@ func Help() {
 	fmt.Fprintf(os.Stderr, "  synapseq https://example.com/sequence.spsq output.wav\n")
 	fmt.Fprintf(os.Stderr, "  synapseq sequence.spsq - | play -t raw -r 44100 -e signed-integer -b 24 -c 2 -\n\n")
 
-	fmt.Fprintf(os.Stderr, "For detailed documentation, visit: https://github.com/ruanklein/synapseq\n")
+	fmt.Fprintf(os.Stderr, "For detailed documentation:\n")
+	fmt.Fprintf(os.Stderr, "  man synapseq\n")
+	fmt.Fprintf(os.Stderr, "  https://github.com/ruanklein/synapseq\n")
 }
 
 // ShowVersion prints the version information
