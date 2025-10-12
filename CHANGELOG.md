@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.1.0]
+
+### New Features
+
+- Added transition types: `steady`, `ease-in`, `ease-out`, and `smooth` for more natural brainwave entrainment progressions.
+- Added support for structured formats: JSON, XML, and YAML via `-json`, `-xml`, and `-yaml` CLI flags.
+- Added `@presetlist` global option, allowing preset reuse across different sequences.
+- Added support for HTTP/HTTPS URLs as input:
+  - CLI: load sequences directly from web URLs
+  - `@background`: load background audio from web URLs
+  - `@presetlist`: load preset files from web URLs
+- Added new sample files demonstrating all new features:
+  - Transition examples:
+    - [sample-transitions.spsq](samples/sample-transitions.spsq)
+  - Preset reuse examples using `@presetlist`:
+    - [presets-focus.spsq](samples/presets-focus.spsq) - Shared focus presets
+    - [presets-relax.spsq](samples/presets-relax.spsq) - Shared relaxation presets
+    - [sample-focus-one.spsq](samples/sample-focus-one.spsq) - Focus session part one
+    - [sample-focus-two.spsq](samples/sample-focus-two.spsq) - Focus session part two
+    - [sample-relax-one.spsq](samples/sample-relax-one.spsq) - Relaxation session part one
+    - [sample-relax-two.spsq](samples/sample-relax-two.spsq) - Relaxation session part two
+    - [sample-genesis.spsq](samples/sample-genesis.spsq) - Complete session using both preset files
+  - Structured format samples:
+    - [samples/structured/](samples/structured/) - JSON, XML, and YAML examples
+
+### Bug Fixes
+
+- Fixed audio clipping issue in `@background` option for better audio quality.
+- Fixed `-quiet` option to properly suppress non-error output.
+
+### Improvements
+
+- Improved status output during audio generation for better tracking of sequence progress.
+- Added file size limits for all file types to prevent memory overflow:
+  - Text format (`.spsq`): 32 KB max
+  - Structured formats (JSON/XML/YAML): 128 KB max
+  - Background audio (`.wav`): 10 MB max
+- Added `man` target to [Makefile](Makefile) for automatic man page generation from documentation, facilitating offline documentation access.
+- Added Content-Type validation for HTTP/HTTPS file loading.
+
 ## [3.0.1]
 
 - Replaced audio dependency: migrated from go-audio to gopxl/beep v2 for WAV encoding/decoding and streaming.
