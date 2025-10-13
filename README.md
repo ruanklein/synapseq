@@ -1,6 +1,20 @@
-# SynapSeq
+<p align="center">
+  <img src="assets/logo-rounded.png" alt="SynapSeq Logo" width="200">
+</p>
 
-**Synapse-Sequenced Brainwave Generator**
+<h1 align="center">SynapSeq</h1>
+
+<p align="center">
+  <a href="https://github.com/ruanklein/synapseq/releases/latest"><img src="https://img.shields.io/github/v/release/ruanklein/synapseq?style=flat-square&color=blue" alt="Release"></a>
+  <a href="COPYING.txt"><img src="https://img.shields.io/badge/license-GPL%20v2-blue.svg?style=flat-square" alt="License"></a>
+  <a href="go.mod"><img src="https://img.shields.io/github/go-mod/go-version/ruanklein/synapseq?style=flat-square&color=00ADD8" alt="Go Version"></a>
+  <a href="https://github.com/ruanklein/synapseq/actions"><img src="https://img.shields.io/github/actions/workflow/status/ruanklein/synapseq/release.yml?style=flat-square" alt="Build Status"></a>
+  <a href="https://github.com/ruanklein/synapseq/issues"><img src="https://img.shields.io/github/issues/ruanklein/synapseq?style=flat-square" alt="GitHub Issues"></a>
+  <a href="https://github.com/ruanklein/synapseq/discussions"><img src="https://img.shields.io/github/discussions/ruanklein/synapseq?style=flat-square&color=orange" alt="GitHub Discussions"></a>
+  <a href="https://github.com/ruanklein/synapseq/releases"><img src="https://img.shields.io/github/downloads/ruanklein/synapseq/total?style=flat-square&color=green" alt="Downloads"></a>
+</p>
+
+<p align="center"><strong>Synapse-Sequenced Brainwave Generator</strong></p>
 
 SynapSeq is a lightweight and efficient engine for sequencing audio tones for brainwave entrainment, using a simple text-based format. It helps induce states such as relaxation, meditation, and focused awareness by guiding brainwave frequencies through sound.
 
