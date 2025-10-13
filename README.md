@@ -10,6 +10,7 @@
   <a href="go.mod"><img src="https://img.shields.io/github/go-mod/go-version/ruanklein/synapseq?style=flat-square&color=00ADD8" alt="Go Version"></a>
   <a href="https://github.com/ruanklein/synapseq/issues"><img src="https://img.shields.io/github/issues/ruanklein/synapseq?style=flat-square" alt="GitHub Issues"></a>
   <a href="https://github.com/ruanklein/synapseq/discussions"><img src="https://img.shields.io/github/discussions/ruanklein/synapseq?style=flat-square&color=orange" alt="GitHub Discussions"></a>
+  <a href="https://github.com/ruanklein/synapseq/commits"><img src="https://img.shields.io/github/commit-activity/m/ruanklein/synapseq?style=flat-square&color=purple" alt="Commit Activity"></a>
 </p>
 
 <p align="center"><strong>Synapse-Sequenced Brainwave Generator</strong></p>
