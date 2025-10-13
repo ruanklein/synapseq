@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="SynapSeq Logo" width="200" style="border-radius: 20px;">
+  <img src="assets/logo-rounded.png" alt="SynapSeq Logo" width="200">
 </p>
 
 <h1 align="center">SynapSeq</h1>
