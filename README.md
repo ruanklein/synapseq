@@ -162,6 +162,13 @@ make --version
 
 ## Compilation
 
+First, clone the repository:
+
+```bash
+git clone https://github.com/ruanklein/synapseq.git
+cd synapseq
+```
+
 SynapSeq can be compiled using the provided Makefile.
 
 **For macOS and Linux:**
