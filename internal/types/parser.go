@@ -92,8 +92,6 @@ const (
 	KeywordFrom = "from"
 	// Represents a track parameter
 	KeywordTrack = "track"
-	// Represents a frequency parameter
-	KeywordFrequency = "frequency"
 	// Represents an "as" keyword
 	KeywordAs = "as"
 	// Represents a template preset
