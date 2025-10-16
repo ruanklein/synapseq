@@ -21,7 +21,15 @@ func (ctx *TextParser) HasTrack() bool {
 		return false
 	}
 
-	return ln[0] == ' ' && ln[1] == ' ' && ln[2] != ' '
+	if ln[0] == ' ' && ln[1] == ' ' && ln[2] != ' ' {
+		tok, ok := ctx.Line.Peek()
+		if !ok || tok == t.KeywordTrack {
+			return false
+		}
+		return true
+	}
+
+	return false
 }
 
 // ParseTrack extracts and returns a Track from the current line context

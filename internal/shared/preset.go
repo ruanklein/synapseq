@@ -15,9 +15,9 @@ import (
 
 // FindPreset searches for a preset by name in a slice of presets
 func FindPreset(name string, presets []t.Preset) *t.Preset {
-	for i := range presets {
-		if presets[i].String() == name {
-			return &presets[i]
+	for _, preset := range presets {
+		if preset.String() == name {
+			return &preset
 		}
 	}
 	return nil

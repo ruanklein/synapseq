@@ -101,7 +101,7 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 				return nil, fmt.Errorf("line %d: preset definitions must be before any timeline definitions", file.CurrentLineNumber)
 			}
 
-			preset, err := ctx.ParsePreset()
+			preset, err := ctx.ParsePreset(&presets)
 			if err != nil {
 				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
@@ -144,6 +144,30 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 			}
 
 			lastPreset.Track[trackIndex] = *track
+			continue
+		}
+
+		// Track override line
+		if ctx.HasTrackOverride() {
+			optionsLocked = true
+
+			if len(presets) == 1 { // 1 = silence preset
+				return nil, fmt.Errorf("line %d: track override defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
+			}
+
+			if len(periods) > 0 {
+				return nil, fmt.Errorf("line %d: track override definitions must be before any timeline definitions", file.CurrentLineNumber)
+			}
+
+			lastPreset := &presets[len(presets)-1]
+			if lastPreset.From == nil {
+				return nil, fmt.Errorf("line %d: cannot override tracks on preset %q which does not have a 'from' source", file.CurrentLineNumber, lastPreset.String())
+			}
+
+			if err := ctx.ParseTrackOverride(lastPreset); err != nil {
+				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+			}
+
 			continue
 		}
 

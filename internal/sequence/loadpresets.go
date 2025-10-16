@@ -38,7 +38,7 @@ func loadPresets(filename string) ([]t.Preset, error) {
 
 		// Parse preset lines
 		if ctx.HasPreset() {
-			preset, err := ctx.ParsePreset()
+			preset, err := ctx.ParsePreset(&presets)
 			if err != nil {
 				return nil, fmt.Errorf("preset file, line %d: %v", f.CurrentLineNumber, err)
 			}

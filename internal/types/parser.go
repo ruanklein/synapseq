@@ -88,6 +88,16 @@ const (
 	KeywordTransitionEaseIn = "ease-in"
 	// Represents a smooth transition
 	KeywordTransitionSmooth = "smooth"
+	// Represents a from to copy preset
+	KeywordFrom = "from"
+	// Represents a track parameter
+	KeywordTrack = "track"
+	// Represents a frequency parameter
+	KeywordFrequency = "frequency"
+	// Represents an "as" keyword
+	KeywordAs = "as"
+	// Represents a template preset
+	KeywordTemplate = "template"
 )
 
 // Parser defines the interface for parsing different content types
@@ -108,7 +118,7 @@ type Parser interface {
 	// ParseOption parses an option content
 	ParseOption(*Option) error
 	// ParsePreset parses a preset content
-	ParsePreset() (*Preset, error)
+	ParsePreset(*[]Preset) (*Preset, error)
 	// ParseTrack parses a track content
 	ParseTrack() (*Track, error)
 	// ParseTimeline parses a timeline content
