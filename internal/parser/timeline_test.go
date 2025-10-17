@@ -39,7 +39,7 @@ func TestHasTimeline(ts *testing.T) {
 
 func TestParseTimeline(ts *testing.T) {
 	var presets []t.Preset
-	alpha, err := t.NewPreset("alpha")
+	alpha, err := t.NewPreset("alpha", false, nil)
 	if err != nil {
 		ts.Fatalf("unexpected error creating preset 'alpha': %v", err)
 	}
@@ -133,7 +133,7 @@ func TestParseTime(ts *testing.T) {
 
 func TestParseTimelineWithTransitions(ts *testing.T) {
 	var presets []t.Preset
-	alpha, err := t.NewPreset("alpha")
+	alpha, err := t.NewPreset("alpha", false, nil)
 	if err != nil {
 		ts.Fatalf("unexpected error creating preset 'alpha': %v", err)
 	}

@@ -59,7 +59,7 @@ func TestParsePreset(ts *testing.T) {
 
 	for _, test := range tests {
 		ctx := NewTextParser(test.line)
-		preset, err := ctx.ParsePreset()
+		preset, err := ctx.ParsePreset(nil)
 		if test.expectedError {
 			if err == nil {
 				ts.Errorf("For line '%s', expected an error but got none", test.line)
