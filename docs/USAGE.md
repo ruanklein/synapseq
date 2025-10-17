@@ -235,6 +235,24 @@ Each `track` line modifies **one attribute per line**, encouraging minimal and i
 - `spin <value>` - spin width effect for background track
 - `pulse <value>` - pulse effect for background track
 
+###### Inheriting without modification
+
+A derived preset can inherit all tracks from a template **without modifying anything**.  
+This is useful when you simply want to reuse the template exactly as defined.
+
+```
+
+# inherits everything unchanged
+focus-phase1 from base-focus
+focus-phase2 from base-focus
+  track 1 amplitude 30
+  ...
+
+00:00:00 silence
+00:00:15 focus-phase1
+...
+```
+
 ###### When to Use
 
 **Use templates when:**
