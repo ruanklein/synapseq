@@ -1,0 +1,69 @@
+## ENERGIZER SEQUENCE — TEMPLATE INHERITANCE DEMONSTRATION
+## This sample demonstrates how templating presets can be used to create
+## progressive stimulation and alertness sequences without code repetition.
+##
+## CONCEPT:
+## - A base template ("base-energizer") defines the overall sound structure
+##   using white noise and two beta-range binaural tones.
+## - Derived presets ("from base-energizer") inherit the same tracks but modify
+##   specific parameters (tone frequency or amplitude) to simulate gradual
+##   increases and stabilization of mental energy.
+##
+## TECHNICAL PROCESS:
+## - White noise: Provides an energetic and bright background.
+## - Tone 1 (Low Beta, ~16Hz): Supports relaxed focus.
+## - Tone 2 (Mid Beta, ~18Hz): Enhances cognitive alertness and mental clarity.
+## - Derived presets progressively increase tone frequencies and amplitudes
+##   to emulate a gentle rise, peak, sustain, and cooldown of energy.
+##
+## TEMPORAL SEQUENCE BREAKDOWN:
+## 00:00-00:10: Silence — short pause before activation
+## 00:10-03:00: PHASE 1 (Rise) — gradual activation, attention increases
+## 03:00-06:00: PHASE 2 (Peak) — maximum stimulation and focus
+## 06:00-09:00: PHASE 3 (Sustain) — steady and balanced energy
+## 09:00-11:00: PHASE 4 (Cooldown) — smooth return to neutral focus
+##
+## USAGE TIPS:
+## - Ideal for morning activation or pre-task focus.
+## - Use stereo headphones for accurate binaural perception.
+## - Avoid excessive volume — stimulation works best at moderate levels.
+## - Designed for short sessions (~11 minutes) to refresh attention and alertness.
+
+# A templating demonstration sequence for mental activation and focus
+
+# Template preset (base structure)
+base-energizer as template
+  noise white amplitude 25
+  # low beta — relaxed but alert
+  tone 220 binaural 16 amplitude 10
+  # mid beta — cognitive activation
+  tone 280 binaural 18 amplitude 8
+
+# Derived presets (inheriting and modifying the base template)
+energizer-phase1 from base-energizer
+  track 1 amplitude 20
+  track 2 tone 240
+  track 3 tone 300
+
+energizer-phase2 from base-energizer
+  track 1 amplitude 30
+  track 2 tone 260
+  track 3 amplitude 12
+
+energizer-phase3 from base-energizer
+  track 1 amplitude 25
+  track 2 tone 250
+  track 3 amplitude 10
+
+energizer-cooldown from base-energizer
+  track 1 amplitude 15
+  track 2 tone 230
+  track 3 amplitude 6
+
+# Timeline
+00:00:00 silence
+00:00:10 energizer-phase1 smooth
+00:03:00 energizer-phase2 steady
+00:06:00 energizer-phase3 smooth
+00:09:00 energizer-cooldown ease-out
+00:11:00 silence
