@@ -63,11 +63,25 @@ func loadPresets(filename string) ([]t.Preset, error) {
 				return nil, fmt.Errorf("preset file, line %d: %v", f.CurrentLineNumber, err)
 			}
 
-			if track.Type == t.TrackBackground {
-				return nil, fmt.Errorf("preset file, line %d: background is not allowed in preset file", f.CurrentLineNumber)
+			lastPreset.Track[trackIndex] = *track
+			continue
+		}
+
+		// Track override line
+		if ctx.HasTrackOverride() {
+			if len(presets) == 1 { // 1 = silence preset
+				return nil, fmt.Errorf("preset file, line %d: track override defined before any preset: %s", f.CurrentLineNumber, ctx.Line.Raw)
 			}
 
-			lastPreset.Track[trackIndex] = *track
+			lastPreset := &presets[len(presets)-1]
+			if lastPreset.From == nil {
+				return nil, fmt.Errorf("preset file, line %d: cannot override tracks on preset %q which does not have a 'from' source", f.CurrentLineNumber, lastPreset.String())
+			}
+
+			if err := ctx.ParseTrackOverride(lastPreset); err != nil {
+				return nil, fmt.Errorf("preset file, line %d: %v", f.CurrentLineNumber, err)
+			}
+
 			continue
 		}
 
@@ -83,6 +97,9 @@ func loadPresets(filename string) ([]t.Preset, error) {
 	for _, p := range presets {
 		if s.IsPresetEmpty(&p) {
 			return nil, fmt.Errorf("preset file: preset %q is empty", p.String())
+		}
+		if n := s.NumBackgroundTracks(&p); n > 1 {
+			return nil, fmt.Errorf("preset file: preset %q has %d background tracks; only one background track is allowed per preset", p.String(), n)
 		}
 	}
 
