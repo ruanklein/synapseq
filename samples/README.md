@@ -1,8 +1,10 @@
-# SynapSeq Sample Files
+# SynapSeq Sequence Files
 
 This directory contains example sequence files demonstrating various features and capabilities of SynapSeq. Each sample showcases different aspects of brainwave entrainment technology and audio synthesis.
 
-## Core Feature Demonstrations
+## Text Format
+
+The `sample-*` files is written in the SynapSeq text format, illustrating various techniques and presets. Below is a brief description of each sample file.
 
 ### sample-binaural.spsq
 
@@ -54,8 +56,6 @@ This directory contains example sequence files demonstrating various features an
 
 **Timeline:** 1 minute 20 seconds with brief demonstrations of each waveform type.
 
-## Effect Demonstrations
-
 ### sample-background-spin.spsq
 
 **Demonstrates:** Spin effect with background audio
@@ -80,8 +80,6 @@ This directory contains example sequence files demonstrating various features an
 
 **Requirements:** Pink noise WAV file at `sounds/pink-noise.wav`
 
-## Transition Demonstrations
-
 ### sample-transitions.spsq
 
 **Demonstrates:** Four transition types (steady, ease-out, ease-in, smooth)
@@ -91,8 +89,6 @@ This directory contains example sequence files demonstrating various features an
 **Audio Intent:** Educational demonstration of transition mechanics. Shows how different transition curves affect the listening experience and entrainment effectiveness.
 
 **Timeline:** 12 minutes showcasing steady (linear), ease-out (logarithmic), ease-in (exponential), and smooth (sigmoid) transitions.
-
-## Session Examples
 
 ### sample-relax-one.spsq
 
@@ -164,8 +160,6 @@ This directory contains example sequence files demonstrating various features an
 
 **Timeline:** 1 minute with 45 seconds of pure 440Hz tone.
 
-## Preset Files
-
 ### presets-relax.spsq
 
 **Purpose:** Reusable presets for relaxation-oriented sessions
@@ -182,7 +176,21 @@ This directory contains example sequence files demonstrating various features an
 
 **Usage:** Include in other sequences using `@presetlist presets-focus.spsq`
 
-## Structured Format Samples
+### sample-energizer.spsq
+
+**Demonstrates:** Preset templates and inheritance (templating)
+
+**Description:** This sequence showcases the use of template presets, a feature that allows you to define a base preset (template) and create multiple derived presets by inheriting and overriding specific track parameters. The base template (`base-energizer`) defines the overall sound structure (white noise and two beta-range binaural tones). Derived presets (e.g., `energizer-phase1`, `energizer-phase2`, etc.) inherit all tracks from the template and override only the necessary parameters (such as tone frequency or amplitude) to create a progressive stimulation and alertness session without code repetition.
+
+**Audio Intent:** Demonstrates how to build complex, multi-phase sessions efficiently using inheritance. Ideal for progressive activation, focus, and alertness routines. Encourages modular and maintainable sequence design.
+
+**Timeline:** 11 minutes, divided into silence, rise, peak, sustain, and cooldown phases, each using a derived preset.
+
+**Technical Highlight:** Shows how to use the `as template` and `from` keywords, and how to override tracks in derived presets. See the file for detailed comments and structure.
+
+**See also:** [USAGE.md](../docs/USAGE.md) for documentation on template presets.
+
+## Structured Format
 
 The `structured/` subdirectory contains samples in JSON, XML, and YAML formats demonstrating how to use SynapSeq with structured data formats. See [structured/README.md](structured/README.md) for details.
 
