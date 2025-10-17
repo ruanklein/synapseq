@@ -53,6 +53,10 @@ func loadPresets(filename string) ([]t.Preset, error) {
 			}
 
 			lastPreset := &presets[len(presets)-1]
+			if lastPreset.From != nil {
+				return nil, fmt.Errorf("preset file, line %d: preset %q inherits from another and cannot define new tracks", f.CurrentLineNumber, lastPreset.String())
+			}
+
 			trackIndex, err := s.AllocateTrack(lastPreset)
 			if err != nil {
 				return nil, fmt.Errorf("preset file, line %d: %v", f.CurrentLineNumber, err)
@@ -74,6 +78,9 @@ func loadPresets(filename string) ([]t.Preset, error) {
 			}
 
 			lastPreset := &presets[len(presets)-1]
+			if lastPreset.IsTemplate {
+				return nil, fmt.Errorf("preset file, line %d: cannot override tracks on template preset %q", f.CurrentLineNumber, lastPreset.String())
+			}
 			if lastPreset.From == nil {
 				return nil, fmt.Errorf("preset file, line %d: cannot override tracks on preset %q which does not have a 'from' source", f.CurrentLineNumber, lastPreset.String())
 			}

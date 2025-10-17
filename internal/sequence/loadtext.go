@@ -129,6 +129,10 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 			}
 
 			lastPreset := &presets[len(presets)-1]
+			if lastPreset.From != nil {
+				return nil, fmt.Errorf("line %d: preset %q inherits from another and cannot define new tracks", file.CurrentLineNumber, lastPreset.String())
+			}
+
 			trackIndex, err := s.AllocateTrack(lastPreset)
 			if err != nil {
 				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
@@ -160,6 +164,9 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 			}
 
 			lastPreset := &presets[len(presets)-1]
+			if lastPreset.IsTemplate {
+				return nil, fmt.Errorf("line %d: cannot override tracks on template preset %q", file.CurrentLineNumber, lastPreset.String())
+			}
 			if lastPreset.From == nil {
 				return nil, fmt.Errorf("line %d: cannot override tracks on preset %q which does not have a 'from' source", file.CurrentLineNumber, lastPreset.String())
 			}
