@@ -53,6 +53,7 @@ SynapSeq uses a specific syntax to create a sequence. The syntax is based on the
 - **background**: A `background` is a user-defined sound that is played in the background.
 - **waveform**: A `waveform` is a shape of the tone.
 - **silence**: A `silence` is a period of time with no sound.
+- **track**: A `track` is a directive used inside a preset that inherits from a template
 
 #### `tone`
 
