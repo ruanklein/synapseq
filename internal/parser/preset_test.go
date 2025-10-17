@@ -9,6 +9,8 @@ package parser
 
 import (
 	"testing"
+
+	t "github.com/ruanklein/synapseq/internal/types"
 )
 
 func TestHasPreset(ts *testing.T) {
@@ -72,6 +74,122 @@ func TestParsePreset(ts *testing.T) {
 		}
 		if preset.String() != test.expectedName {
 			ts.Errorf("For line '%s', expected preset name '%s' but got '%s'", test.line, test.expectedName, preset.String())
+		}
+	}
+}
+
+func TestParsePreset_WithTemplate(ts *testing.T) {
+	// Create base presets for inheritance tests
+	var presets []t.Preset
+
+	// Create a template preset
+	templatePreset, err := t.NewPreset("base-template", true, nil)
+	if err != nil {
+		ts.Fatalf("failed to create template preset: %v", err)
+	}
+	templatePreset.Track[0] = t.Track{
+		Type:      t.TrackBinauralBeat,
+		Carrier:   300,
+		Resonance: 10,
+		Amplitude: t.AmplitudePercentToRaw(20),
+		Waveform:  t.WaveformSine,
+	}
+	templatePreset.Track[1] = t.Track{
+		Type:      t.TrackPinkNoise,
+		Amplitude: t.AmplitudePercentToRaw(30),
+	}
+	presets = append(presets, *templatePreset)
+
+	// Create a regular preset for testing inheritance errors
+	regularPreset, err := t.NewPreset("regular", false, nil)
+	if err != nil {
+		ts.Fatalf("failed to create regular preset: %v", err)
+	}
+	presets = append(presets, *regularPreset)
+
+	tests := []struct {
+		name          string
+		line          string
+		expectedName  string
+		expectedError bool
+		checkTemplate bool
+		isTemplate    bool
+		checkFrom     bool
+		hasFrom       bool
+	}{
+		{
+			name:          "template declaration",
+			line:          "alpha as template",
+			expectedName:  "alpha",
+			expectedError: false,
+			checkTemplate: true,
+			isTemplate:    true,
+		},
+		{
+			name:          "inherit from template",
+			line:          "derived from base-template",
+			expectedName:  "derived",
+			expectedError: false,
+			checkFrom:     true,
+			hasFrom:       true,
+		},
+		{
+			name:          "inherit from non-template should fail",
+			line:          "bad from regular",
+			expectedError: true,
+		},
+		{
+			name:          "inherit from unknown preset should fail",
+			line:          "bad from unknown-preset",
+			expectedError: true,
+		},
+		{
+			name:          "template with extra tokens should fail",
+			line:          "alpha as template extra",
+			expectedError: true,
+		},
+		{
+			name:          "from with missing preset name should fail",
+			line:          "alpha from",
+			expectedError: true,
+		},
+		{
+			name:          "invalid 'as' keyword usage should fail",
+			line:          "alpha as invalid",
+			expectedError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := NewTextParser(tt.line)
+		preset, err := ctx.ParsePreset(&presets)
+
+		if tt.expectedError {
+			if err == nil {
+				ts.Errorf("%s: expected error but got none", tt.name)
+			}
+			continue
+		}
+
+		if err != nil {
+			ts.Errorf("%s: unexpected error: %v", tt.name, err)
+			continue
+		}
+
+		if preset.String() != tt.expectedName {
+			ts.Errorf("%s: expected name %q, got %q", tt.name, tt.expectedName, preset.String())
+		}
+
+		if tt.checkTemplate && preset.IsTemplate != tt.isTemplate {
+			ts.Errorf("%s: expected IsTemplate=%v, got %v", tt.name, tt.isTemplate, preset.IsTemplate)
+		}
+
+		if tt.checkFrom {
+			if tt.hasFrom && preset.From == nil {
+				ts.Errorf("%s: expected From to be set", tt.name)
+			} else if !tt.hasFrom && preset.From != nil {
+				ts.Errorf("%s: expected From to be nil", tt.name)
+			}
 		}
 	}
 }

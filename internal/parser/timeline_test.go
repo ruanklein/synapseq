@@ -199,3 +199,73 @@ func TestParseTimelineWithTransitions(ts *testing.T) {
 		}
 	}
 }
+
+func TestParseTimeline_TemplatePresetNotAllowed(ts *testing.T) {
+	var presets []t.Preset
+
+	// Create a template preset
+	templatePreset, err := t.NewPreset("base-template", true, nil)
+	if err != nil {
+		ts.Fatalf("unexpected error creating template preset: %v", err)
+	}
+	presets = append(presets, *templatePreset)
+
+	// Create a normal preset for comparison
+	normalPreset, err := t.NewPreset("alpha", false, nil)
+	if err != nil {
+		ts.Fatalf("unexpected error creating normal preset: %v", err)
+	}
+	presets = append(presets, *normalPreset)
+
+	tests := []struct {
+		name        string
+		line        string
+		expectError bool
+	}{
+		{
+			name:        "template preset in timeline should fail",
+			line:        "00:00:00 base-template",
+			expectError: true,
+		},
+		{
+			name:        "template preset with transition should fail",
+			line:        "00:01:00 base-template steady",
+			expectError: true,
+		},
+		{
+			name:        "template preset with ease-out should fail",
+			line:        "00:02:00 base-template ease-out",
+			expectError: true,
+		},
+		{
+			name:        "normal preset should succeed",
+			line:        "00:00:00 alpha",
+			expectError: false,
+		},
+		{
+			name:        "normal preset with transition should succeed",
+			line:        "00:01:00 alpha smooth",
+			expectError: false,
+		},
+	}
+
+	for _, test := range tests {
+		ctx := NewTextParser(test.line)
+		per, err := ctx.ParseTimeline(&presets)
+
+		if test.expectError {
+			if err == nil {
+				ts.Errorf("%s: expected error but got none for line '%s'", test.name, test.line)
+				continue
+			}
+		} else {
+			if err != nil {
+				ts.Errorf("%s: unexpected error for line '%s': %v", test.name, test.line, err)
+				continue
+			}
+			if per == nil {
+				ts.Errorf("%s: expected non-nil period for line '%s'", test.name, test.line)
+			}
+		}
+	}
+}
