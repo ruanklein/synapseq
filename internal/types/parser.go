@@ -108,6 +108,8 @@ type Parser interface {
 	HasPreset() bool
 	// HasTrack checks if the content is a track
 	HasTrack() bool
+	// HasTrackOverride checks if the content is a track override
+	HasTrackOverride() bool
 	// HasTimeline checks if the content is a timeline
 	HasTimeline() bool
 
@@ -119,6 +121,8 @@ type Parser interface {
 	ParsePreset(*[]Preset) (*Preset, error)
 	// ParseTrack parses a track content
 	ParseTrack() (*Track, error)
+	// ParseTrackOverride parses a track override content
+	ParseTrackOverride(*Preset) error
 	// ParseTimeline parses a timeline content
 	ParseTimeline(*[]Preset) (*Period, error)
 }
