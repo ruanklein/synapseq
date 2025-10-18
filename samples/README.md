@@ -176,19 +176,17 @@ The `sample-*` files is written in the SynapSeq text format, illustrating variou
 
 **Usage:** Include in other sequences using `@presetlist presets-focus.spsq`
 
-### sample-energizer.spsq
+### sample-ladder.spsq
 
-**Demonstrates:** Preset templates and inheritance (templating)
+**Demonstrates:** Template preset and binaural ladder structure
 
-**Description:** This sequence showcases the use of template presets, a feature that allows you to define a base preset (template) and create multiple derived presets by inheriting and overriding specific track parameters. The base template (`base-energizer`) defines the overall sound structure (white noise and two beta-range binaural tones). Derived presets (e.g., `energizer-phase1`, `energizer-phase2`, etc.) inherit all tracks from the template and override only the necessary parameters (such as tone frequency or amplitude) to create a progressive stimulation and alertness session without code repetition.
+**Description:** This example uses the template preset feature to create a "binaural ladder", a sequence of tones with a fixed binaural beat (8 Hz) and progressively higher carrier frequencies. The `ladder-base` template defines all steps (tones) and the pink noise background. Each derived preset (`ladder-one`, `ladder-two`, etc.) activates a specific step by increasing the amplitude of that tone and keeping the others silent. This allows for a clear and modular progression without code repetition.
 
-**Audio Intent:** Demonstrates how to build complex, multi-phase sessions efficiently using inheritance. Ideal for progressive activation, focus, and alertness routines. Encourages modular and maintainable sequence design.
+**Audio Intent:** Demonstrates how to create progressive brain activation sequences, keeping the beat frequency constant and varying the carrier. Ideal for studies on binaural beat perception and for gradual activation sessions.
 
-**Timeline:** 11 minutes, divided into silence, rise, peak, sustain, and cooldown phases, each using a derived preset.
+**Timeline:** 16 minutes, each step lasts about 1.5 to 2 minutes, starting from the lowest tone to the highest, with pink noise background.
 
-**Technical Highlight:** Shows how to use the `as template` and `from` keywords, and how to override tracks in derived presets. See the file for detailed comments and structure.
-
-**See also:** [USAGE.md](../docs/USAGE.md) for documentation on template presets.
+**Requirements:** Headphones are required to perceive the binaural effect.
 
 ## Structured Format
 
