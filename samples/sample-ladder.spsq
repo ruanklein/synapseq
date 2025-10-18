@@ -1,6 +1,6 @@
-# Binaural Ladder — 8 Hz base beat
-# Creates successive carrier steps maintaining 8 Hz entrainment
-# Headphones required
+## Binaural Ladder — 8 Hz base beat
+## Creates successive carrier steps maintaining 8 Hz entrainment
+## Headphones required
 
 # Template base
 ladder-base as template
