@@ -118,7 +118,7 @@ func main() {
 	}
 
 	// Embed text sequence metadata
-	if format == "text" {
+	if format == "text" && !opts.NoEmbedMetadata {
 		if err := audio.WriteICMTChunkFromTextFile(outputFile, inputFile); err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)

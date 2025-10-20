@@ -31,6 +31,8 @@ type CLIOptions struct {
 	FormatYAML bool
 	// Extract text sequence from WAV file
 	ExtractTextSequence bool
+	// No embed metadata in output WAV
+	NoEmbedMetadata bool
 }
 
 // Help prints the help message
@@ -58,6 +60,7 @@ func Help() {
 	fmt.Fprintf(os.Stderr, "  -quiet         Suppress non-error output\n")
 	fmt.Fprintf(os.Stderr, "  -debug         Validate syntax without generating output\n")
 	fmt.Fprintf(os.Stderr, "  -extract       Extract text sequence from WAV file\n")
+	fmt.Fprintf(os.Stderr, "  -no-embed      Do not embed metadata in output WAV file\n")
 	fmt.Fprintf(os.Stderr, "  -version       Show version information\n")
 	fmt.Fprintf(os.Stderr, "  -help          Show this help message\n\n")
 
@@ -66,8 +69,8 @@ func Help() {
 	fmt.Fprintf(os.Stderr, "  synapseq -json sequence.json output.wav\n")
 	fmt.Fprintf(os.Stderr, "  cat sequence.spsq | synapseq - output.wav\n")
 	fmt.Fprintf(os.Stderr, "  synapseq https://example.com/sequence.spsq output.wav\n")
-	fmt.Fprintf(os.Stderr, "  synapseq sequence.spsq - | play -t raw -r 44100 -e signed-integer -b 24 -c 2 -\n\n")
-	fmt.Fprintf(os.Stderr, "  synapseq -extract sequence.wav output.spsq\n")
+	fmt.Fprintf(os.Stderr, "  synapseq sequence.spsq - | play -t raw -r 44100 -e signed-integer -b 24 -c 2 -\n")
+	fmt.Fprintf(os.Stderr, "  synapseq -extract sequence.wav output.spsq\n\n")
 
 	fmt.Fprintf(os.Stderr, "For detailed documentation:\n")
 	fmt.Fprintf(os.Stderr, "  man synapseq\n")
@@ -93,6 +96,7 @@ func ParseFlags() (*CLIOptions, []string, error) {
 	fs.BoolVar(&opts.Quiet, "quiet", false, "Enable quiet mode")
 	fs.BoolVar(&opts.Debug, "debug", false, "Enable debug mode")
 	fs.BoolVar(&opts.ExtractTextSequence, "extract", false, "Extract text sequence from WAV file")
+	fs.BoolVar(&opts.NoEmbedMetadata, "no-embed", false, "Do not embed metadata in output WAV file")
 	fs.BoolVar(&opts.ShowHelp, "help", false, "Show help")
 
 	err := fs.Parse(os.Args[1:])
