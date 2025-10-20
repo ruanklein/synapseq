@@ -40,16 +40,29 @@ func main() {
 	inputFile := args[0]
 	outputFile := args[1]
 
-	var result *sequence.LoadResult
-	if opts.FormatJSON || opts.FormatXML || opts.FormatYAML {
-		var format string
-		if opts.FormatJSON {
-			format = "json"
-		} else if opts.FormatXML {
-			format = "xml"
-		} else {
-			format = "yaml"
+	if opts.ExtractTextSequence {
+		// Extract text sequence from WAV file
+		if err := audio.ExtractTextSequenceFromWAV(inputFile, outputFile); err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
 		}
+		return
+	}
+
+	// Default to text sequence
+	format := "text"
+	if opts.FormatJSON {
+		format = "json"
+	}
+	if opts.FormatXML {
+		format = "xml"
+	}
+	if opts.FormatYAML {
+		format = "yaml"
+	}
+
+	var result *sequence.LoadResult
+	if format != "text" {
 		// Load structured sequence
 		var err error
 		result, err = sequence.LoadStructuredSequence(inputFile, format)
@@ -102,5 +115,13 @@ func main() {
 	if err := renderer.RenderWav(outputFile); err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
+	}
+
+	// Embed text sequence metadata
+	if format == "text" {
+		if err := audio.WriteICMTChunkFromTextFile(outputFile, inputFile); err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }
