@@ -11,6 +11,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/ruanklein/synapseq/internal/info"
 )
 
 // CLIOptions holds command-line options
@@ -37,8 +39,8 @@ type CLIOptions struct {
 
 // Help prints the help message
 func Help() {
-	fmt.Fprintf(os.Stderr, "SynapSeq - Synapse-Sequenced Brainwave Generator, version %s\n", VERSION)
-	fmt.Fprintf(os.Stderr, "(c) 2025 Ruan, https://ruan.sh\n")
+	fmt.Fprintf(os.Stderr, "SynapSeq - Synapse-Sequenced Brainwave Generator, version %s\n", info.VERSION)
+	fmt.Fprintf(os.Stderr, "(c) 2025 %s, %s\n", info.AUTHOR, info.AUTHOR_URL)
 	fmt.Fprintf(os.Stderr, "Released under the GNU GPL v2. See file COPYING for details.\n\n")
 
 	fmt.Fprintf(os.Stderr, "Usage: synapseq [options] <input> <output>\n\n")
@@ -74,12 +76,12 @@ func Help() {
 
 	fmt.Fprintf(os.Stderr, "For detailed documentation:\n")
 	fmt.Fprintf(os.Stderr, "  man synapseq\n")
-	fmt.Fprintf(os.Stderr, "  https://github.com/ruanklein/synapseq\n")
+	fmt.Fprintf(os.Stderr, "  %s\n", info.REPOSITORY)
 }
 
 // ShowVersion prints the version information
 func ShowVersion() {
-	fmt.Printf("SynapSeq version %s\n", VERSION)
+	fmt.Printf("SynapSeq version %s\n", info.VERSION)
 }
 
 // ParseFlags parses command-line flags and returns CLIOptions
