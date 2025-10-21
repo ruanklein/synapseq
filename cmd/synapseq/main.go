@@ -46,6 +46,9 @@ func main() {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)
 		}
+		if !opts.Quiet {
+			fmt.Fprintf(os.Stderr, "Extracted text sequence to %s\n", outputFile)
+		}
 		return
 	}
 
@@ -119,8 +122,9 @@ func main() {
 
 	// Embed text sequence metadata
 	if format == "text" && !opts.NoEmbedMetadata {
-		if err := audio.WriteICMTChunkFromTextFile(outputFile, inputFile); err != nil {
+		if err := audio.WriteICMTChunkFromTextFile(outputFile, inputFile, format); err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Try running again with --no-embed to skip embedding metadata.\n")
 			os.Exit(1)
 		}
 	}

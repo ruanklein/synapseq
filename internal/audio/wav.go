@@ -18,6 +18,7 @@ import (
 
 	"github.com/gopxl/beep/v2"
 	bwav "github.com/gopxl/beep/v2/wav"
+	"github.com/ruanklein/synapseq/internal/info"
 )
 
 // RenderWav renders the audio to a WAV file using go-audio/wav
@@ -51,14 +52,28 @@ func (r *AudioRenderer) RenderWav(outPath string) error {
 }
 
 // WriteICMTChunkFromTextFile appends an ICMT chunk with base64-encoded content from the specified text file
-func WriteICMTChunkFromTextFile(wavPath, filePath string) error {
-	raw, err := os.ReadFile(filePath)
+func WriteICMTChunkFromTextFile(wavPath, filePath string, format string) error {
+	header := bytes.Buffer{}
+
+	metadata, err := info.NewMetadata(filePath, format)
 	if err != nil {
-		return fmt.Errorf("error reading file: %w", err)
+		return fmt.Errorf("error creating metadata: %w", err)
 	}
 
-	comment := base64.StdEncoding.EncodeToString(raw)
+	header.WriteString("SYNAPSEQ_META::ID=" + metadata.ID() + "\n")
+	header.WriteString("VERSION=" + metadata.Version() + "\n")
+	header.WriteString("GENERATED=" + metadata.Generated() + "\n")
+	header.WriteString("PLATFORM=" + metadata.Platform() + "\n")
+	header.WriteString("FORMAT=" + metadata.Format() + "\n")
+	header.WriteString("CONTENT=\n")
+	header.WriteString(metadata.Content() + "\n")
 
+	commentBytes := header.Bytes()
+	paddedLen := (len(commentBytes) + 1) &^ 1 // padding to even
+	icmtSize := uint32(paddedLen)
+	totalSize := uint32(4 + 4 + 4 + paddedLen) // "INFO" + "ICMT" + size + data
+
+	// Open the WAV file to append the chunk
 	f, err := os.OpenFile(wavPath, os.O_RDWR|os.O_APPEND, 0644)
 	if err != nil {
 		return fmt.Errorf("error opening wav: %w", err)
@@ -66,21 +81,12 @@ func WriteICMTChunkFromTextFile(wavPath, filePath string) error {
 	defer f.Close()
 
 	var buf bytes.Buffer
-
-	// "LIST" header
 	buf.WriteString("LIST")
-
-	commentBytes := []byte(comment)
-	paddedLen := (len(commentBytes) + 1) &^ 1 // padding para par
-	icmtSize := uint32(paddedLen)
-
-	totalSize := uint32(4 + 4 + 4 + paddedLen) // "INFO" + "ICMT" + size + data
-
-	binary.Write(&buf, binary.LittleEndian, totalSize) // LIST chunk size
-	buf.WriteString("INFO")                            // LIST type
-	buf.WriteString("ICMT")                            // ICMT field
-	binary.Write(&buf, binary.LittleEndian, icmtSize)  // ICMT data size
-	buf.Write(commentBytes)                            // ICMT content
+	binary.Write(&buf, binary.LittleEndian, totalSize)
+	buf.WriteString("INFO")
+	buf.WriteString("ICMT")
+	binary.Write(&buf, binary.LittleEndian, icmtSize)
+	buf.Write(commentBytes)
 	if len(commentBytes)%2 != 0 {
 		buf.WriteByte(0) // padding
 	}
@@ -101,9 +107,7 @@ func ExtractTextSequenceFromWAV(wavPath, outTextPath string) error {
 	}
 	defer f.Close()
 
-	const (
-		chunkHeaderSize = 8 // 4 bytes ID + 4 bytes size
-	)
+	const chunkHeaderSize = 8
 
 	buf := make([]byte, chunkHeaderSize)
 	for {
@@ -125,7 +129,6 @@ func ExtractTextSequenceFromWAV(wavPath, outTextPath string) error {
 				return fmt.Errorf("error reading LIST chunk: %w", err)
 			}
 
-			// Check if it's of type "INFO"
 			if !bytes.HasPrefix(listData, []byte("INFO")) {
 				continue
 			}
@@ -143,23 +146,63 @@ func ExtractTextSequenceFromWAV(wavPath, outTextPath string) error {
 
 					data := listData[offset : offset+int(subchunkSize)]
 					data = bytes.TrimRight(data, "\x00") // remove padding null bytes
-					decoded, err := base64.StdEncoding.DecodeString(string(data))
-					if err != nil {
-						return fmt.Errorf("failed to decode base64: %w", err)
+
+					// Parse lines
+					lines := bytes.Split(data, []byte("\n"))
+					readContent := false
+
+					var (
+						id, generated, version, platform, format string
+						base64Content                            []byte
+					)
+
+					for _, line := range lines {
+						if readContent {
+							base64Content = append(base64Content, line...)
+							base64Content = append(base64Content, '\n') // preserve line breaks
+						} else if bytes.HasPrefix(line, []byte("SYNAPSEQ_META::ID=")) {
+							id = string(bytes.TrimPrefix(line, []byte("SYNAPSEQ_META::ID=")))
+						} else if bytes.HasPrefix(line, []byte("GENERATED=")) {
+							generated = string(bytes.TrimPrefix(line, []byte("GENERATED=")))
+						} else if bytes.HasPrefix(line, []byte("VERSION=")) {
+							version = string(bytes.TrimPrefix(line, []byte("VERSION=")))
+						} else if bytes.HasPrefix(line, []byte("PLATFORM=")) {
+							platform = string(bytes.TrimPrefix(line, []byte("PLATFORM=")))
+						} else if bytes.HasPrefix(line, []byte("FORMAT=")) {
+							format = string(bytes.TrimPrefix(line, []byte("FORMAT=")))
+						} else if bytes.HasPrefix(line, []byte("CONTENT=")) {
+							readContent = true
+						}
 					}
 
-					err = os.WriteFile(outTextPath, decoded, 0644)
+					decoded, err := base64.StdEncoding.DecodeString(string(base64Content))
 					if err != nil {
-						return fmt.Errorf("error saving text sequence: %w", err)
+						return fmt.Errorf("failed to decode base64 content: %w", err)
 					}
 
-					return nil // success
+					var outBuf bytes.Buffer
+					outBuf.WriteString("# ================================================\n")
+					outBuf.WriteString("#  This sequence was exported from SynapSeq\n")
+					outBuf.WriteString(fmt.Sprintf("#  ID       : %s\n", id))
+					outBuf.WriteString(fmt.Sprintf("#  Date     : %s\n", generated))
+					outBuf.WriteString(fmt.Sprintf("#  Version  : %s\n", version))
+					outBuf.WriteString(fmt.Sprintf("#  Platform : %s\n", platform))
+					outBuf.WriteString(fmt.Sprintf("#  Format   : %s\n", format))
+					outBuf.WriteString("# ================================================\n\n\n")
+					outBuf.Write(decoded)
+
+					// Save to file
+					err = os.WriteFile(outTextPath, outBuf.Bytes(), 0644)
+					if err != nil {
+						return fmt.Errorf("error saving extracted file: %w", err)
+					}
+
+					return nil
 				}
 
-				offset += int((subchunkSize + 1) &^ 1) // align to even
+				offset += int((subchunkSize + 1) &^ 1)
 			}
 		} else {
-			// Skip to the next chunk
 			if _, err := f.Seek(int64((chunkSize+1)&^1), io.SeekCurrent); err != nil {
 				return fmt.Errorf("error skipping chunk: %w", err)
 			}
