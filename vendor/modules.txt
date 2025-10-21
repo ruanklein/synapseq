@@ -9,6 +9,9 @@ github.com/goccy/go-yaml/parser
 github.com/goccy/go-yaml/printer
 github.com/goccy/go-yaml/scanner
 github.com/goccy/go-yaml/token
+# github.com/google/uuid v1.6.0
+## explicit
+github.com/google/uuid
 # github.com/gopxl/beep/v2 v2.1.1
 ## explicit; go 1.21
 github.com/gopxl/beep/v2
