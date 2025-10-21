@@ -83,6 +83,23 @@ func main() {
 		}
 	}
 
+	if opts.ConvertToText {
+		if format == "text" {
+			fmt.Fprintf(os.Stderr, "synapseq: input is already in text format. Use -json, -xml, or -yaml to convert.\n")
+			os.Exit(1)
+		}
+
+		if err := sequence.ConvertToText(result, outputFile); err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+
+		if !opts.Quiet {
+			fmt.Fprintf(os.Stderr, "Converted sequence from %s to text format: %s\n", format, outputFile)
+		}
+		return
+	}
+
 	if !opts.Quiet {
 		for _, c := range result.Comments {
 			fmt.Fprintf(os.Stderr, "> %s\n", c)
