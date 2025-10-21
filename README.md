@@ -360,6 +360,11 @@ All original code in SynapSeq is licensed under the GNU GPL v2, but the followin
   License: BSD 2-Clause  
   Used indirectly via `beep` for error wrapping and stack trace utilities.
 
+- **[google/uuid](https://github.com/google/uuid)**  
+  License: BSD 3-Clause  
+  Copyright © 2009-2014 Google Inc.  
+  Used for UUID generation and unique identifier handling.
+
 All third-party copyright notices and licenses are preserved in this repository in compliance with their original terms.
 
 ## Contact
