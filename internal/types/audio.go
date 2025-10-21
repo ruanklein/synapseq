@@ -24,6 +24,24 @@ const (
 	GainLevelVeryHigh GainLevel = 0  // 0db apply to background audio
 )
 
+// String returns the string representation of the GainLevel
+func (g GainLevel) String() string {
+	switch g {
+	case GainLevelVeryLow:
+		return KeywordOptionGainLevelVeryLow
+	case GainLevelLow:
+		return KeywordOptionGainLevelLow
+	case GainLevelMedium:
+		return KeywordOptionGainLevelMedium
+	case GainLevelHigh:
+		return KeywordOptionGainLevelHigh
+	case GainLevelVeryHigh:
+		return KeywordOptionGainLevelVeryHigh
+	default:
+		return "unknown"
+	}
+}
+
 type AmplitudeType float64 // Amplitude level (0-4096 for 0-100%)
 
 // ToPercent converts a raw amplitude value to a float64 percentage
