@@ -100,10 +100,10 @@ func WriteICMTChunkFromTextFile(wavPath, filePath string, format string) error {
 }
 
 // ExtractTextSequenceFromWAV extracts the text sequence metadata from the ICMT chunk of a WAV file
-func ExtractTextSequenceFromWAV(wavPath, outTextPath string) error {
+func ExtractTextSequenceFromWAV(wavPath string) (string, error) {
 	f, err := os.Open(wavPath)
 	if err != nil {
-		return fmt.Errorf("error opening WAV: %w", err)
+		return "", fmt.Errorf("error opening WAV: %w", err)
 	}
 	defer f.Close()
 
@@ -116,7 +116,7 @@ func ExtractTextSequenceFromWAV(wavPath, outTextPath string) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("error reading chunk: %w", err)
+			return "", fmt.Errorf("error reading chunk: %w", err)
 		}
 
 		chunkID := string(buf[:4])
@@ -126,7 +126,7 @@ func ExtractTextSequenceFromWAV(wavPath, outTextPath string) error {
 			listData := make([]byte, chunkSize)
 			_, err := io.ReadFull(f, listData)
 			if err != nil {
-				return fmt.Errorf("error reading LIST chunk: %w", err)
+				return "", fmt.Errorf("error reading LIST chunk: %w", err)
 			}
 
 			if !bytes.HasPrefix(listData, []byte("INFO")) {
@@ -141,7 +141,7 @@ func ExtractTextSequenceFromWAV(wavPath, outTextPath string) error {
 
 				if subchunkID == "ICMT" {
 					if offset+int(subchunkSize) > len(listData) {
-						return errors.New("ICMT subchunk size exceeds LIST chunk size")
+						return "", errors.New("ICMT subchunk size exceeds LIST chunk size")
 					}
 
 					data := listData[offset : offset+int(subchunkSize)]
@@ -177,37 +177,30 @@ func ExtractTextSequenceFromWAV(wavPath, outTextPath string) error {
 
 					decoded, err := base64.StdEncoding.DecodeString(string(base64Content))
 					if err != nil {
-						return fmt.Errorf("failed to decode base64 content: %w", err)
+						return "", fmt.Errorf("failed to decode base64 content: %w", err)
 					}
 
-					var outBuf bytes.Buffer
-					outBuf.WriteString("# ================================================\n")
-					outBuf.WriteString("#  This sequence was exported from SynapSeq\n")
-					outBuf.WriteString(fmt.Sprintf("#  ID       : %s\n", id))
-					outBuf.WriteString(fmt.Sprintf("#  Date     : %s\n", generated))
-					outBuf.WriteString(fmt.Sprintf("#  Version  : %s\n", version))
-					outBuf.WriteString(fmt.Sprintf("#  Platform : %s\n", platform))
-					outBuf.WriteString(fmt.Sprintf("#  Format   : %s\n", format))
-					outBuf.WriteString("# ================================================\n\n\n")
-					outBuf.Write(decoded)
+					content := "# ================================================\n"
+					content += "#  This sequence was exported from SynapSeq\n"
+					content += fmt.Sprintf("#  ID       : %s\n", id)
+					content += fmt.Sprintf("#  Date     : %s\n", generated)
+					content += fmt.Sprintf("#  Version  : %s\n", version)
+					content += fmt.Sprintf("#  Platform : %s\n", platform)
+					content += fmt.Sprintf("#  Format   : %s\n", format)
+					content += "# ================================================\n\n\n"
+					content += string(decoded)
 
-					// Save to file
-					err = os.WriteFile(outTextPath, outBuf.Bytes(), 0644)
-					if err != nil {
-						return fmt.Errorf("error saving extracted file: %w", err)
-					}
-
-					return nil
+					return content, nil
 				}
 
 				offset += int((subchunkSize + 1) &^ 1)
 			}
 		} else {
 			if _, err := f.Seek(int64((chunkSize+1)&^1), io.SeekCurrent); err != nil {
-				return fmt.Errorf("error skipping chunk: %w", err)
+				return "", fmt.Errorf("error skipping chunk: %w", err)
 			}
 		}
 	}
 
-	return errors.New("no ICMT metadata found in WAV")
+	return "", errors.New("no ICMT metadata found in WAV")
 }

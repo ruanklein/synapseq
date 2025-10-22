@@ -42,10 +42,22 @@ func main() {
 
 	if opts.ExtractTextSequence {
 		// Extract text sequence from WAV file
-		if err := audio.ExtractTextSequenceFromWAV(inputFile, outputFile); err != nil {
+		var content string
+		if content, err = audio.ExtractTextSequenceFromWAV(inputFile); err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)
 		}
+
+		if outputFile == "-" {
+			fmt.Print(content)
+			return
+		}
+
+		if err := os.WriteFile(outputFile, []byte(content), 0644); err != nil {
+			fmt.Fprintf(os.Stdout, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+
 		if !opts.Quiet {
 			fmt.Fprintf(os.Stderr, "Extracted text sequence to %s\n", outputFile)
 		}
@@ -67,7 +79,6 @@ func main() {
 	var result *sequence.LoadResult
 	if format != "text" {
 		// Load structured sequence
-		var err error
 		result, err = sequence.LoadStructuredSequence(inputFile, format)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
@@ -75,7 +86,6 @@ func main() {
 		}
 	} else {
 		// Load text sequence
-		var err error
 		result, err = sequence.LoadTextSequence(inputFile)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
@@ -89,8 +99,19 @@ func main() {
 			os.Exit(1)
 		}
 
-		if err := sequence.ConvertToText(result, outputFile); err != nil {
+		var content string
+		if content, err = sequence.ConvertToText(result); err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+
+		if outputFile == "-" {
+			fmt.Print(content)
+			return
+		}
+
+		if err := os.WriteFile(outputFile, []byte(content), 0644); err != nil {
+			fmt.Fprintf(os.Stdout, "synapseq: %v\n", err)
 			os.Exit(1)
 		}
 

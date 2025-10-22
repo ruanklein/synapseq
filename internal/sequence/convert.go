@@ -9,13 +9,12 @@ package sequence
 
 import (
 	"fmt"
-	"os"
 
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
 // ConvertToText converts a slice of Periods to a text-based sequence file.
-func ConvertToText(result *LoadResult, outFile string) error {
+func ConvertToText(result *LoadResult) (string, error) {
 	content := "# GENERATED FROM SYNAPSEQ STRUCTURED SEQUENCE FILE\n\n"
 	for _, comments := range result.Comments {
 		content += fmt.Sprintf("## %s\n", comments)
@@ -33,13 +32,6 @@ func ConvertToText(result *LoadResult, outFile string) error {
 		}
 		content += "\n"
 	}
-
-	var f *os.File
-	var err error
-	if f, err = os.Create(outFile); err != nil {
-		return err
-	}
-	defer f.Close()
 
 	content += "\n# Presets"
 
@@ -63,8 +55,5 @@ func ConvertToText(result *LoadResult, outFile string) error {
 		content += fmt.Sprintf("\n%s", tline)
 	}
 
-	if _, err := f.WriteString(content); err != nil {
-		return err
-	}
-	return nil
+	return content, nil
 }
