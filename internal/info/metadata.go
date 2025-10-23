@@ -28,12 +28,10 @@ type Metadata struct {
 	platform string
 	// Content is the actual embedded content (e.g., sequence data)
 	content string
-	// Format indicates the format of the embedded content (e.g., "text", "json", "xml")
-	format string
 }
 
 // NewMetadata creates a new Metadata instance with current information
-func NewMetadata(filePath string, format string) (*Metadata, error) {
+func NewMetadata(filePath string) (*Metadata, error) {
 	raw, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
@@ -45,7 +43,6 @@ func NewMetadata(filePath string, format string) (*Metadata, error) {
 		version:   VERSION,
 		platform:  runtime.GOOS + "/" + runtime.GOARCH,
 		content:   base64.StdEncoding.EncodeToString(raw),
-		format:    format,
 	}, nil
 }
 
@@ -72,9 +69,4 @@ func (m *Metadata) Platform() string {
 // Content returns the embedded content
 func (m *Metadata) Content() string {
 	return m.content
-}
-
-// Format returns the content format
-func (m *Metadata) Format() string {
-	return m.format
 }

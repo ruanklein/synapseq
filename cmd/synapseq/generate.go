@@ -66,7 +66,7 @@ func generate(app *t.AppContext) error {
 
 	// Embed text sequence metadata
 	if app.Format == t.FormatText && !app.NoEmbedMetadata {
-		if err := audio.WriteICMTChunkFromTextFile(app.OutputFile, app.InputFile, app.Format.String()); err != nil {
+		if err := audio.WriteICMTChunkFromTextFile(app.OutputFile, app.InputFile); err != nil {
 			return fmt.Errorf("generate: %v", err)
 		}
 	}

@@ -52,10 +52,10 @@ func (r *AudioRenderer) RenderWav(outPath string) error {
 }
 
 // WriteICMTChunkFromTextFile appends an ICMT chunk with base64-encoded content from the specified text file
-func WriteICMTChunkFromTextFile(wavPath, filePath string, format string) error {
+func WriteICMTChunkFromTextFile(wavPath, filePath string) error {
 	header := bytes.Buffer{}
 
-	metadata, err := info.NewMetadata(filePath, format)
+	metadata, err := info.NewMetadata(filePath)
 	if err != nil {
 		return fmt.Errorf("error creating metadata: %w", err)
 	}
@@ -64,7 +64,6 @@ func WriteICMTChunkFromTextFile(wavPath, filePath string, format string) error {
 	header.WriteString("VERSION=" + metadata.Version() + "\n")
 	header.WriteString("GENERATED=" + metadata.Generated() + "\n")
 	header.WriteString("PLATFORM=" + metadata.Platform() + "\n")
-	header.WriteString("FORMAT=" + metadata.Format() + "\n")
 	header.WriteString("CONTENT=\n")
 	header.WriteString(metadata.Content() + "\n")
 
@@ -152,8 +151,8 @@ func ExtractTextSequenceFromWAV(wavPath string) (string, error) {
 					readContent := false
 
 					var (
-						id, generated, version, platform, format string
-						base64Content                            []byte
+						id, generated, version, platform string
+						base64Content                    []byte
 					)
 
 					for _, line := range lines {
@@ -168,8 +167,6 @@ func ExtractTextSequenceFromWAV(wavPath string) (string, error) {
 							version = string(bytes.TrimPrefix(line, []byte("VERSION=")))
 						} else if bytes.HasPrefix(line, []byte("PLATFORM=")) {
 							platform = string(bytes.TrimPrefix(line, []byte("PLATFORM=")))
-						} else if bytes.HasPrefix(line, []byte("FORMAT=")) {
-							format = string(bytes.TrimPrefix(line, []byte("FORMAT=")))
 						} else if bytes.HasPrefix(line, []byte("CONTENT=")) {
 							readContent = true
 						}
@@ -186,7 +183,6 @@ func ExtractTextSequenceFromWAV(wavPath string) (string, error) {
 					content += fmt.Sprintf("#  Date     : %s\n", generated)
 					content += fmt.Sprintf("#  Version  : %s\n", version)
 					content += fmt.Sprintf("#  Platform : %s\n", platform)
-					content += fmt.Sprintf("#  Format   : %s\n", format)
 					content += "# ================================================\n\n\n"
 					content += string(decoded)
 
