@@ -82,7 +82,7 @@ func readRemoteStructured(url, format string) ([]byte, error) {
 }
 
 // LoadStructuredSequence loads and parses a json/xml/yaml sequence file
-func LoadStructuredSequence(filename string, format string) (*LoadResult, error) {
+func LoadStructuredSequence(filename string, format string) (*t.Sequence, error) {
 	var data []byte
 	if filename == "-" {
 		reader := io.LimitReader(os.Stdin, maxStructuredFileSize)
@@ -183,7 +183,7 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 	}
 
 	// Initialize audio options
-	options := &t.Option{
+	options := &t.SequenceOptions{
 		SampleRate:     input.Options.Samplerate,
 		Volume:         input.Options.Volume,
 		BackgroundPath: backgroundPath,
@@ -386,7 +386,7 @@ func LoadStructuredSequence(filename string, format string) (*LoadResult, error)
 		periods = append(periods, period)
 	}
 
-	return &LoadResult{
+	return &t.Sequence{
 		Periods:  periods,
 		Options:  options,
 		Comments: input.Description,

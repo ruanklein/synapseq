@@ -11,11 +11,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ruanklein/synapseq/internal/audio"
 	"github.com/ruanklein/synapseq/internal/cli"
 	"github.com/ruanklein/synapseq/internal/sequence"
+	t "github.com/ruanklein/synapseq/internal/types"
 )
 
+// main is the entry point of the SynapSeq application
 func main() {
 	opts, args, err := cli.ParseFlags()
 	if err != nil {
@@ -37,133 +38,68 @@ func main() {
 		os.Exit(1)
 	}
 
-	inputFile := args[0]
-	outputFile := args[1]
+	appContext := &t.AppContext{
+		Mode:            t.ModeGenerate,
+		InputFile:       args[0],
+		OutputFile:      args[1],
+		Format:          t.FormatText,
+		Quiet:           opts.Quiet,
+		Debug:           opts.Debug,
+		NoEmbedMetadata: opts.NoEmbedMetadata,
+	}
 
 	if opts.ExtractTextSequence {
-		// Extract text sequence from WAV file
-		var content string
-		if content, err = audio.ExtractTextSequenceFromWAV(inputFile); err != nil {
+		appContext.Mode = t.ModeExtract
+	}
+	if opts.ConvertToText {
+		appContext.Mode = t.ModeConvert
+	}
+
+	if appContext.Mode == t.ModeExtract {
+		if err = extract(appContext); err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)
-		}
-
-		if outputFile == "-" {
-			fmt.Print(content)
-			return
-		}
-
-		if err := os.WriteFile(outputFile, []byte(content), 0644); err != nil {
-			fmt.Fprintf(os.Stdout, "synapseq: %v\n", err)
-			os.Exit(1)
-		}
-
-		if !opts.Quiet {
-			fmt.Fprintf(os.Stderr, "Extracted text sequence to %s\n", outputFile)
 		}
 		return
 	}
 
-	// Default to text sequence
-	format := "text"
 	if opts.FormatJSON {
-		format = "json"
+		appContext.Format = t.FormatJSON
 	}
 	if opts.FormatXML {
-		format = "xml"
+		appContext.Format = t.FormatXML
 	}
 	if opts.FormatYAML {
-		format = "yaml"
+		appContext.Format = t.FormatYAML
 	}
 
-	var result *sequence.LoadResult
-	if format != "text" {
+	if appContext.Format != t.FormatText {
 		// Load structured sequence
-		result, err = sequence.LoadStructuredSequence(inputFile, format)
+		appContext.Sequence, err = sequence.LoadStructuredSequence(appContext.InputFile, appContext.Format.String())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)
 		}
 	} else {
 		// Load text sequence
-		result, err = sequence.LoadTextSequence(inputFile)
+		appContext.Sequence, err = sequence.LoadTextSequence(appContext.InputFile)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)
 		}
 	}
 
-	if opts.ConvertToText {
-		if format == "text" {
-			fmt.Fprintf(os.Stderr, "synapseq: input is already in text format. Use -json, -xml, or -yaml to convert.\n")
-			os.Exit(1)
-		}
-
-		var content string
-		if content, err = sequence.ConvertToText(result); err != nil {
+	if appContext.Mode == t.ModeConvert {
+		if err = convert(appContext); err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)
-		}
-
-		if outputFile == "-" {
-			fmt.Print(content)
-			return
-		}
-
-		if err := os.WriteFile(outputFile, []byte(content), 0644); err != nil {
-			fmt.Fprintf(os.Stdout, "synapseq: %v\n", err)
-			os.Exit(1)
-		}
-
-		if !opts.Quiet {
-			fmt.Fprintf(os.Stderr, "Converted sequence from %s to text format: %s\n", format, outputFile)
 		}
 		return
 	}
 
-	if !opts.Quiet {
-		for _, c := range result.Comments {
-			fmt.Fprintf(os.Stderr, "> %s\n", c)
-		}
-	}
-
-	options := result.Options
-
-	// Create audio renderer
-	renderer, err := audio.NewAudioRenderer(result.Periods, &audio.AudioRendererOptions{
-		SampleRate:     options.SampleRate,
-		Volume:         options.Volume,
-		GainLevel:      options.GainLevel,
-		BackgroundPath: options.BackgroundPath,
-		Quiet:          opts.Quiet,
-		Debug:          opts.Debug,
-	})
-	if err != nil {
+	if err = generate(appContext); err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}
 
-	if outputFile == "-" {
-		if opts.Debug {
-			fmt.Fprintf(os.Stderr, "synapseq: cannot use debug mode with raw output to stdout\n")
-			os.Exit(1)
-		}
-		renderer.RenderRaw(os.Stdout)
-		return
-	}
-
-	// Render to WAV file
-	if err := renderer.RenderWav(outputFile); err != nil {
-		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Embed text sequence metadata
-	if format == "text" && !opts.NoEmbedMetadata {
-		if err := audio.WriteICMTChunkFromTextFile(outputFile, inputFile, format); err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			fmt.Fprintf(os.Stderr, "Try running again with --no-embed to skip embedding metadata.\n")
-			os.Exit(1)
-		}
-	}
 }

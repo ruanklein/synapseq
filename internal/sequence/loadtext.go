@@ -16,7 +16,7 @@ import (
 )
 
 // LoadTextSequence loads a sequence from a text file
-func LoadTextSequence(fileName string) (*LoadResult, error) {
+func LoadTextSequence(fileName string) (*t.Sequence, error) {
 	file, err := LoadFile(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("error loading sequence file: %v", err)
@@ -30,7 +30,7 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 	// Options can only be defined on the top of the file, before any presets
 	optionsLocked := false
 	// Initialize audio options
-	options := &t.Option{
+	options := &t.SequenceOptions{
 		SampleRate:     44100,
 		Volume:         100,
 		BackgroundPath: "",
@@ -235,7 +235,7 @@ func LoadTextSequence(fileName string) (*LoadResult, error) {
 		return nil, fmt.Errorf("at least two periods must be defined")
 	}
 
-	return &LoadResult{
+	return &t.Sequence{
 		Periods:  periods,
 		Options:  options,
 		Comments: comments,

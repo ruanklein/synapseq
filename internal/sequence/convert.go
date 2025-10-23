@@ -14,13 +14,13 @@ import (
 )
 
 // ConvertToText converts a slice of Periods to a text-based sequence file.
-func ConvertToText(result *LoadResult) (string, error) {
+func ConvertToText(sequence *t.Sequence) (string, error) {
 	content := "# GENERATED FROM SYNAPSEQ STRUCTURED SEQUENCE FILE\n\n"
-	for _, comments := range result.Comments {
+	for _, comments := range sequence.Comments {
 		content += fmt.Sprintf("## %s\n", comments)
 	}
 
-	options := result.Options
+	options := sequence.Options
 	if options != nil {
 		content += "\n# Options\n"
 		content += fmt.Sprintf("%s%s %d", t.KeywordOption, t.KeywordOptionSampleRate, options.SampleRate)
@@ -36,7 +36,7 @@ func ConvertToText(result *LoadResult) (string, error) {
 	content += "\n# Presets"
 
 	var timeline []string
-	for i, period := range result.Periods {
+	for i, period := range sequence.Periods {
 		presetID := fmt.Sprintf("tone-set-%03d", i+1)
 		content += fmt.Sprintf("\n%s", presetID)
 

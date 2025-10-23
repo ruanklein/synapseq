@@ -48,7 +48,7 @@ func (ctx *TextParser) HasOption() bool {
 }
 
 // ParseOption extracts and applies the option from the elements
-func (ctx *TextParser) ParseOption(options *t.Option) error {
+func (ctx *TextParser) ParseOption(options *t.SequenceOptions) error {
 	ln := ctx.Line.Raw
 	tok, ok := ctx.Line.NextToken()
 	if !ok {
