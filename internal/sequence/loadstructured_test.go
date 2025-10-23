@@ -364,7 +364,7 @@ sequence:
 	}
 }
 
-func verifyBasicLoadResult(tst *testing.T, res *LoadResult) {
+func verifyBasicLoadResult(tst *testing.T, res *t.Sequence) {
 	tst.Helper()
 	if res.Options.SampleRate != 44100 || res.Options.Volume != 100 {
 		tst.Fatalf("unexpected options: %+v", *res.Options)

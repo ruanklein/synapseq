@@ -50,17 +50,17 @@ func TestParseOption(ts *testing.T) {
 	// Test valid options
 	tests := []struct {
 		line     string
-		expected t.Option
+		expected t.SequenceOptions
 	}{
-		{fmt.Sprintf("%svolume 50", t.KeywordOption), t.Option{Volume: 50}},
-		{fmt.Sprintf("%ssamplerate 48000", t.KeywordOption), t.Option{SampleRate: 48000}},
-		{fmt.Sprintf("%sgainlevel low", t.KeywordOption), t.Option{GainLevel: t.GainLevelLow}},
-		{fmt.Sprintf("%sbackground testdata/%s", t.KeywordOption, backgroundFile), t.Option{BackgroundPath: filepath.Join(cwd+"/testdata/", backgroundFile)}},
-		{fmt.Sprintf("%sbackground ~/Downloads/%s", t.KeywordOption, backgroundFile), t.Option{BackgroundPath: filepath.Join(homeDir+"/Downloads/", backgroundFile)}},
+		{fmt.Sprintf("%svolume 50", t.KeywordOption), t.SequenceOptions{Volume: 50}},
+		{fmt.Sprintf("%ssamplerate 48000", t.KeywordOption), t.SequenceOptions{SampleRate: 48000}},
+		{fmt.Sprintf("%sgainlevel low", t.KeywordOption), t.SequenceOptions{GainLevel: t.GainLevelLow}},
+		{fmt.Sprintf("%sbackground testdata/%s", t.KeywordOption, backgroundFile), t.SequenceOptions{BackgroundPath: filepath.Join(cwd+"/testdata/", backgroundFile)}},
+		{fmt.Sprintf("%sbackground ~/Downloads/%s", t.KeywordOption, backgroundFile), t.SequenceOptions{BackgroundPath: filepath.Join(homeDir+"/Downloads/", backgroundFile)}},
 	}
 
 	for _, test := range tests {
-		option := t.Option{}
+		option := t.SequenceOptions{}
 		ctx := NewTextParser(test.line)
 		if err := ctx.ParseOption(&option); err != nil {
 			ts.Errorf("For line '%s', unexpected error: %v", test.line, err)
