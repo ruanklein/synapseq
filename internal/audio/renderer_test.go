@@ -20,7 +20,6 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// constStreamer é um beep.Streamer simples que emite um valor constante por N frames.
 type constStreamer struct {
 	framesLeft int
 	val        float64

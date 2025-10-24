@@ -529,8 +529,6 @@ func TestLoadStructured_JSON_FileTooLarge(t *testing.T) {
 	}
 }
 
-// ...existing code...
-
 func TestLoadStructured_JSON_WithBackground(ts *testing.T) {
 	json := `{
   "description": ["Background test with pulse effect"],
