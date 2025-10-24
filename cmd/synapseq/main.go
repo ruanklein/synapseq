@@ -75,7 +75,7 @@ func main() {
 
 	if appContext.Format != t.FormatText {
 		// Load structured sequence
-		appContext.Sequence, err = sequence.LoadStructuredSequence(appContext.InputFile, appContext.Format.String())
+		appContext.Sequence, err = sequence.LoadStructuredSequence(appContext.InputFile, appContext.Format)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)

@@ -41,14 +41,14 @@ func initializeTracks() [t.NumberOfChannels]t.Track {
 }
 
 // contentTypeAllowed checks if the content type is allowed for the given format
-func contentTypeAllowed(format, ct string) bool {
+func contentTypeAllowed(format t.FileFormat, ct string) bool {
 	ct = strings.ToLower(strings.TrimSpace(strings.Split(ct, ";")[0]))
 	switch format {
-	case "json":
+	case t.FormatJSON:
 		return ct == "application/json" || ct == "text/json" || strings.HasSuffix(ct, "+json")
-	case "xml":
+	case t.FormatXML:
 		return ct == "application/xml" || ct == "text/xml" || strings.HasSuffix(ct, "+xml")
-	case "yaml", "yml":
+	case t.FormatYAML:
 		// YAML can sometimes be served as various content types
 		return ct == "application/x-yaml" ||
 			ct == "application/yaml" ||
@@ -62,7 +62,7 @@ func contentTypeAllowed(format, ct string) bool {
 }
 
 // readRemoteStructured loads a remote structured file with content type validation
-func readRemoteStructured(url, format string) ([]byte, error) {
+func readRemoteStructured(url string, format t.FileFormat) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching remote file: %v", err)
@@ -71,7 +71,7 @@ func readRemoteStructured(url, format string) ([]byte, error) {
 
 	ct := resp.Header.Get("Content-Type")
 	if !contentTypeAllowed(format, ct) {
-		return nil, fmt.Errorf("invalid content-type for %s: %s", format, ct)
+		return nil, fmt.Errorf("invalid content-type for %s: %s", format.String(), ct)
 	}
 
 	data, err := io.ReadAll(io.LimitReader(resp.Body, maxStructuredFileSize))
@@ -82,7 +82,7 @@ func readRemoteStructured(url, format string) ([]byte, error) {
 }
 
 // LoadStructuredSequence loads and parses a json/xml/yaml sequence file
-func LoadStructuredSequence(filename string, format string) (*t.Sequence, error) {
+func LoadStructuredSequence(filename string, format t.FileFormat) (*t.Sequence, error) {
 	var data []byte
 	if filename == "-" {
 		reader := io.LimitReader(os.Stdin, maxStructuredFileSize)
@@ -101,32 +101,32 @@ func LoadStructuredSequence(filename string, format string) (*t.Sequence, error)
 		// Local file
 		file, err := os.Open(filename)
 		if err != nil {
-			return nil, fmt.Errorf("error opening %s file: %v", format, err)
+			return nil, fmt.Errorf("error opening %s file: %v", format.String(), err)
 		}
 		defer file.Close()
 
 		data, err = io.ReadAll(io.LimitReader(file, maxStructuredFileSize))
 		if err != nil {
-			return nil, fmt.Errorf("error reading %s file: %v", format, err)
+			return nil, fmt.Errorf("error reading %s file: %v", format.String(), err)
 		}
 	}
 
 	var input t.SynapSeqInput
 	switch format {
-	case "json":
+	case t.FormatJSON:
 		if err := json.Unmarshal(data, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling JSON: %v", err)
 		}
-	case "xml":
+	case t.FormatXML:
 		if err := xml.Unmarshal(data, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling XML: %v", err)
 		}
-	case "yaml":
+	case t.FormatYAML:
 		if err := yaml.Unmarshal(data, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling YAML: %v", err)
 		}
 	default:
-		return nil, fmt.Errorf("unsupported format: %s (use json | xml | yaml)", format)
+		return nil, fmt.Errorf("unsupported format: %s (use json | xml | yaml)", format.String())
 	}
 
 	if len(input.Sequence) < 2 {
