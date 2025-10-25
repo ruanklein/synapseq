@@ -42,8 +42,10 @@ func TestStatusReporter_DisplayPeriodChange_PrintsStartAndDash(ts *testing.T) {
 
 	r := &AudioRenderer{periods: []t.Period{p0, p1}, AudioRendererOptions: &AudioRendererOptions{}}
 
-	sr := NewStatusReporter(false)
-	out := captureStderr(func() { sr.DisplayPeriodChange(r, 0) })
+	var buf bytes.Buffer
+	sr := NewStatusReporter(&buf)
+	sr.DisplayPeriodChange(r, 0)
+	out := buf.String()
 
 	if !strings.Contains(out, "- "+p0.TimeString()+" -> "+p1.TimeString()+" ("+p0.Transition.String()+")") {
 		ts.Fatalf("missing start time line: %q", out)
@@ -76,30 +78,16 @@ func TestStatusReporter_DisplayPeriodChange_ShowsEndTrackWhenChanged(ts *testing
 	p0.TrackEnd[0] = endChanged
 
 	r := &AudioRenderer{periods: []t.Period{p0, p1}, AudioRendererOptions: &AudioRendererOptions{}}
-	sr := NewStatusReporter(false)
-	out := captureStderr(func() { sr.DisplayPeriodChange(r, 0) })
+	var buf bytes.Buffer
+	sr := NewStatusReporter(&buf)
+	sr.DisplayPeriodChange(r, 0)
+	out := buf.String()
 
 	if strings.Contains(out, "\n       --") {
 		ts.Fatalf("did not expect '--' when start!=end: %q", out)
 	}
 	if !strings.Contains(out, endChanged.String()) {
 		ts.Fatalf("missing end track string when changed: %q", out)
-	}
-}
-
-func TestStatusReporter_Quiet_SuppressesOutput(ts *testing.T) {
-	var p0, p1 t.Period
-	p0.Time = 0
-	p1.Time = 1000
-	tr := t.Track{Type: t.TrackBinauralBeat, Carrier: 100, Resonance: 5, Amplitude: t.AmplitudePercentToRaw(10), Waveform: t.WaveformSine}
-	p0.TrackStart[0] = tr
-	p0.TrackEnd[0] = tr
-
-	r := &AudioRenderer{periods: []t.Period{p0, p1}, AudioRendererOptions: &AudioRendererOptions{}}
-	sr := NewStatusReporter(true)
-	out := captureStderr(func() { sr.DisplayPeriodChange(r, 0) })
-	if out != "" {
-		ts.Fatalf("expected no output in quiet mode, got: %q", out)
 	}
 }
 
@@ -115,19 +103,25 @@ func TestStatusReporter_CheckPeriodChange_DetectsTransitions(ts *testing.T) {
 	p1.TrackEnd[0] = tr
 
 	r := &AudioRenderer{periods: []t.Period{p0, p1, p2}, AudioRendererOptions: &AudioRendererOptions{}}
-	sr := NewStatusReporter(false)
+	var buf bytes.Buffer
+	sr := NewStatusReporter(&buf)
+	sr.CheckPeriodChange(r, 0)
 
-	out1 := captureStderr(func() { sr.CheckPeriodChange(r, 0) })
+	out1 := buf.String()
 	if !strings.Contains(out1, "- "+p0.TimeString()) {
 		ts.Fatalf("expected period 0 output on first check: %q", out1)
 	}
 
-	out2 := captureStderr(func() { sr.CheckPeriodChange(r, 0) })
+	buf.Reset()
+	sr.CheckPeriodChange(r, 0)
+	out2 := buf.String()
 	if out2 != "" {
 		ts.Fatalf("expected no output when period index unchanged, got: %q", out2)
 	}
 
-	out3 := captureStderr(func() { sr.CheckPeriodChange(r, 1) })
+	buf.Reset()
+	sr.CheckPeriodChange(r, 1)
+	out3 := buf.String()
 	if !strings.Contains(out3, "- "+p1.TimeString()) {
 		ts.Fatalf("expected period 1 output after change: %q", out3)
 	}
