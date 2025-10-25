@@ -21,8 +21,8 @@ type CLIOptions struct {
 	ShowVersion bool
 	// Quiet mode, suppress non-error output
 	Quiet bool
-	// Debug mode, no wav output
-	Debug bool
+	// Test mode, validate syntax without generating output
+	Test bool
 	// Show help message and exit
 	ShowHelp bool
 	// Read input as JSON format
@@ -33,8 +33,8 @@ type CLIOptions struct {
 	FormatYAML bool
 	// Extract text sequence from WAV file
 	ExtractTextSequence bool
-	// No embed metadata in output WAV
-	NoEmbedMetadata bool
+	// Do not embed metadata in output WAV file
+	UnsafeNoMetadata bool
 	// Convert to text from json/xml/yaml
 	ConvertToText bool
 }
@@ -58,19 +58,20 @@ func Help() {
 	fmt.Fprintf(os.Stderr, "    Standard output:     - (raw PCM, 24-bit stereo)\n\n")
 
 	fmt.Fprintf(os.Stderr, "Options:\n")
-	fmt.Fprintf(os.Stderr, "  -json          Read input as JSON format\n")
-	fmt.Fprintf(os.Stderr, "  -xml           Read input as XML format\n")
-	fmt.Fprintf(os.Stderr, "  -yaml          Read input as YAML format\n")
-	fmt.Fprintf(os.Stderr, "  -quiet         Suppress non-error output\n")
-	fmt.Fprintf(os.Stderr, "  -debug         Validate syntax without generating output\n")
-	fmt.Fprintf(os.Stderr, "  -extract       Extract text sequence from WAV file\n")
-	fmt.Fprintf(os.Stderr, "  -no-embed      Do not embed metadata in output WAV file\n")
-	fmt.Fprintf(os.Stderr, "  -convert       Convert to text from json/xml/yaml\n")
-	fmt.Fprintf(os.Stderr, "  -version       Show version information\n")
-	fmt.Fprintf(os.Stderr, "  -help          Show this help message\n\n")
+	fmt.Fprintf(os.Stderr, "  -json          		Read input as JSON format\n")
+	fmt.Fprintf(os.Stderr, "  -xml           		Read input as XML format\n")
+	fmt.Fprintf(os.Stderr, "  -yaml          		Read input as YAML format\n")
+	fmt.Fprintf(os.Stderr, "  -quiet         		Suppress non-error output\n")
+	fmt.Fprintf(os.Stderr, "  -test          		Validate syntax without generating output\n")
+	fmt.Fprintf(os.Stderr, "  -extract       		Extract text sequence from WAV file\n")
+	fmt.Fprintf(os.Stderr, "  -convert       		Convert to text from json/xml/yaml\n")
+	fmt.Fprintf(os.Stderr, "  -unsafe-no-metadata  	  Do not embed metadata in output WAV file\n")
+	fmt.Fprintf(os.Stderr, "  -version       		Show version information\n")
+	fmt.Fprintf(os.Stderr, "  -help         		Show this help message\n\n")
 
 	fmt.Fprintf(os.Stderr, "Examples:\n")
 	fmt.Fprintf(os.Stderr, "  synapseq sequence.spsq output.wav\n")
+	fmt.Fprintf(os.Stderr, "  synapseq -test sequence.spsq output.wav\n")
 	fmt.Fprintf(os.Stderr, "  synapseq -json sequence.json output.wav\n")
 	fmt.Fprintf(os.Stderr, "  cat sequence.spsq | synapseq - output.wav\n")
 	fmt.Fprintf(os.Stderr, "  synapseq https://example.com/sequence.spsq output.wav\n")
@@ -99,9 +100,9 @@ func ParseFlags() (*CLIOptions, []string, error) {
 	fs.BoolVar(&opts.FormatXML, "xml", false, "Read input as XML format")
 	fs.BoolVar(&opts.FormatYAML, "yaml", false, "Read input as YAML format")
 	fs.BoolVar(&opts.Quiet, "quiet", false, "Enable quiet mode")
-	fs.BoolVar(&opts.Debug, "debug", false, "Enable debug mode")
+	fs.BoolVar(&opts.Test, "test", false, "Validate syntax without generating output")
 	fs.BoolVar(&opts.ExtractTextSequence, "extract", false, "Extract text sequence from WAV file")
-	fs.BoolVar(&opts.NoEmbedMetadata, "no-embed", false, "Do not embed metadata in output WAV file")
+	fs.BoolVar(&opts.UnsafeNoMetadata, "unsafe-no-metadata", false, "Do not embed metadata in output WAV file")
 	fs.BoolVar(&opts.ConvertToText, "convert", false, "Convert to text from json/xml/yaml")
 	fs.BoolVar(&opts.ShowHelp, "help", false, "Show help")
 

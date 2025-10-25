@@ -11,25 +11,24 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/ruanklein/synapseq/core"
 	"github.com/ruanklein/synapseq/internal/cli"
-	"github.com/ruanklein/synapseq/internal/sequence"
-	t "github.com/ruanklein/synapseq/internal/types"
 )
 
 // main is the entry point of the SynapSeq application
 func main() {
 	opts, args, err := cli.ParseFlags()
 	if err != nil {
-		os.Exit(2)
+		os.Exit(1)
 	}
 
 	if opts.ShowHelp {
 		cli.Help()
-		os.Exit(0)
+		return
 	}
 	if opts.ShowVersion {
 		cli.ShowVersion()
-		os.Exit(0)
+		return
 	}
 
 	if len(args) != 2 {
@@ -38,68 +37,112 @@ func main() {
 		os.Exit(1)
 	}
 
-	appContext := &t.AppContext{
-		Mode:            t.ModeGenerate,
-		InputFile:       args[0],
-		OutputFile:      args[1],
-		Format:          t.FormatText,
-		Quiet:           opts.Quiet,
-		Debug:           opts.Debug,
-		NoEmbedMetadata: opts.NoEmbedMetadata,
-	}
-
-	if opts.ExtractTextSequence {
-		appContext.Mode = t.ModeExtract
-	}
-	if opts.ConvertToText {
-		appContext.Mode = t.ModeConvert
-	}
-
-	if appContext.Mode == t.ModeExtract {
-		if err = extract(appContext); err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			os.Exit(1)
-		}
-		return
-	}
+	var (
+		inputFile  = args[0]
+		outputFile = args[1]
+		format     = "text"
+	)
 
 	if opts.FormatJSON {
-		appContext.Format = t.FormatJSON
+		format = "json"
 	}
 	if opts.FormatXML {
-		appContext.Format = t.FormatXML
+		format = "xml"
 	}
 	if opts.FormatYAML {
-		appContext.Format = t.FormatYAML
+		format = "yaml"
 	}
 
-	if appContext.Format != t.FormatText {
-		// Load structured sequence
-		appContext.Sequence, err = sequence.LoadStructuredSequence(appContext.InputFile, appContext.Format)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			os.Exit(1)
-		}
-	} else {
-		// Load text sequence
-		appContext.Sequence, err = sequence.LoadTextSequence(appContext.InputFile)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			os.Exit(1)
-		}
-	}
-
-	if appContext.Mode == t.ModeConvert {
-		if err = convert(appContext); err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			os.Exit(1)
-		}
-		return
-	}
-
-	if err = generate(appContext); err != nil {
+	appContext, err := core.NewAppContext(inputFile, outputFile, format)
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}
 
+	if !opts.Quiet {
+		appContext = appContext.WithVerbose()
+	}
+
+	if opts.ExtractTextSequence {
+		if outputFile == "-" {
+			content, err := appContext.Extract()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Println(content)
+			return
+		}
+
+		if err = appContext.SaveExtracted(); err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+
+		if !opts.Quiet {
+			fmt.Println("Extraction completed successfully.")
+		}
+		return
+	}
+
+	if err = appContext.LoadSequence(); err != nil {
+		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+		os.Exit(1)
+	}
+
+	if opts.Test {
+		if !opts.Quiet {
+			fmt.Println("Sequence is valid.")
+		}
+		return
+	}
+
+	if opts.ConvertToText {
+		if outputFile == "-" {
+			content, err := appContext.Text()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Println(content)
+			return
+		}
+
+		if err = appContext.SaveText(); err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+
+		if !opts.Quiet {
+			fmt.Println("Conversion completed successfully.")
+		}
+		return
+	}
+
+	if outputFile == "-" {
+		if err = appContext.Stream(os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	if !opts.Quiet {
+		for _, comment := range appContext.Comments() {
+			fmt.Printf("> %s\n", comment)
+		}
+	}
+
+	if opts.UnsafeNoMetadata {
+		appContext, err = appContext.WithUnsafeNoMetadata()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
+	if err = appContext.WAV(); err != nil {
+		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+		os.Exit(1)
+	}
 }
