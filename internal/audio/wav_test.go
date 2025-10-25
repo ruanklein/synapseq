@@ -15,6 +15,7 @@ import (
 
 	"github.com/gopxl/beep/v2"
 	bwav "github.com/gopxl/beep/v2/wav"
+	"github.com/ruanklein/synapseq/internal/info"
 )
 
 // Use constStreamer from renderer_test.go
@@ -42,8 +43,13 @@ func TestWriteAndExtractICMTChunk_Integration(ts *testing.T) {
 	}
 	wavFile.Close()
 
+	metadata, err := info.NewMetadata(seqPath)
+	if err != nil {
+		ts.Fatalf("ReadWAVMetadata error: %v", err)
+	}
+
 	// Write the ICMT chunk with the sequence
-	if err := WriteICMTChunkFromTextFile(wavPath, seqPath); err != nil {
+	if err := WriteICMTChunkFromTextFile(wavPath, metadata); err != nil {
 		ts.Fatalf("WriteICMTChunkFromTextFile error: %v", err)
 	}
 
