@@ -52,13 +52,11 @@ func (r *AudioRenderer) RenderWav(outPath string) error {
 }
 
 // WriteICMTChunkFromTextFile appends an ICMT chunk with base64-encoded content from the specified text file
-func WriteICMTChunkFromTextFile(wavPath, filePath string) error {
-	header := bytes.Buffer{}
-
-	metadata, err := info.NewMetadata(filePath)
-	if err != nil {
-		return fmt.Errorf("error creating metadata: %w", err)
+func WriteICMTChunkFromTextFile(wavPath string, metadata *info.Metadata) error {
+	if metadata == nil {
+		return fmt.Errorf("metadata is nil")
 	}
+	header := bytes.Buffer{}
 
 	header.WriteString("SYNAPSEQ_META::ID=" + metadata.ID() + "\n")
 	header.WriteString("VERSION=" + metadata.Version() + "\n")
