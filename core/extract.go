@@ -14,8 +14,8 @@ import (
 )
 
 // extract extracts the text sequence from a WAV file
-func (ac *AppContext) extract() (string, error) {
-	content, err := audio.ExtractTextSequenceFromWAV(ac.inputFile)
+func extract(inputFile string) (string, error) {
+	content, err := audio.ExtractTextSequenceFromWAV(inputFile)
 	if err != nil {
 		return "", err
 	}
@@ -24,8 +24,8 @@ func (ac *AppContext) extract() (string, error) {
 }
 
 // Extract generates the extracted text sequence from the WAV input file
-func (ac *AppContext) Extract() (string, error) {
-	content, err := ac.extract()
+func Extract(inputFile string) (string, error) {
+	content, err := extract(inputFile)
 	if err != nil {
 		return "", err
 	}
@@ -34,13 +34,13 @@ func (ac *AppContext) Extract() (string, error) {
 }
 
 // SaveExtracted saves the extracted text sequence to the output file
-func (ac *AppContext) SaveExtracted() error {
-	content, err := ac.extract()
+func SaveExtracted(inputFile, outputFile string) error {
+	content, err := extract(inputFile)
 	if err != nil {
 		return err
 	}
 
-	if err = os.WriteFile(ac.outputFile, []byte(content), 0644); err != nil {
+	if err = os.WriteFile(outputFile, []byte(content), 0644); err != nil {
 		return err
 	}
 

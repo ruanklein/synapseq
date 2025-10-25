@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ruanklein/synapseq/core"
+	synapseq "github.com/ruanklein/synapseq/core"
 	"github.com/ruanklein/synapseq/internal/cli"
 )
 
@@ -43,6 +43,28 @@ func main() {
 		format     = "text"
 	)
 
+	if opts.ExtractTextSequence {
+		if outputFile == "-" {
+			content, err := synapseq.Extract(inputFile)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Println(content)
+			return
+		}
+
+		if err = synapseq.SaveExtracted(inputFile, outputFile); err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+
+		if !opts.Quiet {
+			fmt.Println("Extraction completed successfully.")
+		}
+		return
+	}
+
 	if opts.FormatJSON {
 		format = "json"
 	}
@@ -53,7 +75,7 @@ func main() {
 		format = "yaml"
 	}
 
-	appContext, err := core.NewAppContext(inputFile, outputFile, format)
+	appContext, err := synapseq.NewAppContext(inputFile, outputFile, format)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
@@ -61,28 +83,6 @@ func main() {
 
 	if !opts.Quiet && outputFile != "-" {
 		appContext = appContext.WithVerbose(os.Stderr)
-	}
-
-	if opts.ExtractTextSequence {
-		if outputFile == "-" {
-			content, err := appContext.Extract()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-				os.Exit(1)
-			}
-			fmt.Println(content)
-			return
-		}
-
-		if err = appContext.SaveExtracted(); err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			os.Exit(1)
-		}
-
-		if !opts.Quiet {
-			fmt.Println("Extraction completed successfully.")
-		}
-		return
 	}
 
 	if err = appContext.LoadSequence(); err != nil {
