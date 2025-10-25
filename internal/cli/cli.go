@@ -65,7 +65,7 @@ func Help() {
 	fmt.Fprintf(os.Stderr, "  -test          		Validate syntax without generating output\n")
 	fmt.Fprintf(os.Stderr, "  -extract       		Extract text sequence from WAV file\n")
 	fmt.Fprintf(os.Stderr, "  -convert       		Convert to text from json/xml/yaml\n")
-	fmt.Fprintf(os.Stderr, "  -unsafe-no-metadata  	  Do not embed metadata in output WAV file\n")
+	fmt.Fprintf(os.Stderr, "  -unsafe-no-metadata  	  	Do not embed metadata in output WAV file\n")
 	fmt.Fprintf(os.Stderr, "  -version       		Show version information\n")
 	fmt.Fprintf(os.Stderr, "  -help         		Show this help message\n\n")
 
