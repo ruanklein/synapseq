@@ -23,11 +23,6 @@ import (
 
 // RenderWav renders the audio to a WAV file using go-audio/wav
 func (r *AudioRenderer) RenderWav(outPath string) error {
-	// If in debug mode, render to stdout (nil writer)
-	if r.Debug {
-		return r.Render(nil)
-	}
-
 	out, err := os.Create(outPath)
 	if err != nil {
 		return fmt.Errorf("create output: %w", err)

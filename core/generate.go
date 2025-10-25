@@ -17,7 +17,7 @@ import (
 )
 
 // generate generates the audio renderer based on the loaded sequence
-func (ac *AppContext) generate(debug bool) (*audio.AudioRenderer, error) {
+func (ac *AppContext) generate() (*audio.AudioRenderer, error) {
 	sequence := ac.sequence
 	if sequence == nil {
 		return nil, fmt.Errorf("sequence is nil")
@@ -33,8 +33,7 @@ func (ac *AppContext) generate(debug bool) (*audio.AudioRenderer, error) {
 		Volume:         options.Volume,
 		GainLevel:      options.GainLevel,
 		BackgroundPath: options.BackgroundPath,
-		Quiet:          !ac.verbose,
-		Debug:          debug,
+		StatusOutput:   ac.statusOutput,
 	})
 	if err != nil {
 		return nil, err
@@ -45,7 +44,7 @@ func (ac *AppContext) generate(debug bool) (*audio.AudioRenderer, error) {
 
 // WAV generates the WAV file from the loaded sequence
 func (ac *AppContext) WAV() error {
-	renderer, err := ac.generate(false)
+	renderer, err := ac.generate()
 	if err != nil {
 		return err
 	}
@@ -72,22 +71,12 @@ func (ac *AppContext) WAV() error {
 
 // Stream generates the raw audio stream from the loaded sequence
 func (ac *AppContext) Stream(data io.Writer) error {
-	renderer, err := ac.generate(false)
+	renderer, err := ac.generate()
 	if err != nil {
 		return err
 	}
 
 	err = renderer.RenderRaw(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Debug runs the audio generation in debug mode
-func (ac *AppContext) Debug() error {
-	_, err := ac.generate(true)
 	if err != nil {
 		return err
 	}

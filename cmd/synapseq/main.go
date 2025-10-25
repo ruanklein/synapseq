@@ -59,8 +59,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if !opts.Quiet {
-		appContext = appContext.WithVerbose()
+	if !opts.Quiet && outputFile != "-" {
+		appContext = appContext.WithVerbose(os.Stderr)
 	}
 
 	if opts.ExtractTextSequence {

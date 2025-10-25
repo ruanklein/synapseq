@@ -9,6 +9,7 @@ package core
 
 import (
 	"fmt"
+	"io"
 
 	t "github.com/ruanklein/synapseq/internal/types"
 )
@@ -18,8 +19,8 @@ type AppContext struct {
 	inputFile        string
 	outputFile       string
 	format           t.FileFormat
-	verbose          bool
 	unsafeNoMetadata bool
+	statusOutput     io.Writer
 	sequence         *t.Sequence
 }
 
@@ -43,8 +44,8 @@ func NewAppContext(inputFile, outputFile, format string) (*AppContext, error) {
 		inputFile:        inputFile,
 		outputFile:       outputFile,
 		format:           fileFormat,
-		verbose:          false,
 		unsafeNoMetadata: false,
+		statusOutput:     nil,
 	}, nil
 }
 
@@ -65,13 +66,13 @@ func (ac *AppContext) Format() string {
 
 // Verbose returns whether the application is in verbose mode
 func (ac *AppContext) Verbose() bool {
-	return ac.verbose
+	return ac.statusOutput != nil
 }
 
 // WithVerbose returns a new AppContext with verbose mode enabled
-func (ac *AppContext) WithVerbose() *AppContext {
+func (ac *AppContext) WithVerbose(data io.Writer) *AppContext {
 	newCtx := *ac
-	newCtx.verbose = true
+	newCtx.statusOutput = data
 	return &newCtx
 }
 
