@@ -161,6 +161,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          name: SynapSeq ${{ steps.get_version.outputs.version }}
           files: |
             packages/*.zip
             packages/*.tar.gz
