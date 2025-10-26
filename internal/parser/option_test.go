@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	t "github.com/ruanklein/synapseq/internal/types"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 func TestHasOption(ts *testing.T) {

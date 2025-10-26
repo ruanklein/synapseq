@@ -14,8 +14,8 @@ import (
 	"strings"
 	"testing"
 
-	s "github.com/ruanklein/synapseq/internal/shared"
-	t "github.com/ruanklein/synapseq/internal/types"
+	s "github.com/ruanklein/synapseq/v3/internal/shared"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 func captureStderr(fn func()) string {

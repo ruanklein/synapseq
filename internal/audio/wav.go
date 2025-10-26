@@ -18,7 +18,7 @@ import (
 
 	"github.com/gopxl/beep/v2"
 	bwav "github.com/gopxl/beep/v2/wav"
-	"github.com/ruanklein/synapseq/internal/info"
+	"github.com/ruanklein/synapseq/v3/internal/info"
 )
 
 // RenderWav renders the audio to a WAV file using go-audio/wav

@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	t "github.com/ruanklein/synapseq/internal/types"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // getFullPath expands ~ to the user's home directory and returns the absolute path

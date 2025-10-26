@@ -10,7 +10,7 @@ package sequence
 import (
 	"fmt"
 
-	t "github.com/ruanklein/synapseq/internal/types"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // ConvertToText converts a slice of Periods to a text-based sequence file.

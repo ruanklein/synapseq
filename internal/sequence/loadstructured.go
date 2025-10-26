@@ -19,8 +19,8 @@ import (
 
 	"github.com/goccy/go-yaml"
 
-	s "github.com/ruanklein/synapseq/internal/shared"
-	t "github.com/ruanklein/synapseq/internal/types"
+	s "github.com/ruanklein/synapseq/v3/internal/shared"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // maxStructuredFileSize defines the maximum file size (128KB)

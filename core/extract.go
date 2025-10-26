@@ -10,7 +10,7 @@ package core
 import (
 	"os"
 
-	"github.com/ruanklein/synapseq/internal/audio"
+	"github.com/ruanklein/synapseq/v3/internal/audio"
 )
 
 // extract extracts the text sequence from a WAV file

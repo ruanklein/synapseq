@@ -16,7 +16,7 @@ import (
 	"strings"
 	"testing"
 
-	t "github.com/ruanklein/synapseq/internal/types"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 func writeTemp(ts *testing.T, name, content string) string {

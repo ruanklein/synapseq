@@ -12,7 +12,7 @@ import (
 	"log"
 	"os"
 
-	synapseq "github.com/ruanklein/synapseq/core"
+	synapseq "github.com/ruanklein/synapseq/v3/core"
 )
 
 func ExampleNewAppContext() {
