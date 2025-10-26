@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.0]
+
+### New Features
+
+- **Preset Inheritance**: Presets can now inherit from other presets, allowing more reusable and modular sequence definitions. This enables fine-grained control over variations while reducing repetition in `.spsq` files.
+- **Embedded Metadata in WAV Files**: SynapSeq now embeds the original sequence and metadata into the generated WAV files. You can extract this information at any time using the new `-extract` CLI flag
+- **Reverse Conversion**: Added CLI support to convert structured formats **(JSON, XML, YAML)** back into `.spsq` format using the `-convert` flag. This enables round-trip conversion and easier editing of machine-generated sequences.
+- **Core Library Extraction**: The internal sequencing engine has been modularized into a standalone Go library, enabling integration with third-party tools, GUIs, and services without relying on CLI execution.
+- **Precompiled Binaries and CI/CD Build Automation**: SynapSeq is now distributed with precompiled binaries for all major platforms:
+  - **Windows** (`.zip` for x86_64 and ARM64)
+  - **macOS** (`.tar.gz` for ARM64)
+  - **Linux** (`.tar.gz` for x86_64 and ARM64)
+
+These binaries are published on GitHub Releases and allow anyone to run SynapSeq without needing to install Go or Make.
+
+### Improvements
+
+- Updated CLI documentation to reflect new `-convert` usage.
+- Improved internal code organization by separating core logic and CLI wrapper.
+
+### Notes
+
+- Signed binary support is not included. On Windows/macOS, you may need to confirm execution due to unsigned status.
+
 ## [3.1.0]
 
 ### New Features
