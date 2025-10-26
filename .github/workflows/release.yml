@@ -1,162 +1,169 @@
 name: Release
 
 on:
-    push:
-        tags:
-            - "v*.*.*"
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
-    build-and-release:
-        runs-on: ubuntu-latest
+  build-and-release:
+    runs-on: ubuntu-latest
 
-        container:
-            image: golang:1.25-alpine
+    container:
+      image: golang:1.25-alpine
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-            - name: Extract version from tag
-              id: get_version
-              run: |
-                  VERSION=${GITHUB_REF#refs/tags/}
-                  echo "version=${VERSION}" >> $GITHUB_OUTPUT
-                  echo "Extracted version: ${VERSION}"
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Extracted version: ${VERSION}"
 
-            - name: Install dependencies
-              run: |
-                  apk add --no-cache make pandoc zip tar bash gzip
+      - name: Install dependencies
+        run: |
+          apk add --no-cache make pandoc zip tar bash gzip
 
-            - name: Build binaries
-              run: |
-                  make build-windows
-                  make build-linux
-                  make build-macos
+      - name: Build binaries
+        run: |
+          make build-windows
+          make build-linux
+          make build-macos
 
-            - name: Generate manpage
-              run: |
-                  make man
+      - name: Generate manpage
+        run: |
+          make man
 
-            - name: Prepare packaging directories
-              run: |
-                  mkdir -p packages
-                  mkdir -p temp-package
+      - name: Prepare packaging directories
+        run: |
+          mkdir -p packages
+          mkdir -p temp-package
 
-            - name: Prepare documentation files
-              run: |
-                  # Convert documentation markdown files to txt
-                  pandoc docs/USAGE.md -t plain -o temp-package/USAGE.txt
-                  pandoc docs/FAQ.md -t plain -o temp-package/FAQ.txt
-                  pandoc CHANGELOG.md -t plain -o temp-package/CHANGELOG.txt
+      - name: Prepare documentation files
+        run: |
+          # Convert documentation markdown files to txt
+          pandoc docs/USAGE.md -t plain -o temp-package/USAGE.txt
+          pandoc docs/FAQ.md -t plain -o temp-package/FAQ.txt
+          pandoc CHANGELOG.md -t plain -o temp-package/CHANGELOG.txt
 
-                  # Copy license file
-                  cp COPYING.txt temp-package/COPYING.txt
+          # Copy license file
+          cp COPYING.txt temp-package/COPYING.txt
 
-                  echo "Documentation files prepared"
+          echo "Documentation files prepared"
 
-            - name: Convert Markdown to plain text
-              run: |
-                  # Function to convert markdown files to txt
-                  convert_md_to_txt() {
-                    local dir=$1
-                    find "$dir" -type f -name "*.md" | while read -r md_file; do
-                      txt_file="${md_file%.md}.txt"
-                      pandoc "$md_file" -t plain -o "$txt_file"
-                      rm "$md_file"
-                    done
-                  }
+      - name: Convert Markdown to plain text
+        run: |
+          # Function to convert markdown files to txt
+          convert_md_to_txt() {
+            local dir=$1
+            find "$dir" -type f -name "*.md" | while read -r md_file; do
+              txt_file="${md_file%.md}.txt"
+              pandoc "$md_file" -t plain -o "$txt_file"
+              rm "$md_file"
+            done
+          }
 
-                  # Create temporary copies of directories
-                  cp -r samples temp-package/samples
-                  cp -r contrib temp-package/contrib
-                  cp -r scripts temp-package/scripts
+          # Create temporary copies of directories
+          cp -r samples temp-package/samples
+          cp -r contrib temp-package/contrib
+          cp -r scripts temp-package/scripts
 
-                  # Convert all markdown files to txt
-                  convert_md_to_txt "temp-package/samples"
-                  convert_md_to_txt "temp-package/contrib"
-                  convert_md_to_txt "temp-package/scripts"
+          # Convert all markdown files to txt
+          convert_md_to_txt "temp-package/samples"
+          convert_md_to_txt "temp-package/contrib"
+          convert_md_to_txt "temp-package/scripts"
 
-            - name: Package all binaries
-              run: |
-                  VERSION="${{ steps.get_version.outputs.version }}"
+      - name: Package all binaries
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
 
-                  # Function to package binaries
-                  package_binary() {
-                    local platform=$1
-                    local arch=$2
-                    local ext=$3
-                    local compress=$4
-                    
-                    local pkg_name="synapseq-${VERSION}-${platform}-${arch}"
-                    local bin_src="bin/synapseq-${platform}-${arch}${ext}"
-                    local bin_dest="synapseq${ext}"
-                    
-                    echo "Packaging ${pkg_name}..."
-                    
-                    mkdir -p "${pkg_name}/bin"
-                    cp "${bin_src}" "${pkg_name}/bin/${bin_dest}"
-                    
-                    # Set executable permission for Unix systems
-                    if [ -z "$ext" ]; then
-                      chmod +x "${pkg_name}/bin/${bin_dest}"
-                    fi
-                    
-                    # Copy directories
-                    cp -r temp-package/samples "${pkg_name}/"
-                    cp -r temp-package/contrib "${pkg_name}/"
-                    cp -r temp-package/scripts "${pkg_name}/"
-                    
-                    # Copy documentation files to root
-                    cp temp-package/USAGE.txt "${pkg_name}/"
-                    cp temp-package/FAQ.txt "${pkg_name}/"
-                    cp temp-package/CHANGELOG.txt "${pkg_name}/"
-                    cp temp-package/COPYING.txt "${pkg_name}/"
-                    
-                    # Include manpage for Linux and macOS
-                    if [ "$platform" = "linux" ] || [ "$platform" = "macos" ]; then
-                      mkdir -p "${pkg_name}/man"
-                      cp docs/manpage/synapseq.1 "${pkg_name}/man/"
-                      echo "✓ Manpage included in ${pkg_name}"
-                    fi
-                    
-                    if [ "$compress" = "zip" ]; then
-                      zip -r "packages/${pkg_name}.zip" "${pkg_name}"
-                    else
-                      tar -czf "packages/${pkg_name}.tar.gz" "${pkg_name}"
-                    fi
-                    
-                    rm -rf "${pkg_name}"
-                    echo "✓ ${pkg_name} packaged successfully"
-                  }
+          # Function to package binaries
+          package_binary() {
+            local platform=$1
+            local arch=$2
+            local ext=$3
+            local compress=$4
+            
+            local pkg_name="synapseq-${VERSION}-${platform}-${arch}"
+            local bin_src="bin/synapseq-${platform}-${arch}${ext}"
+            local bin_dest="synapseq-${VERSION}-${platform}-${arch}${ext}"
+            local sha_file="${bin_dest}.sha256"
+            
+            echo "Packaging ${pkg_name}..."
+            
+            mkdir -p "${pkg_name}/bin"
+            cp "${bin_src}" "${pkg_name}/bin/${bin_dest}"
+            
+            # Set executable permission for Unix systems
+            if [ -z "$ext" ]; then
+              chmod +x "${pkg_name}/bin/${bin_dest}"
+            fi
+            
+            # Generate SHA256 for the binary
+            cd "${pkg_name}/bin"
+            sha256sum "${bin_dest}" > "${sha_file}"
+            cd ../..
+            echo "✓ SHA256 generated: ${sha_file}"
+            
+            # Copy directories
+            cp -r temp-package/samples "${pkg_name}/"
+            cp -r temp-package/contrib "${pkg_name}/"
+            cp -r temp-package/scripts "${pkg_name}/"
+            
+            # Copy documentation files to root
+            cp temp-package/USAGE.txt "${pkg_name}/"
+            cp temp-package/FAQ.txt "${pkg_name}/"
+            cp temp-package/CHANGELOG.txt "${pkg_name}/"
+            cp temp-package/COPYING.txt "${pkg_name}/"
+            
+            # Include manpage for Linux and macOS
+            if [ "$platform" = "linux" ] || [ "$platform" = "macos" ]; then
+              mkdir -p "${pkg_name}/man"
+              cp docs/manpage/synapseq.1 "${pkg_name}/man/"
+              echo "✓ Manpage included in ${pkg_name}"
+            fi
+            
+            if [ "$compress" = "zip" ]; then
+              zip -r "packages/${pkg_name}.zip" "${pkg_name}"
+            else
+              tar -czf "packages/${pkg_name}.tar.gz" "${pkg_name}"
+            fi
+            
+            rm -rf "${pkg_name}"
+            echo "✓ ${pkg_name} packaged successfully"
+          }
 
-                  # Package Windows binaries (ZIP format)
-                  package_binary "windows" "amd64" ".exe" "zip"
-                  package_binary "windows" "arm64" ".exe" "zip"
+          # Package Windows binaries (ZIP format)
+          package_binary "windows" "amd64" ".exe" "zip"
+          package_binary "windows" "arm64" ".exe" "zip"
 
-                  # Package Linux binaries (TAR.GZ format)
-                  package_binary "linux" "amd64" "" "tar.gz"
-                  package_binary "linux" "arm64" "" "tar.gz"
+          # Package Linux binaries (TAR.GZ format)
+          package_binary "linux" "amd64" "" "tar.gz"
+          package_binary "linux" "arm64" "" "tar.gz"
 
-                  # Package macOS binaries (TAR.GZ format)
-                  package_binary "macos" "arm64" "" "tar.gz"
+          # Package macOS binaries (TAR.GZ format)
+          package_binary "macos" "arm64" "" "tar.gz"
 
-            - name: Generate checksums
-              run: |
-                  cd packages
-                  md5sum *.zip *.tar.gz > checksums.txt
-                  cat checksums.txt
+      - name: Generate checksums
+        run: |
+          cd packages
+          sha256sum *.zip *.tar.gz > checksums.txt
+          cat checksums.txt
 
-            - name: Create Release
-              uses: softprops/action-gh-release@v1
-              with:
-                  files: |
-                      packages/*.zip
-                      packages/*.tar.gz
-                      packages/checksums.txt
-                  draft: true
-                  prerelease: false
-                  generate_release_notes: true
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            packages/*.zip
+            packages/*.tar.gz
+            packages/checksums.txt
+          draft: true
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
