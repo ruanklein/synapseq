@@ -161,12 +161,13 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          name: SynapSeq ${{ steps.get_version.outputs.version }}
           files: |
             packages/*.zip
             packages/*.tar.gz
             packages/checksums.txt
           draft: true
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: no
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
