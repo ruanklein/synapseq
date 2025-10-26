@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.1]
+
+### Fixes and Maintenance
+
+- **Go Module Path Update:**  
+   The module path has been updated from:
+
+  ```
+  github.com/ruanklein/synapseq
+  ```
+
+  to:
+
+  ```
+  github.com/ruanklein/synapseq/v3
+  ```
+
+  This change aligns with Go's [Semantic Import Versioning](https://go.dev/doc/modules/version-numbers) requirements for modules at version `v2` and higher.  
+  Without this suffix, Go tools (such as `go get` and `pkg.go.dev`) would incorrectly fetch the legacy `v2.1.1+incompatible` release instead of the latest version.
+
+- **Fixed Import Paths:**  
+  All internal and public imports have been updated to reference the correct v3 module path.
+
 ## [3.2.0]
 
 ### New Features

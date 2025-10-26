@@ -10,8 +10,8 @@ package parser
 import (
 	"fmt"
 
-	s "github.com/ruanklein/synapseq/internal/shared"
-	t "github.com/ruanklein/synapseq/internal/types"
+	s "github.com/ruanklein/synapseq/v3/internal/shared"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // HasPreset checks if the current line is a preset definition

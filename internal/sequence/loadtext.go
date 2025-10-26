@@ -10,9 +10,9 @@ package sequence
 import (
 	"fmt"
 
-	"github.com/ruanklein/synapseq/internal/parser"
-	s "github.com/ruanklein/synapseq/internal/shared"
-	t "github.com/ruanklein/synapseq/internal/types"
+	"github.com/ruanklein/synapseq/v3/internal/parser"
+	s "github.com/ruanklein/synapseq/v3/internal/shared"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // LoadTextSequence loads a sequence from a text file

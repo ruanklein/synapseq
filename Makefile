@@ -1,7 +1,7 @@
 BIN_NAME := synapseq
 BIN_DIR := bin
 VERSION := $(shell cat VERSION)
-GO_BUILD_FLAGS := -ldflags="-s -w -X github.com/ruanklein/synapseq/internal/info.VERSION=$(VERSION)"
+GO_BUILD_FLAGS := -ldflags="-s -w -X github.com/ruanklein/synapseq/v3/internal/info.VERSION=$(VERSION)"
 MAIN := ./cmd/synapseq
 # Documentation
 MAN_DIR := docs/manpage

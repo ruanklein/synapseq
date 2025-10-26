@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ruanklein/synapseq/internal/info"
+	"github.com/ruanklein/synapseq/v3/internal/info"
 )
 
 // CLIOptions holds command-line options

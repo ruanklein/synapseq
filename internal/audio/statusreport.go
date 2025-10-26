@@ -12,8 +12,8 @@ import (
 	"io"
 	"strings"
 
-	s "github.com/ruanklein/synapseq/internal/shared"
-	t "github.com/ruanklein/synapseq/internal/types"
+	s "github.com/ruanklein/synapseq/v3/internal/shared"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // StatusReporter handles terminal status output during rendering

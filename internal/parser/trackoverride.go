@@ -10,7 +10,7 @@ package parser
 import (
 	"fmt"
 
-	t "github.com/ruanklein/synapseq/internal/types"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // HasTrackOverride checks if the current line is a track override definition

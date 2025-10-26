@@ -10,7 +10,7 @@ package shared
 import (
 	"fmt"
 
-	t "github.com/ruanklein/synapseq/internal/types"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // AdjustPeriods adjusts the tracks in the overlapping periods

@@ -8,8 +8,8 @@
 package core
 
 import (
-	seq "github.com/ruanklein/synapseq/internal/sequence"
-	t "github.com/ruanklein/synapseq/internal/types"
+	seq "github.com/ruanklein/synapseq/v3/internal/sequence"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // LoadSequence loads the sequence from the input file based on the specified format

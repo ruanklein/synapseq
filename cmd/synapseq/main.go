@@ -12,8 +12,8 @@ import (
 	"os"
 	"runtime"
 
-	synapseq "github.com/ruanklein/synapseq/core"
-	"github.com/ruanklein/synapseq/internal/cli"
+	synapseq "github.com/ruanklein/synapseq/v3/core"
+	"github.com/ruanklein/synapseq/v3/internal/cli"
 )
 
 // main is the entry point of the SynapSeq application

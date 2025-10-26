@@ -10,7 +10,7 @@ package audio
 import (
 	"math"
 
-	t "github.com/ruanklein/synapseq/internal/types"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // mix generates a stereo audio sample by mixing all channels

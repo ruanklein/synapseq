@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"io"
 
-	t "github.com/ruanklein/synapseq/internal/types"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // AppContext holds the configuration for the application.
