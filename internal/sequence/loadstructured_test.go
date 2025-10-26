@@ -99,7 +99,7 @@ func TestLoadStructured_JSON_Standalone(ts *testing.T) {
 }`
 	p := writeTemp(ts, "seq.json", json)
 
-	res, err := LoadStructuredSequence(p, "json")
+	res, err := LoadStructuredSequence(p, t.FormatJSON)
 	if err != nil {
 		ts.Fatalf("LoadStructuredSequence(json) error: %v", err)
 	}
@@ -162,7 +162,7 @@ func TestLoadStructured_XML_Standalone(ts *testing.T) {
 </SynapSeqInput>`
 	p := writeTemp(ts, "seq.xml", xml)
 
-	res, err := LoadStructuredSequence(p, "xml")
+	res, err := LoadStructuredSequence(p, t.FormatXML)
 	if err != nil {
 		ts.Fatalf("LoadStructuredSequence(xml) error: %v", err)
 	}
@@ -232,7 +232,7 @@ sequence:
 `
 	p := writeTemp(ts, "seq.yaml", yaml)
 
-	res, err := LoadStructuredSequence(p, "yaml")
+	res, err := LoadStructuredSequence(p, t.FormatYAML)
 	if err != nil {
 		ts.Fatalf("LoadStructuredSequence(yaml) error: %v", err)
 	}
@@ -269,9 +269,9 @@ sequence:
 }
 
 // Helpers for tests
-func sampleContentFor(format string) string {
+func sampleContentFor(format t.FileFormat) string {
 	switch format {
-	case "json":
+	case t.FormatJSON:
 		return `{
   "description": ["Standalone structured test"],
   "options": { "samplerate": 44100, "volume": 100 },
@@ -302,7 +302,7 @@ func sampleContentFor(format string) string {
     }
   ]
 }`
-	case "xml":
+	case t.FormatXML:
 		return `<?xml version="1.0" encoding="UTF-8"?>
 <SynapSeqInput>
   <description>
@@ -327,7 +327,7 @@ func sampleContentFor(format string) string {
     </entry>
   </sequence>
 </SynapSeqInput>`
-	case "yaml":
+	case t.FormatYAML:
 		return `description:
   - Standalone structured test
 options:
@@ -364,7 +364,7 @@ sequence:
 	}
 }
 
-func verifyBasicLoadResult(tst *testing.T, res *LoadResult) {
+func verifyBasicLoadResult(tst *testing.T, res *t.Sequence) {
 	tst.Helper()
 	if res.Options.SampleRate != 44100 || res.Options.Volume != 100 {
 		tst.Fatalf("unexpected options: %+v", *res.Options)
@@ -398,11 +398,11 @@ func verifyBasicLoadResult(tst *testing.T, res *LoadResult) {
 
 // STDIN tests
 
-func TestLoadStructured_JSON_FromStdin(t *testing.T) {
-	content := sampleContentFor("json")
+func TestLoadStructured_JSON_FromStdin(ts *testing.T) {
+	content := sampleContentFor(t.FormatJSON)
 	r, w, err := os.Pipe()
 	if err != nil {
-		t.Fatalf("os.Pipe: %v", err)
+		ts.Fatalf("os.Pipe: %v", err)
 	}
 	defer r.Close()
 	oldStdin := os.Stdin
@@ -414,18 +414,18 @@ func TestLoadStructured_JSON_FromStdin(t *testing.T) {
 		_ = w.Close()
 	}()
 
-	res, err := LoadStructuredSequence("-", "json")
+	res, err := LoadStructuredSequence("-", t.FormatJSON)
 	if err != nil {
-		t.Fatalf("LoadStructuredSequence(stdin,json): %v", err)
+		ts.Fatalf("LoadStructuredSequence(stdin,json): %v", err)
 	}
-	verifyBasicLoadResult(t, res)
+	verifyBasicLoadResult(ts, res)
 }
 
-func TestLoadStructured_XML_FromStdin(t *testing.T) {
-	content := sampleContentFor("xml")
+func TestLoadStructured_XML_FromStdin(ts *testing.T) {
+	content := sampleContentFor(t.FormatXML)
 	r, w, err := os.Pipe()
 	if err != nil {
-		t.Fatalf("os.Pipe: %v", err)
+		ts.Fatalf("os.Pipe: %v", err)
 	}
 	defer r.Close()
 	oldStdin := os.Stdin
@@ -437,18 +437,18 @@ func TestLoadStructured_XML_FromStdin(t *testing.T) {
 		_ = w.Close()
 	}()
 
-	res, err := LoadStructuredSequence("-", "xml")
+	res, err := LoadStructuredSequence("-", t.FormatXML)
 	if err != nil {
-		t.Fatalf("LoadStructuredSequence(stdin,xml): %v", err)
+		ts.Fatalf("LoadStructuredSequence(stdin,xml): %v", err)
 	}
-	verifyBasicLoadResult(t, res)
+	verifyBasicLoadResult(ts, res)
 }
 
-func TestLoadStructured_YAML_FromStdin(t *testing.T) {
-	content := sampleContentFor("yaml")
+func TestLoadStructured_YAML_FromStdin(ts *testing.T) {
+	content := sampleContentFor(t.FormatYAML)
 	r, w, err := os.Pipe()
 	if err != nil {
-		t.Fatalf("os.Pipe: %v", err)
+		ts.Fatalf("os.Pipe: %v", err)
 	}
 	defer r.Close()
 	oldStdin := os.Stdin
@@ -460,47 +460,47 @@ func TestLoadStructured_YAML_FromStdin(t *testing.T) {
 		_ = w.Close()
 	}()
 
-	res, err := LoadStructuredSequence("-", "yaml")
+	res, err := LoadStructuredSequence("-", t.FormatYAML)
 	if err != nil {
-		t.Fatalf("LoadStructuredSequence(stdin,yaml): %v", err)
+		ts.Fatalf("LoadStructuredSequence(stdin,yaml): %v", err)
 	}
-	verifyBasicLoadResult(t, res)
+	verifyBasicLoadResult(ts, res)
 }
 
 // WEB tests (http server local)
 
-func TestLoadStructured_JSON_FromHTTP(t *testing.T) {
-	content := sampleContentFor("json")
+func TestLoadStructured_JSON_FromHTTP(ts *testing.T) {
+	content := sampleContentFor(t.FormatJSON)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(content))
 	}))
 	defer srv.Close()
 
-	res, err := LoadStructuredSequence(srv.URL, "json")
+	res, err := LoadStructuredSequence(srv.URL, t.FormatJSON)
 	if err != nil {
-		t.Fatalf("LoadStructuredSequence(http,json): %v", err)
+		ts.Fatalf("LoadStructuredSequence(http,json): %v", err)
 	}
-	verifyBasicLoadResult(t, res)
+	verifyBasicLoadResult(ts, res)
 }
 
-func TestLoadStructured_XML_FromHTTP(t *testing.T) {
-	content := sampleContentFor("xml")
+func TestLoadStructured_XML_FromHTTP(ts *testing.T) {
+	content := sampleContentFor(t.FormatXML)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/xml")
 		_, _ = w.Write([]byte(content))
 	}))
 	defer srv.Close()
 
-	res, err := LoadStructuredSequence(srv.URL, "xml")
+	res, err := LoadStructuredSequence(srv.URL, t.FormatXML)
 	if err != nil {
-		t.Fatalf("LoadStructuredSequence(http,xml): %v", err)
+		ts.Fatalf("LoadStructuredSequence(http,xml): %v", err)
 	}
-	verifyBasicLoadResult(t, res)
+	verifyBasicLoadResult(ts, res)
 }
 
-func TestLoadStructured_YAML_FromHTTP(t *testing.T) {
-	content := sampleContentFor("yaml")
+func TestLoadStructured_YAML_FromHTTP(ts *testing.T) {
+	content := sampleContentFor(t.FormatYAML)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// intentionally using x-yaml content type
 		// to test content-type flexibility
@@ -509,27 +509,25 @@ func TestLoadStructured_YAML_FromHTTP(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	res, err := LoadStructuredSequence(srv.URL, "yaml")
+	res, err := LoadStructuredSequence(srv.URL, t.FormatYAML)
 	if err != nil {
-		t.Fatalf("LoadStructuredSequence(http,yaml): %v", err)
+		ts.Fatalf("LoadStructuredSequence(http,yaml): %v", err)
 	}
-	verifyBasicLoadResult(t, res)
+	verifyBasicLoadResult(ts, res)
 }
 
-func TestLoadStructured_JSON_FileTooLarge(t *testing.T) {
+func TestLoadStructured_JSON_FileTooLarge(ts *testing.T) {
 	// Generate a JSON file larger than maxStructuredFileSize
 	over := maxStructuredFileSize + 1024 // 1KB over the limit
 	huge := strings.Repeat("A", over)
 	json := fmt.Sprintf(`{"description":["%s"],"options":{"samplerate":44100,"volume":100},"sequence":[{"time":0,"transition":"steady","track":{"tones":[{"mode":"binaural","carrier":250,"resonance":8,"amplitude":0,"waveform":"sine"}]}}]}`, huge)
 
-	p := writeTemp(t, "too-big.json", json)
+	p := writeTemp(ts, "too-big.json", json)
 
-	if _, err := LoadStructuredSequence(p, "json"); err == nil {
-		t.Fatalf("expected error for file > %d bytes, got nil", maxStructuredFileSize)
+	if _, err := LoadStructuredSequence(p, t.FormatJSON); err == nil {
+		ts.Fatalf("expected error for file > %d bytes, got nil", maxStructuredFileSize)
 	}
 }
-
-// ...existing code...
 
 func TestLoadStructured_JSON_WithBackground(ts *testing.T) {
 	json := `{
@@ -583,7 +581,7 @@ func TestLoadStructured_JSON_WithBackground(ts *testing.T) {
 }`
 	p := writeTemp(ts, "bg-pulse.json", json)
 
-	res, err := LoadStructuredSequence(p, "json")
+	res, err := LoadStructuredSequence(p, t.FormatJSON)
 	if err != nil {
 		ts.Fatalf("LoadStructuredSequence(json with background) error: %v", err)
 	}
@@ -661,7 +659,7 @@ func TestLoadStructured_XML_WithBackground(ts *testing.T) {
 </SynapSeqInput>`
 	p := writeTemp(ts, "bg-spin.xml", xml)
 
-	res, err := LoadStructuredSequence(p, "xml")
+	res, err := LoadStructuredSequence(p, t.FormatXML)
 	if err != nil {
 		ts.Fatalf("LoadStructuredSequence(xml with background) error: %v", err)
 	}
@@ -747,7 +745,7 @@ sequence:
 `
 	p := writeTemp(ts, "bg-pulse.yaml", yaml)
 
-	res, err := LoadStructuredSequence(p, "yaml")
+	res, err := LoadStructuredSequence(p, t.FormatYAML)
 	if err != nil {
 		ts.Fatalf("LoadStructuredSequence(yaml with background) error: %v", err)
 	}
@@ -833,7 +831,7 @@ func TestLoadStructured_JSON_BackgroundWithVaryingIntensity(ts *testing.T) {
 }`
 	p := writeTemp(ts, "bg-varying-intensity.json", json)
 
-	res, err := LoadStructuredSequence(p, "json")
+	res, err := LoadStructuredSequence(p, t.FormatJSON)
 	if err != nil {
 		ts.Fatalf("LoadStructuredSequence(json with varying intensity) error: %v", err)
 	}
@@ -897,7 +895,7 @@ func TestLoadStructured_XML_BackgroundWithoutEffect(ts *testing.T) {
 </SynapSeqInput>`
 	p := writeTemp(ts, "bg-no-effect.xml", xml)
 
-	res, err := LoadStructuredSequence(p, "xml")
+	res, err := LoadStructuredSequence(p, t.FormatXML)
 	if err != nil {
 		ts.Fatalf("LoadStructuredSequence(xml background without effect) error: %v", err)
 	}
@@ -963,7 +961,7 @@ sequence:
 `
 	p := writeTemp(ts, "bg-intensities.yaml", yaml)
 
-	res, err := LoadStructuredSequence(p, "yaml")
+	res, err := LoadStructuredSequence(p, t.FormatYAML)
 	if err != nil {
 		ts.Fatalf("LoadStructuredSequence(yaml with intensities) error: %v", err)
 	}

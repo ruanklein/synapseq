@@ -5,7 +5,13 @@
  * Licensed under GNU GPL v2. See COPYING.txt for details.
  */
 
-package cli
+package info
+
+const (
+	AUTHOR     = "Ruan"
+	AUTHOR_URL = "https://ruan.sh/"
+	REPOSITORY = "https://github.com/ruanklein/synapseq"
+)
 
 // Version of the application
-const VERSION = "3.1.0"
+var VERSION = "dev"

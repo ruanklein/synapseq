@@ -11,6 +11,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/ruanklein/synapseq/internal/info"
 )
 
 // CLIOptions holds command-line options
@@ -19,8 +21,8 @@ type CLIOptions struct {
 	ShowVersion bool
 	// Quiet mode, suppress non-error output
 	Quiet bool
-	// Debug mode, no wav output
-	Debug bool
+	// Test mode, validate syntax without generating output
+	Test bool
 	// Show help message and exit
 	ShowHelp bool
 	// Read input as JSON format
@@ -29,12 +31,18 @@ type CLIOptions struct {
 	FormatXML bool
 	// Read input as YAML format
 	FormatYAML bool
+	// Extract text sequence from WAV file
+	ExtractTextSequence bool
+	// Do not embed metadata in output WAV file
+	UnsafeNoMetadata bool
+	// Convert to text from json/xml/yaml
+	ConvertToText bool
 }
 
 // Help prints the help message
 func Help() {
-	fmt.Fprintf(os.Stderr, "SynapSeq - Synapse-Sequenced Brainwave Generator, version %s\n", VERSION)
-	fmt.Fprintf(os.Stderr, "(c) 2025 Ruan, https://ruan.sh\n")
+	fmt.Fprintf(os.Stderr, "SynapSeq - Synapse-Sequenced Brainwave Generator, version %s\n", info.VERSION)
+	fmt.Fprintf(os.Stderr, "(c) 2025 %s, %s\n", info.AUTHOR, info.AUTHOR_URL)
 	fmt.Fprintf(os.Stderr, "Released under the GNU GPL v2. See file COPYING for details.\n\n")
 
 	fmt.Fprintf(os.Stderr, "Usage: synapseq [options] <input> <output>\n\n")
@@ -50,29 +58,34 @@ func Help() {
 	fmt.Fprintf(os.Stderr, "    Standard output:     - (raw PCM, 24-bit stereo)\n\n")
 
 	fmt.Fprintf(os.Stderr, "Options:\n")
-	fmt.Fprintf(os.Stderr, "  -json          Read input as JSON format\n")
-	fmt.Fprintf(os.Stderr, "  -xml           Read input as XML format\n")
-	fmt.Fprintf(os.Stderr, "  -yaml          Read input as YAML format\n")
-	fmt.Fprintf(os.Stderr, "  -quiet         Suppress non-error output\n")
-	fmt.Fprintf(os.Stderr, "  -debug         Validate syntax without generating output\n")
-	fmt.Fprintf(os.Stderr, "  -version       Show version information\n")
-	fmt.Fprintf(os.Stderr, "  -help          Show this help message\n\n")
+	fmt.Fprintf(os.Stderr, "  -json          		Read input as JSON format\n")
+	fmt.Fprintf(os.Stderr, "  -xml           		Read input as XML format\n")
+	fmt.Fprintf(os.Stderr, "  -yaml          		Read input as YAML format\n")
+	fmt.Fprintf(os.Stderr, "  -quiet         		Suppress non-error output\n")
+	fmt.Fprintf(os.Stderr, "  -test          		Validate syntax without generating output\n")
+	fmt.Fprintf(os.Stderr, "  -extract       		Extract text sequence from WAV file\n")
+	fmt.Fprintf(os.Stderr, "  -convert       		Convert to text from json/xml/yaml\n")
+	fmt.Fprintf(os.Stderr, "  -unsafe-no-metadata  	  	Do not embed metadata in output WAV file\n")
+	fmt.Fprintf(os.Stderr, "  -version       		Show version information\n")
+	fmt.Fprintf(os.Stderr, "  -help         		Show this help message\n\n")
 
 	fmt.Fprintf(os.Stderr, "Examples:\n")
 	fmt.Fprintf(os.Stderr, "  synapseq sequence.spsq output.wav\n")
+	fmt.Fprintf(os.Stderr, "  synapseq -test sequence.spsq output.wav\n")
 	fmt.Fprintf(os.Stderr, "  synapseq -json sequence.json output.wav\n")
 	fmt.Fprintf(os.Stderr, "  cat sequence.spsq | synapseq - output.wav\n")
 	fmt.Fprintf(os.Stderr, "  synapseq https://example.com/sequence.spsq output.wav\n")
-	fmt.Fprintf(os.Stderr, "  synapseq sequence.spsq - | play -t raw -r 44100 -e signed-integer -b 24 -c 2 -\n\n")
+	fmt.Fprintf(os.Stderr, "  synapseq sequence.spsq - | play -t raw -r 44100 -e signed-integer -b 24 -c 2 -\n")
+	fmt.Fprintf(os.Stderr, "  synapseq -extract sequence.wav output.spsq\n\n")
 
 	fmt.Fprintf(os.Stderr, "For detailed documentation:\n")
 	fmt.Fprintf(os.Stderr, "  man synapseq\n")
-	fmt.Fprintf(os.Stderr, "  https://github.com/ruanklein/synapseq\n")
+	fmt.Fprintf(os.Stderr, "  %s\n", info.REPOSITORY)
 }
 
 // ShowVersion prints the version information
 func ShowVersion() {
-	fmt.Printf("SynapSeq version %s\n", VERSION)
+	fmt.Printf("SynapSeq version %s\n", info.VERSION)
 }
 
 // ParseFlags parses command-line flags and returns CLIOptions
@@ -87,7 +100,10 @@ func ParseFlags() (*CLIOptions, []string, error) {
 	fs.BoolVar(&opts.FormatXML, "xml", false, "Read input as XML format")
 	fs.BoolVar(&opts.FormatYAML, "yaml", false, "Read input as YAML format")
 	fs.BoolVar(&opts.Quiet, "quiet", false, "Enable quiet mode")
-	fs.BoolVar(&opts.Debug, "debug", false, "Enable debug mode")
+	fs.BoolVar(&opts.Test, "test", false, "Validate syntax without generating output")
+	fs.BoolVar(&opts.ExtractTextSequence, "extract", false, "Extract text sequence from WAV file")
+	fs.BoolVar(&opts.UnsafeNoMetadata, "unsafe-no-metadata", false, "Do not embed metadata in output WAV file")
+	fs.BoolVar(&opts.ConvertToText, "convert", false, "Convert to text from json/xml/yaml")
 	fs.BoolVar(&opts.ShowHelp, "help", false, "Show help")
 
 	err := fs.Parse(os.Args[1:])

@@ -9,7 +9,7 @@ package audio
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"strings"
 
 	s "github.com/ruanklein/synapseq/internal/shared"
@@ -18,8 +18,8 @@ import (
 
 // StatusReporter handles terminal status output during rendering
 type StatusReporter struct {
-	// If true, suppresses all output
-	quiet bool
+	// Output writer
+	out io.Writer
 	// To clear the previous line
 	lastStatusWidth int
 	// To detect period change
@@ -29,20 +29,16 @@ type StatusReporter struct {
 }
 
 // NewStatusReporter creates a new status reporter
-func NewStatusReporter(quiet bool) *StatusReporter {
+func NewStatusReporter(out io.Writer) *StatusReporter {
 	return &StatusReporter{
-		quiet:         quiet,
+		out:           out,
 		lastPeriodIdx: -1,
 	}
 }
 
 // DisplayPeriodChange shows details of the period when it changes (like dispCurrPer)
 func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer, periodIdx int) {
-	if sr.quiet {
-		return
-	}
-
-	if periodIdx >= len(r.periods) {
+	if periodIdx >= len(r.periods) || sr.out == nil {
 		return
 	}
 
@@ -57,7 +53,7 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer, periodIdx int) {
 
 	// Clear previous line if necessary
 	if sr.lastStatusWidth > 0 {
-		fmt.Fprintf(os.Stderr, "%s\r", strings.Repeat(" ", sr.lastStatusWidth))
+		fmt.Fprintf(sr.out, "%s\r", strings.Repeat(" ", sr.lastStatusWidth))
 		sr.lastStatusWidth = 0
 	}
 
@@ -86,12 +82,12 @@ func (sr *StatusReporter) DisplayPeriodChange(r *AudioRenderer, periodIdx int) {
 	}
 
 	// Show the lines
-	fmt.Fprintf(os.Stderr, "%s%s\n", line1, line2)
+	fmt.Fprintf(sr.out, "%s%s\n", line1, line2)
 }
 
 // DisplayStatus show the current status line
 func (sr *StatusReporter) DisplayStatus(r *AudioRenderer, currentTimeMs int) {
-	if sr.quiet {
+	if sr.out == nil {
 		return
 	}
 
@@ -115,7 +111,7 @@ func (sr *StatusReporter) DisplayStatus(r *AudioRenderer, currentTimeMs int) {
 		clearStr = strings.Repeat(" ", sr.lastStatusWidth-len(status))
 	}
 
-	fmt.Fprintf(os.Stderr, "%s%s\r", status, clearStr)
+	fmt.Fprintf(sr.out, "%s%s\r", status, clearStr)
 	sr.lastStatusWidth = len(status)
 }
 
@@ -136,8 +132,11 @@ func (sr *StatusReporter) ShouldUpdateStatus() bool {
 
 // FinalStatus clears the status line at the end
 func (sr *StatusReporter) FinalStatus() {
-	if !sr.quiet && sr.lastStatusWidth > 0 {
-		fmt.Fprintf(os.Stderr, "%s\r", strings.Repeat(" ", sr.lastStatusWidth))
-		fmt.Fprintf(os.Stderr, "\n")
+	if sr.out == nil {
+		return
+	}
+	if sr.lastStatusWidth > 0 {
+		fmt.Fprintf(sr.out, "%s\r", strings.Repeat(" ", sr.lastStatusWidth))
+		fmt.Fprintf(sr.out, "\n")
 	}
 }

@@ -53,6 +53,7 @@ SynapSeq uses a specific syntax to create a sequence. The syntax is based on the
 - **background**: A `background` is a user-defined sound that is played in the background.
 - **waveform**: A `waveform` is a shape of the tone.
 - **silence**: A `silence` is a period of time with no sound.
+- **track**: A `track` is a directive used inside a preset that inherits from a template
 
 #### `tone`
 
@@ -185,6 +186,85 @@ The rules for the presets are:
 - Same word can be used only once.
 - The elements are separated by a newline.
 - The elements starts with 2 indentations after preset line.
+
+##### Templating Presets
+
+Templating presets enable **reusable and inheritable** sound structures across multiple presets.
+They introduce a new workflow that lets you define base templates (reusable sound blueprints) and derived presets that slightly modify them, reducing repetition while keeping clarity.
+
+This feature is ideal for creating **progressive or modular sessions** (e.g., relaxation -> focus -> activation) where the structure remains the same, but tone frequencies or amplitudes change gradually.
+
+###### Declaring a Template
+
+Define a preset as a template using the as `template` keyword:
+
+```
+base-focus as template
+  noise white amplitude 25
+  tone 250 binaural 10 amplitude 15
+  tone 180 binaural 8 amplitude 10
+```
+
+Template presets:
+
+- Cannot be used directly in the **timeline**.
+- Serve as a **base** for other presets using the `from` keyword.
+
+###### Creating Derived Presets
+
+Derived presets **inherit all tracks** from the template and can modify specific attributes using `track <index>`.
+
+```
+focus-phase1 from base-focus
+  track 1 amplitude 20
+  track 2 tone 200
+
+focus-phase2 from base-focus
+  track 1 amplitude 30
+  track 2 tone 220
+```
+
+Each `track` line modifies **one attribute per line**, encouraging minimal and intentional overrides.
+
+**Accepted parameters:**
+
+- `tone <value>` - carrier frequency (Hz)
+- `binaural <value>` / `monaural <value>` / `isochronic <value>` - beat frequency (hz)
+- `amplitude <value>` - loudness (0–100%)
+- `intensity <value>` - effect intensity (for spin/pulse)
+- `spin <value>` - spin width effect for background track
+- `pulse <value>` - pulse effect for background track
+
+###### Inheriting without modification
+
+A derived preset can inherit all tracks from a template **without modifying anything**.  
+This is useful when you simply want to reuse the template exactly as defined.
+
+```
+
+# inherits everything unchanged
+focus-phase1 from base-focus
+focus-phase2 from base-focus
+  track 1 amplitude 30
+  ...
+
+00:00:00 silence
+00:00:15 focus-phase1
+...
+```
+
+###### When to Use
+
+**Use templates when:**
+
+- Multiple presets share the same sound structure.
+- You want progressive sessions with gradual changes.
+- You prefer centralized control (update one template, affect all derived presets).
+
+**Avoid templates when:**
+
+- Each preset is completely unique.
+- You need to change track types or background structure.
 
 #### Timeline
 
@@ -628,7 +708,7 @@ See the `samples/` directory for practical examples of preset file usage, includ
 The command line syntax is:
 
 ```
-synapseq [options] [path of the sequence file] [path of the output file]
+synapseq [options] [input file] [output file]
 ```
 
 Example:
@@ -664,6 +744,28 @@ If you want to use another tool to process the output, keep in mind that the aud
 - **Channels**: 2 (stereo)
 
 Any software used to handle the output must be explicitly configured with these parameters to correctly interpret the audio stream.
+
+#### `-extract`
+
+Extracts the original sequence and metadata embedded in a WAV file. Requires an input WAV file and an output file (text or stdout).
+
+Examples:
+
+```
+synapseq -extract input.wav output.spsq
+synapseq -extract input.wav -
+```
+
+#### `-convert`
+
+Converts a structured format (JSON, XML, YAML) back into `.spsq` format. Requires the format flag, an input file, and an output file (text or stdout).
+
+Examples:
+
+```
+synapseq -convert -json input.json output.spsq
+synapseq -convert -json input.json -
+```
 
 #### `-json`
 
@@ -718,9 +820,9 @@ Show the help and exit.
 
 Quiet mode. Used to hide terminal output. Errors and comments will be displayed.
 
-#### `-debug`
+#### `-test`
 
-Debug mode. Used to check file syntax without having to generate the wav file.
+Test mode. Used to validate the syntax of a `.spsq` file or structured formats (JSON, XML, YAML) without generating any output file. This replaces the previous `-debug` option.
 
 #### `-version`
 

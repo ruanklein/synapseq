@@ -43,10 +43,10 @@ func TestParseFlags(ts *testing.T) {
 			expectedArgs: []string{"input.spsq", "output.wav"},
 			expectError:  false,
 		},
-		// Debug flag
+		// Test flag
 		{
-			args:         []string{"cmd", "-debug", "input.spsq"},
-			expected:     &CLIOptions{Debug: true},
+			args:         []string{"cmd", "-test", "input.spsq"},
+			expected:     &CLIOptions{Test: true},
 			expectedArgs: []string{"input.spsq"},
 			expectError:  false,
 		},
@@ -78,10 +78,10 @@ func TestParseFlags(ts *testing.T) {
 			expectedArgs: []string{"input.json", "output.wav"},
 			expectError:  false,
 		},
-		// Debug and quiet combined
+		// Test and quiet combined
 		{
-			args:         []string{"cmd", "-debug", "-quiet", "input.spsq"},
-			expected:     &CLIOptions{Debug: true, Quiet: true},
+			args:         []string{"cmd", "-test", "-quiet", "input.spsq"},
+			expected:     &CLIOptions{Test: true, Quiet: true},
 			expectedArgs: []string{"input.spsq"},
 			expectError:  false,
 		},
@@ -115,8 +115,8 @@ func TestParseFlags(ts *testing.T) {
 		},
 		// All boolean flags enabled
 		{
-			args:         []string{"cmd", "-quiet", "-debug", "-json", "input.json"},
-			expected:     &CLIOptions{Quiet: true, Debug: true, FormatJSON: true},
+			args:         []string{"cmd", "-quiet", "-test", "-json", "input.json"},
+			expected:     &CLIOptions{Quiet: true, Test: true, FormatJSON: true},
 			expectedArgs: []string{"input.json"},
 			expectError:  false,
 		},
@@ -161,8 +161,8 @@ func TestParseFlags(ts *testing.T) {
 		if opts.Quiet != test.expected.Quiet {
 			ts.Errorf("For args %v, Quiet: expected %v but got %v", test.args, test.expected.Quiet, opts.Quiet)
 		}
-		if opts.Debug != test.expected.Debug {
-			ts.Errorf("For args %v, Debug: expected %v but got %v", test.args, test.expected.Debug, opts.Debug)
+		if opts.Test != test.expected.Test {
+			ts.Errorf("For args %v, Test: expected %v but got %v", test.args, test.expected.Test, opts.Test)
 		}
 		if opts.FormatJSON != test.expected.FormatJSON {
 			ts.Errorf("For args %v, FormatJSON: expected %v but got %v", test.args, test.expected.FormatJSON, opts.FormatJSON)

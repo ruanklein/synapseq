@@ -1,8 +1,10 @@
-# SynapSeq Sample Files
+# SynapSeq Sequence Files
 
 This directory contains example sequence files demonstrating various features and capabilities of SynapSeq. Each sample showcases different aspects of brainwave entrainment technology and audio synthesis.
 
-## Core Feature Demonstrations
+## Text Format
+
+The `sample-*` files is written in the SynapSeq text format, illustrating various techniques and presets. Below is a brief description of each sample file.
 
 ### sample-binaural.spsq
 
@@ -54,8 +56,6 @@ This directory contains example sequence files demonstrating various features an
 
 **Timeline:** 1 minute 20 seconds with brief demonstrations of each waveform type.
 
-## Effect Demonstrations
-
 ### sample-background-spin.spsq
 
 **Demonstrates:** Spin effect with background audio
@@ -80,8 +80,6 @@ This directory contains example sequence files demonstrating various features an
 
 **Requirements:** Pink noise WAV file at `sounds/pink-noise.wav`
 
-## Transition Demonstrations
-
 ### sample-transitions.spsq
 
 **Demonstrates:** Four transition types (steady, ease-out, ease-in, smooth)
@@ -91,8 +89,6 @@ This directory contains example sequence files demonstrating various features an
 **Audio Intent:** Educational demonstration of transition mechanics. Shows how different transition curves affect the listening experience and entrainment effectiveness.
 
 **Timeline:** 12 minutes showcasing steady (linear), ease-out (logarithmic), ease-in (exponential), and smooth (sigmoid) transitions.
-
-## Session Examples
 
 ### sample-relax-one.spsq
 
@@ -164,8 +160,6 @@ This directory contains example sequence files demonstrating various features an
 
 **Timeline:** 1 minute with 45 seconds of pure 440Hz tone.
 
-## Preset Files
-
 ### presets-relax.spsq
 
 **Purpose:** Reusable presets for relaxation-oriented sessions
@@ -182,7 +176,19 @@ This directory contains example sequence files demonstrating various features an
 
 **Usage:** Include in other sequences using `@presetlist presets-focus.spsq`
 
-## Structured Format Samples
+### sample-ladder.spsq
+
+**Demonstrates:** Template preset and binaural ladder structure
+
+**Description:** This example uses the template preset feature to create a "binaural ladder", a sequence of tones with a fixed binaural beat (8 Hz) and progressively higher carrier frequencies. The `ladder-base` template defines all steps (tones) and the pink noise background. Each derived preset (`ladder-one`, `ladder-two`, etc.) activates a specific step by increasing the amplitude of that tone and keeping the others silent. This allows for a clear and modular progression without code repetition.
+
+**Audio Intent:** Demonstrates how to create progressive brain activation sequences, keeping the beat frequency constant and varying the carrier. Ideal for studies on binaural beat perception and for gradual activation sessions.
+
+**Timeline:** 16 minutes, each step lasts about 1.5 to 2 minutes, starting from the lowest tone to the highest, with pink noise background.
+
+**Requirements:** Headphones are required to perceive the binaural effect.
+
+## Structured Format
 
 The `structured/` subdirectory contains samples in JSON, XML, and YAML formats demonstrating how to use SynapSeq with structured data formats. See [structured/README.md](structured/README.md) for details.
 

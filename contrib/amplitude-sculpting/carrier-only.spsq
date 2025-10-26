@@ -1,0 +1,59 @@
+## Beyond Binaural Beats
+## Created by @jlundi on 2025-09-06
+##
+## This method uses pure carrier tones with volume shaping instead of binaural beats.
+## The brain responds directly to power fluctuations in sound, so amplitude modulation alone can drive entrainment.
+##
+## No binaural illusion required
+##
+## Short sessions (3–5 min) show clear EEG gamma rise (Muse S tests)
+##
+## Works with headphones or speakers
+## Example Session: High-Gamma Boost (5 min)
+##
+## Notes
+##
+## Carriers map to brain rhythms:
+##
+## 90 Hz ≈ 1.5 Hz delta
+##
+## 270 Hz ≈ 4.5 Hz theta
+##
+## 510 Hz ≈ 8.5 Hz alpha
+##
+## 900 Hz ≈ 15 Hz beta
+##
+## 2400 Hz ≈ 40 Hz gamma
+##
+## Only volume shaping (not frequency sweeps) is used.
+##
+## Reported effects: clearer voice perception, sharper focus, quick gamma rise.
+
+# Presets
+carrier-low
+  tone 90 amplitude 1
+  tone 270 amplitude 2
+  tone 510 amplitude 3
+  tone 900 amplitude 5
+  tone 2400 amplitude 6
+
+carrier-high
+  tone 90 amplitude 1
+  tone 270 amplitude 2
+  tone 510 amplitude 3
+  tone 900 amplitude 12
+  tone 2400 amplitude 14
+
+# Timeline
+00:00:00 silence
+00:00:15 carrier-low
+00:00:45 carrier-high
+00:01:15 carrier-low
+00:01:45 carrier-high
+00:02:15 carrier-low
+00:02:45 carrier-high
+00:03:15 carrier-low
+00:03:45 carrier-high
+00:04:15 carrier-low
+00:04:45 carrier-high
+00:05:15 silence

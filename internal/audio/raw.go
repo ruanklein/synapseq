@@ -16,10 +16,6 @@ import (
 
 // RenderRaw renders the audio to a raw PCM stream (24-bit little-endian)
 func (r *AudioRenderer) RenderRaw(w io.Writer) error {
-	origQuiet := r.Quiet
-	r.Quiet = true
-	defer func() { r.Quiet = origQuiet }()
-
 	bw := bufio.NewWriter(w)
 	// 3 bytes per sample (24-bit)
 	out := make([]byte, t.BufferSize*audioChannels*3)

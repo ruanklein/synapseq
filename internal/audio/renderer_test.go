@@ -8,7 +8,6 @@
 package audio
 
 import (
-	"bytes"
 	"errors"
 	"math"
 	"os"
@@ -20,7 +19,6 @@ import (
 	t "github.com/ruanklein/synapseq/internal/types"
 )
 
-// constStreamer é um beep.Streamer simples que emite um valor constante por N frames.
 type constStreamer struct {
 	framesLeft int
 	val        float64
@@ -102,8 +100,6 @@ func TestAudioRenderer_RenderWav_Integration(ts *testing.T) {
 		Volume:         80,
 		GainLevel:      t.GainLevelMedium,
 		BackgroundPath: "",
-		Quiet:          true,
-		Debug:          false,
 	}
 
 	renderer, err := NewAudioRenderer(periods, options)
@@ -219,8 +215,6 @@ func TestAudioRenderer_RenderWav_WithBackground(ts *testing.T) {
 		Volume:         100,
 		GainLevel:      t.GainLevelMedium,
 		BackgroundPath: bgPath,
-		Quiet:          true,
-		Debug:          false,
 	}
 
 	renderer, err := NewAudioRenderer(periods, options)
@@ -236,48 +230,6 @@ func TestAudioRenderer_RenderWav_WithBackground(ts *testing.T) {
 	// Basic validation
 	if _, err := os.Stat(outPath); err != nil {
 		ts.Fatalf("Output file not created: %v", err)
-	}
-}
-
-func TestAudioRenderer_RenderWav_DebugMode(ts *testing.T) {
-	var p0, pEnd t.Period
-	p0.Time = 0
-	p0.TrackStart[0] = t.Track{
-		Type:      t.TrackBinauralBeat,
-		Carrier:   100,
-		Resonance: 5,
-		Amplitude: t.AmplitudePercentToRaw(10),
-		Waveform:  t.WaveformSine,
-	}
-	p0.TrackEnd[0] = p0.TrackStart[0]
-	pEnd.Time = 500 // 0.5 seconds
-
-	periods := []t.Period{p0, pEnd}
-
-	options := &AudioRendererOptions{
-		SampleRate: 44100,
-		Volume:     100,
-		GainLevel:  t.GainLevelMedium,
-		Quiet:      true,
-		Debug:      true, // Debug mode - no file should be created
-	}
-
-	renderer, err := NewAudioRenderer(periods, options)
-	if err != nil {
-		ts.Fatalf("NewAudioRenderer failed: %v", err)
-	}
-
-	tempDir := ts.TempDir()
-	outPath := filepath.Join(tempDir, "debug_test.wav")
-
-	// In debug mode, this should not create a file
-	if err := renderer.RenderWav(outPath); err != nil {
-		ts.Fatalf("RenderWav in debug mode failed: %v", err)
-	}
-
-	// File should not exist in debug mode
-	if _, err := os.Stat(outPath); err == nil {
-		ts.Fatalf("File should not be created in debug mode")
 	}
 }
 
@@ -305,8 +257,6 @@ func TestAudioRenderer_Render_CallbacksAndSizes(ts *testing.T) {
 		SampleRate: sr,
 		Volume:     80,
 		GainLevel:  t.GainLevelMedium,
-		Quiet:      true,
-		Debug:      false,
 	}
 
 	r, err := NewAudioRenderer(periods, opts)
@@ -370,8 +320,6 @@ func TestAudioRenderer_Render_PropagatesError(ts *testing.T) {
 		SampleRate: sr,
 		Volume:     100,
 		GainLevel:  t.GainLevelMedium,
-		Quiet:      true,
-		Debug:      false,
 	}
 
 	r, err := NewAudioRenderer(periods, opts)
@@ -414,8 +362,6 @@ func TestAudioRenderer_Render_NilConsumer(ts *testing.T) {
 		SampleRate: sr,
 		Volume:     90,
 		GainLevel:  t.GainLevelMedium,
-		Quiet:      true,
-		Debug:      false,
 	}
 
 	r, err := NewAudioRenderer(periods, opts)
@@ -425,78 +371,6 @@ func TestAudioRenderer_Render_NilConsumer(ts *testing.T) {
 
 	if err := r.Render(nil); err != nil {
 		ts.Fatalf("Render with nil consumer failed: %v", err)
-	}
-}
-
-func TestRenderRaw_WritesExpectedBytesAndRestoresQuiet(ts *testing.T) {
-	sr := 44100
-	endMs := 200
-
-	var p0, pEnd t.Period
-	p0.Time = 0
-	p0.TrackStart[0] = t.Track{
-		Type:      t.TrackMonauralBeat,
-		Carrier:   220,
-		Resonance: 7,
-		Amplitude: t.AmplitudePercentToRaw(20),
-		Waveform:  t.WaveformSine,
-	}
-	p0.TrackEnd[0] = p0.TrackStart[0]
-	pEnd.Time = endMs
-
-	periods := []t.Period{p0, pEnd}
-
-	opts := &AudioRendererOptions{
-		SampleRate: sr,
-		Volume:     90,
-		GainLevel:  t.GainLevelMedium,
-		Quiet:      false,
-		Debug:      false,
-	}
-
-	r, err := NewAudioRenderer(periods, opts)
-	if err != nil {
-		ts.Fatalf("NewAudioRenderer failed: %v", err)
-	}
-
-	var buf bytes.Buffer
-	origQuiet := r.Quiet
-
-	if err := r.RenderRaw(&buf); err != nil {
-		ts.Fatalf("RenderRaw failed: %v", err)
-	}
-
-	if r.Quiet != origQuiet {
-		ts.Fatalf("Quiet should be restored to %v, got %v", origQuiet, r.Quiet)
-	}
-
-	totalFrames := int64(math.Round(float64(endMs) * float64(sr) / 1000.0))
-	expectedBytes := totalFrames * int64(audioChannels*3)
-	got := int64(buf.Len())
-	if got != expectedBytes {
-		ts.Fatalf("byte length mismatch: got %d, want %d", got, expectedBytes)
-	}
-
-	raw := buf.Bytes()
-	const maxSamplesToCheck = 2000
-	foundNonZero := false
-	limit := maxSamplesToCheck * 3
-	if limit > len(raw) {
-		limit = len(raw)
-	}
-	for i := 0; i+2 < limit; i += 3 {
-		v := int32(raw[i]) | int32(raw[i+1])<<8 | int32(raw[i+2])<<16
-		// Sign-extend 24-bit
-		if v&0x00800000 != 0 {
-			v |= ^int32(0x00FFFFFF)
-		}
-		if v != 0 {
-			foundNonZero = true
-			break
-		}
-	}
-	if !foundNonZero {
-		ts.Fatalf("no non-zero samples found in first %d samples", maxSamplesToCheck)
 	}
 }
 
@@ -523,11 +397,10 @@ func TestRenderRaw_PropagatesWriteError(ts *testing.T) {
 	pEnd.Time = endMs
 
 	opts := &AudioRendererOptions{
-		SampleRate: sr,
-		Volume:     80,
-		GainLevel:  t.GainLevelMedium,
-		Quiet:      false,
-		Debug:      false,
+		SampleRate:   sr,
+		Volume:       80,
+		GainLevel:    t.GainLevelMedium,
+		StatusOutput: os.Stderr,
 	}
 
 	r, err := NewAudioRenderer([]t.Period{p0, pEnd}, opts)

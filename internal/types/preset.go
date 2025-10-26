@@ -19,12 +19,14 @@ const (
 
 // Preset represents a named preset
 type Preset struct {
-	name  string                  // Name of preset
-	Track [NumberOfChannels]Track // Track-set for it
+	name       string                  // Name of preset
+	IsTemplate bool                    // Whether this preset is a template
+	Track      [NumberOfChannels]Track // Track-set for it
+	From       *Preset                 // Optional preset to copy from (template)
 }
 
 // NewPreset creates a new preset with the given name
-func NewPreset(name string) (*Preset, error) {
+func NewPreset(name string, template bool, from *Preset) (*Preset, error) {
 	isLetter := func(b byte) bool {
 		return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
 	}
@@ -53,7 +55,14 @@ func NewPreset(name string) (*Preset, error) {
 		return nil, fmt.Errorf("preset name %q is reserved", builtinSilence)
 	}
 
-	preset := &Preset{name: n}
+	preset := &Preset{name: n, IsTemplate: template}
+
+	if from != nil {
+		preset.From = from
+		preset.Track = from.Track
+		return preset, nil
+	}
+
 	for i := range NumberOfChannels {
 		preset.Track[i].Type = TrackOff
 		preset.Track[i].Carrier = 0.0

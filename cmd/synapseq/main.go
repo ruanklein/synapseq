@@ -10,25 +10,37 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 
-	"github.com/ruanklein/synapseq/internal/audio"
+	synapseq "github.com/ruanklein/synapseq/core"
 	"github.com/ruanklein/synapseq/internal/cli"
-	"github.com/ruanklein/synapseq/internal/sequence"
 )
 
+// main is the entry point of the SynapSeq application
 func main() {
 	opts, args, err := cli.ParseFlags()
 	if err != nil {
-		os.Exit(2)
+		os.Exit(1)
 	}
 
 	if opts.ShowHelp {
 		cli.Help()
-		os.Exit(0)
+		return
 	}
 	if opts.ShowVersion {
 		cli.ShowVersion()
-		os.Exit(0)
+		return
+	}
+
+	if len(args) == 0 {
+		cli.Help()
+
+		if runtime.GOOS == "windows" {
+			fmt.Fprintf(os.Stderr, "\nPress Enter to exit...")
+			fmt.Scanln()
+		}
+
+		os.Exit(1)
 	}
 
 	if len(args) != 2 {
@@ -37,69 +49,111 @@ func main() {
 		os.Exit(1)
 	}
 
-	inputFile := args[0]
-	outputFile := args[1]
+	var (
+		inputFile  = args[0]
+		outputFile = args[1]
+		format     = "text"
+	)
 
-	var result *sequence.LoadResult
-	if opts.FormatJSON || opts.FormatXML || opts.FormatYAML {
-		var format string
-		if opts.FormatJSON {
-			format = "json"
-		} else if opts.FormatXML {
-			format = "xml"
-		} else {
-			format = "yaml"
+	if opts.ExtractTextSequence {
+		if outputFile == "-" {
+			content, err := synapseq.Extract(inputFile)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Println(content)
+			return
 		}
-		// Load structured sequence
-		var err error
-		result, err = sequence.LoadStructuredSequence(inputFile, format)
-		if err != nil {
+
+		if err = synapseq.SaveExtracted(inputFile, outputFile); err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)
 		}
-	} else {
-		// Load text sequence
-		var err error
-		result, err = sequence.LoadTextSequence(inputFile)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			os.Exit(1)
+
+		if !opts.Quiet {
+			fmt.Println("Extraction completed successfully.")
 		}
+		return
 	}
 
-	if !opts.Quiet {
-		for _, c := range result.Comments {
-			fmt.Fprintf(os.Stderr, "> %s\n", c)
-		}
+	if opts.FormatJSON {
+		format = "json"
+	}
+	if opts.FormatXML {
+		format = "xml"
+	}
+	if opts.FormatYAML {
+		format = "yaml"
 	}
 
-	options := result.Options
-
-	// Create audio renderer
-	renderer, err := audio.NewAudioRenderer(result.Periods, &audio.AudioRendererOptions{
-		SampleRate:     options.SampleRate,
-		Volume:         options.Volume,
-		GainLevel:      options.GainLevel,
-		BackgroundPath: options.BackgroundPath,
-		Quiet:          opts.Quiet,
-		Debug:          opts.Debug,
-	})
+	appContext, err := synapseq.NewAppContext(inputFile, outputFile, format)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}
 
-	if outputFile == "-" {
-		if opts.Debug {
-			fmt.Fprintf(os.Stderr, "synapseq: cannot use debug mode with raw output to stdout\n")
-			os.Exit(1)
+	if !opts.Quiet && outputFile != "-" {
+		appContext = appContext.WithVerbose(os.Stderr)
+	}
+
+	if err = appContext.LoadSequence(); err != nil {
+		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+		os.Exit(1)
+	}
+
+	if opts.Test {
+		if !opts.Quiet {
+			fmt.Println("Sequence is valid.")
 		}
-		renderer.RenderRaw(os.Stdout)
 		return
 	}
 
-	// Render to WAV file
-	if err := renderer.RenderWav(outputFile); err != nil {
+	if opts.ConvertToText {
+		if outputFile == "-" {
+			content, err := appContext.Text()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Println(content)
+			return
+		}
+
+		if err = appContext.SaveText(); err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+
+		if !opts.Quiet {
+			fmt.Println("Conversion completed successfully.")
+		}
+		return
+	}
+
+	if outputFile == "-" {
+		if err = appContext.Stream(os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	if !opts.Quiet {
+		for _, comment := range appContext.Comments() {
+			fmt.Printf("> %s\n", comment)
+		}
+	}
+
+	if opts.UnsafeNoMetadata {
+		appContext, err = appContext.WithUnsafeNoMetadata()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
+	if err = appContext.WAV(); err != nil {
 		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}

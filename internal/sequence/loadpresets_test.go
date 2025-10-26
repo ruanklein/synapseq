@@ -100,13 +100,6 @@ func TestLoadPresets_Errors(ts *testing.T) {
 		content string
 	}{
 		{
-			name: "background_not_allowed",
-			content: `
-alpha
-  background amplitude 20
-`,
-		},
-		{
 			name: "track_before_preset",
 			content: `
   tone 100 binaural 1 amplitude 1

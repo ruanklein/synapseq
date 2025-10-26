@@ -113,6 +113,10 @@ func (ctx *TextParser) ParseTimeline(presets *[]t.Preset) (*t.Period, error) {
 		return nil, fmt.Errorf("preset %q not found: %s", tok, ln)
 	}
 
+	if p.IsTemplate {
+		return nil, fmt.Errorf("cannot use template preset %q in timeline: %s", p.String(), ln)
+	}
+
 	period := &t.Period{
 		Time:       timeMs,
 		TrackStart: p.Track,

@@ -9,6 +9,7 @@ package audio
 
 import (
 	"fmt"
+	"io"
 	"math"
 
 	t "github.com/ruanklein/synapseq/internal/types"
@@ -43,8 +44,7 @@ type AudioRendererOptions struct {
 	Volume         int
 	GainLevel      t.GainLevel
 	BackgroundPath string
-	Quiet          bool
-	Debug          bool
+	StatusOutput   io.Writer
 }
 
 // NewAudioRenderer creates a new AudioRenderer instance
@@ -115,16 +115,15 @@ func (r *AudioRenderer) Render(consume func(samples []int) error) error {
 	chunkFrames := int64(t.BufferSize)
 	framesWritten := int64(0)
 
-	statusReporter := NewStatusReporter(r.Quiet)
-	defer statusReporter.FinalStatus()
+	var statusReporter *StatusReporter
+	if r.StatusOutput != nil {
+		statusReporter = NewStatusReporter(r.StatusOutput)
+		defer statusReporter.FinalStatus()
+	}
 
 	// Stereo: left + right
 	samples := make([]int, t.BufferSize*audioChannels)
 	periodIdx := 0
-
-	if r.Debug && !r.Quiet {
-		fmt.Printf("\n*** Debug mode enabled. No audio output will be generated. ***\n\n")
-	}
 
 	for framesWritten < totalFrames {
 		currentTimeMs := int((float64(framesWritten) * 1000.0) / float64(r.SampleRate))
@@ -134,7 +133,9 @@ func (r *AudioRenderer) Render(consume func(samples []int) error) error {
 		}
 
 		r.sync(currentTimeMs, periodIdx)
-		statusReporter.CheckPeriodChange(r, periodIdx)
+		if statusReporter != nil {
+			statusReporter.CheckPeriodChange(r, periodIdx)
+		}
 
 		data := r.mix(samples)
 
@@ -153,7 +154,7 @@ func (r *AudioRenderer) Render(consume func(samples []int) error) error {
 
 		framesWritten += framesToWrite
 
-		if statusReporter.ShouldUpdateStatus() {
+		if statusReporter != nil && statusReporter.ShouldUpdateStatus() {
 			statusReporter.DisplayStatus(r, currentTimeMs)
 		}
 	}

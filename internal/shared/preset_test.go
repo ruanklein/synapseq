@@ -17,11 +17,11 @@ func TestFindPreset(ts *testing.T) {
 	var presets []t.Preset
 	presets = append(presets, *t.NewBuiltinSilencePreset())
 
-	alpha, err := t.NewPreset("alpha")
+	alpha, err := t.NewPreset("alpha", false, nil)
 	if err != nil {
 		ts.Fatalf("unexpected error creating preset alpha: %v", err)
 	}
-	beta, err := t.NewPreset("beta")
+	beta, err := t.NewPreset("beta", false, nil)
 	if err != nil {
 		ts.Fatalf("unexpected error creating preset beta: %v", err)
 	}
@@ -42,7 +42,7 @@ func TestFindPreset(ts *testing.T) {
 }
 
 func TestAllocateTrack(ts *testing.T) {
-	p, err := t.NewPreset("alpha")
+	p, err := t.NewPreset("alpha", false, nil)
 	if err != nil {
 		ts.Fatalf("unexpected error: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestAllocateTrack(ts *testing.T) {
 }
 
 func TestIsPresetEmpty(ts *testing.T) {
-	p, err := t.NewPreset("alpha")
+	p, err := t.NewPreset("alpha", false, nil)
 	if err != nil {
 		ts.Fatalf("unexpected error: %v", err)
 	}
@@ -84,7 +84,7 @@ func TestIsPresetEmpty(ts *testing.T) {
 }
 
 func TestNumBackgroundTracks(ts *testing.T) {
-	p, err := t.NewPreset("alpha")
+	p, err := t.NewPreset("alpha", false, nil)
 	if err != nil {
 		ts.Fatalf("unexpected error: %v", err)
 	}

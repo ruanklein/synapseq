@@ -60,15 +60,15 @@ All Go code must be formatted using [`gofmt`](https://pkg.go.dev/cmd/gofmt). Ple
 8. **✅ WAV File Output:**  
    Write the WAV header and PCM data using Go's binary utilities, supporting output to file or stdout.
 
-9. **🔄 CLI and Library Interface:**  
+9. **✅ CLI and Library Interface:**  
    ✅ CLI: Design a CLI for command-line usage  
-   ❌ Library: Expose the core as a Go package for library use
+   ✅ Library: Expose the core as a Go package for library use
 
 10. **✅ Testing & Validation:**  
     Write unit and integration tests, validate output, and test edge cases.
 
-11. **🔄 Documentation:**  
-    Document all modules, provide usage examples, and write a migration guide.
+11. **✅ Documentation:**  
+    Document all modules, provide usage examples, and ~~write a migration guide~~.
 
 12. **✅ Packaging & Release:**  
     Prepare build scripts, ensure cross-platform compatibility, and publish the project.
@@ -79,7 +79,7 @@ All Go code must be formatted using [`gofmt`](https://pkg.go.dev/cmd/gofmt). Ple
 
 - ✅ Define the Go module and repository structure.
 - ✅ Plan for modular packages: audio synthesis, sequence parsing, timeline management, WAV output, CLI, and utilities.
-- ~~Set up version control, initial documentation, and continuous integration~~ (CI/CD not implemented yet, may take time).
+- ✅ Set up version control, initial documentation, and continuous integration.
 
 ---
 
@@ -146,16 +146,16 @@ All Go code must be formatted using [`gofmt`](https://pkg.go.dev/cmd/gofmt). Ple
 
 ## ✅ 8. WAV File Output
 
-- ~~Implement WAV header and PCM data writing using Go's binary writing utilities~~ (go-audio library used instead).
+- ~~Implement WAV header and PCM data writing using Go's binary writing utilities~~ (beep library used instead).
 - ✅ Ensure correct handling of sample rate, bit depth, and stereo channels.
 - ✅ Support output to file ~~or stdout as in the original~~ (used RAW instead of WAV)
 
 ---
 
-## 🔄 9. CLI and Library Interface
+## ✅ 9. CLI and Library Interface
 
 - ✅ Design a CLI using Go's `flag` for command-line options.
-- ❌ ~~Expose core functionality as a Go package for use in other projects (not just CLI)~~.
+- ✅ Expose core functionality as a Go package for use in other projects (not just CLI).
 - ✅ Ensure clear separation between CLI and core logic.
 
 ---
@@ -168,9 +168,9 @@ All Go code must be formatted using [`gofmt`](https://pkg.go.dev/cmd/gofmt). Ple
 
 ---
 
-## 🔄 11. Documentation
+## ✅ 11. Documentation
 
-- 🔄 Document all exported functions, structs, and packages.
+- ✅ Document all exported functions, structs, and packages.
 - ✅ Provide usage examples for both CLI and library usage.
 - ✅ Write a migration guide for users familiar with the C version.
 
@@ -189,7 +189,7 @@ All Go code must be formatted using [`gofmt`](https://pkg.go.dev/cmd/gofmt). Ple
 - ~~Consider improving the Timeline syntax to make it easier to understand, following the principle of **Intention over Syntax**~~ (not planned; current syntax is already good).
 - Separate the core from additional features, creating a mechanism for addons.
 - Following the addon idea, add export formats such as MP3, OGG, and others.
-- Add support for well-known formats beyond `.spsq`, such as JSON, via addons.
+- ~~Add support for well-known formats beyond `.spsq`, such as JSON, via addons.~~ (implemented in v3.1.0)
 
 ---
 
