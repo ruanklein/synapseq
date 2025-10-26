@@ -1,0 +1,36 @@
+## C-Major Gamma Blend (30 min session)
+## Created by @jlundi on 2025-08-23
+##
+## This session layers binaural beats on musical carriers tuned to C major with A4 for gamma, guiding the brain through a gentle entrainment journey.
+## Delta, theta, alpha, beta, and gamma frequencies are all present, with volume shaping across three phases to gradually shift emphasis from relaxation
+## toward heightened clarity. The sequence begins with a short silence to settle in, then flows through smooth transitions before fading back into silence.
+## Ideal for deep meditation, focus, or creative flow states.
+
+# Presets
+Phase_1
+  tone 261.63 binaural 1.5 amplitude 3
+  tone 329.63 binaural 4.5 amplitude 4
+  tone 392.00 binaural 10 amplitude 9
+  tone 440.00 binaural 20 amplitude 6
+  tone 523.25 binaural 40 amplitude 4
+
+Phase_2
+  tone 261.63 binaural 1.5 amplitude 3
+  tone 329.63 binaural 4.5 amplitude 4
+  tone 392.00 binaural 10 amplitude 9
+  tone 440.00 binaural 20 amplitude 7
+  tone 523.25 binaural 40 amplitude 5
+
+Phase_3
+  tone 261.63 binaural 1.5 amplitude 3
+  tone 329.63 binaural 4.5 amplitude 4
+  tone 392.00 binaural 10 amplitude 9
+  tone 440.00 binaural 20 amplitude 8
+  tone 523.25 binaural 40 amplitude 6
+
+# Timeline
+00:00:00 silence
+00:00:15 Phase_1
+00:10:00 Phase_2
+00:20:00 Phase_3
+00:30:00 silence

@@ -1,0 +1,61 @@
+## Meditation Entrainment Sequence
+## Created by @jlundi on 2025-09-18
+##
+## Designed for deep meditation and mindfulness over 30 minutes using binaural beats.
+## All brainwave bands (delta, theta, alpha, beta, gamma) maintain non-zero amplitude.
+## Amplitudes adjust to promote a meditative state:
+## - Start: High alpha for relaxed alertness, moderate theta, low delta/beta/gamma.
+## - Progression: Increase theta for deep meditation, reduce alpha slightly, keep delta/beta/gamma minimal.
+## - Brown noise at constant low amplitude for grounding.
+## Transitions are smooth amplitude interpolations. Fade in/out over 30 seconds.
+
+# Presets
+meditation_start
+  tone 100 binaural 2 amplitude 3
+  tone 200 binaural 6 amplitude 8
+  tone 250 binaural 10 amplitude 15
+  tone 300 binaural 18 amplitude 3
+  tone 400 binaural 40 amplitude 2
+  noise brown amplitude 20
+
+meditation_calm1
+  tone 100 binaural 2 amplitude 3
+  tone 200 binaural 6 amplitude 12
+  tone 250 binaural 10 amplitude 12
+  tone 300 binaural 18 amplitude 2
+  tone 400 binaural 40 amplitude 2
+  noise brown amplitude 20
+
+meditation_calm2
+  tone 100 binaural 2 amplitude 2
+  tone 200 binaural 6 amplitude 15
+  tone 250 binaural 10 amplitude 10
+  tone 300 binaural 18 amplitude 2
+  tone 400 binaural 40 amplitude 1
+  noise brown amplitude 20
+
+meditation_deep1
+  tone 100 binaural 2 amplitude 2
+  tone 200 binaural 6 amplitude 18
+  tone 250 binaural 10 amplitude 8
+  tone 300 binaural 18 amplitude 1
+  tone 400 binaural 40 amplitude 1
+  noise brown amplitude 20
+
+meditation_deep2
+  tone 100 binaural 2 amplitude 2
+  tone 200 binaural 6 amplitude 20
+  tone 250 binaural 10 amplitude 6
+  tone 300 binaural 18 amplitude 1
+  tone 400 binaural 40 amplitude 1
+  noise brown amplitude 20
+
+# Timeline
+00:00:00 silence
+00:00:30 meditation_start
+00:05:30 meditation_calm1
+00:10:30 meditation_calm2
+00:15:30 meditation_deep1
+00:20:30 meditation_deep2
+00:29:30 meditation_deep2
+00:30:00 silence
