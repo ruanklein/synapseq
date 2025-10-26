@@ -10,6 +10,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	synapseq "github.com/ruanklein/synapseq/core"
 	"github.com/ruanklein/synapseq/internal/cli"
@@ -29,6 +30,17 @@ func main() {
 	if opts.ShowVersion {
 		cli.ShowVersion()
 		return
+	}
+
+	if len(args) == 0 {
+		cli.Help()
+
+		if runtime.GOOS == "windows" {
+			fmt.Fprintf(os.Stderr, "\nPress Enter to exit...")
+			fmt.Scanln()
+		}
+
+		os.Exit(1)
 	}
 
 	if len(args) != 2 {
