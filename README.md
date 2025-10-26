@@ -17,8 +17,22 @@
 
 SynapSeq is a lightweight and efficient engine for sequencing audio tones for brainwave entrainment, using a simple text-based format. It helps induce states such as relaxation, meditation, and focused awareness by guiding brainwave frequencies through sound.
 
-<details>
-<summary><strong>Quick Start Example</strong></summary>
+## Table of Contents
+
+- [Quick Start Example](#quick-start-example)
+- [Installation](#installation)
+- [Compilation](#compilation)
+- [Documentation](#documentation)
+- [Go Library](#go-library)
+- [FAQ](#faq)
+- [Contributing](#contributing)
+  - [Code of Conduct](#code-of-conduct)
+- [License](#license)
+  - [Third-Party License](#third-party-licenses)
+- [Contact](#contact)
+- [Credits](#credits)
+
+## Quick Start Example
 
 Save the following content as `relax.spsq`:
 
@@ -75,254 +89,27 @@ Phases:
 
 You can find additional example scripts in the `samples/` folder of this repository. See the [samples/README.md](samples/README.md) for detailed information about each example.
 
--> Download latest binaries for Windows, macOS, or Linux from the [Releases page](https://github.com/ruanklein/synapseq/releases/latest)
+## Installation
 
-</details>
+You can download the latest precompiled binaries for Windows, macOS, or Linux from the [Releases](https://github.com/ruanklein/synapseq/releases/latest) page.
 
-<details>
-<summary><strong>Installation</strong></summary>
+## Compilation
 
-The easiest way to get started is to download a precompiled SynapSeq binary for your platform from the [Releases page](https://github.com/ruanklein/synapseq/releases/latest).
+For users who prefer to compile from source, please follow the [Compilation](docs/COMPILE.md) instructions.
 
-Simply choose the appropriate file for your operating system (Windows, macOS, or Linux), extract it, and place the executable in a directory that is in your PATH.
-
-If you prefer to build from source, follow the instructions below for your operating system.
-
-</details>
-
-<details>
-<summary><strong>Compilation</strong></summary>
-
-If you want to compile SynapSeq from source, follow the instructions for your operating system below.
-
-### Prerequisites
-
-You need to install Go (v1.25 or later) and make on your system before compiling SynapSeq.
-
-#### Installing Go
-
-**macOS:**
-
-```bash
-# Using Homebrew
-brew install go
-
-# Using MacPorts
-sudo port install go
-```
-
-**Linux (Ubuntu/Debian):**
-
-```bash
-# Update package list
-sudo apt update
-
-# Install Go
-sudo apt install golang-go make
-
-# Or install a newer version using snap
-sudo snap install go --classic
-```
-
-**Linux (CentOS/RHEL/Fedora):**
-
-```bash
-# For Fedora
-sudo dnf install golang make
-
-# For CentOS/RHEL
-sudo yum install golang make
-```
-
-**Windows:**
-
-For Windows users, we recommend using **Git Bash** or **WSL2** (Windows Subsystem for Linux) instead of PowerShell or CMD, as the Makefile requires Unix-like shell commands.
-
-**Option 1: Git Bash (Recommended for simplicity)**
-
-1. Download and install [Git for Windows](https://git-scm.com/download/win) (includes Git Bash)
-2. Install [Chocolatey](https://chocolatey.org/install) (package manager for Windows)
-3. Open PowerShell as Administrator and install Go and make:
-
-```powershell
-choco install golang make -y
-```
-
-4. Close and reopen your terminal, then verify installation in Git Bash:
-
-```bash
-go version
-make --version
-```
-
-**Option 2: WSL2 (Recommended for full Linux experience)**
-
-1. Install WSL2 following [Microsoft's guide](https://learn.microsoft.com/en-us/windows/wsl/install)
-2. Install Ubuntu from Microsoft Store
-3. Open Ubuntu terminal and run:
-
-```bash
-sudo apt update
-sudo apt install golang-go make
-```
-
-**Verify installation:**
-
-```bash
-go version
-make --version
-```
-
-### Compiling SynapSeq
-
-First, clone the repository:
-
-```bash
-git clone https://github.com/ruanklein/synapseq.git
-cd synapseq
-```
-
-SynapSeq can be compiled using the provided Makefile.
-
-**For macOS and Linux:**
-
-Simply run:
-
-```bash
-make
-```
-
-This will automatically compile SynapSeq for your current operating system and architecture, creating a binary in the `bin/` directory.
-
-**For Windows (using Git Bash or WSL2):**
-
-Open Git Bash or your WSL2 terminal and run:
-
-```bash
-make build-windows
-```
-
-This will generate Windows executables (`.exe`) in the `bin/` directory.
-
-### Installing the Binary
-
-After compilation, you can install the binary system-wide:
-
-**macOS/Linux:**
-
-````bash
-
-This will install the SynapSeq binary to `/usr/local/bin/synapseq`.
-
-**Windows (Git Bash or WSL2):**
-
-Using Git Bash (run as Administrator):
-
-```bash
-mkdir -p "/c/Program Files/SynapSeq"
-
-Or using WSL2, you can copy to a Windows directory:
-
-**Adding to PATH:**
-
-After copying the executable, add `C:\Program Files\SynapSeq` to your PATH environment variable.
-
-1. Open **Start Menu** and search for "Environment Variables"
-2. Click **"Edit the system environment variables"**
-3. Click **"Environment Variables..."** button
-4. Under **"User variables"** or **"System variables"**, find and select **"Path"**
-5. Click **"Edit..."**
-6. Click **"New"**
-7. Add: `C:\Program Files\SynapSeq`
-8. Click **"OK"** on all dialogs
-
-After adding to PATH, **restart your terminal** and verify:
-
-```bash
-synapseq -h
-````
-
-### Installing Documentation (Optional)
-
-**macOS/Linux:**
-
-You can generate and install a man page for offline documentation:
-
-```bash
-# Generate the man page (requires pandoc)
-make man
-
-# Install the man page system-wide
-sudo make install-man
-```
-
-After installation, you can access the documentation with:
-
-```bash
-man synapseq
-```
-
-**Note:** The `man` target requires [pandoc](https://pandoc.org/) to be installed on your system.
-
-### Cross-Platform Compilation
-
-If you need to build for a different platform, use these specific commands:
-
-#### macOS
-
-```bash
-make build-macos
-```
-
-Creates: `bin/synapseq-macos-arm64`
-
-#### Linux
-
-```bash
-make build-linux
-```
-
-Creates:
-
-- `bin/synapseq-linux-amd64`
-- `bin/synapseq-linux-arm64`
-
-#### Windows
-
-```bash
-make build-windows
-```
-
-Creates:
-
-- `bin/synapseq-windows-amd64.exe`
-- `bin/synapseq-windows-arm64.exe`
-
-### Additional Make Commands
-
-- `make build` - Build for your current platform
-- `make clean` - Remove all compiled binaries and generated documentation
-- `make all` - Same as `make build`
-- `make man` - Generate man page documentation (requires pandoc)
-- `make install-man` - Install man page system-wide (requires pandoc and sudo)
-
-</details>
-<details>
-<summary><strong>Documentation</strong></summary>
+## Documentation
 
 For detailed information on all features and advanced usage, see the [USAGE.md](docs/USAGE.md) file.
 
-</details>
+## Go Library
 
-<details>
-<summary><strong>FAQ</strong></summary>
+SynapSeq can also be used as a Go library in your own projects. See the [Go Library Documentation](https://pkg.go.dev/github.com/ruanklein/synapseq/v3/core) for instructions on how to integrate SynapSeq into your Go applications.
+
+## FAQ
 
 For answers to common questions about SynapSeq and brainwave entrainment, see the [FAQ](docs/FAQ.md).
 
-</details>
-
-<details>
-<summary><strong>Contributing</strong></summary>
+## Contributing
 
 We welcome contributions!
 
@@ -338,10 +125,7 @@ Please note that all contributors are expected to follow our [Code of Conduct](C
 
 If you experience or witness unacceptable behavior, please report it as described in the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-</details>
-
-<details>
-<summary><strong>License</strong></summary>
+## License
 
 SynapSeq is distributed under the GPL v2 license. See the [COPYING.txt](COPYING.txt) file for details.
 
@@ -369,10 +153,7 @@ All original code in SynapSeq is licensed under the GNU GPL v2, but the followin
 
 All third-party copyright notices and licenses are preserved in this repository in compliance with their original terms.
 
-</details>
-
-<details>
-<summary><strong>Contact</strong></summary>
+## Contact
 
 We'd love to hear from you! Here's how to get in touch:
 
@@ -401,5 +182,3 @@ Use [GitHub Discussions](https://github.com/ruanklein/synapseq/discussions) for:
 - **Need help or have questions?** → Start a Discussion
 - **Want to share your sequences?** → Post in Discussions
 - **General feedback or ideas?** → Start a Discussion
-
-</details>
