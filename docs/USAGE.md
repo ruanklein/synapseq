@@ -708,7 +708,7 @@ See the `samples/` directory for practical examples of preset file usage, includ
 The command line syntax is:
 
 ```
-synapseq [options] [path of the sequence file] [path of the output file]
+synapseq [options] [input file] [output file]
 ```
 
 Example:
@@ -744,6 +744,28 @@ If you want to use another tool to process the output, keep in mind that the aud
 - **Channels**: 2 (stereo)
 
 Any software used to handle the output must be explicitly configured with these parameters to correctly interpret the audio stream.
+
+#### `-extract`
+
+Extracts the original sequence and metadata embedded in a WAV file. Requires an input WAV file and an output file (text or stdout).
+
+Examples:
+
+```
+synapseq -extract input.wav output.spsq
+synapseq -extract input.wav -
+```
+
+#### `-convert`
+
+Converts a structured format (JSON, XML, YAML) back into `.spsq` format. Requires the format flag, an input file, and an output file (text or stdout).
+
+Examples:
+
+```
+synapseq -convert -json input.json output.spsq
+synapseq -convert -json input.json -
+```
 
 #### `-json`
 
@@ -798,9 +820,9 @@ Show the help and exit.
 
 Quiet mode. Used to hide terminal output. Errors and comments will be displayed.
 
-#### `-debug`
+#### `-test`
 
-Debug mode. Used to check file syntax without having to generate the wav file.
+Test mode. Used to validate the syntax of a `.spsq` file or structured formats (JSON, XML, YAML) without generating any output file. This replaces the previous `-debug` option.
 
 #### `-version`
 
