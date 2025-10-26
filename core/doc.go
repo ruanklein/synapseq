@@ -23,7 +23,7 @@ SynapSeq supports multiple input formats:
 	    "log"
 	    "os"
 
-	    synapseq "github.com/ruanklein/synapseq/core"
+	    synapseq "github.com/ruanklein/synapseq/v3/core"
 	)
 
 	func main() {
