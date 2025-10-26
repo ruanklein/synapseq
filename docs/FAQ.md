@@ -8,7 +8,7 @@ SynapSeq is an efficient engine for brainwave entrainment, designed to generate 
 
 ### How do I install SynapSeq?
 
-You need Go (v1.25+) and make installed on your system. See [README](../README.md) for platform-specific installation and compilation instructions.
+The easiest way is to download a precompiled SynapSeq binary for your platform from the [Releases page](https://github.com/ruanklein/synapseq/releases/latest). Choose the appropriate file for your operating system (Windows, macOS, or Linux), extract it, and place the executable in a directory that is in your PATH. See [README](../README.md) for more details.
 
 ### How do I use SynapSeq?
 
@@ -117,6 +117,14 @@ Use the global options at the top of your file:
 
 Volume ranges from 0 to 100 (default is 100). Sample rate defaults to 44100 Hz.
 
+You can also adjust the gain of background audio using `@gainlevel`:
+
+```
+@gainlevel medium
+```
+
+Available levels: verylow, low, medium, high, veryhigh (default).
+
 ### Can I use custom waveforms?
 
 Yes! You can specify `waveform` before a tone or background effect. Supported waveforms: sine, square, triangle, sawtooth. Example:
@@ -134,6 +142,24 @@ Add the `@background` option at the top of your file:
 ```
 
 You can also control its amplitude and apply effects like spin or pulse in your presets.
+
+### How can I extract my session from a generated WAV file?
+
+Starting from version 3.2.0, SynapSeq embeds the original sequence and metadata into the generated WAV files. You can extract your session at any time using the `-extract` parameter:
+
+```
+synapseq -extract input.wav output.spsq
+```
+
+You can also use `-` as the output to print the extracted sequence to stdout:
+
+```
+synapseq -extract input.wav -
+```
+
+This prints the full `.spsq` source code, including all presets and timeline, exactly as embedded in the WAV.
+
+This allows you to recover your `.spsq` session or share it with others, even if you no longer have the original sequence file.
 
 ### What happens if I make a syntax error?
 
@@ -163,76 +189,71 @@ For most users, **the text format (.spsq) is recommended**. It is:
 - Structured formats require explicit definition of all channel states per timestamp
 - Structured formats do not support presets - every state must be fully defined
 
-**Example comparison:**
-
-Text format (concise):
-
-```
-alpha
-  tone 250 binaural 10 amplitude 10
-
-00:00:00 silence
-00:00:15 alpha
-00:05:00 silence
-```
-
-JSON equivalent (verbose):
-
-```json
-{
-  "sequence": [
-    {
-      "time": 0,
-      "transition": "steady",
-      "track": {
-        "tones": [
-          {
-            "mode": "binaural",
-            "carrier": 250,
-            "resonance": 10,
-            "amplitude": 0,
-            "waveform": "sine"
-          }
-        ]
-      }
-    },
-    {
-      "time": 15000,
-      "transition": "steady",
-      "track": {
-        "tones": [
-          {
-            "mode": "binaural",
-            "carrier": 250,
-            "resonance": 10,
-            "amplitude": 10,
-            "waveform": "sine"
-          }
-        ]
-      }
-    },
-    {
-      "time": 300000,
-      "transition": "steady",
-      "track": {
-        "tones": [
-          {
-            "mode": "binaural",
-            "carrier": 250,
-            "resonance": 10,
-            "amplitude": 0,
-            "waveform": "sine"
-          }
-        ]
-      }
-    }
-  ]
-}
-```
-
-**Note:** In structured formats, silence is achieved by setting amplitude to 0, not by using empty arrays.
-
 See [samples/structured/README.md](../samples/structured/README.md) for structured format documentation and examples.
+
+### How can I convert a JSON, XML, or YAML structure to .spsq?
+
+Starting from version 3.2.0, you can use the `-convert` parameter to convert a structured format (JSON, XML, YAML) back into the `.spsq` text format. This is useful for round-trip editing or recovering a human-readable sequence from a machine-generated file.
+
+Examples:
+
+```
+synapseq -convert -json input.json output.spsq
+synapseq -convert -xml input.xml output.spsq
+synapseq -convert -yaml input.yaml output.spsq
+```
+
+You can also use `-` as the output to print the result to stdout:
+
+```
+synapseq -convert -json input.json -
+```
+
+### How can I test my sequence without generating a WAV file?
+
+Starting from version 3.2.0, you can use the `-test` parameter to validate the syntax of your `.spsq` file or structured formats (JSON, XML, YAML) without generating any audio output. This is useful to check for errors before rendering the final audio.
+
+Example:
+
+```
+synapseq -test my-sequence.spsq output.wav
+```
+
+If your file is valid, SynapSeq will confirm the syntax and exit without creating any output file. If there are errors, they will be displayed in the terminal.
+
+### Can I load sequences or presets from the internet?
+
+Yes! You can load `.spsq`, `.json`, `.xml`, or `.yaml` files directly from HTTP/HTTPS URLs. Example:
+
+```
+synapseq https://example.com/my-sequence.spsq output.wav
+```
+
+You can also load background WAVs and `@presetlist` files from the web. Just make sure the server returns the correct Content-Type headers. See [USAGE](USAGE.md#notes) for details.
+
+### Are there any file size limits?
+
+Yes, SynapSeq enforces maximum file sizes to ensure performance and memory safety:
+
+- `.spsq` and `@presetlist` files: **32 KB**
+- JSON/XML/YAML files: **128 KB**
+- Background WAV files: **10 MB**
+
+Larger files will be truncated or rejected. For web-based files, SynapSeq also validates the server’s Content-Type.
+
+### How do transitions between presets work?
+
+By default, transitions between presets are smooth for matching elements. You can also specify how parameters like amplitude and frequency change using transition types:
+
+```
+00:00:00 alpha
+00:02:00 theta ease-out
+...
+```
+
+Supported types: `steady` (default), `ease-in`, `ease-out`, `smooth`.
+
+Each style produces a different feel. See [USAGE](USAGE.md#transitions) for detailed behavior and when to use each.
 
 ---
 
