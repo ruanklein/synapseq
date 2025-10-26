@@ -17,8 +17,25 @@
 
 SynapSeq is a lightweight and efficient engine for sequencing audio tones for brainwave entrainment, using a simple text-based format. It helps induce states such as relaxation, meditation, and focused awareness by guiding brainwave frequencies through sound.
 
-<details>
-<summary><strong>Quick Start Example</strong></summary>
+## Table of Contents
+
+- [Quick Start Example](#quick-start-example)
+- [Installation](#installation)
+- [Compilation](#compilation)
+  - [macOS](#macos)
+  - [Linux](#linux)
+  - [Windows](#windows)
+- [Documentation](#documentation)
+- [Go Library](#go-library)
+- [FAQ](#faq)
+- [Contributing](#contributing)
+  - [Code of Conduct](#code-of-conduct)
+- [License](#license)
+  - [Third-Party License](#third-party-licenses)
+- [Contact](#contact)
+- [Credits](#credits)
+
+## Quick Start Example
 
 Save the following content as `relax.spsq`:
 
@@ -75,25 +92,13 @@ Phases:
 
 You can find additional example scripts in the `samples/` folder of this repository. See the [samples/README.md](samples/README.md) for detailed information about each example.
 
--> Download latest binaries for Windows, macOS, or Linux from the [Releases page](https://github.com/ruanklein/synapseq/releases/latest)
+## Installation
 
-</details>
+You can download the latest precompiled binaries for Windows, macOS, or Linux from the [Releases](https://github.com/ruanklein/synapseq/releases/latest) page.
 
-<details>
-<summary><strong>Installation</strong></summary>
+## Compilation
 
-The easiest way to get started is to download a precompiled SynapSeq binary for your platform from the [Releases page](https://github.com/ruanklein/synapseq/releases/latest).
-
-Simply choose the appropriate file for your operating system (Windows, macOS, or Linux), extract it, and place the executable in a directory that is in your PATH.
-
-If you prefer to build from source, follow the instructions below for your operating system.
-
-</details>
-
-<details>
-<summary><strong>Compilation</strong></summary>
-
-If you want to compile SynapSeq from source, follow the instructions for your operating system below.
+You can compile SynapSeq from source if you prefer.
 
 ### Prerequisites
 
@@ -173,8 +178,6 @@ go version
 make --version
 ```
 
-### Compiling SynapSeq
-
 First, clone the repository:
 
 ```bash
@@ -210,7 +213,9 @@ After compilation, you can install the binary system-wide:
 
 **macOS/Linux:**
 
-````bash
+```bash
+sudo make install
+```
 
 This will install the SynapSeq binary to `/usr/local/bin/synapseq`.
 
@@ -220,8 +225,15 @@ Using Git Bash (run as Administrator):
 
 ```bash
 mkdir -p "/c/Program Files/SynapSeq"
+cp bin/synapseq-windows-amd64.exe "/c/Program Files/SynapSeq/synapseq.exe"
+```
 
 Or using WSL2, you can copy to a Windows directory:
+
+```bash
+mkdir -p "/mnt/c/Program Files/SynapSeq"
+cp bin/synapseq-windows-amd64.exe "/mnt/c/Program Files/SynapSeq/synapseq.exe"
+```
 
 **Adding to PATH:**
 
@@ -240,7 +252,7 @@ After adding to PATH, **restart your terminal** and verify:
 
 ```bash
 synapseq -h
-````
+```
 
 ### Installing Documentation (Optional)
 
@@ -306,23 +318,19 @@ Creates:
 - `make man` - Generate man page documentation (requires pandoc)
 - `make install-man` - Install man page system-wide (requires pandoc and sudo)
 
-</details>
-<details>
-<summary><strong>Documentation</strong></summary>
+## Documentation
 
 For detailed information on all features and advanced usage, see the [USAGE.md](docs/USAGE.md) file.
 
-</details>
+## Go Library
 
-<details>
-<summary><strong>FAQ</strong></summary>
+SynapSeq can also be used as a Go library in your own projects. See the [Go Library Documentation](https://pkg.go.dev/github.com/ruanklein/synapseq/v3/core) for instructions on how to integrate SynapSeq into your Go applications.
+
+## FAQ
 
 For answers to common questions about SynapSeq and brainwave entrainment, see the [FAQ](docs/FAQ.md).
 
-</details>
-
-<details>
-<summary><strong>Contributing</strong></summary>
+## Contributing
 
 We welcome contributions!
 
@@ -338,10 +346,7 @@ Please note that all contributors are expected to follow our [Code of Conduct](C
 
 If you experience or witness unacceptable behavior, please report it as described in the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-</details>
-
-<details>
-<summary><strong>License</strong></summary>
+## License
 
 SynapSeq is distributed under the GPL v2 license. See the [COPYING.txt](COPYING.txt) file for details.
 
@@ -369,10 +374,7 @@ All original code in SynapSeq is licensed under the GNU GPL v2, but the followin
 
 All third-party copyright notices and licenses are preserved in this repository in compliance with their original terms.
 
-</details>
-
-<details>
-<summary><strong>Contact</strong></summary>
+## Contact
 
 We'd love to hear from you! Here's how to get in touch:
 
@@ -401,5 +403,3 @@ Use [GitHub Discussions](https://github.com/ruanklein/synapseq/discussions) for:
 - **Need help or have questions?** → Start a Discussion
 - **Want to share your sequences?** → Post in Discussions
 - **General feedback or ideas?** → Start a Discussion
-
-</details>
