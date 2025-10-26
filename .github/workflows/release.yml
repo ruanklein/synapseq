@@ -9,6 +9,9 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     container:
       image: golang:1.25-alpine
 
