@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apk add --no-cache make pandoc zip tar bash gzip
+          apk add --no-cache make pandoc zip tar bash gzip git
 
       - name: Test build
         run: |
