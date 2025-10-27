@@ -5,7 +5,7 @@ BIN_NAME 	    := synapseq
 BIN_DIR 	    := bin
 # Go build metadata
 VERSION 	    := $(shell cat VERSION)
-COMMIT  	    := $(shell git rev-parse --short HEAD 2>/dev/null || echo ${GITHUB_SHA})
+COMMIT  	    := $(shell git rev-parse --short HEAD 2>/dev/null || echo $(shell echo ${GITHUB_SHA} | cut -c1-7))
 DATE    	    := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 # Go configuration
 GO_METADATA     := -X github.com/ruanklein/synapseq/v3/internal/info.VERSION=$(VERSION) \
