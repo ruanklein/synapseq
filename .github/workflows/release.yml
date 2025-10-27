@@ -8,11 +8,12 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
-    container:
-      image: golang:1.25-alpine
 
     permissions:
       contents: write
+
+    container:
+      image: golang:1.25-alpine
 
     steps:
       - name: Checkout code
@@ -29,7 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apk add --no-cache make pandoc zip tar bash gzip git
+          apk add --no-cache make pandoc zip tar bash gzip
 
       - name: Test build
         run: |
