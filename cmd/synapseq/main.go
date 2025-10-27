@@ -10,7 +10,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"runtime"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
 	"github.com/ruanklein/synapseq/v3/internal/cli"
@@ -23,29 +22,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	if opts.ShowHelp {
-		cli.Help()
-		return
-	}
 	if opts.ShowVersion {
 		cli.ShowVersion()
 		return
 	}
 
-	if len(args) == 0 {
+	if opts.ShowHelp || len(args) == 0 {
 		cli.Help()
-
-		if runtime.GOOS == "windows" {
-			fmt.Fprintf(os.Stderr, "\nPress Enter to exit...")
-			fmt.Scanln()
-		}
-
-		os.Exit(1)
+		return
 	}
 
 	if len(args) != 2 {
 		fmt.Fprintf(os.Stderr, "synapseq: invalid number of arguments\n")
-		cli.Help()
+		fmt.Fprintf(os.Stderr, "Use -help flag for usage information.\n")
 		os.Exit(1)
 	}
 
@@ -94,7 +83,7 @@ func main() {
 	}
 
 	if !opts.Quiet && outputFile != "-" {
-		appContext = appContext.WithVerbose(os.Stderr)
+		appContext = appContext.WithVerbose(os.Stdout)
 	}
 
 	if err = appContext.LoadSequence(); err != nil {
@@ -139,17 +128,17 @@ func main() {
 		return
 	}
 
-	if !opts.Quiet {
-		for _, comment := range appContext.Comments() {
-			fmt.Printf("> %s\n", comment)
-		}
-	}
-
 	if opts.UnsafeNoMetadata {
 		appContext, err = appContext.WithUnsafeNoMetadata()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 			os.Exit(1)
+		}
+	}
+
+	if !opts.Quiet {
+		for _, comment := range appContext.Comments() {
+			fmt.Printf("> %s\n", comment)
 		}
 	}
 

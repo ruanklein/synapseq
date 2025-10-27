@@ -1,11 +1,21 @@
-BIN_NAME := synapseq
-BIN_DIR := bin
-VERSION := $(shell cat VERSION)
-GO_BUILD_FLAGS := -ldflags="-s -w -X github.com/ruanklein/synapseq/v3/internal/info.VERSION=$(VERSION)"
-MAIN := ./cmd/synapseq
+# Makefile for building SynapSeq
+
+# Binary information
+BIN_NAME 	    := synapseq
+BIN_DIR 	    := bin
+# Go build metadata
+VERSION 	    := $(shell cat VERSION)
+COMMIT  	    := $(shell git rev-parse --short HEAD)
+DATE    	    := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+# Go configuration
+GO_METADATA     := -X github.com/ruanklein/synapseq/v3/internal/info.VERSION=$(VERSION) \
+				  -X github.com/ruanklein/synapseq/v3/internal/info.BUILD_DATE=$(DATE) \
+				  -X github.com/ruanklein/synapseq/v3/internal/info.GIT_COMMIT=$(COMMIT)
+GO_BUILD_FLAGS  := -ldflags="-s -w $(GO_METADATA)"
+MAIN 		    := ./cmd/synapseq
 # Documentation
-MAN_DIR := docs/manpage
-MAN_FILE := $(MAN_DIR)/synapseq.1
+MAN_DIR 	    := docs/manpage
+MAN_FILE 	    := $(MAN_DIR)/synapseq.1
 MAN_INSTALL_DIR := /usr/local/share/man/man1
 
 .PHONY: all build clean build-windows build-linux build-macos prepare test man install-man

@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.2]
+
+### Bug Fixes
+
+- Removed "Press Enter to exit..." prompt on Windows to ensure smooth execution in CI/CD and non-interactive environments.
+
+### Improvements
+
+- Updated CLI help output to exclude manpage suggestion on Windows, as manpages are not typically available on that platform.
+- stderr is now used for error messages, while stdout is reserved for regular output. This ensures proper redirection and logging of errors.
+- -version flag includes build date and commit hash for better traceability of builds.
+
 ## [3.2.1]
 
 ### Fixes and Maintenance
