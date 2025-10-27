@@ -8,10 +8,19 @@
 package info
 
 const (
-	AUTHOR     = "Ruan"
-	AUTHOR_URL = "https://ruan.sh/"
+	// Author information
+	AUTHOR = "Ruan"
+	// Author website URL
+	AUTHOR_URL = "https://ruan.sh"
+	// Repository URL
 	REPOSITORY = "https://github.com/ruanklein/synapseq"
 )
 
-// Version of the application
-var VERSION = "dev"
+var (
+	// Application version information
+	VERSION = "development"
+	// Build date
+	BUILD_DATE = "unknown"
+	// Git commit hash
+	GIT_COMMIT = "unknown"
+)
