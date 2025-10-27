@@ -91,6 +91,25 @@ You can find additional example scripts in the `samples/` folder of this reposit
 
 ## Installation
 
+SynapSeq can be installed via Homebrew or by downloading precompiled binaries.
+
+### Homebrew (macOS/Linux)
+
+Just install via Homebrew:
+
+```bash
+brew tap ruanklein/synapseq
+brew install synapseq
+```
+
+Check installation:
+
+```bash
+synapseq -h
+```
+
+### Precompiled Binaries
+
 You can download the latest precompiled binaries for Windows, macOS, or Linux from the [Releases](https://github.com/ruanklein/synapseq/releases/latest) page.
 
 ## Compilation
