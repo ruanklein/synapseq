@@ -8,11 +8,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ruanklein/synapseq/releases/latest"><img src="https://img.shields.io/github/v/release/ruanklein/synapseq?style=flat-square&color=blue" alt="Release"></a>
-  <a href="COPYING.txt"><img src="https://img.shields.io/badge/license-GPL%20v2-blue.svg?style=flat-square" alt="License"></a>
-  <a href="#installation"><img src="https://img.shields.io/badge/Homebrew-Install-brightgreen?logo=homebrew" alt="Homebrew"></a>
-  <a href="#installation"><img src="https://img.shields.io/badge/📦%20Scoop-Install-blue?labelColor=1a1a1a" alt="Scoop"></a>
-  <a href="https://github.com/ruanklein/synapseq/commits"><img src="https://img.shields.io/github/commit-activity/m/ruanklein/synapseq?style=flat-square&color=purple" alt="Commit Activity"></a>
+  <p align="center">
+  <a href="https://github.com/ruanklein/synapseq/releases/latest"><img src="https://img.shields.io/github/v/release/ruanklein/synapseq?color=blue&logo=github" alt="Release"></a>
+  <a href="COPYING.txt"><img src="https://img.shields.io/badge/license-GPL%20v2-blue.svg?logo=open-source-initiative&logoColor=white" alt="License"></a>
+  <a href="#installation"><img src="https://img.shields.io/badge/Homebrew-Install-brightgreen?logo=homebrew&logoColor=white" alt="Homebrew"></a>
+  <a href="#installation"><img src="https://img.shields.io/badge/Scoop-Install-blue?logo=gnometerminal&logoColor=00AEEF" alt="Scoop"></a>
+  <a href="https://github.com/ruanklein/synapseq/commits"><img src="https://img.shields.io/github/commit-activity/m/ruanklein/synapseq?color=ff69b4&logo=git" alt="Commit Activity"></a>
+</p>
 </p>
 
 <p align="center"><strong>Synapse-Sequenced Brainwave Generator</strong></p>
