@@ -10,9 +10,8 @@
 <p align="center">
   <a href="https://github.com/ruanklein/synapseq/releases/latest"><img src="https://img.shields.io/github/v/release/ruanklein/synapseq?style=flat-square&color=blue" alt="Release"></a>
   <a href="COPYING.txt"><img src="https://img.shields.io/badge/license-GPL%20v2-blue.svg?style=flat-square" alt="License"></a>
-  <a href="go.mod"><img src="https://img.shields.io/github/go-mod/go-version/ruanklein/synapseq?style=flat-square&color=00ADD8" alt="Go Version"></a>
-  <a href="https://github.com/ruanklein/synapseq/issues"><img src="https://img.shields.io/github/issues/ruanklein/synapseq?style=flat-square" alt="GitHub Issues"></a>
-  <a href="https://github.com/ruanklein/synapseq/discussions"><img src="https://img.shields.io/github/discussions/ruanklein/synapseq?style=flat-square&color=orange" alt="GitHub Discussions"></a>
+  <a href="#installation"><img src="https://img.shields.io/badge/Homebrew-Install-brightgreen?logo=homebrew" alt="Homebrew"></a>
+  <a href="#installation"><img src="https://img.shields.io/badge/📦%20Scoop-Install-blue?labelColor=1a1a1a" alt="Scoop"></a>
   <a href="https://github.com/ruanklein/synapseq/commits"><img src="https://img.shields.io/github/commit-activity/m/ruanklein/synapseq?style=flat-square&color=purple" alt="Commit Activity"></a>
 </p>
 
@@ -24,7 +23,22 @@ See the [SAMPLES](samples/README.md) folder for examples.
 
 ## Installation
 
-SynapSeq can be installed via Homebrew or by downloading precompiled binaries.
+SynapSeq can be installed via [Scoop](https://scoop.sh/) (Windows), [Homebrew](https://brew.sh/) (macOS/Linux), or by downloading precompiled binaries.
+
+### Scoop (Windows)
+
+If you use Scoop, you can install SynapSeq directly from the official bucket:
+
+```powershell
+scoop bucket add synapseq https://github.com/ruanklein/scoop-synapseq
+scoop install synapseq
+```
+
+Check installation:
+
+```powershell
+synapseq -h
+```
 
 ### Homebrew (macOS/Linux)
 
