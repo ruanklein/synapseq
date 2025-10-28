@@ -49,14 +49,16 @@ sudo yum install golang make
 
 For Windows users, we recommend using **Git Bash** or **WSL2** (Windows Subsystem for Linux) instead of PowerShell or CMD, as the Makefile requires Unix-like shell commands.
 
-**Option 1: Git Bash (Recommended for simplicity)**
+**Option 1: Git Bash**
 
 1. Download and install [Git for Windows](https://git-scm.com/download/win) (includes Git Bash)
-2. Install [Chocolatey](https://chocolatey.org/install) (package manager for Windows)
-3. Open PowerShell as Administrator and install Go and make:
+2. Install [Scoop](https://scoop.sh/) (package manager for Windows).
+
+3. Install Go and make using Scoop:
 
 ```powershell
-choco install golang make -y
+scoop update
+scoop install go make
 ```
 
 4. Close and reopen your terminal, then verify installation in Git Bash:
@@ -66,7 +68,7 @@ go version
 make --version
 ```
 
-**Option 2: WSL2 (Recommended for full Linux experience)**
+**Option 2: WSL2**
 
 1. Install WSL2 following [Microsoft's guide](https://learn.microsoft.com/en-us/windows/wsl/install)
 2. Install Ubuntu from Microsoft Store
