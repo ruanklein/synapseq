@@ -47,39 +47,28 @@ sudo yum install golang make
 
 **Windows:**
 
-For Windows users, we recommend using **Git Bash** or **WSL2** (Windows Subsystem for Linux) instead of PowerShell or CMD, as the Makefile requires Unix-like shell commands.
+For Windows users, we recommend using **Git Bash** instead of PowerShell or CMD, as the Makefile requires Unix-like shell commands.
 
-**Option 1: Git Bash**
+1. Install [Git for Windows](https://git-scm.com/download/win) (includes Git Bash).
+   After installation, you’ll have both **Git Bash** and **PowerShell** available.
 
-1. Download and install [Git for Windows](https://git-scm.com/download/win) (includes Git Bash)
-2. Install [Scoop](https://scoop.sh/) (package manager for Windows).
+2. Install [Scoop](https://scoop.sh/).
+   Open PowerShell and run:
 
-3. Install Go and make using Scoop:
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+   ```
 
-```powershell
-scoop update
-scoop install go make
-```
+3. Install **Go and Make** using Scoop.
+   In PowerShell, run:
 
-4. Close and reopen your terminal, then verify installation in Git Bash:
+   ```powershell
+   scoop update
+   scoop install go make
+   ```
 
-```bash
-go version
-make --version
-```
-
-**Option 2: WSL2**
-
-1. Install WSL2 following [Microsoft's guide](https://learn.microsoft.com/en-us/windows/wsl/install)
-2. Install Ubuntu from Microsoft Store
-3. Open Ubuntu terminal and run:
-
-```bash
-sudo apt update
-sudo apt install golang-go make
-```
-
-**Verify installation:**
+4. Open **Git Bash** and verify that everything is available:
 
 ```bash
 go version
@@ -107,9 +96,9 @@ make
 
 This will automatically compile SynapSeq for your current operating system and architecture, creating a binary in the `bin/` directory.
 
-**For Windows (using Git Bash or WSL2):**
+**For Windows**
 
-Open Git Bash or your WSL2 terminal and run:
+In Git Bash:
 
 ```bash
 make build-windows
@@ -129,20 +118,13 @@ sudo make install
 
 This will install the SynapSeq binary to `/usr/local/bin/synapseq`.
 
-**Windows (Git Bash or WSL2):**
+**Windows**
 
 Using Git Bash (run as Administrator):
 
 ```bash
 mkdir -p "/c/Program Files/SynapSeq"
 cp bin/synapseq-windows-amd64.exe "/c/Program Files/SynapSeq/synapseq.exe"
-```
-
-Or using WSL2, you can copy to a Windows directory:
-
-```bash
-mkdir -p "/mnt/c/Program Files/SynapSeq"
-cp bin/synapseq-windows-amd64.exe "/mnt/c/Program Files/SynapSeq/synapseq.exe"
 ```
 
 **Adding to PATH:**
@@ -158,15 +140,13 @@ After copying the executable, add `C:\Program Files\SynapSeq` to your PATH envir
 7. Add: `C:\Program Files\SynapSeq`
 8. Click **"OK"** on all dialogs
 
-After adding to PATH, **restart your terminal** and verify:
+After adding to PATH, **restart Git Bash or PowerShell** and verify:
 
 ```bash
 synapseq -h
 ```
 
-## Installing Documentation (Optional)
-
-**macOS/Linux:**
+## Installing Documentation (macOS/Linux)
 
 You can generate and install a man page for offline documentation:
 
