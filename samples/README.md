@@ -190,7 +190,7 @@ The `sample-*` files is written in the SynapSeq text format, illustrating variou
 
 ## Structured Format
 
-The `structured/` subdirectory contains samples in JSON, XML, and YAML formats demonstrating how to use SynapSeq with structured data formats. See [structured/README.md](structured/README.md) for details.
+The `structured/` subdirectory contains samples in JSON, XML, and YAML formats demonstrating how to use SynapSeq with structured data formats. See [STRUCTURED](structured/README.md) for details.
 
 ## Background Audio Files
 
@@ -208,4 +208,4 @@ The `sounds/` directory contains:
 
 ## Creating Your Own Sequences
 
-Use these samples as starting points. Modify frequencies, amplitudes, timelines, and effects to suit your specific needs. See [../docs/USAGE.md](../docs/USAGE.md) for complete syntax reference.
+Use these samples as starting points. Modify frequencies, amplitudes, timelines, and effects to suit your specific needs. See [USAGE](../docs/USAGE.md) for complete syntax reference.

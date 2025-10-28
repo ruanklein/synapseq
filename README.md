@@ -1,8 +1,11 @@
-<p align="center">
-  <img src="assets/logo-rounded.png" alt="SynapSeq Logo" width="200">
-</p>
-
 <h1 align="center">SynapSeq</h1>
+
+<p align="center">
+  <a href="#installation">Installation</a> |
+  <a href="samples/README.md">Examples</a> |
+  <a href="docs/USAGE.md">Documentation</a> |
+  <a href="docs/FAQ.md">FAQ</a>
+</p>
 
 <p align="center">
   <a href="https://github.com/ruanklein/synapseq/releases/latest"><img src="https://img.shields.io/github/v/release/ruanklein/synapseq?style=flat-square&color=blue" alt="Release"></a>
@@ -15,79 +18,9 @@
 
 <p align="center"><strong>Synapse-Sequenced Brainwave Generator</strong></p>
 
-SynapSeq is a lightweight and efficient engine for sequencing audio tones for brainwave entrainment, using a simple text-based format. It helps induce states such as relaxation, meditation, and focused awareness by guiding brainwave frequencies through sound.
+SynapSeq is a lightweight engine that sequences audio tones to guide brainwave states like relaxation, focus, and meditation using a simple text-based format.
 
-## Table of Contents
-
-- [Quick Start Example](#quick-start-example)
-- [Installation](#installation)
-- [Compilation](#compilation)
-- [Documentation](#documentation)
-- [Go Library](#go-library)
-- [FAQ](#faq)
-- [Contributing](#contributing)
-  - [Code of Conduct](#code-of-conduct)
-- [License](#license)
-  - [Third-Party License](#third-party-licenses)
-- [Contact](#contact)
-- [Credits](#credits)
-
-## Quick Start Example
-
-Save the following content as `relax.spsq`:
-
-```
-# Presets
-alpha
-  noise brown amplitude 40
-  tone 250 binaural 10.0 amplitude 10
-theta
-  noise brown amplitude 40
-  tone 250 binaural 5.0 amplitude 10
-
-# Timeline sequence
-00:00:00 silence
-00:00:15 alpha
-00:02:00 alpha
-00:03:00 theta
-00:04:00 theta
-00:05:00 alpha
-00:06:00 alpha
-00:07:00 theta
-00:08:00 theta
-00:09:00 alpha
-00:10:00 silence
-```
-
-Run SynapSeq to generate the audio file:
-
-```bash
-synapseq relax.spsq relax.wav
-```
-
-The audio file will be created in the current directory.
-
-### Phase Sequence
-
-When processing this file, SynapSeq will execute the following sequence of phases:
-
-```
-Phases:
-├─ 0:00-0:15: Fade-in from silence to alpha (start of sequence)
-├─ 0:15-2:00: alpha (10Hz) - Brown noise + binaural tone
-├─ 2:00-3:00: Transition: 10Hz → 5Hz (alpha → theta)
-├─ 3:00-4:00: theta (5Hz) - Brown noise + binaural tone
-├─ 4:00-5:00: Transition: 5Hz → 10Hz (theta → alpha)
-├─ 5:00-6:00: alpha (10Hz)
-├─ 6:00-7:00: Transition: 10Hz → 5Hz (alpha → theta)
-├─ 7:00-8:00: theta (5Hz)
-├─ 8:00-9:00: Transition: 5Hz → 10Hz (theta → alpha)
-└─ 9:00-10:00: Fade-out from alpha to silence (end of sequence)
-```
-
-### More Examples
-
-You can find additional example scripts in the `samples/` folder of this repository. See the [samples/README.md](samples/README.md) for detailed information about each example.
+See the [SAMPLES](samples/README.md) folder for examples.
 
 ## Installation
 

@@ -189,7 +189,7 @@ For most users, **the text format (.spsq) is recommended**. It is:
 - Structured formats require explicit definition of all channel states per timestamp
 - Structured formats do not support presets - every state must be fully defined
 
-See [samples/structured/README.md](../samples/structured/README.md) for structured format documentation and examples.
+See [STRUCTURED](../samples/structured/README.md) for structured format documentation and examples.
 
 ### How can I convert a JSON, XML, or YAML structure to .spsq?
 
@@ -345,7 +345,7 @@ You can choose the noise type that best fits your session. Try different options
 
 ### Can brainwave entrainment simulate the effects of drugs or medications?
 
-**No**. Despite claims from some companies, there is no scientific evidence that brainwave entrainment (using binaural beats, monaural beats, or isochronic tones) can reproduce or simulate the effects of drugs, medications, or any psychoactive substances. The mechanisms of action for substances are complex and involve biochemical processes in the body that cannot be replicated by audio stimulation alone.
+**No**. Despite claims from some companies, **there is no scientific evidence that brainwave entrainment (using binaural beats, monaural beats, or isochronic tones) can reproduce or simulate the effects of drugs, medications, or any psychoactive substances**. The mechanisms of action for substances are complex and involve biochemical processes in the body that cannot be replicated by audio stimulation alone.
 
 Brainwave entrainment can help with relaxation, focus, meditation, and sleep, but it cannot induce states comparable to those produced by drugs or medications. Any suggestion otherwise is misleading and not supported by credible research. Always be skeptical of products or services that promise such effects.
 
@@ -361,23 +361,40 @@ Most evidence points to benefits for stress reduction, mood improvement, and sle
 
 ### Can I integrate SynapSeq into my own project?
 
-Yes! SynapSeq is designed to be used as a **command-line tool (CLI)** that can be easily integrated into other projects through:
+Yes. SynapSeq can be integrated in two main ways: either as a standalone CLI tool or as a native Go library.
 
-- **Process execution**: Call `synapseq` from your application using subprocess/exec calls
-- **Pipeline integration**: Use stdin/stdout for streaming input and output
-- **Automation scripts**: Integrate into build pipelines, web services, or batch processing
-- **GUI wrappers**: Build graphical interfaces that invoke the CLI
-- **HTTP APIs**: Build web services that generate and stream audio on-demand
+1. **Using the Go Library (Recommended for Developers)**
 
-**For practical integration examples, see:**
+SynapSeq exposes its full sequencing engine as a Go package, allowing direct integration without invoking the CLI.
 
-- **[scripts/README.md](../scripts/README.md)** - Complete integration guide with two ready-to-use Python examples:
-  - **Programmatic JSON generation**: Generate sequences dynamically based on parameters
-  - **HTTP streaming server**: Real-time audio streaming via web API with HTML5 player
+```go
+import synapseq "github.com/ruanklein/synapseq/v3/core"
+```
 
-These examples demonstrate both offline generation and real-time streaming patterns, covering the most common integration scenarios.
+You can generate or test sequences programmatically, embed SynapSeq inside larger systems such as GUIs, automation tools, or backend services.
 
-**Important licensing note**: SynapSeq is licensed under GPL v2. While you can freely use the CLI tool in any project, if you modify or distribute the SynapSeq source code itself, your modifications must also be released under GPL v2.
+See the [Go Library](https://pkg.go.dev/github.com/ruanklein/synapseq/v3/core) Documentation for detailed usage.
+
+2. **Using the Command-Line Interface (CLI)**
+
+For scripting or non-Go environments, SynapSeq remains fully operable as a CLI tool. It can be integrated through:
+
+- **Process execution** - Run `synapseq` via subprocess/exec calls
+- **Pipeline integration** - Use stdin/stdout for streaming audio and data
+- **Automation scripts** - Include in CI/CD pipelines, web services, or batch jobs
+- **GUI wrappers** - Build graphical interfaces that call the CLI
+- **HTTP APIs** - Serve real-time generated audio through web endpoints
+
+For examples, see [SCRIPTS](../scripts/README.md), which includes two ready-to-use Python demos:
+
+- **Programmatic JSON generation** - create dynamic sequences from parameters
+- **HTTP streaming server** - real-time audio streaming via a web API and HTML5 player
+
+These examples cover both offline generation and real-time streaming scenarios.
+
+**Licensing note**: SynapSeq is licensed under **GPL v2**.
+
+You may freely use the CLI or Go library in any project, but if you modify or distribute the SynapSeq source code itself, your changes must also be released under GPL v2.
 
 ### Can I sell audio tracks generated with SynapSeq?
 
