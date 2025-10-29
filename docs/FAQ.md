@@ -8,7 +8,12 @@ SynapSeq is an efficient engine for brainwave entrainment, designed to generate 
 
 ### How do I install SynapSeq?
 
-The easiest way is to download a precompiled SynapSeq binary for your platform from the [Releases page](https://github.com/ruanklein/synapseq/releases/latest). Choose the appropriate file for your operating system (Windows, macOS, or Linux), extract it, and place the executable in a directory that is in your PATH. See [README](../README.md) for more details.
+You can install SynapSeq easily using **Homebrew** (macOS/Linux), **Scoop** (Windows), or by downloading a precompiled binary.
+
+The latest precompiled binaries for Windows, macOS, or Linux can be found on the [Releases page](https://github.com/ruanklein/synapseq/releases/latest).
+Extract the archive and place the executable in a directory included in your system’s PATH.
+
+See instructions to install in [README](../README.md) or [COMPILE](COMPILE.md) for compiling from source.
 
 ### How do I use SynapSeq?
 
