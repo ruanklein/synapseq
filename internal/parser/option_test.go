@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	t "github.com/ruanklein/synapseq/v3/internal/types"
@@ -67,7 +68,7 @@ func TestParseOption(ts *testing.T) {
 			continue
 		}
 
-		if option != test.expected {
+		if !reflect.DeepEqual(option, test.expected) {
 			ts.Errorf("For line '%s', expected option %+v but got %+v", test.line, test.expected, option)
 		}
 	}
