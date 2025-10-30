@@ -29,12 +29,14 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 
 	// Options can only be defined on the top of the file, before any presets
 	optionsLocked := false
+	// Last loaded preset path from options
+	lastLoadedPresetPath := ""
 	// Initialize audio options
 	options := &t.SequenceOptions{
 		SampleRate:     44100,
 		Volume:         100,
 		BackgroundPath: "",
-		PresetPath:     "",
+		PresetList:     []string{},
 		GainLevel:      t.GainLevelVeryHigh,
 	}
 
@@ -77,13 +79,16 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 			}
 
 			// Load presets from file if specified in options and not already loaded
-			if options.PresetPath != "" {
-				fpresets, err := loadPresets(options.PresetPath)
-				if err != nil {
-					return nil, fmt.Errorf("%v", err)
+			if len(options.PresetList) > 0 {
+				lastList := options.PresetList[len(options.PresetList)-1]
+				if lastList != lastLoadedPresetPath {
+					fpresets, err := loadPresets(lastList)
+					if err != nil {
+						return nil, err
+					}
+					presets = append(presets, fpresets...)
+					lastLoadedPresetPath = lastList
 				}
-				presets = append(presets, fpresets...)
-				options.PresetPath = ""
 			}
 
 			continue

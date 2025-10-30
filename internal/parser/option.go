@@ -102,7 +102,7 @@ func (ctx *TextParser) ParseOption(options *t.SequenceOptions) error {
 		if option == t.KeywordBackground {
 			options.BackgroundPath = fullPath
 		} else {
-			options.PresetPath = fullPath
+			options.PresetList = append(options.PresetList, fullPath)
 		}
 	case t.KeywordOptionGainLevel:
 		gainLevel, ok := ctx.Line.NextToken()

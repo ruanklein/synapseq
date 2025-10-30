@@ -24,8 +24,8 @@ type SequenceOptions struct {
 	Volume int
 	// Path to the background audio file
 	BackgroundPath string
-	// Path to the preset configuration file
-	PresetPath string
+	// List of preset configuration files
+	PresetList []string
 	// Gain level (20, 16, 12, 6, 0) for audio processing
 	GainLevel GainLevel
 }
