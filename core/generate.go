@@ -49,12 +49,12 @@ func (ac *AppContext) WAV() error {
 		return err
 	}
 
-	err = renderer.RenderWav(ac.outputFile)
-	if err != nil {
+	if err = renderer.RenderWav(ac.outputFile); err != nil {
 		return err
 	}
 
-	if ac.format == t.FormatText && !ac.unsafeNoMetadata {
+	presetList := ac.sequence.Options.PresetList
+	if ac.format == t.FormatText && len(presetList) == 0 && !ac.unsafeNoMetadata {
 		metadata, err := info.NewMetadata(ac.inputFile)
 		if err != nil {
 			return err
