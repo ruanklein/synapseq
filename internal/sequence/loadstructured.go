@@ -81,6 +81,33 @@ func readRemoteStructured(url string, format t.FileFormat) ([]byte, error) {
 	return data, nil
 }
 
+// resolveBackgroundPath resolves the background audio path
+func resolveBackgroundPath(path, basePath string) (string, error) {
+	if path == "-" {
+		return "", fmt.Errorf("stdin (-) is not supported for background audio")
+	}
+
+	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
+		return path, nil
+	}
+
+	if strings.HasPrefix(path, "~") {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		expanded := filepath.Join(homeDir, strings.TrimPrefix(path, "~"))
+		return filepath.Clean(expanded), nil
+	}
+
+	if filepath.IsAbs(path) {
+		return filepath.Clean(path), nil
+	}
+
+	fullPath := filepath.Join(basePath, path)
+	return filepath.Clean(fullPath), nil
+}
+
 // LoadStructuredSequence loads and parses a json/xml/yaml sequence file
 func LoadStructuredSequence(filename string, format t.FileFormat) (*t.Sequence, error) {
 	var data []byte
@@ -135,32 +162,14 @@ func LoadStructuredSequence(filename string, format t.FileFormat) (*t.Sequence, 
 
 	var backgroundPath string
 	if input.Options.Background != "" {
+		var err error
+
 		path := input.Options.Background
-		isRemote := strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://")
+		basePath := filepath.Dir(filename)
 
-		if path == "-" {
-			return nil, fmt.Errorf("stdin (-) is not supported for background audio")
-		}
-
-		// Handle remote URL and home directory
-		if isRemote {
-			backgroundPath = path
-		} else if path[0] == '~' {
-			homeDir, err := os.UserHomeDir()
-			if err != nil {
-				return nil, err
-			}
-			backgroundPath = strings.Replace(path, "~", homeDir, 1)
-		} else {
-			cwd, err := os.Getwd()
-			if err != nil {
-				return nil, err
-			}
-			backgroundPath = filepath.Join(cwd, path)
-		}
-
-		if !isRemote {
-			backgroundPath = filepath.Clean(backgroundPath)
+		backgroundPath, err = resolveBackgroundPath(path, basePath)
+		if err != nil {
+			return nil, err
 		}
 	}
 

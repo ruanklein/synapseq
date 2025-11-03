@@ -9,6 +9,7 @@ package sequence
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/ruanklein/synapseq/v3/internal/parser"
 	s "github.com/ruanklein/synapseq/v3/internal/shared"
@@ -20,6 +21,11 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 	file, err := LoadFile(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("error loading sequence file: %v", err)
+	}
+	// Get absolute path of input file
+	absInputFile, err := filepath.Abs(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("cannot resolve absolute path: %w", err)
 	}
 
 	presets := make([]t.Preset, 0, t.MaxPresets)
@@ -70,7 +76,7 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 				return nil, fmt.Errorf("line %d: options must be defined on the top of the file, before any presets or timelines", file.CurrentLineNumber)
 			}
 
-			if err = ctx.ParseOption(options); err != nil {
+			if err = ctx.ParseOption(options, filepath.Dir(absInputFile)); err != nil {
 				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
 			}
 			// Validate options
