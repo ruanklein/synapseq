@@ -37,7 +37,7 @@
     "options": {
         "samplerate": 44100,
         "volume": 100,
-        "background": "sounds/pink-noise.wav",
+        "background": "../sounds/pink-noise.wav",
         "gainlevel": "veryhigh"
     },
     "sequence": [

@@ -37,7 +37,7 @@
   <options>
     <samplerate>44100</samplerate>
     <volume>100</volume>
-    <background>sounds/pink-noise.wav</background>
+    <background>../sounds/pink-noise.wav</background>
     <gainlevel>veryhigh</gainlevel>
   </options>
   <sequence>
