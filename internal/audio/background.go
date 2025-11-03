@@ -105,7 +105,7 @@ func (bg *BackgroundAudio) loadAndCache() error {
 		// Load from local file
 		file, err := os.Open(bg.filePath)
 		if err != nil {
-			return fmt.Errorf("cannot open file %s: %w", bg.filePath, err)
+			return err
 		}
 		defer file.Close()
 
