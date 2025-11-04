@@ -190,7 +190,7 @@ func (ctx *TextParser) ParseTrack() (*t.Track, error) {
 
 		effect.Intensity = t.IntensityPercentToRaw(intensity)
 	default:
-		return nil, fmt.Errorf("expected %q, %q or %q. Received: %s", t.KeywordTone, t.KeywordNoise, t.KeywordBackground, first)
+		return nil, fmt.Errorf("expected %q, %q, %q or %q. Received: %s", t.KeywordTone, t.KeywordNoise, t.KeywordBackground, t.KeywordTrack, first)
 	}
 
 	unknown, ok := ctx.Line.Peek()
