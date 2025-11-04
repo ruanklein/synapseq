@@ -222,7 +222,17 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 			continue
 		}
 
-		return nil, fmt.Errorf("line %d: invalid syntax: %s", file.CurrentLineNumber, ctx.Line.Raw)
+		// Check for indentation errors
+		tok := ctx.Line.Tokens[0]
+		if tok == t.KeywordWaveform ||
+			tok == t.KeywordTone ||
+			tok == t.KeywordNoise ||
+			tok == t.KeywordBackground ||
+			tok == t.KeywordTrack {
+			return nil, fmt.Errorf("line %d: expected two-space indentation for elements under preset definition\n   %s", file.CurrentLineNumber, ctx.Line.Raw)
+		}
+
+		return nil, fmt.Errorf("line %d: invalid syntax\n    %s", file.CurrentLineNumber, ctx.Line.Raw)
 	}
 
 	// Validate if has one preset (1 = silence preset)
