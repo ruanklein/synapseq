@@ -126,6 +126,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 	return appCtx.WAV()
 }
 
+// detectFormat detects the input format based on CLI options
 func detectFormat(opts *cli.CLIOptions) string {
 	switch {
 	case opts.FormatJSON:
