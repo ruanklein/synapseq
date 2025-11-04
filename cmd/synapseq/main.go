@@ -22,128 +22,119 @@ func main() {
 		os.Exit(1)
 	}
 
-	if opts.ShowVersion {
-		cli.ShowVersion()
-		return
-	}
-
-	if opts.ShowHelp || len(args) == 0 {
-		cli.Help()
-		return
-	}
-
-	if len(args) != 2 {
-		fmt.Fprintf(os.Stderr, "synapseq: invalid number of arguments\n")
-		fmt.Fprintf(os.Stderr, "Use -help flag for usage information.\n")
+	if err := run(opts, args); err != nil {
+		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
 		os.Exit(1)
 	}
+}
 
-	var (
-		inputFile  = args[0]
+// run executes the main application logic based on CLI options and arguments
+func run(opts *cli.CLIOptions, args []string) error {
+	// --version
+	if opts.ShowVersion {
+		cli.ShowVersion()
+		return nil
+	}
+
+	// --help or missing args
+	if opts.ShowHelp || len(args) == 0 {
+		cli.Help()
+		return nil
+	}
+
+	if len(args) < 1 || len(args) > 2 {
+		return fmt.Errorf("invalid number of arguments\nUse -help for usage information")
+	}
+
+	inputFile := args[0]
+	outputFile := "-"
+	if len(args) == 2 {
 		outputFile = args[1]
-		format     = "text"
-	)
+	}
 
+	// --- Handle Extract mode
 	if opts.ExtractTextSequence {
 		if outputFile == "-" {
 			content, err := synapseq.Extract(inputFile)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-				os.Exit(1)
+				return fmt.Errorf("failed to extract text sequence: %w", err)
 			}
 			fmt.Println(content)
-			return
+			return nil
 		}
-
-		if err = synapseq.SaveExtracted(inputFile, outputFile); err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			os.Exit(1)
-		}
-
-		if !opts.Quiet {
-			fmt.Println("Extraction completed successfully.")
-		}
-		return
+		return synapseq.SaveExtracted(inputFile, outputFile)
 	}
 
-	if opts.FormatJSON {
-		format = "json"
-	}
-	if opts.FormatXML {
-		format = "xml"
-	}
-	if opts.FormatYAML {
-		format = "yaml"
-	}
+	// Detect format flags
+	format := detectFormat(opts)
 
-	appContext, err := synapseq.NewAppContext(inputFile, outputFile, format)
+	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, format)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-		os.Exit(1)
+		return err
 	}
 
 	if !opts.Quiet && outputFile != "-" {
-		appContext = appContext.WithVerbose(os.Stdout)
+		appCtx = appCtx.WithVerbose(os.Stdout)
 	}
 
-	if err = appContext.LoadSequence(); err != nil {
-		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-		os.Exit(1)
+	// Load sequence file
+	if err := appCtx.LoadSequence(); err != nil {
+		return err
 	}
 
+	// --- Handle Test mode (no output required)
 	if opts.Test {
 		if !opts.Quiet {
 			fmt.Println("Sequence is valid.")
 		}
-		return
+		return nil
 	}
 
+	// --- Handle Convert mode
 	if opts.ConvertToText {
 		if outputFile == "-" {
-			content, err := appContext.Text()
+			content, err := appCtx.Text()
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-				os.Exit(1)
+				return fmt.Errorf("failed to convert to text: %w", err)
 			}
 			fmt.Println(content)
-			return
+			return nil
 		}
-
-		if err = appContext.SaveText(); err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			os.Exit(1)
-		}
-
-		if !opts.Quiet {
-			fmt.Println("Conversion completed successfully.")
-		}
-		return
+		return appCtx.SaveText()
 	}
 
+	// --- Handle Stream mode (output = "-")
 	if outputFile == "-" {
-		if err = appContext.Stream(os.Stdout); err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			os.Exit(1)
-		}
-		return
+		return appCtx.Stream(os.Stdout)
 	}
 
+	// --- Unsafe mode
 	if opts.UnsafeNoMetadata {
-		appContext, err = appContext.WithUnsafeNoMetadata()
+		appCtx, err = appCtx.WithUnsafeNoMetadata()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-			os.Exit(1)
+			return err
 		}
 	}
 
+	// --- Render to WAV (default mode)
 	if !opts.Quiet {
-		for _, comment := range appContext.Comments() {
-			fmt.Printf("> %s\n", comment)
+		for _, c := range appCtx.Comments() {
+			fmt.Printf("> %s\n", c)
 		}
 	}
 
-	if err = appContext.WAV(); err != nil {
-		fmt.Fprintf(os.Stderr, "synapseq: %v\n", err)
-		os.Exit(1)
+	return appCtx.WAV()
+}
+
+func detectFormat(opts *cli.CLIOptions) string {
+	switch {
+	case opts.FormatJSON:
+		return "json"
+	case opts.FormatXML:
+		return "xml"
+	case opts.FormatYAML:
+		return "yaml"
+	default:
+		return "text"
 	}
 }
