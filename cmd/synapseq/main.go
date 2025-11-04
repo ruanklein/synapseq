@@ -43,7 +43,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 	}
 
 	if len(args) < 1 || len(args) > 2 {
-		return fmt.Errorf("invalid number of arguments\nUse -help for usage information")
+		return fmt.Errorf("invalid number of flags\nUse -help for usage information")
 	}
 
 	inputFile := args[0]
@@ -62,7 +62,13 @@ func run(opts *cli.CLIOptions, args []string) error {
 			fmt.Println(content)
 			return nil
 		}
-		return synapseq.SaveExtracted(inputFile, outputFile)
+
+		if err := synapseq.SaveExtracted(inputFile, outputFile); err != nil {
+			return fmt.Errorf("failed to extract text sequence: %w", err)
+		}
+
+		fmt.Println("Extraction completed successfully.")
+		return nil
 	}
 
 	// Detect format flags
@@ -100,7 +106,13 @@ func run(opts *cli.CLIOptions, args []string) error {
 			fmt.Println(content)
 			return nil
 		}
-		return appCtx.SaveText()
+
+		if err := appCtx.SaveText(); err != nil {
+			return fmt.Errorf("failed to convert to text: %w", err)
+		}
+
+		fmt.Println("Conversion completed successfully.")
+		return nil
 	}
 
 	// --- Handle Stream mode (output = "-")
