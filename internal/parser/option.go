@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
@@ -83,14 +84,13 @@ func (ctx *TextParser) ParseOption(options *t.SequenceOptions, filePath string) 
 		}
 
 		content := strings.Join(ctx.Line.Tokens[1:], " ")
-		isRemote := strings.HasPrefix(content, "http://") || strings.HasPrefix(content, "https://")
 
 		if content == "-" {
 			return fmt.Errorf("stdin (-) is not supported for background or preset list")
 		}
 
 		fullPath := content
-		if !isRemote {
+		if !s.IsRemoteFile(content) {
 			var err error
 			fullPath, err = getFullPath(content, filePath)
 			if err != nil {
