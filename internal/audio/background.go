@@ -11,12 +11,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gopxl/beep/v2"
 	bwav "github.com/gopxl/beep/v2/wav"
+
+	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
@@ -82,41 +82,19 @@ func (bg *BackgroundAudio) loadAndCache() error {
 		return nil
 	}
 
-	var data []byte
-	if strings.HasPrefix(bg.filePath, "http://") || strings.HasPrefix(bg.filePath, "https://") {
-		// Load from remote URL
-		resp, err := http.Get(bg.filePath)
-		if err != nil {
-			return fmt.Errorf("error fetching remote background: %w", err)
-		}
-		defer resp.Body.Close()
-
-		ct := resp.Header.Get("Content-Type")
-		if !allowedWavContentType(ct) {
-			return fmt.Errorf("invalid content-type for WAV: %s", ct)
-		}
-
-		// Limit read to maxBackgroundFileSize
-		data, err = io.ReadAll(io.LimitReader(resp.Body, maxBackgroundFileSize))
-		if err != nil {
-			return fmt.Errorf("error reading remote background: %w", err)
-		}
-	} else {
-		// Load from local file
-		file, err := os.Open(bg.filePath)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-
-		// Limit read to maxBackgroundFileSize
-		data, err = io.ReadAll(io.LimitReader(file, maxBackgroundFileSize))
-		if err != nil {
-			return fmt.Errorf("error reading file: %w", err)
-		}
+	data, err := s.GetFile(bg.filePath, t.FormatWAV)
+	if err != nil {
+		return fmt.Errorf("failed to load background file: %w", err)
 	}
 
-	bg.cachedData = data
+	// Read all data into cache
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, data)
+	if err != nil {
+		return fmt.Errorf("failed to read background file data: %w", err)
+	}
+
+	bg.cachedData = buf.Bytes()
 	return nil
 }
 

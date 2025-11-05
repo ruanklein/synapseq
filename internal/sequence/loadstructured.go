@@ -110,46 +110,28 @@ func resolveBackgroundPath(path, basePath string) (string, error) {
 
 // LoadStructuredSequence loads and parses a json/xml/yaml sequence file
 func LoadStructuredSequence(filename string, format t.FileFormat) (*t.Sequence, error) {
-	var data []byte
-	if filename == "-" {
-		reader := io.LimitReader(os.Stdin, maxStructuredFileSize)
-		var err error
-		data, err = io.ReadAll(reader)
-		if err != nil {
-			return nil, fmt.Errorf("error reading stdin: %v", err)
-		}
-	} else if strings.HasPrefix(filename, "http://") || strings.HasPrefix(filename, "https://") {
-		var err error
-		data, err = readRemoteStructured(filename, format)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		// Local file
-		file, err := os.Open(filename)
-		if err != nil {
-			return nil, fmt.Errorf("error opening %s file: %v", format.String(), err)
-		}
-		defer file.Close()
+	data, err := s.GetFile(filename, format)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load structured sequence file: %v", err)
+	}
 
-		data, err = io.ReadAll(io.LimitReader(file, maxStructuredFileSize))
-		if err != nil {
-			return nil, fmt.Errorf("error reading %s file: %v", format.String(), err)
-		}
+	raw, err := io.ReadAll(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read structured sequence file data: %v", err)
 	}
 
 	var input t.SynapSeqInput
 	switch format {
 	case t.FormatJSON:
-		if err := json.Unmarshal(data, &input); err != nil {
+		if err := json.Unmarshal(raw, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling JSON: %v", err)
 		}
 	case t.FormatXML:
-		if err := xml.Unmarshal(data, &input); err != nil {
+		if err := xml.Unmarshal(raw, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling XML: %v", err)
 		}
 	case t.FormatYAML:
-		if err := yaml.Unmarshal(data, &input); err != nil {
+		if err := yaml.Unmarshal(raw, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling YAML: %v", err)
 		}
 	default:
