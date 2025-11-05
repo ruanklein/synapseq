@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,7 +41,7 @@ func resolveBackgroundPath(path, basePath string) (string, error) {
 		return "", fmt.Errorf("stdin (-) is not supported for background audio")
 	}
 
-	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
+	if s.IsRemoteFile(path) {
 		return path, nil
 	}
 
@@ -70,23 +69,18 @@ func LoadStructuredSequence(filename string, format t.FileFormat) (*t.Sequence, 
 		return nil, fmt.Errorf("failed to load structured sequence file: %v", err)
 	}
 
-	raw, err := io.ReadAll(data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read structured sequence file data: %v", err)
-	}
-
 	var input t.SynapSeqInput
 	switch format {
 	case t.FormatJSON:
-		if err := json.Unmarshal(raw, &input); err != nil {
+		if err := json.Unmarshal(data, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling JSON: %v", err)
 		}
 	case t.FormatXML:
-		if err := xml.Unmarshal(raw, &input); err != nil {
+		if err := xml.Unmarshal(data, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling XML: %v", err)
 		}
 	case t.FormatYAML:
-		if err := yaml.Unmarshal(raw, &input); err != nil {
+		if err := yaml.Unmarshal(data, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling YAML: %v", err)
 		}
 	default:

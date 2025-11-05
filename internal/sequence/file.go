@@ -9,6 +9,7 @@ package sequence
 
 import (
 	"bufio"
+	"bytes"
 
 	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
@@ -29,7 +30,7 @@ func LoadFile(fileName string) (*SequenceFile, error) {
 	}
 
 	return &SequenceFile{
-		scanner: bufio.NewScanner(file),
+		scanner: bufio.NewScanner(bytes.NewReader(file)),
 	}, nil
 }
 

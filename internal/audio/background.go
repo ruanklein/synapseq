@@ -75,14 +75,7 @@ func (bg *BackgroundAudio) loadAndCache() error {
 		return fmt.Errorf("failed to load background file: %w", err)
 	}
 
-	// Read all data into cache
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, data)
-	if err != nil {
-		return fmt.Errorf("failed to read background file data: %w", err)
-	}
-
-	bg.cachedData = buf.Bytes()
+	bg.cachedData = data
 	return nil
 }
 

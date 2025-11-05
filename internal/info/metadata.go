@@ -9,8 +9,6 @@ package info
 
 import (
 	"encoding/base64"
-	"fmt"
-	"io"
 	"runtime"
 	"time"
 
@@ -35,14 +33,9 @@ type Metadata struct {
 
 // NewMetadata creates a new Metadata instance with current information
 func NewMetadata(filePath string) (*Metadata, error) {
-	raw, err := s.GetFile(filePath, t.FormatText)
+	data, err := s.GetFile(filePath, t.FormatText)
 	if err != nil {
 		return nil, err
-	}
-
-	data, err := io.ReadAll(raw)
-	if err != nil {
-		return nil, fmt.Errorf("error reading file content: %v", err)
 	}
 
 	return &Metadata{

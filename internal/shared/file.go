@@ -8,7 +8,6 @@
 package shared
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -20,16 +19,16 @@ import (
 )
 
 // readFile reads a file from the given reader up to maxSize bytes
-func readFile(r io.Reader, maxSize int64) (io.Reader, error) {
+func readFile(r io.Reader, maxSize int64) ([]byte, error) {
 	data, err := io.ReadAll(io.LimitReader(r, maxSize))
 	if err != nil {
 		return nil, err
 	}
-	return bytes.NewReader(data), nil
+	return data, nil
 }
 
 // getRemoteFile fetches a remote file and validates its content type and size
-func getRemoteFile(url string, maxSize int64, typ t.FileFormat) (io.Reader, error) {
+func getRemoteFile(url string, maxSize int64, typ t.FileFormat) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching remote file: %v", err)
@@ -75,7 +74,7 @@ func IsRemoteFile(filePath string) bool {
 }
 
 // GetFile retrieves a file from a local path or URL based on the specified type
-func GetFile(filePath string, typ t.FileFormat) (io.Reader, error) {
+func GetFile(filePath string, typ t.FileFormat) ([]byte, error) {
 	maxSize := int64(0)
 	switch typ {
 	case t.FormatText:
