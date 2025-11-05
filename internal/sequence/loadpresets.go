@@ -17,10 +17,12 @@ import (
 
 // loadPresets loads presets from a given file path
 func loadPresets(filename string) ([]t.Preset, error) {
-	f, _, err := NewSequenceFile(filename)
+	rawContent, err := s.GetFile(filename, t.FormatText)
 	if err != nil {
 		return nil, err
 	}
+
+	f := NewSequenceFile(rawContent)
 
 	presets := make([]t.Preset, 0, t.MaxPresets)
 	for f.NextLine() {

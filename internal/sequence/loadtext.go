@@ -18,10 +18,13 @@ import (
 
 // LoadTextSequence loads a sequence from a text file
 func LoadTextSequence(fileName string) (*t.Sequence, error) {
-	file, rawContent, err := NewSequenceFile(fileName)
+	rawContent, err := s.GetFile(fileName, t.FormatText)
 	if err != nil {
 		return nil, fmt.Errorf("error loading sequence file: %v", err)
 	}
+
+	file := NewSequenceFile(rawContent)
+
 	// Get absolute path of input file
 	absInputFile, err := filepath.Abs(fileName)
 	if err != nil {

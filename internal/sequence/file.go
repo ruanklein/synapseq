@@ -10,9 +10,6 @@ package sequence
 import (
 	"bufio"
 	"bytes"
-
-	s "github.com/ruanklein/synapseq/v3/internal/shared"
-	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // SequenceFile represents a sequence file
@@ -23,15 +20,10 @@ type SequenceFile struct {
 }
 
 // NewSequenceFile creates a new sequence file
-func NewSequenceFile(fileName string) (*SequenceFile, []byte, error) {
-	data, err := s.GetFile(fileName, t.FormatText)
-	if err != nil {
-		return nil, nil, err
-	}
-
+func NewSequenceFile(data []byte) *SequenceFile {
 	return &SequenceFile{
 		scanner: bufio.NewScanner(bytes.NewReader(data)),
-	}, data, nil
+	}
 }
 
 // NextLine advances to the next line in the sequence file
