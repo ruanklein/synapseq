@@ -17,7 +17,7 @@ import (
 
 // loadPresets loads presets from a given file path
 func loadPresets(filename string) ([]t.Preset, error) {
-	f, err := LoadFile(filename)
+	f, _, err := NewSequenceFile(filename)
 	if err != nil {
 		return nil, err
 	}

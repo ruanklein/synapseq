@@ -18,7 +18,7 @@ import (
 
 // LoadTextSequence loads a sequence from a text file
 func LoadTextSequence(fileName string) (*t.Sequence, error) {
-	file, err := LoadFile(fileName)
+	file, rawContent, err := NewSequenceFile(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("error loading sequence file: %v", err)
 	}
@@ -257,8 +257,9 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 	}
 
 	return &t.Sequence{
-		Periods:  periods,
-		Options:  options,
-		Comments: comments,
+		Periods:    periods,
+		Options:    options,
+		Comments:   comments,
+		RawContent: rawContent,
 	}, nil
 }

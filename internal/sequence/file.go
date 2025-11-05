@@ -22,16 +22,16 @@ type SequenceFile struct {
 	scanner           *bufio.Scanner // Scanner for reading the file
 }
 
-// LoadFile loads a sequence file
-func LoadFile(fileName string) (*SequenceFile, error) {
-	file, err := s.GetFile(fileName, t.FormatText)
+// NewSequenceFile creates a new sequence file
+func NewSequenceFile(fileName string) (*SequenceFile, []byte, error) {
+	data, err := s.GetFile(fileName, t.FormatText)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	return &SequenceFile{
-		scanner: bufio.NewScanner(bytes.NewReader(file)),
-	}, nil
+		scanner: bufio.NewScanner(bytes.NewReader(data)),
+	}, data, nil
 }
 
 // NextLine advances to the next line in the sequence file
