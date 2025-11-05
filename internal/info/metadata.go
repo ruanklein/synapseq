@@ -13,8 +13,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	s "github.com/ruanklein/synapseq/v3/internal/shared"
-	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // Metadata holds the embedded metadata information
@@ -32,18 +30,13 @@ type Metadata struct {
 }
 
 // NewMetadata creates a new Metadata instance with current information
-func NewMetadata(filePath string) (*Metadata, error) {
-	data, err := s.GetFile(filePath, t.FormatText)
-	if err != nil {
-		return nil, err
-	}
-
+func NewMetadata(content []byte) (*Metadata, error) {
 	return &Metadata{
 		id:        uuid.New().String(),
 		generated: time.Now().UTC().Format(time.RFC3339),
 		version:   VERSION,
 		platform:  runtime.GOOS + "/" + runtime.GOARCH,
-		content:   base64.StdEncoding.EncodeToString(data),
+		content:   base64.StdEncoding.EncodeToString(content),
 	}, nil
 }
 
