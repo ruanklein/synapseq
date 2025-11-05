@@ -12,7 +12,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,9 +21,6 @@ import (
 	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
-
-// maxStructuredFileSize defines the maximum file size (128KB)
-const maxStructuredFileSize = 128 * 1024
 
 // initializeTracks initializes an array of off tracks
 func initializeTracks() [t.NumberOfChannels]t.Track {
@@ -38,47 +34,6 @@ func initializeTracks() [t.NumberOfChannels]t.Track {
 		tracks[ch].Effect = t.Effect{Type: t.EffectOff, Intensity: 0.0}
 	}
 	return tracks
-}
-
-// contentTypeAllowed checks if the content type is allowed for the given format
-func contentTypeAllowed(format t.FileFormat, ct string) bool {
-	ct = strings.ToLower(strings.TrimSpace(strings.Split(ct, ";")[0]))
-	switch format {
-	case t.FormatJSON:
-		return ct == "application/json" || ct == "text/json" || strings.HasSuffix(ct, "+json")
-	case t.FormatXML:
-		return ct == "application/xml" || ct == "text/xml" || strings.HasSuffix(ct, "+xml")
-	case t.FormatYAML:
-		// YAML can sometimes be served as various content types
-		return ct == "application/x-yaml" ||
-			ct == "application/yaml" ||
-			ct == "text/yaml" ||
-			ct == "text/x-yaml" ||
-			strings.HasSuffix(ct, "+yaml") ||
-			strings.HasSuffix(ct, "+yml")
-	default:
-		return false
-	}
-}
-
-// readRemoteStructured loads a remote structured file with content type validation
-func readRemoteStructured(url string, format t.FileFormat) ([]byte, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching remote file: %v", err)
-	}
-	defer resp.Body.Close()
-
-	ct := resp.Header.Get("Content-Type")
-	if !contentTypeAllowed(format, ct) {
-		return nil, fmt.Errorf("invalid content-type for %s: %s", format.String(), ct)
-	}
-
-	data, err := io.ReadAll(io.LimitReader(resp.Body, maxStructuredFileSize))
-	if err != nil {
-		return nil, fmt.Errorf("error reading remote file: %v", err)
-	}
-	return data, nil
 }
 
 // resolveBackgroundPath resolves the background audio path

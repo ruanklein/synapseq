@@ -11,7 +11,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/gopxl/beep/v2"
 	bwav "github.com/gopxl/beep/v2/wav"
@@ -63,17 +62,6 @@ func NewBackgroundAudio(filePath string) (*BackgroundAudio, error) {
 
 	bg.buffer = make([]int, bg.bufferSize)
 	return bg, nil
-}
-
-// allowedWavContentType checks Content-Type for WAV
-func allowedWavContentType(ct string) bool {
-	ct = strings.ToLower(strings.TrimSpace(strings.Split(ct, ";")[0]))
-	switch ct {
-	case "audio/wav", "audio/x-wav", "audio/wave":
-		return true
-	default:
-		return false
-	}
 }
 
 // loadAndCache loads the file (local or remote) into memory cache
