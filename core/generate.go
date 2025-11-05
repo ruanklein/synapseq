@@ -55,7 +55,7 @@ func (ac *AppContext) WAV() error {
 
 	presetList := ac.sequence.Options.PresetList
 	if ac.format == t.FormatText && len(presetList) == 0 && !ac.unsafeNoMetadata {
-		metadata, err := info.NewMetadata(ac.inputFile)
+		metadata, err := info.NewMetadata(ac.sequence.RawContent)
 		if err != nil {
 			return err
 		}
