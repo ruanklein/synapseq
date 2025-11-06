@@ -14,8 +14,8 @@ import (
 
 // SequenceFile represents a sequence file
 type SequenceFile struct {
-	CurrentLine       string         // Current line in the file
-	CurrentLineNumber int            // Current line number
+	currentLine       string         // Current line in the file
+	currentLineNumber int            // Current line number
 	scanner           *bufio.Scanner // Scanner for reading the file
 }
 
@@ -33,9 +33,19 @@ func (sf *SequenceFile) NextLine() bool {
 	}
 
 	if sf.scanner.Scan() {
-		sf.CurrentLine = sf.scanner.Text()
-		sf.CurrentLineNumber++
+		sf.currentLine = sf.scanner.Text()
+		sf.currentLineNumber++
 		return true
 	}
 	return false
+}
+
+// CurrentLine returns the current line in the sequence file
+func (sf *SequenceFile) CurrentLine() string {
+	return sf.currentLine
+}
+
+// CurrentLineNumber returns the current line number in the sequence file
+func (sf *SequenceFile) CurrentLineNumber() int {
+	return sf.currentLineNumber
 }

@@ -26,7 +26,9 @@ func loadPresets(filename string) ([]t.Preset, error) {
 
 	presets := make([]t.Preset, 0, t.MaxPresets)
 	for f.NextLine() {
-		ctx := parser.NewTextParser(f.CurrentLine)
+		ln := f.CurrentLine()
+		lnn := f.CurrentLineNumber()
+		ctx := parser.NewTextParser(ln)
 
 		// Skip empty lines
 		if len(ctx.Line.Tokens) == 0 {
@@ -42,7 +44,7 @@ func loadPresets(filename string) ([]t.Preset, error) {
 		if ctx.HasPreset() {
 			preset, err := ctx.ParsePreset(&presets)
 			if err != nil {
-				return nil, fmt.Errorf("preset file, line %d: %v", f.CurrentLineNumber, err)
+				return nil, fmt.Errorf("preset file, line %d: %v", lnn, err)
 			}
 			presets = append(presets, *preset)
 			continue
@@ -51,22 +53,22 @@ func loadPresets(filename string) ([]t.Preset, error) {
 		// Track line
 		if ctx.HasTrack() {
 			if len(presets) == 0 {
-				return nil, fmt.Errorf("preset file, line %d: track defined before any preset: %s", f.CurrentLineNumber, ctx.Line.Raw)
+				return nil, fmt.Errorf("preset file, line %d: track defined before any preset: %s", lnn, ctx.Line.Raw)
 			}
 
 			lastPreset := &presets[len(presets)-1]
 			if lastPreset.From != nil {
-				return nil, fmt.Errorf("preset file, line %d: preset %q inherits from another and cannot define new tracks", f.CurrentLineNumber, lastPreset.String())
+				return nil, fmt.Errorf("preset file, line %d: preset %q inherits from another and cannot define new tracks", lnn, lastPreset.String())
 			}
 
 			trackIndex, err := s.AllocateTrack(lastPreset)
 			if err != nil {
-				return nil, fmt.Errorf("preset file, line %d: %v", f.CurrentLineNumber, err)
+				return nil, fmt.Errorf("preset file, line %d: %v", lnn, err)
 			}
 
 			track, err := ctx.ParseTrack()
 			if err != nil {
-				return nil, fmt.Errorf("preset file, line %d: %v", f.CurrentLineNumber, err)
+				return nil, fmt.Errorf("preset file, line %d: %v", lnn, err)
 			}
 
 			lastPreset.Track[trackIndex] = *track
@@ -76,25 +78,25 @@ func loadPresets(filename string) ([]t.Preset, error) {
 		// Track override line
 		if ctx.HasTrackOverride() {
 			if len(presets) == 1 { // 1 = silence preset
-				return nil, fmt.Errorf("preset file, line %d: track override defined before any preset: %s", f.CurrentLineNumber, ctx.Line.Raw)
+				return nil, fmt.Errorf("preset file, line %d: track override defined before any preset: %s", lnn, ctx.Line.Raw)
 			}
 
 			lastPreset := &presets[len(presets)-1]
 			if lastPreset.IsTemplate {
-				return nil, fmt.Errorf("preset file, line %d: cannot override tracks on template preset %q", f.CurrentLineNumber, lastPreset.String())
+				return nil, fmt.Errorf("preset file, line %d: cannot override tracks on template preset %q", lnn, lastPreset.String())
 			}
 			if lastPreset.From == nil {
-				return nil, fmt.Errorf("preset file, line %d: cannot override tracks on preset %q which does not have a 'from' source", f.CurrentLineNumber, lastPreset.String())
+				return nil, fmt.Errorf("preset file, line %d: cannot override tracks on preset %q which does not have a 'from' source", lnn, lastPreset.String())
 			}
 
 			if err := ctx.ParseTrackOverride(lastPreset); err != nil {
-				return nil, fmt.Errorf("preset file, line %d: %v", f.CurrentLineNumber, err)
+				return nil, fmt.Errorf("preset file, line %d: %v", lnn, err)
 			}
 
 			continue
 		}
 
-		return nil, fmt.Errorf("preset file, line %d: unexpected content: %s", f.CurrentLineNumber, f.CurrentLine)
+		return nil, fmt.Errorf("preset file, line %d: unexpected content: %s", lnn, ln)
 	}
 
 	// Validate if has one preset

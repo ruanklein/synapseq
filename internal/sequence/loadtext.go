@@ -56,7 +56,9 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 
 	// Parse each line in the file
 	for file.NextLine() {
-		ctx := parser.NewTextParser(file.CurrentLine)
+		ln := file.CurrentLine()
+		lnn := file.CurrentLineNumber()
+		ctx := parser.NewTextParser(ln)
 
 		// Skip empty lines
 		if len(ctx.Line.Tokens) == 0 {
@@ -76,15 +78,15 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 		// Option line
 		if ctx.HasOption() {
 			if optionsLocked {
-				return nil, fmt.Errorf("line %d: options must be defined on the top of the file, before any presets or timelines", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: options must be defined on the top of the file, before any presets or timelines", lnn)
 			}
 
 			if err = ctx.ParseOption(options, filepath.Dir(absInputFile)); err != nil {
-				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", lnn, err)
 			}
 			// Validate options
 			if err = options.Validate(); err != nil {
-				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", lnn, err)
 			}
 
 			// Load presets from file if specified in options and not already loaded
@@ -108,22 +110,22 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 			optionsLocked = true
 
 			if len(presets) >= t.MaxPresets {
-				return nil, fmt.Errorf("line %d: maximum number of presets reached", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: maximum number of presets reached", lnn)
 			}
 
 			if len(periods) > 0 {
-				return nil, fmt.Errorf("line %d: preset definitions must be before any timeline definitions", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: preset definitions must be before any timeline definitions", lnn)
 			}
 
 			preset, err := ctx.ParsePreset(&presets)
 			if err != nil {
-				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", lnn, err)
 			}
 
 			pName := preset.String()
 			p := s.FindPreset(pName, presets)
 			if p != nil {
-				return nil, fmt.Errorf("line %d: duplicate preset definition: %s", file.CurrentLineNumber, pName)
+				return nil, fmt.Errorf("line %d: duplicate preset definition: %s", lnn, pName)
 			}
 
 			presets = append(presets, *preset)
@@ -135,30 +137,30 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 			optionsLocked = true
 
 			if len(presets) == 1 { // 1 = silence preset
-				return nil, fmt.Errorf("line %d: track defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
+				return nil, fmt.Errorf("line %d: track defined before any preset: %s", lnn, ctx.Line.Raw)
 			}
 
 			if len(periods) > 0 {
-				return nil, fmt.Errorf("line %d: track definitions must be before any timeline definitions", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: track definitions must be before any timeline definitions", lnn)
 			}
 
 			lastPreset := &presets[len(presets)-1]
 			if lastPreset.From != nil {
-				return nil, fmt.Errorf("line %d: preset %q inherits from another and cannot define new tracks", file.CurrentLineNumber, lastPreset.String())
+				return nil, fmt.Errorf("line %d: preset %q inherits from another and cannot define new tracks", lnn, lastPreset.String())
 			}
 
 			trackIndex, err := s.AllocateTrack(lastPreset)
 			if err != nil {
-				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", lnn, err)
 			}
 
 			track, err := ctx.ParseTrack()
 			if err != nil {
-				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", lnn, err)
 			}
 
 			if track.Type == t.TrackBackground && options.BackgroundPath == "" {
-				return nil, fmt.Errorf("line %d: background track defined but no background audio file specified in options", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: background track defined but no background audio file specified in options", lnn)
 			}
 
 			lastPreset.Track[trackIndex] = *track
@@ -170,23 +172,23 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 			optionsLocked = true
 
 			if len(presets) == 1 { // 1 = silence preset
-				return nil, fmt.Errorf("line %d: track override defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
+				return nil, fmt.Errorf("line %d: track override defined before any preset: %s", lnn, ctx.Line.Raw)
 			}
 
 			if len(periods) > 0 {
-				return nil, fmt.Errorf("line %d: track override definitions must be before any timeline definitions", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: track override definitions must be before any timeline definitions", lnn)
 			}
 
 			lastPreset := &presets[len(presets)-1]
 			if lastPreset.IsTemplate {
-				return nil, fmt.Errorf("line %d: cannot override tracks on template preset %q", file.CurrentLineNumber, lastPreset.String())
+				return nil, fmt.Errorf("line %d: cannot override tracks on template preset %q", lnn, lastPreset.String())
 			}
 			if lastPreset.From == nil {
-				return nil, fmt.Errorf("line %d: cannot override tracks on preset %q which does not have a 'from' source", file.CurrentLineNumber, lastPreset.String())
+				return nil, fmt.Errorf("line %d: cannot override tracks on preset %q which does not have a 'from' source", lnn, lastPreset.String())
 			}
 
 			if err := ctx.ParseTrackOverride(lastPreset); err != nil {
-				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", lnn, err)
 			}
 
 			continue
@@ -197,27 +199,27 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 			optionsLocked = true
 
 			if len(presets) == 1 { // 1 = silence preset
-				return nil, fmt.Errorf("line %d: timeline defined before any preset: %s", file.CurrentLineNumber, ctx.Line.Raw)
+				return nil, fmt.Errorf("line %d: timeline defined before any preset: %s", lnn, ctx.Line.Raw)
 			}
 
 			period, err := ctx.ParseTimeline(&presets)
 			if err != nil {
-				return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+				return nil, fmt.Errorf("line %d: %v", lnn, err)
 			}
 
 			if len(periods) == 0 && period.Time != 0 {
-				return nil, fmt.Errorf("line %d: first timeline must start at 00:00:00", file.CurrentLineNumber)
+				return nil, fmt.Errorf("line %d: first timeline must start at 00:00:00", lnn)
 			}
 
 			if len(periods) > 0 {
 				lastPeriod := &periods[len(periods)-1]
 
 				if lastPeriod.Time >= period.Time {
-					return nil, fmt.Errorf("line %d: timeline %s overlaps with previous timeline %s", file.CurrentLineNumber, period.TimeString(), lastPeriod.TimeString())
+					return nil, fmt.Errorf("line %d: timeline %s overlaps with previous timeline %s", lnn, period.TimeString(), lastPeriod.TimeString())
 				}
 
 				if err := s.AdjustPeriods(lastPeriod, period); err != nil {
-					return nil, fmt.Errorf("line %d: %v", file.CurrentLineNumber, err)
+					return nil, fmt.Errorf("line %d: %v", lnn, err)
 				}
 			}
 
@@ -232,10 +234,10 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 			tok == t.KeywordNoise ||
 			tok == t.KeywordBackground ||
 			tok == t.KeywordTrack {
-			return nil, fmt.Errorf("line %d: expected two-space indentation for elements under preset definition\n   %s", file.CurrentLineNumber, ctx.Line.Raw)
+			return nil, fmt.Errorf("line %d: expected two-space indentation for elements under preset definition\n   %s", lnn, ctx.Line.Raw)
 		}
 
-		return nil, fmt.Errorf("line %d: invalid syntax\n    %s", file.CurrentLineNumber, ctx.Line.Raw)
+		return nil, fmt.Errorf("line %d: invalid syntax\n    %s", lnn, ctx.Line.Raw)
 	}
 
 	// Validate if has one preset (1 = silence preset)
