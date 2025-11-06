@@ -21,8 +21,8 @@ func TestNewSequenceFile(ts *testing.T) {
 	if sf.scanner == nil {
 		ts.Fatal("scanner not initialized")
 	}
-	if sf.CurrentLineNumber != 0 {
-		ts.Errorf("expected CurrentLineNumber=0, got %d", sf.CurrentLineNumber)
+	if sf.CurrentLineNumber() != 0 {
+		ts.Errorf("expected CurrentLineNumber=0, got %d", sf.CurrentLineNumber())
 	}
 }
 
@@ -60,7 +60,7 @@ func TestSequenceFile_NextLine(ts *testing.T) {
 
 			var got []string
 			for sf.NextLine() {
-				got = append(got, sf.CurrentLine)
+				got = append(got, sf.CurrentLine())
 			}
 
 			if len(got) != len(tt.wantLines) {
@@ -73,8 +73,8 @@ func TestSequenceFile_NextLine(ts *testing.T) {
 				}
 			}
 
-			if sf.CurrentLineNumber != len(tt.wantLines) {
-				ts.Errorf("expected CurrentLineNumber=%d, got %d", len(tt.wantLines), sf.CurrentLineNumber)
+			if sf.CurrentLineNumber() != len(tt.wantLines) {
+				ts.Errorf("expected CurrentLineNumber=%d, got %d", len(tt.wantLines), sf.CurrentLineNumber())
 			}
 		})
 	}
@@ -94,9 +94,9 @@ func TestSequenceFile_LineNumberIncrement(ts *testing.T) {
 
 	expectedLineNums := []int{1, 2, 3}
 	for i := 0; sf.NextLine(); i++ {
-		if sf.CurrentLineNumber != expectedLineNums[i] {
+		if sf.CurrentLineNumber() != expectedLineNums[i] {
 			ts.Errorf("iteration %d: expected line number %d, got %d",
-				i, expectedLineNums[i], sf.CurrentLineNumber)
+				i, expectedLineNums[i], sf.CurrentLineNumber())
 		}
 	}
 }
