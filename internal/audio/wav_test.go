@@ -16,6 +16,8 @@ import (
 	"github.com/gopxl/beep/v2"
 	bwav "github.com/gopxl/beep/v2/wav"
 	"github.com/ruanklein/synapseq/v3/internal/info"
+	s "github.com/ruanklein/synapseq/v3/internal/shared"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // Use constStreamer from renderer_test.go
@@ -43,7 +45,12 @@ func TestWriteAndExtractICMTChunk_Integration(ts *testing.T) {
 	}
 	wavFile.Close()
 
-	metadata, err := info.NewMetadata(seqPath)
+	rawData, err := s.GetFile(seqPath, t.FormatText)
+	if err != nil {
+		ts.Fatalf("GetFile() error: %v", err)
+	}
+
+	metadata, err := info.NewMetadata(rawData)
 	if err != nil {
 		ts.Fatalf("ReadWAVMetadata error: %v", err)
 	}

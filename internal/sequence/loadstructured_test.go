@@ -518,14 +518,14 @@ func TestLoadStructured_YAML_FromHTTP(ts *testing.T) {
 
 func TestLoadStructured_JSON_FileTooLarge(ts *testing.T) {
 	// Generate a JSON file larger than maxStructuredFileSize
-	over := maxStructuredFileSize + 1024 // 1KB over the limit
+	over := t.MaxStructuredFileSize + 1024 // 1KB over the limit
 	huge := strings.Repeat("A", over)
 	json := fmt.Sprintf(`{"description":["%s"],"options":{"samplerate":44100,"volume":100},"sequence":[{"time":0,"transition":"steady","track":{"tones":[{"mode":"binaural","carrier":250,"resonance":8,"amplitude":0,"waveform":"sine"}]}}]}`, huge)
 
 	p := writeTemp(ts, "too-big.json", json)
 
 	if _, err := LoadStructuredSequence(p, t.FormatJSON); err == nil {
-		ts.Fatalf("expected error for file > %d bytes, got nil", maxStructuredFileSize)
+		ts.Fatalf("expected error for file > %d bytes, got nil", t.MaxStructuredFileSize)
 	}
 }
 
