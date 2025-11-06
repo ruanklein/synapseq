@@ -221,7 +221,7 @@ Starting from version 3.2.0, you can use the `-test` parameter to validate the s
 Example:
 
 ```
-synapseq -test my-sequence.spsq output.wav
+synapseq -test my-sequence.spsq
 ```
 
 If your file is valid, SynapSeq will confirm the syntax and exit without creating any output file. If there are errors, they will be displayed in the terminal.
