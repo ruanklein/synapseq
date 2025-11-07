@@ -7,32 +7,6 @@
 
 package types
 
-// FileFormat represents the format of the input/output file
-type FileFormat int
-
-const (
-	FormatText FileFormat = iota
-	FormatJSON
-	FormatXML
-	FormatYAML
-)
-
-// String returns the string representation of the FileFormat
-func (ff FileFormat) String() string {
-	switch ff {
-	case FormatText:
-		return "text"
-	case FormatJSON:
-		return "json"
-	case FormatXML:
-		return "xml"
-	case FormatYAML:
-		return "yaml"
-	default:
-		return "unknown"
-	}
-}
-
 // FormatOptions holds the options for the sequence format
 type FormatOptions struct {
 	Samplerate int    `json:"samplerate" xml:"samplerate" yaml:"samplerate"`

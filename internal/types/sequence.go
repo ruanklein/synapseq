@@ -11,9 +11,10 @@ import "fmt"
 
 // Sequence represents a brainwave sequence
 type Sequence struct {
-	Periods  []Period
-	Options  *SequenceOptions
-	Comments []string
+	Periods    []Period
+	Options    *SequenceOptions
+	Comments   []string
+	RawContent []byte
 }
 
 // SequenceOptions represents configuration options for a sequence
@@ -24,8 +25,8 @@ type SequenceOptions struct {
 	Volume int
 	// Path to the background audio file
 	BackgroundPath string
-	// Path to the preset configuration file
-	PresetPath string
+	// List of preset configuration files
+	PresetList []string
 	// Gain level (20, 16, 12, 6, 0) for audio processing
 	GainLevel GainLevel
 }

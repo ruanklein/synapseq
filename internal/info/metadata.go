@@ -9,7 +9,6 @@ package info
 
 import (
 	"encoding/base64"
-	"os"
 	"runtime"
 	"time"
 
@@ -31,18 +30,13 @@ type Metadata struct {
 }
 
 // NewMetadata creates a new Metadata instance with current information
-func NewMetadata(filePath string) (*Metadata, error) {
-	raw, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-
+func NewMetadata(content []byte) (*Metadata, error) {
 	return &Metadata{
 		id:        uuid.New().String(),
 		generated: time.Now().UTC().Format(time.RFC3339),
 		version:   VERSION,
 		platform:  runtime.GOOS + "/" + runtime.GOARCH,
-		content:   base64.StdEncoding.EncodeToString(raw),
+		content:   base64.StdEncoding.EncodeToString(content),
 	}, nil
 }
 

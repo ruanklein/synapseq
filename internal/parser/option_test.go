@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	t "github.com/ruanklein/synapseq/v3/internal/types"
@@ -37,38 +38,58 @@ func TestHasOption(ts *testing.T) {
 }
 
 func TestParseOption(ts *testing.T) {
-	// Fake path for testing background option
 	backgroundFile := "noise.wav"
+
 	cwd, err := os.Getwd()
 	if err != nil {
-		ts.Errorf("cannot get current working directory")
+		ts.Fatalf("cannot get current working directory: %v", err)
 	}
+
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		ts.Errorf("cannot get user home directory")
+		ts.Fatalf("cannot get user home directory: %v", err)
 	}
-	// Test valid options
+
+	basePath := filepath.Dir(cwd)
+
 	tests := []struct {
 		line     string
 		expected t.SequenceOptions
 	}{
-		{fmt.Sprintf("%svolume 50", t.KeywordOption), t.SequenceOptions{Volume: 50}},
-		{fmt.Sprintf("%ssamplerate 48000", t.KeywordOption), t.SequenceOptions{SampleRate: 48000}},
-		{fmt.Sprintf("%sgainlevel low", t.KeywordOption), t.SequenceOptions{GainLevel: t.GainLevelLow}},
-		{fmt.Sprintf("%sbackground testdata/%s", t.KeywordOption, backgroundFile), t.SequenceOptions{BackgroundPath: filepath.Join(cwd+"/testdata/", backgroundFile)}},
-		{fmt.Sprintf("%sbackground ~/Downloads/%s", t.KeywordOption, backgroundFile), t.SequenceOptions{BackgroundPath: filepath.Join(homeDir+"/Downloads/", backgroundFile)}},
+		{
+			fmt.Sprintf("%svolume 50", t.KeywordOption),
+			t.SequenceOptions{Volume: 50},
+		},
+		{
+			fmt.Sprintf("%ssamplerate 48000", t.KeywordOption),
+			t.SequenceOptions{SampleRate: 48000},
+		},
+		{
+			fmt.Sprintf("%sgainlevel low", t.KeywordOption),
+			t.SequenceOptions{GainLevel: t.GainLevelLow},
+		},
+		{
+			fmt.Sprintf("%sbackground testdata/%s", t.KeywordOption, backgroundFile),
+			t.SequenceOptions{BackgroundPath: filepath.Clean(filepath.Join(basePath, "testdata", backgroundFile))},
+		},
+		{
+			fmt.Sprintf("%sbackground ~/Downloads/%s", t.KeywordOption, backgroundFile),
+			t.SequenceOptions{BackgroundPath: filepath.Clean(filepath.Join(homeDir, "Downloads", backgroundFile))},
+		},
 	}
 
 	for _, test := range tests {
 		option := t.SequenceOptions{}
 		ctx := NewTextParser(test.line)
-		if err := ctx.ParseOption(&option); err != nil {
+
+		if err := ctx.ParseOption(&option, basePath); err != nil {
 			ts.Errorf("For line '%s', unexpected error: %v", test.line, err)
 			continue
 		}
 
-		if option != test.expected {
-			ts.Errorf("For line '%s', expected option %+v but got %+v", test.line, test.expected, option)
+		if !reflect.DeepEqual(option, test.expected) {
+			ts.Errorf("For line '%s', expected option %+v but got %+v",
+				test.line, test.expected, option)
 		}
 	}
 }

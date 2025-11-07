@@ -61,12 +61,6 @@ func hasTrack(tracks [t.NumberOfChannels]t.Track, want t.Track) bool {
 }
 
 func TestLoadTextSequence_Success(ts *testing.T) {
-	wd, err := os.Getwd()
-	if err != nil {
-		ts.Fatalf("getwd: %v", err)
-	}
-	bgPath := filepath.Join(wd, "testdata", "noise.wav")
-
 	seq := `
 # Options
 @samplerate 48000
@@ -88,11 +82,13 @@ beta
 00:01:00 beta
 `
 	path := writeSeqFile(ts, seq)
+	bgPath := filepath.Join(filepath.Dir(path), "testdata", "noise.wav")
 
 	result, err := LoadTextSequence(path)
 	if err != nil {
 		ts.Fatalf("LoadTextSequence error: %v", err)
 	}
+
 	opts := result.Options
 	if opts.SampleRate != 48000 || opts.Volume != 80 || opts.GainLevel != t.GainLevelHigh {
 		ts.Fatalf("unexpected options: %+v", *opts)

@@ -13,26 +13,26 @@ import (
 	"path/filepath"
 	"strings"
 
+	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
-// getFullPath expands ~ to the user's home directory and returns the absolute path
-func getFullPath(path string) (string, error) {
-	var fullPath string
-	if path[0] == '~' {
+// getFullPath resolves the full path of a given file path
+func getFullPath(path, basePath string) (string, error) {
+	if strings.HasPrefix(path, "~") {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
-			return "", fmt.Errorf("%v", err)
+			return "", err
 		}
-		fullPath = strings.Replace(path, "~", homeDir, 1)
-	} else {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return "", fmt.Errorf("%w", err)
-		}
-		fullPath = filepath.Join(cwd, path)
+		expanded := filepath.Join(homeDir, strings.TrimPrefix(path, "~"))
+		return filepath.Clean(expanded), nil
 	}
 
+	if filepath.IsAbs(path) {
+		return filepath.Clean(path), nil
+	}
+
+	fullPath := filepath.Join(basePath, path)
 	return filepath.Clean(fullPath), nil
 }
 
@@ -48,7 +48,7 @@ func (ctx *TextParser) HasOption() bool {
 }
 
 // ParseOption extracts and applies the option from the elements
-func (ctx *TextParser) ParseOption(options *t.SequenceOptions) error {
+func (ctx *TextParser) ParseOption(options *t.SequenceOptions, filePath string) error {
 	ln := ctx.Line.Raw
 	tok, ok := ctx.Line.NextToken()
 	if !ok {
@@ -84,16 +84,15 @@ func (ctx *TextParser) ParseOption(options *t.SequenceOptions) error {
 		}
 
 		content := strings.Join(ctx.Line.Tokens[1:], " ")
-		isRemote := strings.HasPrefix(content, "http://") || strings.HasPrefix(content, "https://")
 
 		if content == "-" {
 			return fmt.Errorf("stdin (-) is not supported for background or preset list")
 		}
 
 		fullPath := content
-		if !isRemote {
+		if !s.IsRemoteFile(content) {
 			var err error
-			fullPath, err = getFullPath(content)
+			fullPath, err = getFullPath(content, filePath)
 			if err != nil {
 				return fmt.Errorf("path: %v", err)
 			}
@@ -102,7 +101,7 @@ func (ctx *TextParser) ParseOption(options *t.SequenceOptions) error {
 		if option == t.KeywordBackground {
 			options.BackgroundPath = fullPath
 		} else {
-			options.PresetPath = fullPath
+			options.PresetList = append(options.PresetList, fullPath)
 		}
 	case t.KeywordOptionGainLevel:
 		gainLevel, ok := ctx.Line.NextToken()

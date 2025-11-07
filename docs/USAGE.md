@@ -824,6 +824,12 @@ Quiet mode. Used to hide terminal output. Errors and comments will be displayed.
 
 Test mode. Used to validate the syntax of a `.spsq` file or structured formats (JSON, XML, YAML) without generating any output file. This replaces the previous `-debug` option.
 
+Example:
+
+```
+synapseq -test sample-binaural.spsq
+```
+
 #### `-version`
 
 Show the version.

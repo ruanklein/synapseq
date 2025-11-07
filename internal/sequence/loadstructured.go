@@ -11,8 +11,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,9 +20,6 @@ import (
 	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
-
-// maxStructuredFileSize defines the maximum file size (128KB)
-const maxStructuredFileSize = 128 * 1024
 
 // initializeTracks initializes an array of off tracks
 func initializeTracks() [t.NumberOfChannels]t.Track {
@@ -40,75 +35,38 @@ func initializeTracks() [t.NumberOfChannels]t.Track {
 	return tracks
 }
 
-// contentTypeAllowed checks if the content type is allowed for the given format
-func contentTypeAllowed(format t.FileFormat, ct string) bool {
-	ct = strings.ToLower(strings.TrimSpace(strings.Split(ct, ";")[0]))
-	switch format {
-	case t.FormatJSON:
-		return ct == "application/json" || ct == "text/json" || strings.HasSuffix(ct, "+json")
-	case t.FormatXML:
-		return ct == "application/xml" || ct == "text/xml" || strings.HasSuffix(ct, "+xml")
-	case t.FormatYAML:
-		// YAML can sometimes be served as various content types
-		return ct == "application/x-yaml" ||
-			ct == "application/yaml" ||
-			ct == "text/yaml" ||
-			ct == "text/x-yaml" ||
-			strings.HasSuffix(ct, "+yaml") ||
-			strings.HasSuffix(ct, "+yml")
-	default:
-		return false
-	}
-}
-
-// readRemoteStructured loads a remote structured file with content type validation
-func readRemoteStructured(url string, format t.FileFormat) ([]byte, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching remote file: %v", err)
-	}
-	defer resp.Body.Close()
-
-	ct := resp.Header.Get("Content-Type")
-	if !contentTypeAllowed(format, ct) {
-		return nil, fmt.Errorf("invalid content-type for %s: %s", format.String(), ct)
+// resolveBackgroundPath resolves the background audio path
+func resolveBackgroundPath(path, basePath string) (string, error) {
+	if path == "-" {
+		return "", fmt.Errorf("stdin (-) is not supported for background audio")
 	}
 
-	data, err := io.ReadAll(io.LimitReader(resp.Body, maxStructuredFileSize))
-	if err != nil {
-		return nil, fmt.Errorf("error reading remote file: %v", err)
+	if s.IsRemoteFile(path) {
+		return path, nil
 	}
-	return data, nil
+
+	if strings.HasPrefix(path, "~") {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		expanded := filepath.Join(homeDir, strings.TrimPrefix(path, "~"))
+		return filepath.Clean(expanded), nil
+	}
+
+	if filepath.IsAbs(path) {
+		return filepath.Clean(path), nil
+	}
+
+	fullPath := filepath.Join(basePath, path)
+	return filepath.Clean(fullPath), nil
 }
 
 // LoadStructuredSequence loads and parses a json/xml/yaml sequence file
 func LoadStructuredSequence(filename string, format t.FileFormat) (*t.Sequence, error) {
-	var data []byte
-	if filename == "-" {
-		reader := io.LimitReader(os.Stdin, maxStructuredFileSize)
-		var err error
-		data, err = io.ReadAll(reader)
-		if err != nil {
-			return nil, fmt.Errorf("error reading stdin: %v", err)
-		}
-	} else if strings.HasPrefix(filename, "http://") || strings.HasPrefix(filename, "https://") {
-		var err error
-		data, err = readRemoteStructured(filename, format)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		// Local file
-		file, err := os.Open(filename)
-		if err != nil {
-			return nil, fmt.Errorf("error opening %s file: %v", format.String(), err)
-		}
-		defer file.Close()
-
-		data, err = io.ReadAll(io.LimitReader(file, maxStructuredFileSize))
-		if err != nil {
-			return nil, fmt.Errorf("error reading %s file: %v", format.String(), err)
-		}
+	data, err := s.GetFile(filename, format)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load structured sequence file: %v", err)
 	}
 
 	var input t.SynapSeqInput
@@ -135,32 +93,14 @@ func LoadStructuredSequence(filename string, format t.FileFormat) (*t.Sequence, 
 
 	var backgroundPath string
 	if input.Options.Background != "" {
+		var err error
+
 		path := input.Options.Background
-		isRemote := strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://")
+		basePath := filepath.Dir(filename)
 
-		if path == "-" {
-			return nil, fmt.Errorf("stdin (-) is not supported for background audio")
-		}
-
-		// Handle remote URL and home directory
-		if isRemote {
-			backgroundPath = path
-		} else if path[0] == '~' {
-			homeDir, err := os.UserHomeDir()
-			if err != nil {
-				return nil, err
-			}
-			backgroundPath = strings.Replace(path, "~", homeDir, 1)
-		} else {
-			cwd, err := os.Getwd()
-			if err != nil {
-				return nil, err
-			}
-			backgroundPath = filepath.Join(cwd, path)
-		}
-
-		if !isRemote {
-			backgroundPath = filepath.Clean(backgroundPath)
+		backgroundPath, err = resolveBackgroundPath(path, basePath)
+		if err != nil {
+			return nil, err
 		}
 	}
 

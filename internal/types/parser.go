@@ -116,7 +116,7 @@ type Parser interface {
 	// ParseComment parses a comment content
 	ParseComment() string
 	// ParseOption parses an option content
-	ParseOption(*SequenceOptions) error
+	ParseOption(*SequenceOptions, string) error
 	// ParsePreset parses a preset content
 	ParsePreset(*[]Preset) (*Preset, error)
 	// ParseTrack parses a track content
