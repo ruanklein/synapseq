@@ -11,8 +11,9 @@
   <p align="center">
   <a href="https://github.com/ruanklein/synapseq/releases/latest"><img src="https://img.shields.io/github/v/release/ruanklein/synapseq?color=blue&logo=github" alt="Release"></a>
   <a href="COPYING.txt"><img src="https://img.shields.io/badge/license-GPL%20v2-blue.svg?logo=open-source-initiative&logoColor=white" alt="License"></a>
-  <a href="#homebrew-macoslinux"><img src="https://img.shields.io/badge/Homebrew-Install-brightgreen?logo=homebrew&logoColor=white" alt="Homebrew"></a>
-  <a href="#scoop-windows"><img src="https://img.shields.io/badge/Scoop-Install-blue?logo=gnometerminal&logoColor=00AEEF" alt="Scoop"></a>
+  <a href="#winget"><img src="https://img.shields.io/badge/Winget-Install-blue?logo=gnometerminal&logoColor=cyan" alt="Winget"></a>
+  <a href="#homebrew"><img src="https://img.shields.io/badge/Homebrew-Install-brightgreen?logo=homebrew&logoColor=white" alt="Homebrew"></a>
+  <a href="#scoop"><img src="https://img.shields.io/badge/Scoop-Install-blue?logo=gnometerminal&logoColor=00AEEF" alt="Scoop"></a>
   <a href="https://github.com/ruanklein/synapseq/commits"><img src="https://img.shields.io/github/commit-activity/m/ruanklein/synapseq?color=ff69b4&logo=git" alt="Commit Activity"></a>
 </p>
 </p>
@@ -25,9 +26,25 @@ See the [SAMPLES](samples/README.md) folder for examples.
 
 ## Installation
 
-SynapSeq can be installed via [Scoop](https://scoop.sh/) (Windows), [Homebrew](https://brew.sh/) (macOS/Linux), or by downloading precompiled binaries.
+SynapSeq can be installed via package managers or by downloading precompiled binaries.
 
-### Scoop (Windows)
+### Windows
+
+#### Winget
+
+If you use Winget, you can install SynapSeq directly from the official Microsoft repository:
+
+```powershell
+winget install synapseq
+```
+
+Check installation:
+
+```powershell
+synapseq -h
+```
+
+#### Scoop
 
 If you use Scoop, you can install SynapSeq directly from the official bucket:
 
@@ -42,7 +59,9 @@ Check installation:
 synapseq -h
 ```
 
-### Homebrew (macOS/Linux)
+### macOS/Linux
+
+#### Homebrew
 
 Just install via Homebrew:
 
