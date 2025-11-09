@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="#installation">Installation</a> |
-  <a href="samples/README.md">Examples</a> |
+  <a href="https://ruanklein.github.io/synapseq-hub/">Examples</a> |
   <a href="docs/USAGE.md">Documentation</a> |
   <a href="docs/FAQ.md">FAQ</a>
 </p>
@@ -22,7 +22,30 @@
 
 SynapSeq is a lightweight engine that sequences audio tones to guide brainwave states like relaxation, focus, and meditation using a simple text-based format.
 
-See the [SAMPLES](samples/README.md) folder for examples.
+## SynapSeq Hub
+
+Explore ready-to-use sequences created by the community at the [SynapSeq Hub](https://ruanklein.github.io/synapseq-hub/).
+
+You can browse, download, and generate sequences directly from the CLI:
+
+```bash
+# Update the local Hub index
+synapseq -hub-update
+
+# List all available sequences
+synapseq -hub-list
+
+# Search for specific sequences
+synapseq -hub-search relax
+
+# Download a sequence and its dependencies
+synapseq -hub-download synapseq.samples.genesis ./downloads
+
+# Generate WAV directly from Hub
+synapseq -hub-get synapseq.samples.genesis output.wav
+```
+
+For more details on Hub commands, see the [Documentation](docs/USAGE.md#hub).
 
 ## Installation
 
