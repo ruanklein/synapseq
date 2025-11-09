@@ -100,7 +100,11 @@ For answers to common questions about SynapSeq and brainwave entrainment, see th
 
 We welcome contributions!
 
-Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute code, bug fixes, documentation, or new sequence files to the project.
+Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute code, bug fixes, and documentation to the project.
+
+### Contributing Sequence Files
+
+If you'd like to share your own `.spsq` sequence files with the community, please contribute them to the [SynapSeq Hub Repository](https://github.com/ruanklein/synapseq-hub). All sequence files contributed to the Hub are licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 
 ### Code of Conduct
 
