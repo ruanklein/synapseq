@@ -745,6 +745,192 @@ If you want to use another tool to process the output, keep in mind that the aud
 
 Any software used to handle the output must be explicitly configured with these parameters to correctly interpret the audio stream.
 
+### Hub
+
+SynapSeq Hub is a centralized repository of community-contributed sequences. You can browse, search, download, and generate audio files directly from the Hub without manually managing sequence files.
+
+You can also explore available sequences through the web interface at the [SynapSeq Hub Repository](https://ruanklein.github.io/synapseq-hub/).
+
+**Important:** Before using any Hub command (`-hub-list`, `-hub-search`, `-hub-download`, or `-hub-get`), you must first run `-hub-update` to fetch the latest manifest. This is only required once initially, and then periodically to stay up-to-date with new sequences.
+
+#### `-hub-update`
+
+Updates the local index of available sequences from the Hub.
+
+This command fetches the latest manifest from the Hub and caches it locally. **You must run this command before using any other Hub features for the first time.** Run this periodically to ensure you have access to the newest sequences.
+
+Example:
+
+```
+synapseq -hub-update
+```
+
+Output:
+
+```
+Fetched 42 entries from the Hub. Last update: 2025-11-09
+```
+
+#### `-hub-list`
+
+Lists all available sequences in the Hub.
+
+This command displays a table with sequence ID, author, category, and last update date.
+
+Example:
+
+```
+synapseq -hub-list
+```
+
+Output:
+
+```
+SynapSeq Hub — 42 available sequences  (Last updated: 2025-11-09)
+
+ID                               AUTHOR   CATEGORY      UPDATED
+synapseq.samples.genesis         noname     meditation    2025-11-08
+synapseq.samples.focus-one       noname     focus         2025-11-07
+...
+```
+
+#### `-hub-search`
+
+Searches for sequences in the Hub by keyword.
+
+The search is case-insensitive and matches against the sequence ID, name, author, and category.
+
+Syntax:
+
+```
+synapseq -hub-search [keyword]
+```
+
+Example:
+
+```
+synapseq -hub-search focus
+```
+
+Output:
+
+```
+SynapSeq Hub - 3 matching results for "focus"
+
+ID                               AUTHOR   CATEGORY      UPDATED
+synapseq.samples.focus-one       noname     focus         2025-11-07
+synapseq.samples.focus-two       noname     focus         2025-11-06
+contrib.focus-deep               noname     focus         2025-10-15
+```
+
+If no matches are found:
+
+```
+No matches found for "keyword"
+```
+
+#### `-hub-download`
+
+Downloads a sequence and all its dependencies to a local directory.
+
+This command creates a folder with the sequence name and downloads the main sequence file along with any required preset files or background audio.
+
+Syntax:
+
+```
+synapseq -hub-download [sequence-id] [target-directory]
+```
+
+If no target directory is specified, the current directory (`.`) is used.
+
+Example:
+
+```
+synapseq -hub-download synapseq.samples.genesis ./downloads
+```
+
+Output:
+
+```
+Preparing download package: genesis
+Destination: ./downloads/genesis
+Dependencies:
+  - ocean-waves (background)
+  - relax-presets (preset)
+
+  ✓ ocean-waves        (1024 KB)
+  ✓ relax-presets      (8 KB)
+  ✓ genesis            (12 KB)
+
+All files successfully saved to: ./downloads/genesis
+```
+
+If a sequence has no dependencies:
+
+```
+Dependencies:
+  (none)
+```
+
+#### `-hub-get`
+
+Generates a WAV file directly from a Hub sequence without downloading it first.
+
+This command fetches the sequence from the Hub, loads it into memory, and generates the audio output. This is useful for quickly rendering sequences without cluttering your local filesystem.
+
+Syntax:
+
+```
+synapseq -hub-get [sequence-id] [output-file]
+```
+
+If no output file is specified or `-` is used, the audio is streamed to stdout in RAW format.
+
+Example:
+
+```
+synapseq -hub-get synapseq.samples.genesis output.wav
+```
+
+Stream to stdout:
+
+```
+synapseq -hub-get synapseq.samples.genesis -
+synapseq -hub-get synapseq.samples.genesis
+```
+
+You can use `-quiet` to suppress verbose output:
+
+```
+synapseq -quiet -hub-get synapseq.samples.genesis output.wav
+```
+
+If the sequence is not found:
+
+```
+synapseq: sequence not found in hub: invalid-id
+```
+
+#### `-hub-clean`
+
+Cleans the local Hub cache.
+
+This removes all cached manifest data and downloaded temporary files. You may want to run this if you encounter caching issues or to free up disk space.
+
+Example:
+
+```
+synapseq -hub-clean
+```
+
+Output:
+
+```
+Hub cache cleaned successfully.
+```
+
+**Note:** After cleaning the cache, you'll need to run `-hub-update` again to refresh the manifest before using other Hub commands.
+
 #### `-extract`
 
 Extracts the original sequence and metadata embedded in a WAV file. Requires an input WAV file and an output file (text or stdout).
