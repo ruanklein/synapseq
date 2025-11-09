@@ -38,6 +38,18 @@ type CLIOptions struct {
 	UnsafeNoMetadata bool
 	// Convert to text from json/xml/yaml
 	ConvertToText bool
+	// Hub update index of available sequences
+	HubUpdate bool
+	// Hub clean up local cache
+	HubClean bool
+	// Hub list available sequences
+	HubList bool
+	// Hub search sequences
+	HubSearch string
+	// Hub download sequences
+	HubDownload string
+	// Hub get sequence
+	HubGet string
 }
 
 // Help prints the help message
@@ -58,7 +70,7 @@ func Help() {
 	fmt.Printf("    WAV file:            path/to/output.wav\n")
 	fmt.Printf("    Standard output:     - (raw PCM, 24-bit stereo)\n\n")
 
-	fmt.Printf("Options:\n")
+	fmt.Printf("Main options:\n")
 	fmt.Printf("  -json          		Read input as JSON format\n")
 	fmt.Printf("  -xml           		Read input as XML format\n")
 	fmt.Printf("  -yaml          		Read input as YAML format\n")
@@ -69,6 +81,14 @@ func Help() {
 	fmt.Printf("  -unsafe-no-metadata  	  	Do not embed metadata in output WAV file\n")
 	fmt.Printf("  -version       		Show version information\n")
 	fmt.Printf("  -help         		Show this help message\n\n")
+
+	fmt.Printf("Hub options:\n")
+	fmt.Printf("  -hub-update      		Update index of available sequences\n")
+	fmt.Printf("  -hub-clean      		Clean up local cache\n")
+	fmt.Printf("  -hub-list       		List available sequences\n")
+	fmt.Printf("  -hub-search     		Search sequences\n")
+	fmt.Printf("  -hub-download       		Download sequence and dependencies\n")
+	fmt.Printf("  -hub-get       		Get sequence\n\n")
 
 	fmt.Printf("Examples:\n")
 	fmt.Printf("  synapseq sequence.spsq output.wav\n")
@@ -107,6 +127,12 @@ func ParseFlags() (*CLIOptions, []string, error) {
 		fmt.Fprintf(os.Stderr, "Use -help flag for usage information.\n")
 	}
 
+	fs.BoolVar(&opts.HubUpdate, "hub-update", false, "Update index of available sequences")
+	fs.BoolVar(&opts.HubClean, "hub-clean", false, "Clean up local cache")
+	fs.BoolVar(&opts.HubList, "hub-list", false, "List available sequences")
+	fs.StringVar(&opts.HubSearch, "hub-search", "", "Search sequences")
+	fs.StringVar(&opts.HubDownload, "hub-download", "", "Download sequence and dependencies")
+	fs.StringVar(&opts.HubGet, "hub-get", "", "Get sequence")
 	fs.BoolVar(&opts.ShowVersion, "version", false, "Show version information")
 	fs.BoolVar(&opts.FormatJSON, "json", false, "Read input as JSON format")
 	fs.BoolVar(&opts.FormatXML, "xml", false, "Read input as XML format")

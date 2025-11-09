@@ -36,6 +36,44 @@ func run(opts *cli.CLIOptions, args []string) error {
 		return nil
 	}
 
+	// --hub-update
+	if opts.HubUpdate {
+		return hubRunUpdate()
+	}
+
+	// --hub-clean
+	if opts.HubClean {
+		return hubRunClean()
+	}
+
+	// --hub-get
+	if opts.HubGet != "" {
+		outputFile := "-"
+		if len(args) == 1 {
+			outputFile = args[0]
+		}
+		return hubRunGet(opts.HubGet, outputFile, opts.Quiet)
+	}
+
+	// --hub-list
+	if opts.HubList {
+		return hubRunList()
+	}
+
+	// --hub-search
+	if opts.HubSearch != "" {
+		return hubRunSearch(opts.HubSearch)
+	}
+
+	// --hub-download
+	if opts.HubDownload != "" {
+		targetDir := ""
+		if len(args) == 1 {
+			targetDir = args[0]
+		}
+		return hubRunDownload(opts.HubDownload, targetDir)
+	}
+
 	// --help or missing args
 	if opts.ShowHelp || len(args) == 0 {
 		cli.Help()
