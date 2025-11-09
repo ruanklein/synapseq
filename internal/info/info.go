@@ -23,4 +23,6 @@ var (
 	BUILD_DATE = "unknown"
 	// Git commit hash
 	GIT_COMMIT = "unknown"
+	// Hub version
+	HUB_VERSION = "unknown"
 )

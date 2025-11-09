@@ -9,8 +9,10 @@ package hub
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
+	"github.com/ruanklein/synapseq/v3/internal/info"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
@@ -30,6 +32,14 @@ func GetManifest() (*t.HubManifest, error) {
 	var hubManifest *t.HubManifest
 	if err := json.Unmarshal(manifest, &hubManifest); err != nil {
 		return nil, err
+	}
+
+	if hubManifest.Version != info.HUB_VERSION {
+		return nil, fmt.Errorf(
+			"hub manifest version mismatch: expected %s, got %s\n"+
+				"please update SynapSeq to the latest version to ensure compatibility",
+			info.HUB_VERSION, hubManifest.Version,
+		)
 	}
 
 	return hubManifest, nil
