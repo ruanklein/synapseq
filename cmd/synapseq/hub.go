@@ -22,7 +22,7 @@ import (
 )
 
 // hubRunUpdate updates the local Hub manifest
-func hubRunUpdate() error {
+func hubRunUpdate(quiet bool) error {
 	if err := hub.HubUpdate(); err != nil {
 		return fmt.Errorf("failed to update hub. Error\n  %v", err)
 	}
@@ -30,16 +30,20 @@ func hubRunUpdate() error {
 	if err != nil {
 		return fmt.Errorf("failed to get hub manifest. Error\n  %v", err)
 	}
-	fmt.Printf("Fetched %d entries from the Hub. Last update: %s\n", len(manifest.Entries), manifest.LastUpdated)
+	if !quiet {
+		fmt.Printf("Fetched %d entries from the Hub. Last update: %s\n", len(manifest.Entries), manifest.LastUpdated)
+	}
 	return nil
 }
 
 // hubRunClean cleans the local Hub cache
-func hubRunClean() error {
+func hubRunClean(quiet bool) error {
 	if err := hub.HubClean(); err != nil {
 		return fmt.Errorf("failed to clean hub cache. Error\n  %v", err)
 	}
-	fmt.Println("Hub cache cleaned successfully.")
+	if !quiet {
+		fmt.Println("Hub cache cleaned successfully.")
+	}
 	return nil
 }
 
@@ -167,7 +171,7 @@ func hubRunSearch(query string) error {
 }
 
 // hubRunDownload downloads a sequence and all its dependencies into a given folder
-func hubRunDownload(sequenceID, targetDir string) error {
+func hubRunDownload(sequenceID, targetDir string, quiet bool) error {
 	var wg sync.WaitGroup
 
 	if strings.TrimSpace(sequenceID) == "" {
@@ -208,7 +212,9 @@ func hubRunDownload(sequenceID, targetDir string) error {
 	}
 
 	wg.Wait()
-	fmt.Printf("Sequence %q and its dependencies have been downloaded to %s\n", entry.Name, targetDir)
+	if !quiet {
+		fmt.Printf("Sequence %q and its dependencies have been downloaded to %s\n", entry.Name, targetDir)
+	}
 
 	return nil
 }
