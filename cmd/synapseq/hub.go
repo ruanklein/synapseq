@@ -9,15 +9,15 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"text/tabwriter"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
 	"github.com/ruanklein/synapseq/v3/internal/hub"
+	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
@@ -45,6 +45,8 @@ func hubRunClean() error {
 
 // hubRunGet retrieves and processes a sequence from the Hub
 func hubRunGet(sequenceId, outputFile string, quiet bool) error {
+	var wg sync.WaitGroup
+
 	entry, err := hub.HubGet(sequenceId)
 	if err != nil {
 		return fmt.Errorf("failed to load hub manifest. Error\n  %v", err)
@@ -53,7 +55,7 @@ func hubRunGet(sequenceId, outputFile string, quiet bool) error {
 		return fmt.Errorf("sequence not found in hub: %s", sequenceId)
 	}
 
-	inputFile, err := hub.HubDownload(entry)
+	inputFile, err := hub.HubDownload(entry, &wg)
 	if err != nil {
 		return fmt.Errorf("failed to download sequence from hub. Error\n  %v", err)
 	}
@@ -87,6 +89,8 @@ func hubRunGet(sequenceId, outputFile string, quiet bool) error {
 	if err := appCtx.WAV(); err != nil {
 		return fmt.Errorf("failed to generate WAV file. Error\n  %v", err)
 	}
+
+	wg.Wait()
 	return nil
 }
 
@@ -164,13 +168,18 @@ func hubRunSearch(query string) error {
 
 // hubRunDownload downloads a sequence and all its dependencies into a given folder
 func hubRunDownload(sequenceID, targetDir string) error {
+	var wg sync.WaitGroup
+
 	if strings.TrimSpace(sequenceID) == "" {
 		return fmt.Errorf("missing sequence ID")
 	}
 
-	outDir := targetDir
-	if outDir == "" {
-		outDir = "."
+	if targetDir == "" || targetDir == "." {
+		var err error
+		targetDir, err = os.Getwd()
+		if err != nil {
+			return err
+		}
 	}
 
 	manifest, err := hub.GetManifest()
@@ -189,112 +198,17 @@ func hubRunDownload(sequenceID, targetDir string) error {
 		return fmt.Errorf("sequence not found: %s", sequenceID)
 	}
 
-	seqDir := filepath.Join(outDir, entry.Name)
-	if err := os.MkdirAll(seqDir, 0755); err != nil {
-		return fmt.Errorf("failed to create directory: %v", err)
-	}
-
-	fmt.Printf("Preparing download package: %s\n", entry.Name)
-	fmt.Printf("Destination: %s\n", seqDir)
-	fmt.Println("Dependencies:")
-	if len(entry.Dependencies) == 0 {
-		fmt.Println("  (none)")
-	} else {
-		for _, d := range entry.Dependencies {
-			fmt.Printf("  - %s (%s)\n", d.Name, d.Type)
-		}
-	}
-	fmt.Println()
-
-	// inline helper for progress bar
-	writeProgress := func(name string, total int64, reader io.Reader, dstPath string) error {
-		outFile, err := os.Create(dstPath)
-		if err != nil {
-			return err
-		}
-		defer outFile.Close()
-
-		bar := func(percent float64) string {
-			width := 25
-			filled := int(percent / 4)
-			if filled > width {
-				filled = width
-			}
-			return fmt.Sprintf("[%s%s]", strings.Repeat("=", filled), strings.Repeat(" ", width-filled))
-		}
-
-		pr := io.TeeReader(reader, outFile)
-		buf := make([]byte, 32*1024)
-		var written int64
-
-		for {
-			n, err := pr.Read(buf)
-			if n > 0 {
-				written += int64(n)
-				percent := float64(written) / float64(total) * 100
-				if total <= 0 {
-					percent = 100
-				}
-				fmt.Printf("\r  ↳ %-18s %s %3.0f%%", name, bar(percent), percent)
-			}
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				return err
-			}
-		}
-
-		fmt.Printf("\r  ✓ %-18s (%d KB)\n", name, written/1024)
-		return nil
-	}
-
-	for _, dep := range entry.Dependencies {
-		var depPath string
-		if dep.Type == t.HubDependencyTypeBackground {
-			depPath = filepath.Join(seqDir, dep.Name+".wav")
-		} else {
-			depPath = filepath.Join(seqDir, dep.Name+".spsq")
-		}
-
-		if _, err := os.Stat(depPath); err == nil {
-			fmt.Printf("Skipping existing file: %s\n", filepath.Base(depPath))
-			continue
-		}
-
-		resp, err := http.Get(dep.DownloadUrl)
-		if err != nil {
-			return fmt.Errorf("failed to download %s: %v", dep.Name, err)
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("failed to download %s: received status code %d", dep.Name, resp.StatusCode)
-		}
-
-		if err = writeProgress(dep.Name, resp.ContentLength, resp.Body, depPath); err != nil {
-			return fmt.Errorf("error saving %s: %v", dep.Name, err)
-		}
-	}
-
-	resp, err := http.Get(entry.DownloadUrl)
+	seqFile, err := hub.HubDownload(entry, &wg)
 	if err != nil {
-		return fmt.Errorf("failed to download sequence %s: %v", entry.Name, err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to download sequence %s: received status code %d", entry.Name, resp.StatusCode)
+		return fmt.Errorf("failed to download sequence from hub. Error\n  %v", err)
 	}
 
-	sequencePath := filepath.Join(seqDir, entry.Name+".spsq")
-	if err = writeProgress(entry.Name, resp.ContentLength, resp.Body, sequencePath); err != nil {
-		return fmt.Errorf("error saving sequence %s: %v", entry.Name, err)
+	if err := s.CopyDir(filepath.Dir(seqFile), filepath.Join(targetDir, entry.Name)); err != nil {
+		return fmt.Errorf("failed to copy files to target directory. Error\n  %v", err)
 	}
 
-	// Track the download event
-	hub.TrackDownload(entry.ID)
+	wg.Wait()
+	fmt.Printf("Sequence %q and its dependencies have been downloaded to %s\n", entry.Name, targetDir)
 
-	fmt.Printf("\nAll files successfully saved to: %s\n", seqDir)
 	return nil
 }
