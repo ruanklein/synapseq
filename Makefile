@@ -15,10 +15,6 @@ GO_METADATA     := -X github.com/ruanklein/synapseq/v3/internal/info.VERSION=$(V
 				  -X github.com/ruanklein/synapseq/v3/internal/info.HUB_VERSION=$(HUB_VERSION)
 GO_BUILD_FLAGS  := -ldflags="-s -w $(GO_METADATA)"
 MAIN 		    := ./cmd/synapseq
-# Documentation
-MAN_DIR 	    := docs/manpage
-MAN_FILE 	    := $(MAN_DIR)/synapseq.1
-MAN_INSTALL_DIR := /usr/local/share/man/man1
 
 .PHONY: all build clean build-windows build-linux build-macos prepare test man install-man
 
@@ -47,27 +43,5 @@ build-macos: prepare
 install:
 	cp $(BIN_DIR)/$(BIN_NAME) /usr/local/bin/$(BIN_NAME)
 
-# Documentation
-man:
-	@echo "Generating man page..."
-	@mkdir -p $(MAN_DIR)
-	@pandoc docs/USAGE.md -s -t man \
-		-V title="SYNAPSEQ" \
-		-V section="1" \
-		-V header="SynapSeq Manual" \
-		-V footer="SynapSeq 3.1" \
-		-V date="$$(date +'%B %Y')" \
-		-o $(MAN_FILE)
-	@echo "Man page generated at $(MAN_FILE)"
-
-install-man: man
-	@echo "Installing man page..."
-	@mkdir -p $(MAN_INSTALL_DIR)
-	@cp $(MAN_FILE) $(MAN_INSTALL_DIR)/$(BIN_NAME).1
-	@gzip -f $(MAN_INSTALL_DIR)/$(BIN_NAME).1
-	@echo "Man page installed to $(MAN_INSTALL_DIR)/$(BIN_NAME).1.gz"
-	@echo "You can now use: man $(BIN_NAME)"
-
 clean:
 	rm -rf $(BIN_DIR)
-	rm -rf $(MAN_DIR)

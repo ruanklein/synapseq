@@ -7,7 +7,6 @@ You need to install Go (v1.25 or later) and make on your system before compiling
 - [Installing Go](#installing-go)
 - [Compiling SynapSeq](#compiling-synapseq)
 - [Installing the Binary](#installing-the-binary)
-- [Installing Documentation (Optional)](#installing-documentation-optional)
 - [Additional Make Commands](#additional-make-commands)
 
 ## Installing Go
@@ -146,31 +145,10 @@ After adding to PATH, **restart Git Bash or PowerShell** and verify:
 synapseq -h
 ```
 
-## Installing Documentation (macOS/Linux)
-
-You can generate and install a man page for offline documentation:
-
-```bash
-# Generate the man page (requires pandoc)
-make man
-
-# Install the man page system-wide
-sudo make install-man
-```
-
-After installation, you can access the documentation with:
-
-```bash
-man synapseq
-```
-
-**Note:** The `man` target requires [pandoc](https://pandoc.org/) to be installed on your system.
-
 ## Additional Make Commands
 
 - `make build` - Build for your current platform
 - `make build-*` - Build for a specific platform (e.g., `make build-windows`, `make build-macos`, `make build-linux`)
 - `make clean` - Remove all compiled binaries and generated documentation
 - `make all` - Same as `make build`
-- `make man` - Generate man page documentation (requires pandoc)
-- `make install-man` - Install man page system-wide (requires pandoc and sudo)
+- `make install` - Install the binary system-wide
