@@ -96,5 +96,8 @@ func HubDownload(entry *t.HubEntry) (string, error) {
 		return "", fmt.Errorf("error saving sequence %s: %v", entry.Name, err)
 	}
 
+	// Track the download event
+	TrackDownload(entry.ID)
+
 	return sequencePath, nil
 }

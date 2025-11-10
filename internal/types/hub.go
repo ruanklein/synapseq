@@ -12,6 +12,8 @@ const (
 	HubBaseURL = "https://ruanklein.github.io/synapseq-hub"
 	// HubManifestURL is the URL to fetch the Hub manifest
 	HubManifestURL = "https://ruanklein.github.io/synapseq-hub/manifest.json"
+	// HubTrackEndpoint is the endpoint for tracking downloads
+	HubTrackEndpoint = "https://us-central1-synapseq-hub.cloudfunctions.net/trackDownload"
 )
 
 // HubDependencyType represents the type of a Hub dependency

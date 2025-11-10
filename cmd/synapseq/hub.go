@@ -292,6 +292,9 @@ func hubRunDownload(sequenceID, targetDir string) error {
 		return fmt.Errorf("error saving sequence %s: %v", entry.Name, err)
 	}
 
+	// Track the download event
+	hub.TrackDownload(entry.ID)
+
 	fmt.Printf("\nAll files successfully saved to: %s\n", seqDir)
 	return nil
 }
