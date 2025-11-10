@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apk add --no-cache make pandoc zip tar bash gzip
+          apk add --no-cache make zip tar bash gzip
 
       - name: Test build
         run: |
@@ -46,44 +46,9 @@ jobs:
         run: |
           make man
 
-      - name: Prepare packaging directories
+      - name: Prepare packaging directory
         run: |
           mkdir -p packages
-          mkdir -p temp-package
-
-      - name: Prepare documentation files
-        run: |
-          # Convert documentation markdown files to txt
-          pandoc docs/USAGE.md -t plain -o temp-package/USAGE.txt
-          pandoc docs/FAQ.md -t plain -o temp-package/FAQ.txt
-          pandoc CHANGELOG.md -t plain -o temp-package/CHANGELOG.txt
-
-          # Copy license file
-          cp COPYING.txt temp-package/COPYING.txt
-
-          echo "Documentation files prepared"
-
-      - name: Convert Markdown to plain text
-        run: |
-          # Function to convert markdown files to txt
-          convert_md_to_txt() {
-            local dir=$1
-            find "$dir" -type f -name "*.md" | while read -r md_file; do
-              txt_file="${md_file%.md}.txt"
-              pandoc "$md_file" -t plain -o "$txt_file"
-              rm "$md_file"
-            done
-          }
-
-          # Create temporary copies of directories
-          cp -r samples temp-package/samples
-          cp -r contrib temp-package/contrib
-          cp -r scripts temp-package/scripts
-
-          # Convert all markdown files to txt
-          convert_md_to_txt "temp-package/samples"
-          convert_md_to_txt "temp-package/contrib"
-          convert_md_to_txt "temp-package/scripts"
 
       - name: Package all binaries
         run: |
@@ -98,50 +63,39 @@ jobs:
             
             local pkg_name="synapseq-${VERSION}-${platform}-${arch}"
             local bin_src="bin/synapseq-${platform}-${arch}${ext}"
-            local bin_dest="synapseq-${VERSION}-${platform}-${arch}${ext}"
-            local sha_file="${bin_dest}.sha256"
+            local bin_name="synapseq-${VERSION}-${platform}-${arch}${ext}"
+            local sha_name="${bin_name}.sha256"
             
             echo "Packaging ${pkg_name}..."
             
-            mkdir -p "${pkg_name}/bin"
-            cp "${bin_src}" "${pkg_name}/bin/${bin_dest}"
+            # Create temporary directory for packaging
+            mkdir -p "temp-${pkg_name}"
+            
+            # Copy binary with versioned name
+            cp "${bin_src}" "temp-${pkg_name}/${bin_name}"
             
             # Set executable permission for Unix systems
             if [ -z "$ext" ]; then
-              chmod +x "${pkg_name}/bin/${bin_dest}"
+              chmod +x "temp-${pkg_name}/${bin_name}"
             fi
             
             # Generate SHA256 for the binary
-            cd "${pkg_name}/bin"
-            sha256sum "${bin_dest}" > "${sha_file}"
-            cd ../..
-            echo "✓ SHA256 generated: ${sha_file}"
+            cd "temp-${pkg_name}"
+            sha256sum "${bin_name}" > "${sha_name}"
+            cd ..
+            echo "✓ SHA256 generated: ${sha_name}"
             
-            # Copy directories
-            cp -r temp-package/samples "${pkg_name}/"
-            cp -r temp-package/contrib "${pkg_name}/"
-            cp -r temp-package/scripts "${pkg_name}/"
-            
-            # Copy documentation files to root
-            cp temp-package/USAGE.txt "${pkg_name}/"
-            cp temp-package/FAQ.txt "${pkg_name}/"
-            cp temp-package/CHANGELOG.txt "${pkg_name}/"
-            cp temp-package/COPYING.txt "${pkg_name}/"
-            
-            # Include manpage for Linux and macOS
-            if [ "$platform" = "linux" ] || [ "$platform" = "macos" ]; then
-              mkdir -p "${pkg_name}/man"
-              cp docs/manpage/synapseq.1 "${pkg_name}/man/"
-              echo "✓ Manpage included in ${pkg_name}"
-            fi
-            
+            # Create compressed package
             if [ "$compress" = "zip" ]; then
-              zip -r "packages/${pkg_name}.zip" "${pkg_name}"
+              cd "temp-${pkg_name}"
+              zip "../packages/${pkg_name}.zip" "${bin_name}" "${sha_name}"
+              cd ..
             else
-              tar -czf "packages/${pkg_name}.tar.gz" "${pkg_name}"
+              tar -czf "packages/${pkg_name}.tar.gz" -C "temp-${pkg_name}" "${bin_name}" "${sha_name}"
             fi
             
-            rm -rf "${pkg_name}"
+            # Clean up temporary directory
+            rm -rf "temp-${pkg_name}"
             echo "✓ ${pkg_name} packaged successfully"
           }
 
