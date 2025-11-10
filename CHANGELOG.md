@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.3.0]
+
+### New Features
+
+- **SynapSeq Hub Integration**: Added built-in support for the SynapSeq Hub, allowing users to easily browse, download, and generate community-contributed sequences directly from the CLI. New flags include:
+  - `-hub-update`: Update local index of available sequences from the Hub.
+  - `-hub-list`: List all available sequences in the Hub.
+  - `-hub-get <sequence> <output>`: Download and generate a specified sequence from the Hub to the given output file.
+  - `-hub-search <query>`: Search for sequences in the Hub matching the query term.
+  - `-hub-download <sequence> <output>`: Download a sequence file from the Hub without generating audio.
+  - `-hub-clean`: Remove all locally cached Hub sequences.
+
+### Improvements
+
+- Updated documentation to include SynapSeq Hub usage instructions and examples.
+- Fixed an issue where `@presetlist` and `@background` references only worked when the CLI was executed from the same directory as the .spsq file. Now, these references are resolved relative to the location of the .spsq file, allowing more flexible organization of sequence files and assets.
+- Fixed metadata embedding for sequences loaded from stdin or HTTP/HTTPS, ensuring full provenance tracking.
+- Disabled metadata embedding for sequences using presetlist inheritance, since embedding would make the resulting WAV non-reproducible (breaking determinism).
+- Simplified help output, focusing on core options and the new Hub commands.
+- Removed legacy man references (now redundant with online documentation).
+- Distribution archives are now slimmer, only the binary and checksum are included per platform.
+
+### Maintenance
+
+- Removed the legacy `contrib/` directory; all community works must now be submitted via **SynapSeq Hub**.
+- Retained `samples/` for demonstration and testing purposes, providing a minimal set of local examples.
+- Added internal Hub version matching (`HUB_VERSION`) to ensure compatibility between CLI and manifest schema.
+
 ## [3.2.2]
 
 ### Bug Fixes

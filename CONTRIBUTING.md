@@ -5,11 +5,11 @@ This project grows stronger with community support, whether through code, docs, 
 
 ## TL;DR (Quick Summary)
 
-🚀 The `main` branch contains the latest Go (V3) codebase.  
-🔀 All pull requests (PRs) should target the `development` branch.  
-🎵 Sequence files (`.spsq`) → see [`contrib/README.md`](./contrib/README.md)
+The `main` branch contains the latest Go (V3) codebase.  
+All pull requests (PRs) should target the `development` branch.  
+Sequence files (`.spsq`) -> contribute to the [SynapSeq Hub Repository](https://github.com/ruanklein/synapseq-hub)
 
-🗂️ The legacy C code (V2, inherited from SBaGen) is available in the `v2` branch. If you wish to view, modify, or fork the old version, use that branch.
+The legacy C code (V2, inherited from SBaGen) is available in the `v2` branch. If you wish to view, modify, or fork the old version, use that branch.
 
 ---
 
@@ -89,8 +89,11 @@ SynapSeq V3 follows the **Git Flow** branching model:
 
 ## Contributing Sequence Files (`.spsq`)
 
-If you’d like to contribute new or improved sequence files (`.spsq`), please see [`contrib/README.md`](./contrib/README.md).  
-This process is separate from code contributions.
+If you'd like to share your own `.spsq` sequence files with the community, please contribute them to the [SynapSeq Hub Repository](https://github.com/ruanklein/synapseq-hub).
+
+**Important:** All sequence files contributed to the Hub are licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative Commons Attribution-ShareAlike 4.0 International). By contributing your sequences, you agree to share them under this license, allowing others to use, modify, and share your work with proper attribution.
+
+This process is separate from code contributions to the main SynapSeq project.
 
 ---
 
@@ -139,7 +142,7 @@ Example test locations:
 
 ## Pull Request Guidelines
 
-✅ Before opening a PR, please make sure:
+Before opening a PR, please make sure:
 
 - [ ] Your PR targets the correct branch (`development` for Go V3, `v2` for legacy C code).
 - [ ] You wrote clear, descriptive commit messages (see above).
@@ -165,4 +168,4 @@ Please ensure you have the right to submit your code or content under these term
 
 ---
 
-💡 Thank you for helping make SynapSeq better! Even small contributions - fixing typos, improving docs, or sharing ideas - help this project grow.
+Thank you for helping make SynapSeq better! Even small contributions - fixing typos, improving docs, or sharing ideas - help this project grow.

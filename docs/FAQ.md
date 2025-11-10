@@ -8,10 +8,10 @@ SynapSeq is an efficient engine for brainwave entrainment, designed to generate 
 
 ### How do I install SynapSeq?
 
-You can install SynapSeq easily using **Homebrew** (macOS/Linux), **Scoop** (Windows), or by downloading a precompiled binary.
+You can install SynapSeq easily using **Winget** (Windows), **Homebrew** (macOS/Linux), **Scoop** (Windows), or by downloading a precompiled binary.
 
 The latest precompiled binaries for Windows, macOS, or Linux can be found on the [Releases page](https://github.com/ruanklein/synapseq/releases/latest).
-Extract the archive and place the executable in a directory included in your system’s PATH.
+Extract the archive and place the executable in a directory included in your system's PATH.
 
 See instructions to install in [README](../README.md) or [COMPILE](COMPILE.md) for compiling from source.
 
@@ -24,6 +24,27 @@ synapseq my-sequence.spsq output.wav
 ```
 
 See [USAGE](USAGE.md) for detailed syntax and examples.
+
+### Where can I find sequences created for SynapSeq?
+
+You can explore a wide variety of ready-to-use sequences at the [SynapSeq Hub](https://ruanklein.github.io/synapseq-hub/), a centralized repository of community-contributed sequences for meditation, focus, relaxation, and more.
+
+You can browse sequences through the web interface or use the CLI to search, download, and generate audio directly:
+
+```bash
+# Update the local Hub index
+synapseq -hub-update
+
+# Search for sequences
+synapseq -hub-search meditation
+
+# Generate WAV from Hub
+synapseq -hub-get synapseq.samples.genesis output.wav
+```
+
+All sequences in the Hub are licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). If you create your own sequences and want to share them with the community, you can contribute them to the [Hub Repository](https://github.com/ruanklein/synapseq-hub).
+
+For more details on Hub commands, see [USAGE](USAGE.md#hub).
 
 ### How can I play my sequence?
 

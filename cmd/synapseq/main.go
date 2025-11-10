@@ -36,6 +36,44 @@ func run(opts *cli.CLIOptions, args []string) error {
 		return nil
 	}
 
+	// --hub-update
+	if opts.HubUpdate {
+		return hubRunUpdate()
+	}
+
+	// --hub-clean
+	if opts.HubClean {
+		return hubRunClean()
+	}
+
+	// --hub-get
+	if opts.HubGet != "" {
+		outputFile := "-"
+		if len(args) == 1 {
+			outputFile = args[0]
+		}
+		return hubRunGet(opts.HubGet, outputFile, opts.Quiet)
+	}
+
+	// --hub-list
+	if opts.HubList {
+		return hubRunList()
+	}
+
+	// --hub-search
+	if opts.HubSearch != "" {
+		return hubRunSearch(opts.HubSearch)
+	}
+
+	// --hub-download
+	if opts.HubDownload != "" {
+		targetDir := ""
+		if len(args) == 1 {
+			targetDir = args[0]
+		}
+		return hubRunDownload(opts.HubDownload, targetDir)
+	}
+
 	// --help or missing args
 	if opts.ShowHelp || len(args) == 0 {
 		cli.Help()
@@ -57,14 +95,14 @@ func run(opts *cli.CLIOptions, args []string) error {
 		if outputFile == "-" {
 			content, err := synapseq.Extract(inputFile)
 			if err != nil {
-				return fmt.Errorf("failed to extract text sequence: %w", err)
+				return fmt.Errorf("failed to extract text sequence. Error\n  %w", err)
 			}
 			fmt.Println(content)
 			return nil
 		}
 
 		if err := synapseq.SaveExtracted(inputFile, outputFile); err != nil {
-			return fmt.Errorf("failed to extract text sequence: %w", err)
+			return fmt.Errorf("failed to extract text sequence. Error\n  %w", err)
 		}
 
 		fmt.Println("Extraction completed successfully.")
@@ -101,14 +139,14 @@ func run(opts *cli.CLIOptions, args []string) error {
 		if outputFile == "-" {
 			content, err := appCtx.Text()
 			if err != nil {
-				return fmt.Errorf("failed to convert to text: %w", err)
+				return fmt.Errorf("failed to convert to text. Error\n  %w", err)
 			}
 			fmt.Println(content)
 			return nil
 		}
 
 		if err := appCtx.SaveText(); err != nil {
-			return fmt.Errorf("failed to convert to text: %w", err)
+			return fmt.Errorf("failed to convert to text. Error\n  %w", err)
 		}
 
 		fmt.Println("Conversion completed successfully.")
