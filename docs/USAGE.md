@@ -753,6 +753,26 @@ You can also explore available sequences through the web interface at the [Synap
 
 **Important:** Before using any Hub command (`-hub-list`, `-hub-search`, `-hub-download`, or `-hub-get`), you must first run `-hub-update` to fetch the latest manifest. This is only required once initially, and then periodically to stay up-to-date with new sequences.
 
+#### Privacy & Analytics
+
+When you download sequences using `-hub-get` or `-hub-download`, SynapSeq sends **anonymous usage statistics** to help improve the Hub and understand which sequences are most popular.
+
+**What is collected:**
+
+- Sequence ID (which sequence was downloaded)
+- SynapSeq version
+- Platform (Windows, macOS, Linux)
+- Architecture (amd64, arm64)
+
+**What is NOT collected:**
+
+- No personal information (names, emails, usernames)
+- No IP addresses or location data
+- No file paths or local directory structure
+- No browsing history or system information
+
+All tracking code is open source and can be reviewed in the repository.
+
 #### `-hub-update`
 
 Updates the local index of available sequences from the Hub.
