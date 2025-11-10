@@ -90,20 +90,7 @@ func Help() {
 	fmt.Printf("  -hub-download       		Download sequence and dependencies\n")
 	fmt.Printf("  -hub-get       		Get sequence\n\n")
 
-	fmt.Printf("Examples:\n")
-	fmt.Printf("  synapseq sequence.spsq output.wav\n")
-	fmt.Printf("  synapseq -test sequence.spsq output.wav\n")
-	fmt.Printf("  synapseq -json sequence.json output.wav\n")
-	fmt.Printf("  cat sequence.spsq | synapseq - output.wav\n")
-	fmt.Printf("  synapseq https://example.com/sequence.spsq output.wav\n")
-	fmt.Printf("  synapseq sequence.spsq - | play -t raw -r 44100 -e signed-integer -b 24 -c 2 -\n")
-	fmt.Printf("  synapseq -extract sequence.wav output.spsq\n")
-	fmt.Printf("  synapseq -convert -json sequence.json output.spsq\n\n")
-
 	fmt.Printf("For detailed documentation:\n")
-	if runtime.GOOS != "windows" {
-		fmt.Printf("  man synapseq\n")
-	}
 	fmt.Printf("  %s\n", info.REPOSITORY)
 }
 
