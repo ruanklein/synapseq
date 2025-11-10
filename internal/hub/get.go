@@ -38,7 +38,7 @@ func HubGet(sequenceID string) (*t.HubEntry, error) {
 }
 
 // HubDownload downloads a sequence and its dependencies from the Hub
-func HubDownload(entry *t.HubEntry, wg *sync.WaitGroup) (string, error) {
+func HubDownload(entry *t.HubEntry, action t.HubActionTracking, wg *sync.WaitGroup) (string, error) {
 	if entry == nil {
 		return "", fmt.Errorf("hub entry is nil")
 	}
@@ -100,7 +100,7 @@ func HubDownload(entry *t.HubEntry, wg *sync.WaitGroup) (string, error) {
 	if wg != nil {
 		wg.Go(func() {
 			// Track the download event
-			TrackDownload(entry.ID)
+			TrackDownload(entry.ID, action)
 		})
 	}
 

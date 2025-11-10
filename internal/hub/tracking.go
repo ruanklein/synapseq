@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/ruanklein/synapseq/v3/internal/info"
@@ -21,7 +22,7 @@ import (
 
 // TrackDownload sends an anonymous download event to the SynapSeq Hub analytics endpoint.
 // It only sends technical metadata, no personal or identifying information.
-func TrackDownload(sequenceID string) error {
+func TrackDownload(sequenceID string, action t.HubActionTracking) error {
 	if sequenceID == "" {
 		return fmt.Errorf("empty sequence ID")
 	}
@@ -45,6 +46,7 @@ func TrackDownload(sequenceID string) error {
 	req.Header.Set("X-SYNAPSEQ-VERSION", info.VERSION)
 	req.Header.Set("X-SYNAPSEQ-PLATFORM", runtime.GOOS)
 	req.Header.Set("X-SYNAPSEQ-ARCH", runtime.GOARCH)
+	req.Header.Set("X-SYNAPSEQ-ACTION", strings.ToUpper(action.String()))
 
 	client := &http.Client{Timeout: 3 * time.Second}
 	resp, err := client.Do(req)

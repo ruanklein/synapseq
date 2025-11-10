@@ -59,7 +59,7 @@ func hubRunGet(sequenceId, outputFile string, quiet bool) error {
 		return fmt.Errorf("sequence not found in hub: %s", sequenceId)
 	}
 
-	inputFile, err := hub.HubDownload(entry, &wg)
+	inputFile, err := hub.HubDownload(entry, t.HubActionTrackingGet, &wg)
 	if err != nil {
 		return fmt.Errorf("failed to download sequence from hub. Error\n  %v", err)
 	}
@@ -202,7 +202,7 @@ func hubRunDownload(sequenceID, targetDir string, quiet bool) error {
 		return fmt.Errorf("sequence not found: %s", sequenceID)
 	}
 
-	seqFile, err := hub.HubDownload(entry, &wg)
+	seqFile, err := hub.HubDownload(entry, t.HubActionTrackingDownload, &wg)
 	if err != nil {
 		return fmt.Errorf("failed to download sequence from hub. Error\n  %v", err)
 	}
@@ -243,7 +243,7 @@ func hubRunInfo(sequenceID string) error {
 		return fmt.Errorf("sequence not found: %s", sequenceID)
 	}
 
-	seqFile, err := hub.HubDownload(entry, &wg)
+	seqFile, err := hub.HubDownload(entry, t.HubActionTrackingInfo, &wg)
 	if err != nil {
 		return fmt.Errorf("failed to download sequence from hub. Error\n  %v", err)
 	}
