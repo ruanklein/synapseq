@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="#installation">Installation</a> |
-  <a href="https://ruanklein.github.io/synapseq-hub/">Examples</a> |
+  <a href="https://synapseq-hub.ruan.sh/">Examples</a> |
   <a href="docs/USAGE.md">Documentation</a> |
   <a href="docs/FAQ.md">FAQ</a>
 </p>

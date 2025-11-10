@@ -749,7 +749,7 @@ Any software used to handle the output must be explicitly configured with these 
 
 SynapSeq Hub is a centralized repository of community-contributed sequences. You can browse, search, download, and generate audio files directly from the Hub without manually managing sequence files.
 
-You can also explore available sequences through the web interface at the [SynapSeq Hub Repository](https://ruanklein.github.io/synapseq-hub/).
+You can also explore available sequences through the web interface at the [SynapSeq Hub Repository](https://synapseq-hub.ruan.sh/).
 
 **Important:** Before using any Hub command (`-hub-list`, `-hub-search`, `-hub-download`, or `-hub-get`), you must first run `-hub-update` to fetch the latest manifest. This is only required once initially, and then periodically to stay up-to-date with new sequences.
 
