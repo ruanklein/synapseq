@@ -119,7 +119,7 @@ func hubRunList() error {
 // hubRunSearch searches for sequences in the Hub by keyword (case-insensitive)
 func hubRunSearch(query string) error {
 	if strings.TrimSpace(query) == "" {
-		return fmt.Errorf("missing search term. Example:\n  synapseq -hub-search focus")
+		return fmt.Errorf("missing search term")
 	}
 
 	manifest, err := hub.GetManifest()
@@ -165,7 +165,7 @@ func hubRunSearch(query string) error {
 // hubRunDownload downloads a sequence and all its dependencies into a given folder
 func hubRunDownload(sequenceID, targetDir string) error {
 	if strings.TrimSpace(sequenceID) == "" {
-		return fmt.Errorf("missing sequence ID. Example:\n  synapseq -hub-download synapseq.samples.genesis ./downloads")
+		return fmt.Errorf("missing sequence ID")
 	}
 
 	outDir := targetDir
