@@ -48,6 +48,8 @@ type CLIOptions struct {
 	HubSearch string
 	// Hub download sequences
 	HubDownload string
+	// Hub info of sequence
+	HubInfo string
 	// Hub get sequence
 	HubGet string
 }
@@ -88,6 +90,7 @@ func Help() {
 	fmt.Printf("  -hub-list       		List available sequences\n")
 	fmt.Printf("  -hub-search     		Search sequences\n")
 	fmt.Printf("  -hub-download       		Download sequence and dependencies\n")
+	fmt.Printf("  -hub-info       		Show information about a sequence\n")
 	fmt.Printf("  -hub-get       		Get sequence\n\n")
 
 	fmt.Printf("For detailed documentation:\n")
@@ -114,12 +117,16 @@ func ParseFlags() (*CLIOptions, []string, error) {
 		fmt.Fprintf(os.Stderr, "Use -help flag for usage information.\n")
 	}
 
+	// Hub options
 	fs.BoolVar(&opts.HubUpdate, "hub-update", false, "Update index of available sequences")
 	fs.BoolVar(&opts.HubClean, "hub-clean", false, "Clean up local cache")
 	fs.BoolVar(&opts.HubList, "hub-list", false, "List available sequences")
 	fs.StringVar(&opts.HubSearch, "hub-search", "", "Search sequences")
 	fs.StringVar(&opts.HubDownload, "hub-download", "", "Download sequence and dependencies")
+	fs.StringVar(&opts.HubInfo, "hub-info", "", "Show information about a sequence")
 	fs.StringVar(&opts.HubGet, "hub-get", "", "Get sequence")
+
+	// General options
 	fs.BoolVar(&opts.ShowVersion, "version", false, "Show version information")
 	fs.BoolVar(&opts.FormatJSON, "json", false, "Read input as JSON format")
 	fs.BoolVar(&opts.FormatXML, "xml", false, "Read input as XML format")

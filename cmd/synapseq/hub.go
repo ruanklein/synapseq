@@ -218,3 +218,69 @@ func hubRunDownload(sequenceID, targetDir string, quiet bool) error {
 
 	return nil
 }
+
+// hubRunInfo shows information about a sequence from the Hub
+func hubRunInfo(sequenceID string) error {
+	var wg sync.WaitGroup
+
+	if strings.TrimSpace(sequenceID) == "" {
+		return fmt.Errorf("missing sequence ID")
+	}
+
+	manifest, err := hub.GetManifest()
+	if err != nil {
+		return fmt.Errorf("failed to load hub manifest. Error\n  %v", err)
+	}
+
+	var entry *t.HubEntry
+	for _, e := range manifest.Entries {
+		if e.ID == sequenceID {
+			entry = &e
+			break
+		}
+	}
+	if entry == nil {
+		return fmt.Errorf("sequence not found: %s", sequenceID)
+	}
+
+	seqFile, err := hub.HubDownload(entry, &wg)
+	if err != nil {
+		return fmt.Errorf("failed to download sequence from hub. Error\n  %v", err)
+	}
+
+	appCtx, err := synapseq.NewAppContext(seqFile, "", "text")
+	if err != nil {
+		return fmt.Errorf("failed to create application context. Error\n  %v", err)
+	}
+
+	if err := appCtx.LoadSequence(); err != nil {
+		return fmt.Errorf("failed to load sequence. Error\n  %v", err)
+	}
+
+	fmt.Printf("Name:        %s\n", entry.Name)
+	fmt.Printf("Author:      %s\n", entry.Author)
+	fmt.Printf("Category:    %s\n", entry.Category)
+	fmt.Printf("Updated At:  %s\n", entry.UpdatedAt[:10])
+
+	dependencies := "\nDependencies: None\n"
+	if len(entry.Dependencies) > 0 {
+		dependencies = "\nDependencies:\n"
+		for _, dep := range entry.Dependencies {
+			dependencies += fmt.Sprintf("  - %s (%s)\n", dep.Name, dep.Type.String())
+		}
+	}
+	fmt.Printf("%s", dependencies)
+
+	description := "\nDescription: No description available.\n"
+	comments := appCtx.Comments()
+	if len(comments) > 0 {
+		description = "\nDescription:\n"
+		for _, comment := range comments {
+			description += fmt.Sprintf("  %s\n", comment)
+		}
+	}
+	fmt.Printf("%s", description)
+
+	wg.Wait()
+	return nil
+}

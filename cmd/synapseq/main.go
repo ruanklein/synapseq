@@ -74,6 +74,11 @@ func run(opts *cli.CLIOptions, args []string) error {
 		return hubRunDownload(opts.HubDownload, targetDir, opts.Quiet)
 	}
 
+	// --hub-info
+	if opts.HubInfo != "" {
+		return hubRunInfo(opts.HubInfo)
+	}
+
 	// --help or missing args
 	if opts.ShowHelp || len(args) == 0 {
 		cli.Help()
