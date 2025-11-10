@@ -35,8 +35,11 @@ func (dt HubDependencyType) String() string {
 type HubActionTracking string
 
 const (
-	HubActionTrackingGet      HubActionTracking = "get"
-	HubActionTrackingInfo     HubActionTracking = "info"
+	// HubActionTrackingGet represents the "get" action being tracked
+	HubActionTrackingGet HubActionTracking = "get"
+	// HubActionTrackingInfo represents the "info" action being tracked
+	HubActionTrackingInfo HubActionTracking = "info"
+	// HubActionTrackingDownload represents the "download" action being tracked
 	HubActionTrackingDownload HubActionTracking = "download"
 )
 
