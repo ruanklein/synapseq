@@ -7,6 +7,7 @@ You need to install Go (v1.25 or later) and make on your system before compiling
 - [Installing Go](#installing-go)
 - [Compiling SynapSeq](#compiling-synapseq)
 - [Installing the Binary](#installing-the-binary)
+- [Compiling without Hub Support](#compiling-without-hub-support)
 - [Additional Make Commands](#additional-make-commands)
 
 ## Installing Go
@@ -143,6 +144,42 @@ After adding to PATH, **restart Git Bash or PowerShell** and verify:
 
 ```bash
 synapseq -h
+```
+
+## Compiling without Hub Support
+
+If you prefer to use SynapSeq without any Hub features (including analytics tracking), you can compile a Hub-disabled version using the `nohub` build tag. This completely removes all Hub-related code from the binary, resulting in a smaller executable with no network connections to the SynapSeq Hub infrastructure.
+
+**To compile without Hub support:**
+
+```bash
+# Build for your current platform
+make build-nohub
+
+# Or build for specific platforms
+make build-windows-nohub
+make build-linux-nohub
+make build-macos-nohub
+```
+
+**What's different in the Hub-disabled build:**
+
+- All `-hub-*` commands will return an error message
+- No network connections to the Hub infrastructure
+- No analytics or tracking of any kind
+- Smaller binary size (Hub code is excluded)
+- All other SynapSeq features work normally
+
+**Installing the Hub-disabled binary:**
+
+After compilation, you can install it system-wide:
+
+```bash
+# macOS/Linux
+sudo make install-nohub
+# Windows (in Git Bash as Administrator)
+mkdir -p "/c/Program Files/SynapSeq"
+cp bin/synapseq-windows-amd64-nohub.exe "/c/Program Files/SynapSeq/synapseq-nohub.exe"
 ```
 
 ## Additional Make Commands

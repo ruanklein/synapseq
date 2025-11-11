@@ -751,11 +751,11 @@ SynapSeq Hub is a centralized repository of community-contributed sequences. You
 
 You can also explore available sequences through the web interface at the [SynapSeq Hub Repository](https://synapseq-hub.ruan.sh/).
 
-**Important:** Before using any Hub command (`-hub-list`, `-hub-search`, `-hub-download`, or `-hub-get`), you must first run `-hub-update` to fetch the latest manifest. This is only required once initially, and then periodically to stay up-to-date with new sequences.
+**Important:** Before using any Hub command (`-hub-list`, `-hub-search`, `-hub-download`, `-hub-info`, or `-hub-get`), you must first run `-hub-update` to fetch the latest manifest. This is only required once initially, and then periodically to stay up-to-date with new sequences.
 
 #### Privacy & Analytics
 
-When you download sequences using `-hub-get` or `-hub-download`, SynapSeq sends **anonymous usage statistics** to help improve the Hub and understand which sequences are most popular.
+When you download sequences using `-hub-get`, `-hub-info`, or `-hub-download`, SynapSeq sends **anonymous usage statistics** to help improve the Hub and understand which sequences are most popular.
 
 **What is collected:**
 
@@ -763,6 +763,7 @@ When you download sequences using `-hub-get` or `-hub-download`, SynapSeq sends 
 - SynapSeq version
 - Platform (Windows, macOS, Linux)
 - Architecture (amd64, arm64)
+- Action perfomed (get, info, or download)
 
 **What is NOT collected:**
 
@@ -771,7 +772,15 @@ When you download sequences using `-hub-get` or `-hub-download`, SynapSeq sends 
 - No file paths or local directory structure
 - No browsing history or system information
 
-All tracking code is open source and can be reviewed in the repository.
+The tracking is done asynchronously and **never blocks or delays** your downloads. If the tracking request fails for any reason, it does not affect the functionality of the download.
+
+All tracking logic within the SynapSeq client is open source and can be fully inspected. The collection endpoint itself is private, used solely for anonymous statistical aggregation.
+
+**Compiling without Hub functionality:**
+
+If you prefer to use SynapSeq without any Hub features (including tracking), you can compile a Hub-disabled version using the `nohub` build tag. This completely removes all Hub-related code from the binary.
+
+See the [Compilation Guide](COMPILE.md#compiling-without-hub-support) for instructions on how to build SynapSeq without Hub support.
 
 #### `-hub-update`
 
@@ -785,12 +794,6 @@ Example:
 synapseq -hub-update
 ```
 
-Output:
-
-```
-Fetched 42 entries from the Hub. Last update: 2025-11-09
-```
-
 #### `-hub-list`
 
 Lists all available sequences in the Hub.
@@ -801,17 +804,6 @@ Example:
 
 ```
 synapseq -hub-list
-```
-
-Output:
-
-```
-SynapSeq Hub — 42 available sequences  (Last updated: 2025-11-09)
-
-ID                               AUTHOR   CATEGORY      UPDATED
-synapseq.samples.genesis         noname     meditation    2025-11-08
-synapseq.samples.focus-one       noname     focus         2025-11-07
-...
 ```
 
 #### `-hub-search`
@@ -867,29 +859,6 @@ Example:
 
 ```
 synapseq -hub-download synapseq.samples.genesis ./downloads
-```
-
-Output:
-
-```
-Preparing download package: genesis
-Destination: ./downloads/genesis
-Dependencies:
-  - ocean-waves (background)
-  - relax-presets (preset)
-
-  ✓ ocean-waves        (1024 KB)
-  ✓ relax-presets      (8 KB)
-  ✓ genesis            (12 KB)
-
-All files successfully saved to: ./downloads/genesis
-```
-
-If a sequence has no dependencies:
-
-```
-Dependencies:
-  (none)
 ```
 
 #### `-hub-get`
