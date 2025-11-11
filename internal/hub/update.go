@@ -1,3 +1,5 @@
+//go:build !nohub
+
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
  *
@@ -17,6 +19,7 @@ import (
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
+// HubUpdate updates the local Hub manifest cache
 func HubUpdate() error {
 	cache, err := GetCacheDir()
 	if err != nil {

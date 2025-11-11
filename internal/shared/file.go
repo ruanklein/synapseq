@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -25,6 +26,27 @@ func readFile(r io.Reader, maxSize int64) ([]byte, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+// copyFile copies a single file, preserving permissions
+func copyFile(src, dst string, mode os.FileMode) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	if _, err = io.Copy(out, in); err != nil {
+		return err
+	}
+
+	return out.Close()
 }
 
 // getRemoteFile fetches a remote file and validates its content type and size
@@ -113,4 +135,33 @@ func GetFile(filePath string, typ t.FileFormat) ([]byte, error) {
 		}
 		return data, nil
 	}
+}
+
+// CopyDir recursively copies a directory from src to dst.
+// It preserves file permissions and structure.
+func CopyDir(src, dst string) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		relPath, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+
+		targetPath := filepath.Join(dst, relPath)
+
+		if info.IsDir() {
+			// create target directory if needed
+			return os.MkdirAll(targetPath, info.Mode())
+		}
+
+		// copy file contents
+		if err := copyFile(path, targetPath, info.Mode()); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

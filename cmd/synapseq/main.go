@@ -38,12 +38,12 @@ func run(opts *cli.CLIOptions, args []string) error {
 
 	// --hub-update
 	if opts.HubUpdate {
-		return hubRunUpdate()
+		return hubRunUpdate(opts.Quiet)
 	}
 
 	// --hub-clean
 	if opts.HubClean {
-		return hubRunClean()
+		return hubRunClean(opts.Quiet)
 	}
 
 	// --hub-get
@@ -71,7 +71,12 @@ func run(opts *cli.CLIOptions, args []string) error {
 		if len(args) == 1 {
 			targetDir = args[0]
 		}
-		return hubRunDownload(opts.HubDownload, targetDir)
+		return hubRunDownload(opts.HubDownload, targetDir, opts.Quiet)
+	}
+
+	// --hub-info
+	if opts.HubInfo != "" {
+		return hubRunInfo(opts.HubInfo)
 	}
 
 	// --help or missing args

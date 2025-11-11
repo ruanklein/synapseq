@@ -1,3 +1,5 @@
+//go:build !nohub
+
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
  *
@@ -9,9 +11,11 @@ package types
 
 const (
 	// Hub Base URL for the Hub repository
-	HubBaseURL = "https://ruanklein.github.io/synapseq-hub"
+	HubBaseURL = "https://synapseq-hub.ruan.sh"
 	// HubManifestURL is the URL to fetch the Hub manifest
-	HubManifestURL = "https://ruanklein.github.io/synapseq-hub/manifest.json"
+	HubManifestURL = "https://synapseq-hub.ruan.sh/manifest.json"
+	// HubTrackEndpoint is the endpoint for tracking downloads
+	HubTrackEndpoint = "https://us-central1-synapseq-hub.cloudfunctions.net/trackDownload"
 )
 
 // HubDependencyType represents the type of a Hub dependency
@@ -27,6 +31,23 @@ const (
 // String returns the string representation of the HubDependencyType
 func (dt HubDependencyType) String() string {
 	return string(dt)
+}
+
+// HubActionTracking represents the type of action being tracked
+type HubActionTracking string
+
+const (
+	// HubActionTrackingGet represents the "get" action being tracked
+	HubActionTrackingGet HubActionTracking = "get"
+	// HubActionTrackingInfo represents the "info" action being tracked
+	HubActionTrackingInfo HubActionTracking = "info"
+	// HubActionTrackingDownload represents the "download" action being tracked
+	HubActionTrackingDownload HubActionTracking = "download"
+)
+
+// String returns the string representation of the HubActionTracking
+func (at HubActionTracking) String() string {
+	return string(at)
 }
 
 // HubDependency represents a dependency for a Hub entry

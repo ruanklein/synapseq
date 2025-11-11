@@ -1,4 +1,4 @@
-//go:build !nohub
+//go:build nohub
 
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
@@ -86,22 +86,13 @@ func Help() {
 	fmt.Printf("  -version       		Show version information\n")
 	fmt.Printf("  -help         		Show this help message\n\n")
 
-	fmt.Printf("Hub options:\n")
-	fmt.Printf("  -hub-update      		Update index of available sequences\n")
-	fmt.Printf("  -hub-clean      		Clean up local cache\n")
-	fmt.Printf("  -hub-list       		List available sequences\n")
-	fmt.Printf("  -hub-search     		Search sequences\n")
-	fmt.Printf("  -hub-download       		Download sequence and dependencies\n")
-	fmt.Printf("  -hub-info       		Show information about a sequence\n")
-	fmt.Printf("  -hub-get       		Get sequence\n\n")
-
 	fmt.Printf("For detailed documentation:\n")
 	fmt.Printf("  %s\n", info.REPOSITORY)
 }
 
 // ShowVersion prints the version information
 func ShowVersion() {
-	fmt.Printf("SynapSeq %s (%s) built %s for %s/%s (Hub enabled)\n",
+	fmt.Printf("SynapSeq %s (%s) built %s for %s/%s (Hub disabled)\n",
 		info.VERSION,
 		info.GIT_COMMIT,
 		info.BUILD_DATE,
@@ -119,7 +110,7 @@ func ParseFlags() (*CLIOptions, []string, error) {
 		fmt.Fprintf(os.Stderr, "Use -help flag for usage information.\n")
 	}
 
-	// Hub options
+	// Hub options (disabled when built with -tags=nohub)
 	fs.BoolVar(&opts.HubUpdate, "hub-update", false, "Update index of available sequences")
 	fs.BoolVar(&opts.HubClean, "hub-clean", false, "Clean up local cache")
 	fs.BoolVar(&opts.HubList, "hub-list", false, "List available sequences")
