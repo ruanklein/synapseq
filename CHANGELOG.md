@@ -12,7 +12,10 @@ All notable changes to this project will be documented in this file.
   - `-hub-get <sequence> <output>`: Download and generate a specified sequence from the Hub to the given output file.
   - `-hub-search <query>`: Search for sequences in the Hub matching the query term.
   - `-hub-download <sequence> <output>`: Download a sequence file from the Hub without generating audio.
+  - `-hub-info <sequence>`: Display detailed information about a specific sequence in the Hub.
   - `-hub-clean`: Remove all locally cached Hub sequences.
+
+The Hub integration includes anonymous usage tracking for downloads and generation actions to help understand community engagement. See [Usage Documentation](docs/USAGE.md) for details.
 
 ### Improvements
 
