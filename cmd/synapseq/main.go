@@ -10,6 +10,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
 	"github.com/ruanklein/synapseq/v3/internal/cli"
@@ -48,7 +50,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 
 	// --hub-get
 	if opts.HubGet != "" {
-		outputFile := "-"
+		var outputFile string
 		if len(args) == 1 {
 			outputFile = args[0]
 		}
@@ -90,7 +92,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 	}
 
 	inputFile := args[0]
-	outputFile := "-"
+	outputFile := getDefaultOutputFile(inputFile)
 	if len(args) == 2 {
 		outputFile = args[1]
 	}
@@ -193,4 +195,10 @@ func detectFormat(opts *cli.CLIOptions) string {
 	default:
 		return "text"
 	}
+}
+
+// getDefaultOutputFile generates a default output filename based on the input filename
+func getDefaultOutputFile(inputFile string) string {
+	base := strings.TrimSuffix(filepath.Base(inputFile), filepath.Ext(inputFile))
+	return base + ".wav"
 }

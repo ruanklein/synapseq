@@ -66,6 +66,10 @@ func hubRunGet(sequenceId, outputFile string, quiet bool) error {
 		return fmt.Errorf("failed to download sequence from hub. Error\n  %v", err)
 	}
 
+	if outputFile == "" {
+		outputFile = entry.Name + ".wav"
+	}
+
 	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, "text")
 	if err != nil {
 		return fmt.Errorf("failed to create application context. Error\n  %v", err)
