@@ -53,6 +53,10 @@ func hubRunClean(quiet bool) error {
 func hubRunGet(sequenceId, outputFile string, quiet bool) error {
 	var wg sync.WaitGroup
 
+	if !hub.ManifestExists() {
+		return fmt.Errorf("hub manifest not found. Please run 'synapseq -hub-update' to fetch the latest Hub manifest")
+	}
+
 	entry, err := hub.HubGet(sequenceId)
 	if err != nil {
 		return fmt.Errorf("failed to load hub manifest. Error\n  %v", err)
@@ -106,6 +110,10 @@ func hubRunGet(sequenceId, outputFile string, quiet bool) error {
 
 // / hubRunList prints all available sequences from the Hub manifest in a tabular format
 func hubRunList() error {
+	if !hub.ManifestExists() {
+		return fmt.Errorf("hub manifest not found. Please run 'synapseq -hub-update' to fetch the latest Hub manifest")
+	}
+
 	manifest, err := hub.GetManifest()
 	if err != nil {
 		return fmt.Errorf("failed to load hub manifest. Error\n  %v", err)
@@ -132,6 +140,10 @@ func hubRunList() error {
 
 // hubRunSearch searches for sequences in the Hub by keyword (case-insensitive)
 func hubRunSearch(query string) error {
+	if !hub.ManifestExists() {
+		return fmt.Errorf("hub manifest not found. Please run 'synapseq -hub-update' to fetch the latest Hub manifest")
+	}
+
 	if strings.TrimSpace(query) == "" {
 		return fmt.Errorf("missing search term")
 	}
@@ -179,6 +191,10 @@ func hubRunSearch(query string) error {
 // hubRunDownload downloads a sequence and all its dependencies into a given folder
 func hubRunDownload(sequenceID, targetDir string, quiet bool) error {
 	var wg sync.WaitGroup
+
+	if !hub.ManifestExists() {
+		return fmt.Errorf("hub manifest not found. Please run 'synapseq -hub-update' to fetch the latest Hub manifest")
+	}
 
 	if strings.TrimSpace(sequenceID) == "" {
 		return fmt.Errorf("missing sequence ID")
@@ -228,6 +244,10 @@ func hubRunDownload(sequenceID, targetDir string, quiet bool) error {
 // hubRunInfo shows information about a sequence from the Hub
 func hubRunInfo(sequenceID string) error {
 	var wg sync.WaitGroup
+
+	if !hub.ManifestExists() {
+		return fmt.Errorf("hub manifest not found. Please run 'synapseq -hub-update' to fetch the latest Hub manifest")
+	}
 
 	if strings.TrimSpace(sequenceID) == "" {
 		return fmt.Errorf("missing sequence ID")

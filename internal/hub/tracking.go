@@ -25,6 +25,11 @@ import (
 // TrackDownload sends an anonymous download event to the SynapSeq Hub analytics endpoint.
 // It only sends technical metadata, no personal or identifying information.
 func TrackDownload(sequenceID string, action t.HubActionTracking) error {
+	if info.VERSION == "development" {
+		// Do not track in development mode
+		return nil
+	}
+
 	if sequenceID == "" {
 		return fmt.Errorf("empty sequence ID")
 	}

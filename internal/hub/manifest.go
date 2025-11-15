@@ -36,13 +36,30 @@ func GetManifest() (*t.HubManifest, error) {
 		return nil, err
 	}
 
-	if hubManifest.Version != info.HUB_VERSION {
-		return nil, fmt.Errorf(
-			"hub manifest version mismatch: expected %s, got %s\n"+
-				"please update SynapSeq to the latest version to ensure compatibility",
-			info.HUB_VERSION, hubManifest.Version,
-		)
+	if info.VERSION != "development" {
+		if hubManifest.Version != info.HUB_VERSION {
+			return nil, fmt.Errorf(
+				"hub manifest version mismatch: expected %s, got %s\n"+
+					"please update SynapSeq to the latest version to ensure compatibility",
+				info.HUB_VERSION, hubManifest.Version,
+			)
+		}
 	}
 
 	return hubManifest, nil
+}
+
+// ManifestExists checks if the Hub manifest file exists in the cache
+func ManifestExists() bool {
+	cache, err := GetCacheDir()
+	if err != nil {
+		return false
+	}
+
+	manifestPath := cache + "/manifest.json"
+	if _, err := os.Stat(manifestPath); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
 }
