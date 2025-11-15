@@ -638,7 +638,7 @@ The levels are:
 - `medium`: Moderate attenuation (-9dB) - balanced background
 - `low`: Strong attenuation (-18dB) - subtle background
 
-The `medium` level is the default, providing a balanced mix between background and brainwave tones.
+The `off` level is the default.
 
 #### `@volume`
 
