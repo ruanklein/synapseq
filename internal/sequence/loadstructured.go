@@ -104,19 +104,15 @@ func LoadStructuredSequence(filename string, format t.FileFormat) (*t.Sequence, 
 		}
 	}
 
-	gainLevel := t.GainLevelVeryHigh
+	gainLevel := t.GainLevelOff
 	if input.Options.GainLevel != "" {
 		switch strings.ToLower(strings.TrimSpace(input.Options.GainLevel)) {
-		case t.KeywordOptionGainLevelVeryLow:
-			gainLevel = t.GainLevelVeryLow
-		case t.KeywordOptionGainLevelLow:
-			gainLevel = t.GainLevelLow
-		case t.KeywordOptionGainLevelMedium:
-			gainLevel = t.GainLevelMedium
 		case t.KeywordOptionGainLevelHigh:
 			gainLevel = t.GainLevelHigh
-		case t.KeywordOptionGainLevelVeryHigh:
-			gainLevel = t.GainLevelVeryHigh
+		case t.KeywordOptionGainLevelMedium:
+			gainLevel = t.GainLevelMedium
+		case t.KeywordOptionGainLevelLow:
+			gainLevel = t.GainLevelLow
 		default:
 			return nil, fmt.Errorf("invalid gain level: %s", input.Options.GainLevel)
 		}

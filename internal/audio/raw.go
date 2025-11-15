@@ -14,14 +14,14 @@ import (
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
-// RenderRaw renders the audio to a raw PCM stream (24-bit little-endian)
+// RenderRaw renders the audio to a raw PCM stream (16-bit little-endian)
 func (r *AudioRenderer) RenderRaw(w io.Writer) error {
 	bw := bufio.NewWriter(w)
-	// 3 bytes per sample (24-bit)
-	out := make([]byte, t.BufferSize*audioChannels*3)
+	// 2 bytes per sample (16-bit)
+	out := make([]byte, t.BufferSize*audioChannels*2)
 
 	err := r.Render(func(samples []int) error {
-		need := len(samples) * 3
+		need := len(samples) * 2
 		if cap(out) < need {
 			out = make([]byte, need)
 		}
@@ -34,11 +34,10 @@ func (r *AudioRenderer) RenderRaw(w io.Writer) error {
 			} else if s < audioMinValue {
 				s = audioMinValue
 			}
-			v := int32(s)
-			b[j] = byte(v)         // LSB
-			b[j+1] = byte(v >> 8)  // Mid
-			b[j+2] = byte(v >> 16) // MSB (signed)
-			j += 3
+			v := int16(s)
+			b[j] = byte(v)        // LSB
+			b[j+1] = byte(v >> 8) // MSB
+			j += 2
 		}
 		_, err := bw.Write(b)
 		return err

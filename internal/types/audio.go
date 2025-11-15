@@ -14,31 +14,27 @@ const (
 	PhasePrecision     = 65536   // Phase precision (1/65536 of a cycle)
 )
 
-type GainLevel int // Gain level (-20db, -16db, -12db, -6db, 0db) for background audio
+// Gain level (-20db, -16db, -12db, -6db, 0db) for background audio
+type GainLevel int
 
 const (
-	GainLevelVeryLow  GainLevel = 20 // -20db apply to background audio
-	GainLevelLow      GainLevel = 16 // -16db apply to background audio
-	GainLevelMedium   GainLevel = 12 // -12db apply to background audio
-	GainLevelHigh     GainLevel = 6  // -6db apply to background audio
-	GainLevelVeryHigh GainLevel = 0  // 0db apply to background audio
+	GainLevelOff    GainLevel = 0  // No attenuation (0dB) - full background volume
+	GainLevelHigh   GainLevel = 3  // -3dB - slightly attenuated
+	GainLevelMedium GainLevel = 9  // -9dB - balanced background
+	GainLevelLow    GainLevel = 18 // -18dB - subtle background
 )
 
 // String returns the string representation of the GainLevel
 func (g GainLevel) String() string {
 	switch g {
-	case GainLevelVeryLow:
-		return KeywordOptionGainLevelVeryLow
-	case GainLevelLow:
-		return KeywordOptionGainLevelLow
-	case GainLevelMedium:
-		return KeywordOptionGainLevelMedium
 	case GainLevelHigh:
 		return KeywordOptionGainLevelHigh
-	case GainLevelVeryHigh:
-		return KeywordOptionGainLevelVeryHigh
+	case GainLevelMedium:
+		return KeywordOptionGainLevelMedium
+	case GainLevelLow:
+		return KeywordOptionGainLevelLow
 	default:
-		return "unknown"
+		return KeywordOff
 	}
 }
 

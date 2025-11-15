@@ -37,7 +37,7 @@ func (rs *rendererStreamer) Stream(samples [][2]float64) (n int, ok bool) {
 	if rs.done && len(rs.leftover) == 0 {
 		return 0, false
 	}
-	const denom = 8388608.0 // 2^23
+	const denom = 32768.0 // 2^15
 	for n < len(samples) {
 		if len(rs.leftover) < 2 {
 			data, more := <-rs.ch
