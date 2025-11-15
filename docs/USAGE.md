@@ -612,17 +612,18 @@ You can also load background audio directly from the web using HTTP or HTTPS URL
 
 **Background Audio Requirements:**
 
-- SynapSeq supports `.wav` files with 24 Bit and 2 Channels
+- SynapSeq supports `.wav` files with 16-bit and 2 channels (stereo)
 - The sample rate must match the sequence sample rate (set with `@samplerate` option)
 - SynapSeq automatically creates a looping effect for background sounds
+- Maximum file size: 10 MB
 
-The amplitude and optional spin/pulse effects of the background is controlled by the `background` element in the sequence.
+The amplitude and optional spin/pulse effects of the background is controlled by the `background` element in the sequence. Use `@gainlevel` to adjust the overall background attenuation.
 
 For information about file size limits and Content-Type validation when using HTTP/HTTPS URLs, see the [Notes](#notes) section.
 
 #### `@gainlevel`
 
-This option is used to set the gain level of the `@background` sound.
+This option is used to set the attenuation level of the `@background` sound. Lower gain levels reduce the background volume, while `off` leaves it at full volume.
 
 The syntax is:
 
@@ -632,13 +633,12 @@ The syntax is:
 
 The levels are:
 
-- `verylow`: set the gain to the -20db
-- `low`: set the gain to the -16db
-- `medium`: set the gain to the -12db
-- `high`: set the gain to the -6db
-- `veryhigh`: set the gain to the 0db (without gain)
+- `off`: No attenuation (0dB) - full background volume
+- `high`: Light attenuation (-3dB) - slightly reduced
+- `medium`: Moderate attenuation (-9dB) - balanced background
+- `low`: Strong attenuation (-18dB) - subtle background
 
-The `veryhigh` level is the default.
+The `medium` level is the default, providing a balanced mix between background and brainwave tones.
 
 #### `@volume`
 
@@ -732,7 +732,7 @@ synapseq https://example.com/sequences/my-sequence.spsq output.wav
 On \*nix systems, you can also play a sequence in RAW format using other audio tools, such as ffplay or the play command from the sox package. Example:
 
 ```
-synapseq sample-binaural.spsq - | play -t raw -r 44100 -e signed-integer -b 24 -c 2 -
+synapseq sample-binaural.spsq - | play -t raw -r 44100 -e signed-integer -b 16 -c 2 -
 ```
 
 If you want to use another tool to process the output, keep in mind that the audio is emitted in RAW format with the following parameters:
@@ -740,7 +740,7 @@ If you want to use another tool to process the output, keep in mind that the aud
 - **Type**: RAW
 - **Sample Rate**: 44100 Hz (default, but can be changed using the `@samplerate` option in the session file)
 - **Encoding**: Signed Integer
-- **Bit Depth**: 24
+- **Bit Depth**: 16
 - **Channels**: 2 (stereo)
 
 Any software used to handle the output must be explicitly configured with these parameters to correctly interpret the audio stream.
