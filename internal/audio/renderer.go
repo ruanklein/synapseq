@@ -79,10 +79,6 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 		if bgChannels != audioChannels {
 			return nil, fmt.Errorf("background audio must be stereo (%d channels detected)", bgChannels)
 		}
-		bgBitDepth := backgroundAudio.bitDepth
-		if bgBitDepth != audioBitDepth {
-			return nil, fmt.Errorf("background audio must be %d-bit (detected %d-bit)", audioBitDepth, bgBitDepth)
-		}
 	}
 
 	renderer := &AudioRenderer{
