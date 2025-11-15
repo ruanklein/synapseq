@@ -9,26 +9,12 @@ package audio
 
 import (
 	"bytes"
-	"io"
-	"os"
 	"strings"
 	"testing"
 
 	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
-
-func captureStderr(fn func()) string {
-	orig := os.Stderr
-	r, w, _ := os.Pipe()
-	os.Stderr = w
-	fn()
-	w.Close()
-	var buf bytes.Buffer
-	_, _ = io.Copy(&buf, r)
-	os.Stderr = orig
-	return buf.String()
-}
 
 func TestStatusReporter_DisplayPeriodChange_PrintsStartAndDash(ts *testing.T) {
 	var p0, p1 t.Period

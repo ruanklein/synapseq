@@ -188,7 +188,7 @@ func TestAudioRenderer_RenderWav_WithBackground(ts *testing.T) {
 
 	const sr = 44100
 	format := beep.Format{SampleRate: beep.SampleRate(sr), NumChannels: audioChannels, Precision: audioBitDepth / 8}
-	val := float64(1000) / 8388608.0
+	val := float64(1000) / 32768.0
 	cs := &constStreamer{framesLeft: sr, val: val}
 	if err := bwav.Encode(bgFile, cs, format); err != nil {
 		ts.Fatalf("Failed to write background: %v", err)
