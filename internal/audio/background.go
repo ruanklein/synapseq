@@ -85,7 +85,7 @@ func (bg *BackgroundAudio) openFromCache() error {
 	reader := bytes.NewReader(bg.cachedData)
 	s, f, err := bwav.Decode(reader)
 	if err != nil {
-		return fmt.Errorf("invalid WAV file: %s: %w", bg.filePath, err)
+		return err
 	}
 
 	bg.decoder = s
