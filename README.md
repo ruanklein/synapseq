@@ -65,18 +65,13 @@ On Windows, you can enable native file association and context menu integration 
 synapseq -install-file-association
 ```
 
-This command provides:
-
-- **File Association**: Double-click any `.spsq` file to automatically generate a WAV file in the same directory with the same name
-- **Test Sequence**: Right-click on `.spsq` files and select "SynapSeq: Test sequence" to validate syntax
-- **Edit Sequence**: Right-click on `.spsq` files and select "SynapSeq: Edit sequence" to open in Notepad
-- **Extract Sequence**: Right-click on WAV files and select "SynapSeq: Extract sequence" to extract embedded `.spsq` sequences from SynapSeq-generated WAV files
-
 To remove the integration:
 
 ```powershell
 synapseq -uninstall-file-association
 ```
+
+For more details, see the [-install-file-association](./docs/USAGE.md#-install-file-association-windows-only) command documentation.
 
 ### macOS/Linux
 
