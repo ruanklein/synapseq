@@ -536,7 +536,7 @@ func TestLoadStructured_JSON_WithBackground(ts *testing.T) {
     "samplerate": 44100,
     "volume": 100,
     "background": "sounds/pink-noise.wav",
-    "gainlevel": "veryhigh"
+    "gainlevel": "high"
   },
   "sequence": [
     {
@@ -592,8 +592,8 @@ func TestLoadStructured_JSON_WithBackground(ts *testing.T) {
 	if !strings.HasSuffix(res.Options.BackgroundPath, "sounds/pink-noise.wav") {
 		ts.Fatalf("expected background to end with 'sounds/pink-noise.wav', got %q", res.Options.BackgroundPath)
 	}
-	if res.Options.GainLevel != t.GainLevelVeryHigh {
-		ts.Fatalf("expected gainlevel veryhigh, got %v", res.Options.GainLevel)
+	if res.Options.GainLevel != t.GainLevelHigh {
+		ts.Fatalf("expected gainlevel high, got %v", res.Options.GainLevel)
 	}
 
 	if len(res.Periods) != 2 {
@@ -632,7 +632,7 @@ func TestLoadStructured_XML_WithBackground(ts *testing.T) {
     <samplerate>44100</samplerate>
     <volume>100</volume>
     <background>sounds/pink-noise.wav</background>
-    <gainlevel>veryhigh</gainlevel>
+    <gainlevel>high</gainlevel>
   </options>
   <sequence>
     <entry time="0" transition="steady">
@@ -670,8 +670,8 @@ func TestLoadStructured_XML_WithBackground(ts *testing.T) {
 	if !strings.HasSuffix(res.Options.BackgroundPath, "sounds/pink-noise.wav") {
 		ts.Fatalf("expected background to end with 'sounds/pink-noise.wav', got %q", res.Options.BackgroundPath)
 	}
-	if res.Options.GainLevel != t.GainLevelVeryHigh {
-		ts.Fatalf("expected gainlevel veryhigh, got %v", res.Options.GainLevel)
+	if res.Options.GainLevel != t.GainLevelHigh {
+		ts.Fatalf("expected gainlevel high, got %v", res.Options.GainLevel)
 	}
 
 	if len(res.Periods) != 2 {
@@ -708,7 +708,7 @@ options:
   samplerate: 44100
   volume: 100
   background: sounds/pink-noise.wav
-  gainlevel: veryhigh
+  gainlevel: high
 sequence:
   - time: 0
     transition: steady
@@ -756,8 +756,8 @@ sequence:
 	if !strings.HasSuffix(res.Options.BackgroundPath, "sounds/pink-noise.wav") {
 		ts.Fatalf("expected background to end with 'sounds/pink-noise.wav', got %q", res.Options.BackgroundPath)
 	}
-	if res.Options.GainLevel != t.GainLevelVeryHigh {
-		ts.Fatalf("expected gainlevel veryhigh, got %v", res.Options.GainLevel)
+	if res.Options.GainLevel != t.GainLevelHigh {
+		ts.Fatalf("expected gainlevel high, got %v", res.Options.GainLevel)
 	}
 
 	if len(res.Periods) != 2 {

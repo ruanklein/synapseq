@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.4.0]
+
+### New Features
+
+- **Windows Native Integration**: Added `-install-file-association` flag to register `.spsq` files with SynapSeq on Windows. This allows users to double-click `.spsq` files to open them directly in SynapSeq for generation.
+
+Added context menu entries to:
+
+- **Test sequence**: test sequence syntax without generating output.
+- **Edit sequence**: open the `.spsq` file in the notepad.
+- **Extract sequence from WAV**: extract embedded sequence from a WAV file.
+
+Use `-uninstall-file-association` to remove these associations.
+
+### Improvements
+
+- Background audio now accepts **8-bit and 16-bit WAV files**.
+- SynapSeq now generates output WAV files in **16-bit** to significantly reduce file size.
+- When no output file is specified, SynapSeq automatically generates a WAV file using the input file name. This behavior also applies to the `-extract` parameter, which now defaults to input.spsq when no output is provided.
+
 ## [3.3.0]
 
 ### New Features

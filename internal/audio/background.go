@@ -19,9 +19,6 @@ import (
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
-// Max background file size: 10MB
-const maxBackgroundFileSize = 10 * 1024 * 1024
-
 // BackgroundAudio handles background WAV file playback with looping
 type BackgroundAudio struct {
 	filePath      string
@@ -88,7 +85,7 @@ func (bg *BackgroundAudio) openFromCache() error {
 	reader := bytes.NewReader(bg.cachedData)
 	s, f, err := bwav.Decode(reader)
 	if err != nil {
-		return fmt.Errorf("invalid WAV file: %s: %w", bg.filePath, err)
+		return err
 	}
 
 	bg.decoder = s
@@ -205,7 +202,7 @@ func (bg *BackgroundAudio) readFromDecoder(samples []int, maxSamples int) (int, 
 		return 0, io.EOF
 	}
 
-	const scale = 8388608.0 // 2^23
+	const scale = 32768.0 // 2^15 for 16-bit
 	outN := nFrames * bg.channels
 	// Limit to maxSamples to avoid overrun when we read a full frame but caller
 	// requested fewer samples than a full frame.

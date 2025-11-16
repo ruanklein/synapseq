@@ -86,7 +86,7 @@ cd synapseq
 
 SynapSeq can be compiled using the provided Makefile.
 
-**For macOS and Linux:**
+**For POSIX systems (macOS/Linux):**
 
 Simply run:
 
@@ -96,15 +96,31 @@ make
 
 This will automatically compile SynapSeq for your current operating system and architecture, creating a binary in the `bin/` directory.
 
-**For Windows**
+**For Windows:**
 
-In Git Bash:
+Windows users should use the platform-specific targets to ensure proper `.exe` extension, application icon, and Windows-specific command-line options:
 
 ```bash
-make build-windows
+make build-windows-amd64    # Windows 64-bit (Intel/AMD) - Recommended
+make build-windows-arm64    # Windows 64-bit (ARM)
 ```
 
-This will generate Windows executables (`.exe`) in the `bin/` directory.
+**Note:** Do not use `make build` on Windows, as it will create a binary without the `.exe` extension, missing the application icon and Windows-specific features.
+
+**For cross-compilation to other platforms:**
+
+You can build for different platforms and architectures:
+
+```bash
+# Linux
+make build-linux-amd64      # Linux 64-bit (Intel/AMD)
+make build-linux-arm64      # Linux 64-bit (ARM)
+
+# macOS
+make build-macos            # macOS ARM64 (Apple Silicon)
+```
+
+**Note for Windows builds:** The Makefile automatically generates Windows resource files (including application icon and metadata) when building for Windows. This requires the `goversioninfo` tool, which will be automatically downloaded during the build process.
 
 ## Installing the Binary
 
@@ -153,13 +169,15 @@ If you prefer to use SynapSeq without any Hub features (including analytics trac
 **To compile without Hub support:**
 
 ```bash
-# Build for your current platform
+# Build for POSIX system (macOS/Linux)
 make build-nohub
 
-# Or build for specific platforms
-make build-windows-nohub
-make build-linux-nohub
-make build-macos-nohub
+# Or build for specific platforms and architectures
+make build-windows-nohub-amd64    # Windows 64-bit (Intel/AMD)
+make build-windows-nohub-arm64    # Windows 64-bit (ARM)
+make build-linux-nohub-amd64      # Linux 64-bit (Intel/AMD)
+make build-linux-nohub-arm64      # Linux 64-bit (ARM)
+make build-macos-nohub            # macOS ARM64 (Apple Silicon)
 ```
 
 **What's different in the Hub-disabled build:**
@@ -184,8 +202,19 @@ cp bin/synapseq-windows-amd64-nohub.exe "/c/Program Files/SynapSeq/synapseq-nohu
 
 ## Additional Make Commands
 
-- `make build` - Build for your current platform
-- `make build-*` - Build for a specific platform (e.g., `make build-windows`, `make build-macos`, `make build-linux`)
-- `make clean` - Remove all compiled binaries and generated documentation
+Other available make targets:
+
+**Testing:**
+
+- `make test` - Run all tests
+
+**Cleanup:**
+
+- `make clean` - Remove all compiled binaries and generated files
+
+**Utilities:**
+
 - `make all` - Same as `make build`
-- `make install` - Install the binary system-wide
+- `make prepare` - Create `bin/` directory
+- `make windows-res-amd64` - Generate Windows resource file (icon and metadata) for x64 build
+- `make windows-res-arm64` - Generate Windows resource file (icon and metadata) for ARM64 build

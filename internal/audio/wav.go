@@ -33,7 +33,7 @@ func (r *AudioRenderer) RenderWav(outPath string) error {
 	format := beep.Format{
 		SampleRate:  beep.SampleRate(r.SampleRate),
 		NumChannels: audioChannels,
-		Precision:   audioBitDepth / 8, // 24-bit -> 3 bytes
+		Precision:   audioBitDepth / 8,
 	}
 
 	if err := bwav.Encode(out, streamer, format); err != nil {

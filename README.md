@@ -57,6 +57,22 @@ Check installation:
 synapseq -h
 ```
 
+#### Windows Native Integration
+
+On Windows, you can enable native file association and context menu integration for a better user experience:
+
+```powershell
+synapseq -install-file-association
+```
+
+To remove the integration:
+
+```powershell
+synapseq -uninstall-file-association
+```
+
+For more details, see the [-install-file-association](./docs/USAGE.md#-install-file-association-windows-only) command documentation.
+
 ### macOS/Linux
 
 #### Homebrew
@@ -139,6 +155,11 @@ All original code in SynapSeq is licensed under the GNU GPL v2, but the followin
   License: BSD 3-Clause  
   Copyright © 2009-2014 Google Inc.  
   Used for UUID generation and unique identifier handling.
+
+- **[golang.org/x/sys/windows/registry](https://pkg.go.dev/golang.org/x/sys/windows/registry)**  
+  License: BSD 3-Clause
+  Copyright 2009 The Go Authors.
+  Used for Windows registry access and manipulation.
 
 All third-party copyright notices and licenses are preserved in this repository in compliance with their original terms.
 

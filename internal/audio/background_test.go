@@ -17,6 +17,8 @@ import (
 	bwav "github.com/gopxl/beep/v2/wav"
 )
 
+const maxBackgroundFileSize = 10 * 1024 * 1024 // 10MB
+
 func mustReadWavAll(t *testing.T, path string) ([]int, uint32, int, int) {
 	t.Helper()
 	f, err := os.Open(path)
@@ -31,9 +33,9 @@ func mustReadWavAll(t *testing.T, path string) ([]int, uint32, int, int) {
 	}
 	defer s.Close()
 
-	// Stream all frames and convert to interleaved int24 samples to match BackgroundAudio
+	// Stream all frames and convert to interleaved int16 samples to match BackgroundAudio
 	var data []int
-	const scale = 8388608.0 // 2^23
+	const scale = 32768.0 // 2^15 for 16-bit
 	buf := make([][2]float64, 4096)
 	for {
 		n, ok := s.Stream(buf)

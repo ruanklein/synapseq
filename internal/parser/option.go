@@ -110,16 +110,14 @@ func (ctx *TextParser) ParseOption(options *t.SequenceOptions, filePath string) 
 		}
 
 		switch gainLevel {
-		case t.KeywordOptionGainLevelVeryLow:
-			options.GainLevel = t.GainLevelVeryLow
-		case t.KeywordOptionGainLevelLow:
-			options.GainLevel = t.GainLevelLow
-		case t.KeywordOptionGainLevelMedium:
-			options.GainLevel = t.GainLevelMedium
+		case t.KeywordOff:
+			options.GainLevel = t.GainLevelOff
 		case t.KeywordOptionGainLevelHigh:
 			options.GainLevel = t.GainLevelHigh
-		case t.KeywordOptionGainLevelVeryHigh:
-			options.GainLevel = t.GainLevelVeryHigh
+		case t.KeywordOptionGainLevelMedium:
+			options.GainLevel = t.GainLevelMedium
+		case t.KeywordOptionGainLevelLow:
+			options.GainLevel = t.GainLevelLow
 		default:
 			return fmt.Errorf("invalid gain level: %q", gainLevel)
 		}

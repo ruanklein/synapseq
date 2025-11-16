@@ -156,8 +156,24 @@ Before opening a PR, please make sure:
 
 ## Not Sure? Open an Issue First!
 
-If you’re not sure whether your contribution fits, **open an issue**.  
-We’ll be happy to discuss your idea before you start coding — saving you time and aligning with the project’s roadmap.
+If you're not sure whether your contribution fits, **open an issue**.  
+We'll be happy to discuss your idea before you start coding — saving you time and aligning with the project's roadmap.
+
+---
+
+## Roadmap and Future Plans
+
+SynapSeq has a public roadmap that outlines planned features and long-term goals for the project.
+
+See [ROADMAP](ROADMAP.md) for:
+
+- Upcoming features and improvements
+- Ideas being explored
+- Long-term vision for the ecosystem
+
+If you're interested in contributing to any of these planned features, or have suggestions for improvements or alternative implementations, please **open an issue or discussion** first. This helps coordinate efforts, avoid duplicate work, and ensure your contribution aligns with the project's direction.
+
+The roadmap is a living document and community feedback is welcome!
 
 ---
 

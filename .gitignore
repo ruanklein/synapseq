@@ -8,4 +8,6 @@ bin/
 !/samples/**/*.spsq
 
 scripts/generated
+
+cmd/synapseq/synapseq.syso
     

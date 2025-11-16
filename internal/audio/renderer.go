@@ -16,11 +16,11 @@ import (
 )
 
 const (
-	audioChannels = 2        // Stereo
-	audioBitDepth = 24       // 24-bit audio
-	audioBitShift = 8        // 24 Bit shift
-	audioMaxValue = 8388607  // 2^23 - 1
-	audioMinValue = -8388608 // -2^23
+	audioChannels = 2      // Stereo
+	audioBitDepth = 16     // 16-bit audio
+	audioBitShift = 16     // 16 Bit shift
+	audioMaxValue = 32767  // 2^15 - 1
+	audioMinValue = -32768 // -2^15
 )
 
 // AudioRenderer handle audio generation
@@ -30,9 +30,6 @@ type AudioRenderer struct {
 	waveTables      [4][]int
 	noiseGenerator  *NoiseGenerator
 	backgroundAudio *BackgroundAudio
-
-	dither0 uint16
-	dither1 uint16
 
 	// Embedding options
 	*AudioRendererOptions
@@ -82,10 +79,6 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 		if bgChannels != audioChannels {
 			return nil, fmt.Errorf("background audio must be stereo (%d channels detected)", bgChannels)
 		}
-		bgBitDepth := backgroundAudio.bitDepth
-		if bgBitDepth != audioBitDepth {
-			return nil, fmt.Errorf("background audio must be %d-bit (detected %d-bit)", audioBitDepth, bgBitDepth)
-		}
 	}
 
 	renderer := &AudioRenderer{
@@ -93,8 +86,6 @@ func NewAudioRenderer(p []t.Period, ar *AudioRendererOptions) (*AudioRenderer, e
 		waveTables:           InitWaveformTables(),
 		noiseGenerator:       NewNoiseGenerator(),
 		backgroundAudio:      backgroundAudio,
-		dither0:              1,
-		dither1:              0,
 		AudioRendererOptions: ar,
 	}
 

@@ -10,6 +10,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
 	"github.com/ruanklein/synapseq/v3/internal/cli"
@@ -48,7 +50,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 
 	// --hub-get
 	if opts.HubGet != "" {
-		outputFile := "-"
+		var outputFile string
 		if len(args) == 1 {
 			outputFile = args[0]
 		}
@@ -79,6 +81,16 @@ func run(opts *cli.CLIOptions, args []string) error {
 		return hubRunInfo(opts.HubInfo)
 	}
 
+	// --install-file-association (Windows only)
+	if opts.InstallFileAssociation {
+		return installWindowsFileAssociation(opts.Quiet)
+	}
+
+	// --uninstall-file-association (Windows only)
+	if opts.UninstallFileAssociation {
+		return uninstallWindowsFileAssociation(opts.Quiet)
+	}
+
 	// --help or missing args
 	if opts.ShowHelp || len(args) == 0 {
 		cli.Help()
@@ -90,7 +102,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 	}
 
 	inputFile := args[0]
-	outputFile := "-"
+	outputFile := getDefaultOutputFile(inputFile, "wav")
 	if len(args) == 2 {
 		outputFile = args[1]
 	}
@@ -106,11 +118,14 @@ func run(opts *cli.CLIOptions, args []string) error {
 			return nil
 		}
 
+		outputFile = getDefaultOutputFile(inputFile, "spsq")
 		if err := synapseq.SaveExtracted(inputFile, outputFile); err != nil {
 			return fmt.Errorf("failed to extract text sequence. Error\n  %w", err)
 		}
 
-		fmt.Println("Extraction completed successfully.")
+		if !opts.Quiet {
+			fmt.Println("Extraction completed successfully.")
+		}
 		return nil
 	}
 
@@ -154,7 +169,9 @@ func run(opts *cli.CLIOptions, args []string) error {
 			return fmt.Errorf("failed to convert to text. Error\n  %w", err)
 		}
 
-		fmt.Println("Conversion completed successfully.")
+		if !opts.Quiet {
+			fmt.Println("Conversion completed successfully.")
+		}
 		return nil
 	}
 
@@ -193,4 +210,10 @@ func detectFormat(opts *cli.CLIOptions) string {
 	default:
 		return "text"
 	}
+}
+
+// getDefaultOutputFile generates a default output filename based on the input filename
+func getDefaultOutputFile(inputFile string, extension string) string {
+	base := strings.TrimSuffix(filepath.Base(inputFile), filepath.Ext(inputFile))
+	return base + "." + extension
 }

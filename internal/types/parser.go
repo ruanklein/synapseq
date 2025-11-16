@@ -26,16 +26,12 @@ const (
 	KeywordOptionPresetList = "presetlist"
 	// Represents a gain level option
 	KeywordOptionGainLevel = "gainlevel"
-	// Represents a very low gain level option
-	KeywordOptionGainLevelVeryLow = "verylow"
 	// Represents a low gain level option
 	KeywordOptionGainLevelLow = "low"
 	// Represents a medium gain level option
 	KeywordOptionGainLevelMedium = "medium"
 	// Represents a high gain level option
 	KeywordOptionGainLevelHigh = "high"
-	// Represents a very high gain level option
-	KeywordOptionGainLevelVeryHigh = "veryhigh"
 	// Represents a waveform option
 	KeywordWaveform = "waveform"
 	// Represents a sine wave

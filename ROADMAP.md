@@ -1,196 +1,98 @@
-# SynapSeq v3.0.0 Roadmap
+# SynapSeq Roadmap - Version 3.5 and Beyond
 
-This document details the steps required to port the SynapSeq project from C to Go for v3, based on a deep analysis of the original `synapseq.c` source code. The goal is to maintain all core features, improve maintainability, and provide a modern, idiomatic Go codebase.
-
-**Status:** Most of the roadmap has been completed! ✅
-
-**Legend:**
-
-- ✅ = Completed
-- 🔄 = Partially completed
-- ❌ = To do
-- ~~Strikethrough~~ = Not ported due to design principles or replaced by simpler implementation
-
-**Note:** Some items were intentionally not ported or adapted to favor SynapSeq V3's minimalist design and explicit control principles. The user maintains full control over their audio sequences without automatic modifications.
+This roadmap outlines the next phase of evolution for SynapSeq following the completion of the V3 migration. The focus shifts from core engine stability toward ecosystem growth, interoperability, and accessible creation tools.
 
 ---
 
-### Project Guidelines
+## 1. Licensing Upgrade to GPLv3
 
-**Standard Library First:**  
-The goal is to use Go's standard library as much as possible. External or third-party packages may be included only if they provide significant value to the project and will be vendored (included in the repository) to ensure long-term stability and reproducibility. All parsing, audio processing, file I/O, and CLI functionality should preferably be implemented using native Go packages.
+**Status: Planned**
 
-**Explicit Naming:**  
-All function, method, variable, struct, and interface names must be explicit and descriptive. Avoid abbreviations. For example, do not port a function as `corrVal`; instead, use a full, meaningful name such as `CorrectParameterValue`. Every identifier should clearly express its purpose and usage.
+SynapSeq will migrate from GPL v2 to GPL v3 to enable broader compatibility with modern open-source ecosystems, including permissive licenses such as Apache 2.0.
 
-**Do Not Migrate Dead Code:**  
-Do not migrate code that is obsolete or irrelevant for SynapSeq, such as remnants of real-time playback or any functionality not aligned with the current project goals. Only port code that is meaningful and necessary for the offline sequence-to-WAV workflow.
-
-**Clean Code and Best Practices:**  
-This project follows clean code principles and the KISS (Keep It Simple, Stupid!) philosophy. Code should be easy to read, concise, and maintainable. Avoid unnecessarily complex, verbose, or inconsistent code. Pull requests with code that is hard to interpret, excessively long, or lacking clear structure and standards will not be accepted.
-
-**Code Formatting:**  
-All Go code must be formatted using [`gofmt`](https://pkg.go.dev/cmd/gofmt). Please ensure your code is properly formatted before submitting a pull request.
+This change expands the range of audio and encoding libraries that can be legally integrated, allowing significant improvements in export formats and tooling.
 
 ---
 
-### Stage Descriptions
+## 2. Native Export to Compressed Audio Formats
 
-1. **✅ Project Structure & Planning:**  
-   Define the Go module and repository structure, modularize the codebase, and set up version control and documentation.
+**Status: In Research**
 
-2. **✅ Data Structures:**  
-   Translate C structs and constants into Go idioms, using slices, pointers, and appropriate types.
+SynapSeq will support direct export to:
 
-3. **✅ Parsing & Sequence File Handling:**  
-   Implement parsing of `.spsq` files, handling comments, options, presets, timeline entries, and validation.
+- MP3
+- OGG Vorbis
+- (Maybe) OPUS
 
-4. **✅ Timeline Construction & Validation:**  
-   Build and validate the sequence of periods, handle time parsing, insert transitional periods, and normalize amplitudes.
-
-5. **✅ Audio Synthesis Engine:**  
-   Port all audio generation logic, including tones, noise, effects, and parameter interpolation.
-
-6. **✅ Buffering and Background Audio:**  
-   Replace C's threaded buffer logic with Go goroutines and channels, and handle background WAV file reading and mixing.
-
-7. **✅ Main Processing Loop:**  
-   Implement the main loop for sample generation, parameter interpolation, mixing, and buffer management.
-
-8. **✅ WAV File Output:**  
-   Write the WAV header and PCM data using Go's binary utilities, supporting output to file or stdout.
-
-9. **✅ CLI and Library Interface:**  
-   ✅ CLI: Design a CLI for command-line usage  
-   ✅ Library: Expose the core as a Go package for library use
-
-10. **✅ Testing & Validation:**  
-    Write unit and integration tests, validate output, and test edge cases.
-
-11. **✅ Documentation:**  
-    Document all modules, provide usage examples, and ~~write a migration guide~~.
-
-12. **✅ Packaging & Release:**  
-    Prepare build scripts, ensure cross-platform compatibility, and publish the project.
+Compressed formats drastically reduce file sizes, making it easier for users to store, distribute, and share their generated sessions. WAV will continue as the high-fidelity default, with optional compressed export.
 
 ---
 
-## ✅ 1. Project Structure & Planning
+## 3. SynapSeq Hub - Ecosystem Expansion
 
-- ✅ Define the Go module and repository structure.
-- ✅ Plan for modular packages: audio synthesis, sequence parsing, timeline management, WAV output, CLI, and utilities.
-- ✅ Set up version control, initial documentation, and continuous integration.
+**Status: Ongoing**
 
----
+The SynapSeq Hub will become a more central component of the ecosystem, evolving from a simple sequence repository to a platform with broader goals:
 
-## ✅ 2. Data Structures
+- community-driven sharing
+- curated collections
+- discoverability of sessions
+- versioned metadata
+- potential future marketplace for creators
 
-- ✅ Translate C structs (`Voice`, `Channel`, `Period`, `NameDef`) into Go structs.
-- ✅ Use slices and pointers for dynamic lists (e.g., periods, voices).
-- ✅ Replace C macros and constants with Go `const` and `var`.
-
----
-
-## ✅ 3. Parsing & Sequence File Handling
-
-- ✅ Implement a parser for `.spsq` files using Go's `bufio.Scanner` and string utilities.
-- ✅ Port logic for:
-  - ✅ Skipping comments and blank lines.
-  - ✅ Handling options (`@background`, `@gainlevel`, etc.).
-  - ✅ Parsing name definitions (presets) and timeline entries.
-  - ✅ Validating names and syntax.
-- ✅ Ensure error handling is idiomatic (using Go errors, not `exit()`).
+The Hub may be split into its own standalone project as the ecosystem grows.
 
 ---
 
-## ✅ 4. Timeline Construction & Validation
+## 4. MP3 Distribution Through the Hub
 
-- ✅ Recreate the logic of `readTimeLine`, `readNameDef`, and `correctPeriods`:
-  - ✅ Build a doubly-linked or slice-based list of `Period` structs.
-  - ✅ Implement time parsing and validation (start/end times, chronological order).
-  - ~~Handle automatic insertion of transitional periods~~ (automatic fade-in/fade-out between different tone types not implemented; user must explicitly control fades).
-  - ~~Implement amplitude normalization and validation as in `normalizeAmplitude`~~ (not implemented by design; user maintains full control over amplitude values).
-  - ✅ Remove redundant or zero-length periods after validation.
+**Status: Planned**
 
----
+Every published session in the Hub will automatically offer ready-to-download MP3 versions, allowing users to listen without installing SynapSeq locally.
 
-## ✅ 5. Audio Synthesis Engine
-
-- ✅ Port all audio generation logic:
-  - ✅ Tone generation (binaural, monaural, isochronic).
-  - ✅ Noise generation (`noise2` for pink, `white_noise`, `brown_noise`).
-  - ~~Spin and effect logic (`create_noise_spin_effect`)~~ (functionality unified with background effects).
-  - ✅ Interpolation (ramp/slide) between period values (as in `corrVal`).
-- ✅ Use Go's math and random packages for calculations.
-- ✅ Implement waveform tables (sine, square, triangle, sawtooth) as slices.
+This complements the core tool while making SynapSeq accessible to non-technical audiences.
 
 ---
 
-## ✅ 6. Buffering and Background Audio
+## 5. SynapSeq Playground - Web IDE
 
-- ~~Replace C's threaded buffer logic (`inbuf_*`, `volatile` variables) with Go goroutines and channels~~ (simpler flow implemented instead).
-- ~~Implement a producer-consumer pattern for background audio mixing~~ (simpler implementation used, may change in the future).
-- ~~✅ Handle WAV file reading for background audio using Go's `os` and `encoding/binary` packages.~~ (go-audio library used instead).
+**Status: Concept**
 
----
+A lightweight web-based IDE will be developed under the name SynapSeq Playground.
 
-## ✅ 7. Main Processing Loop
+The goal is to provide:
 
-- ✅ Port the main loop (`loop` and `outChunk`):
-  - ✅ For each output buffer, interpolate parameters, generate samples, and mix channels.
-  - ✅ Apply volume, dithering, and normalization.
-  - ✅ Handle background audio mixing and looping.
-  - ✅ Ensure correct buffer management and output chunking.
+- in-browser SPSQ editing
+- live syntax validation
+- optional real-time audio previews
+- integration with the Hub for saving and publishing
 
----
-
-## ✅ 8. WAV File Output
-
-- ~~Implement WAV header and PCM data writing using Go's binary writing utilities~~ (beep library used instead).
-- ✅ Ensure correct handling of sample rate, bit depth, and stereo channels.
-- ✅ Support output to file ~~or stdout as in the original~~ (used RAW instead of WAV)
+This enables users to explore SynapSeq without installing anything.
 
 ---
 
-## ✅ 9. CLI and Library Interface
+## 6. Cross-Format Import and Conversion
 
-- ✅ Design a CLI using Go's `flag` for command-line options.
-- ✅ Expose core functionality as a Go package for use in other projects (not just CLI).
-- ✅ Ensure clear separation between CLI and core logic.
+**Status: Exploring Feasibility**
 
----
+Planned support for importing and converting sessions from other brainwave generators:
 
-## ✅ 10. Testing & Validation
+- SBaGen (.sbg)
+- Gnaural (.gnaural / XML)
 
-- ✅ Write unit and integration tests for all modules.
-- ✅ Validate output WAV files against those generated by the original C version.
-- ✅ Test edge cases: invalid sequences, overlapping periods, extreme parameter values.
+This feature would unify the ecosystem, allowing legacy users to migrate their sessions to the modern SPSQ format.
 
----
-
-## ✅ 11. Documentation
-
-- ✅ Document all exported functions, structs, and packages.
-- ✅ Provide usage examples for both CLI and library usage.
-- ✅ Write a migration guide for users familiar with the C version.
+Complexity varies per format and will require deeper analysis before implementation.
 
 ---
 
-## ✅ 12. Packaging & Release
+## Summary
 
-- ✅ Prepare build scripts and release instructions.
-- ✅ Ensure cross-platform compatibility (Linux, macOS, Windows).
-- ✅ Publish the project and documentation.
+The 3.5+ roadmap shifts SynapSeq toward a broader platform:
 
----
+- richer export formats
+- stronger Hub ecosystem
+- web-based creator tools
+- compatibility with legacy systems
 
-### Future after v3
-
-- ~~Consider improving the Timeline syntax to make it easier to understand, following the principle of **Intention over Syntax**~~ (not planned; current syntax is already good).
-- Separate the core from additional features, creating a mechanism for addons.
-- Following the addon idea, add export formats such as MP3, OGG, and others.
-- ~~Add support for well-known formats beyond `.spsq`, such as JSON, via addons.~~ (implemented in v3.1.0)
-
----
-
-**This roadmap ensures a faithful, maintainable, and idiomatic Go port of SynapSeq, covering all technical and architectural aspects identified in the original C code.**
+The intention is clear: SynapSeq becomes not just a generator, but a full ecosystem for creation, distribution, and collaboration.
