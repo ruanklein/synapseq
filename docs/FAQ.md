@@ -74,7 +74,7 @@ synapseq -uninstall-file-association
 
 This integration modifies the Windows registry (HKEY_CURRENT_USER only) and does not require administrator privileges. It provides a native Windows experience similar to other desktop applications.
 
-For more details, see the [Windows Native Integration](../README.md#windows-native-integration) section in the README or the [-install-file-association](USAGE.md#-install-file-association-windows-only) command documentation.
+For more details, see the [-install-file-association](USAGE.md#-install-file-association-windows-only) command documentation.
 
 ### I enabled Windows integration, but when I double-click a .spsq file, the terminal window opens and closes very quickly and no WAV file is generated. What's wrong?
 
