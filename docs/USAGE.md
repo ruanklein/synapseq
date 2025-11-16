@@ -612,7 +612,7 @@ You can also load background audio directly from the web using HTTP or HTTPS URL
 
 **Background Audio Requirements:**
 
-- SynapSeq supports `.wav` files with 16-bit and 2 channels (stereo)
+- SynapSeq supports `.wav` files with 8-bit/16-bit/24-bit and 2 channels (stereo)
 - The sample rate must match the sequence sample rate (set with `@samplerate` option)
 - SynapSeq automatically creates a looping effect for background sounds
 - Maximum file size: 10 MB
@@ -1008,6 +1008,44 @@ synapseq -test sample-binaural.spsq
 #### `-version`
 
 Show the version.
+
+#### `-install-file-association` (Windows only)
+
+Installs Windows file association and context menu integration for SynapSeq. This provides a native Windows experience with the following features:
+
+**File Association:**
+
+- Double-click any `.spsq` file to automatically generate a WAV file in the same directory with the same name
+- Assigns the SynapSeq icon to `.spsq` files in Windows Explorer
+
+**Context Menu for .spsq files:**
+
+- **"SynapSeq: Test sequence"**: Validates the sequence syntax without generating audio output
+- **"SynapSeq: Edit sequence"**: Opens the sequence file in Notepad for editing
+
+**Context Menu for .wav files:**
+
+- **"SynapSeq: Extract sequence"**: Extracts the embedded `.spsq` sequence from SynapSeq-generated WAV files
+
+Example:
+
+```powershell
+synapseq -install-file-association
+```
+
+**Note:** This command modifies the Windows registry (HKEY_CURRENT_USER only). Administrator privileges are not required.
+
+#### `-uninstall-file-association` (Windows only)
+
+Removes all Windows file associations and context menu entries created by SynapSeq.
+
+Example:
+
+```powershell
+synapseq -uninstall-file-association
+```
+
+**Note:** This command is safe to run even if file associations were never installed.
 
 ## Notes
 

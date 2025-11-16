@@ -58,6 +58,24 @@ synapseq my-sequence.spsq - | play -t raw -r 44100 -e signed-integer -b 16 -c 2 
 
 SynapSeq outputs 16-bit stereo WAV files by default. You can also pipe raw audio to other tools for playback or conversion.
 
+### How can I improve the Windows experience with SynapSeq?
+
+On Windows, you can enable native file association and context menu integration to make working with SynapSeq more intuitive and efficient. Run the following command:
+
+```powershell
+synapseq -install-file-association
+```
+
+To remove the integration:
+
+```powershell
+synapseq -uninstall-file-association
+```
+
+This integration modifies the Windows registry (HKEY_CURRENT_USER only) and does not require administrator privileges. It provides a native Windows experience similar to other desktop applications.
+
+For more details, see the [Windows Native Integration](../README.md#windows-native-integration) section in the README or the [-install-file-association](USAGE.md#-install-file-association-windows-only) command documentation.
+
 ### Can I use my own background sounds?
 
 Yes! Use the `@background` option at the top of your sequence file to specify a WAV file as background:
@@ -68,7 +86,7 @@ Yes! Use the `@background` option at the top of your sequence file to specify a 
 
 **Requirements and behavior:**
 
-- The WAV file must be **16-bit stereo** with the same sample rate as your sequence (default: 44100 Hz)
+- The WAV file must be **8/16/24-bit stereo** with the same sample rate as your sequence (default: 44100 Hz)
 - Maximum file size: **10 MB**
 - SynapSeq automatically **creates a loop** of the background audio, repeating it continuously throughout your session
 - You can control the background amplitude and apply effects (spin, pulse) in your presets
