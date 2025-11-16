@@ -35,7 +35,7 @@ func uninstallWindowsFileAssociation() error {
 	if err := fileassoc.CleanSynapSeqWindowsRegistry(); err != nil {
 		return err
 	}
-	fmt.Println("Successfully removed .spsq file association with SynapSeq.")
 
+	fmt.Println("Successfully removed .spsq file association with SynapSeq.")
 	return nil
 }
