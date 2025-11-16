@@ -44,10 +44,6 @@ jobs:
           make build-linux-arm64
           make build-macos
 
-      - name: Generate manpage
-        run: |
-          make man
-
       - name: Prepare packaging directory
         run: |
           mkdir -p packages
