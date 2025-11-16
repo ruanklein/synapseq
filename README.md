@@ -156,6 +156,11 @@ All original code in SynapSeq is licensed under the GNU GPL v2, but the followin
   Copyright © 2009-2014 Google Inc.  
   Used for UUID generation and unique identifier handling.
 
+- **[golang.org/x/sys/windows/registry](https://pkg.go.dev/golang.org/x/sys/windows/registry)**  
+  License: BSD 3-Clause
+  Copyright 2009 The Go Authors.
+  Used for Windows registry access and manipulation.
+
 All third-party copyright notices and licenses are preserved in this repository in compliance with their original terms.
 
 ## Contact
