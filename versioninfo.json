@@ -1,0 +1,17 @@
+{
+    "FixedFileInfo": {
+        "FileVersion": {
+            "Major": 3,
+            "Minor": 4,
+            "Patch": 0
+        },
+        "ProductVersion": {
+            "Major": 3,
+            "Minor": 4,
+            "Patch": 0
+        }
+    },
+    "IconPath": "assets/synapseq.ico",
+    "ProductName": "SynapSeq",
+    "FileDescription": "Synapse-Sequenced Brainwave Generator"
+}
