@@ -55,8 +55,9 @@ func CleanSynapSeqWindowsRegistry() error {
 		}
 	}
 
-	progIDPath := `Software\Classes\SynapSeq.File`
-	_ = deleteRegistryTree(registry.CURRENT_USER, progIDPath)
+	_ = deleteRegistryTree(registry.CURRENT_USER, `Software\Classes\SynapSeq.File`)
+	_ = deleteRegistryTree(registry.CURRENT_USER,
+		`Software\Classes\SystemFileAssociations\.wav\shell\SynapSeqExtract`)
 
 	return nil
 }
@@ -190,6 +191,47 @@ func InstallWindowsContextMenu() error {
 
 	editCmd := `notepad.exe "%1"`
 	editCmdKey.SetStringValue("", editCmd)
+
+	return nil
+}
+
+// InstallWindowsExtractMenu adds an "Extract sequence" option to the Windows context menu for .wav files
+func InstallWindowsExtractMenu() error {
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	exePath := filepath.Clean(exe)
+
+	base := `Software\Classes\SystemFileAssociations\.wav\shell\SynapSeqExtract`
+
+	// Main key
+	k, _, err := registry.CreateKey(
+		registry.CURRENT_USER,
+		base,
+		registry.SET_VALUE,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create wav extract menu: %w", err)
+	}
+	defer k.Close()
+
+	k.SetStringValue("", "SynapSeq: Extract sequence")
+	k.SetStringValue("Icon", exePath+",0")
+
+	// Command key
+	cmdKey, _, err := registry.CreateKey(
+		registry.CURRENT_USER,
+		base+`\command`,
+		registry.SET_VALUE,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create extract command: %w", err)
+	}
+	defer cmdKey.Close()
+
+	extractCmd := `cmd.exe /C synapseq -extract "%1" & echo. & pause`
+	cmdKey.SetStringValue("", extractCmd)
 
 	return nil
 }

@@ -25,6 +25,9 @@ func installWindowsFileAssociation(quiet bool) error {
 	if err := fileassoc.InstallWindowsContextMenu(); err != nil {
 		return err
 	}
+	if err := fileassoc.InstallWindowsExtractMenu(); err != nil {
+		return err
+	}
 
 	if !quiet {
 		fmt.Println("Successfully installed .spsq file association with SynapSeq.")
