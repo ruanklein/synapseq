@@ -81,6 +81,16 @@ func run(opts *cli.CLIOptions, args []string) error {
 		return hubRunInfo(opts.HubInfo)
 	}
 
+	// --install-file-association (Windows only)
+	if opts.InstallFileAssociation {
+		return installWindowsFileAssociation()
+	}
+
+	// --uninstall-file-association (Windows only)
+	if opts.UninstallFileAssociation {
+		return uninstallWindowsFileAssociation()
+	}
+
 	// --help or missing args
 	if opts.ShowHelp || len(args) == 0 {
 		cli.Help()

@@ -54,6 +54,10 @@ type CLIOptions struct {
 	HubInfo string
 	// Hub get sequence
 	HubGet string
+	// Windows file association installation
+	InstallFileAssociation bool
+	// Clean Windows file association removal
+	UninstallFileAssociation bool
 }
 
 // Help prints the help message
@@ -94,6 +98,12 @@ func Help() {
 	fmt.Printf("  -hub-download       		Download sequence and dependencies\n")
 	fmt.Printf("  -hub-info       		Show information about a sequence\n")
 	fmt.Printf("  -hub-get       		Get sequence\n\n")
+
+	if runtime.GOOS == "windows" {
+		fmt.Printf("Windows-specific options:\n")
+		fmt.Printf("  -install-file-association  	Associate .spsq files with SynapSeq\n")
+		fmt.Printf("  -uninstall-file-association	Remove .spsq file association\n\n")
+	}
 
 	fmt.Printf("For detailed documentation:\n")
 	fmt.Printf("  %s\n", info.REPOSITORY)
@@ -139,6 +149,10 @@ func ParseFlags() (*CLIOptions, []string, error) {
 	fs.BoolVar(&opts.UnsafeNoMetadata, "unsafe-no-metadata", false, "Do not embed metadata in output WAV file")
 	fs.BoolVar(&opts.ConvertToText, "convert", false, "Convert to text from json/xml/yaml")
 	fs.BoolVar(&opts.ShowHelp, "help", false, "Show help")
+
+	// Windows-specific options
+	fs.BoolVar(&opts.InstallFileAssociation, "install-file-association", false, "Associate .spsq files with SynapSeq (Windows only)")
+	fs.BoolVar(&opts.UninstallFileAssociation, "uninstall-file-association", false, "Remove .spsq file association (Windows only)")
 
 	err := fs.Parse(os.Args[1:])
 	return opts, fs.Args(), err
