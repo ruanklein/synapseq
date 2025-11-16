@@ -38,8 +38,10 @@ jobs:
 
       - name: Build binaries
         run: |
-          make build-windows
-          make build-linux
+          make build-windows-amd64
+          make build-windows-arm64
+          make build-linux-amd64
+          make build-linux-arm64
           make build-macos
 
       - name: Generate manpage
