@@ -102,7 +102,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 	}
 
 	inputFile := args[0]
-	outputFile := getDefaultOutputFile(inputFile)
+	outputFile := getDefaultOutputFile(inputFile, "wav")
 	if len(args) == 2 {
 		outputFile = args[1]
 	}
@@ -118,6 +118,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 			return nil
 		}
 
+		outputFile = getDefaultOutputFile(inputFile, "spsq")
 		if err := synapseq.SaveExtracted(inputFile, outputFile); err != nil {
 			return fmt.Errorf("failed to extract text sequence. Error\n  %w", err)
 		}
@@ -208,7 +209,7 @@ func detectFormat(opts *cli.CLIOptions) string {
 }
 
 // getDefaultOutputFile generates a default output filename based on the input filename
-func getDefaultOutputFile(inputFile string) string {
+func getDefaultOutputFile(inputFile string, extension string) string {
 	base := strings.TrimSuffix(filepath.Base(inputFile), filepath.Ext(inputFile))
-	return base + ".wav"
+	return base + "." + extension
 }
