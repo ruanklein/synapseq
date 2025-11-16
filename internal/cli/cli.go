@@ -1,5 +1,3 @@
-//go:build !nohub
-
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
  *
@@ -111,7 +109,7 @@ func Help() {
 
 // ShowVersion prints the version information
 func ShowVersion() {
-	fmt.Printf("SynapSeq %s (%s) built %s for %s/%s (Hub enabled)\n",
+	fmt.Printf("SynapSeq %s (%s) built %s for %s/%s\n",
 		info.VERSION,
 		info.GIT_COMMIT,
 		info.BUILD_DATE,

@@ -70,10 +70,10 @@ build-windows-arm64: prepare windows-res-arm64
 	GOOS=windows GOARCH=arm64 go build -tags=windows $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-windows-arm64.exe $(MAIN)
 
 build-windows-nohub-amd64: prepare build-windows-amd64
-	GOOS=windows GOARCH=amd64 go build -tags=nohub,windows $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-windows-amd64-nohub.exe $(MAIN)
+	GOOS=windows GOARCH=amd64 go build -tags="nohub windows" $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-windows-amd64-nohub.exe $(MAIN)
 
 build-windows-nohub-arm64: prepare build-windows-arm64
-	GOOS=windows GOARCH=arm64 go build -tags=nohub,windows $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-windows-arm64-nohub.exe $(MAIN)
+	GOOS=windows GOARCH=arm64 go build -tags="nohub windows" $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-windows-arm64-nohub.exe $(MAIN)
 
 
 # Linux builds
