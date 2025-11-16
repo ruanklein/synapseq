@@ -76,6 +76,28 @@ This integration modifies the Windows registry (HKEY_CURRENT_USER only) and does
 
 For more details, see the [Windows Native Integration](../README.md#windows-native-integration) section in the README or the [-install-file-association](USAGE.md#-install-file-association-windows-only) command documentation.
 
+### I enabled Windows integration, but when I double-click a .spsq file, the terminal window opens and closes very quickly and no WAV file is generated. What's wrong?
+
+This usually happens when there is a **syntax error** in your `.spsq` file. When you double-click a file, SynapSeq tries to generate the WAV, but if the sequence contains errors, the program exits immediately and displays the error message in the terminal window, which closes too quickly to read.
+
+**To diagnose the problem:**
+
+1. Right-click on the `.spsq` file
+2. Select **"SynapSeq: Test sequence"** from the context menu
+3. A terminal window will open and stay open, showing any syntax errors in your sequence
+
+This option validates your sequence without generating audio, making it easy to identify and fix syntax problems like:
+
+- Missing indentation
+- Invalid preset names
+- Incorrect timeline format
+- Unsupported options or parameters
+- Typos in element definitions
+
+Once you fix the errors reported by the test, double-clicking the file should work correctly and generate the WAV file.
+
+**Tip:** You can also use **"SynapSeq: Edit sequence"** from the context menu to quickly open and edit the file in Notepad.
+
 ### Can I use my own background sounds?
 
 Yes! Use the `@background` option at the top of your sequence file to specify a WAV file as background:
