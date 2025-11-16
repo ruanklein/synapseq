@@ -83,12 +83,12 @@ func run(opts *cli.CLIOptions, args []string) error {
 
 	// --install-file-association (Windows only)
 	if opts.InstallFileAssociation {
-		return installWindowsFileAssociation()
+		return installWindowsFileAssociation(opts.Quiet)
 	}
 
 	// --uninstall-file-association (Windows only)
 	if opts.UninstallFileAssociation {
-		return uninstallWindowsFileAssociation()
+		return uninstallWindowsFileAssociation(opts.Quiet)
 	}
 
 	// --help or missing args
@@ -123,7 +123,9 @@ func run(opts *cli.CLIOptions, args []string) error {
 			return fmt.Errorf("failed to extract text sequence. Error\n  %w", err)
 		}
 
-		fmt.Println("Extraction completed successfully.")
+		if !opts.Quiet {
+			fmt.Println("Extraction completed successfully.")
+		}
 		return nil
 	}
 
@@ -167,7 +169,9 @@ func run(opts *cli.CLIOptions, args []string) error {
 			return fmt.Errorf("failed to convert to text. Error\n  %w", err)
 		}
 
-		fmt.Println("Conversion completed successfully.")
+		if !opts.Quiet {
+			fmt.Println("Conversion completed successfully.")
+		}
 		return nil
 	}
 

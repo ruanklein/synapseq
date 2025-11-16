@@ -14,11 +14,11 @@ import (
 )
 
 // installWindowsFileAssociation is disabled for non-Windows builds
-func installWindowsFileAssociation() error {
+func installWindowsFileAssociation(quiet bool) error {
 	return fmt.Errorf("this build does not support Windows file association installation")
 }
 
 // uninstallWindowsFileAssociation is disabled for non-Windows builds
-func uninstallWindowsFileAssociation() error {
+func uninstallWindowsFileAssociation(quiet bool) error {
 	return fmt.Errorf("this build does not support Windows file association removal")
 }

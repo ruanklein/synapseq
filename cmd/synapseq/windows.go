@@ -16,7 +16,7 @@ import (
 )
 
 // installWindowsFileAssociation sets up the file association for .spsq files on Windows
-func installWindowsFileAssociation() error {
+func installWindowsFileAssociation(quiet bool) error {
 	_ = fileassoc.CleanSynapSeqWindowsRegistry()
 
 	if err := fileassoc.InstallWindowsFileAssociation(); err != nil {
@@ -26,16 +26,20 @@ func installWindowsFileAssociation() error {
 		return err
 	}
 
-	fmt.Println("Successfully installed .spsq file association with SynapSeq.")
+	if !quiet {
+		fmt.Println("Successfully installed .spsq file association with SynapSeq.")
+	}
 	return nil
 }
 
 // uninstallWindowsFileAssociation removes the file association for .spsq files on Windows
-func uninstallWindowsFileAssociation() error {
+func uninstallWindowsFileAssociation(quiet bool) error {
 	if err := fileassoc.CleanSynapSeqWindowsRegistry(); err != nil {
 		return err
 	}
 
-	fmt.Println("Successfully removed .spsq file association with SynapSeq.")
+	if !quiet {
+		fmt.Println("Successfully removed .spsq file association with SynapSeq.")
+	}
 	return nil
 }
