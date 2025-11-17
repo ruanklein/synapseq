@@ -1,6 +1,21 @@
 # SynapSeq Sequence Files
 
-This directory contains example sequence files demonstrating various features and capabilities of SynapSeq. Each sample showcases different aspects of brainwave entrainment technology and audio synthesis.
+**Note:** All sample sequences are now available at the [SynapSeq Hub](https://synapseq-hub.ruan.sh/). You can browse sequences through the web interface and download or generate audio files using the CLI.
+
+To get started with Hub:
+
+```bash
+# Update the local Hub index
+synapseq -hub-update
+
+# List all available sequences
+synapseq -hub-list
+
+# Generate a sample sequence
+synapseq -hub-get synapseq.samples.binaural
+```
+
+This directory previously contained example sequence files demonstrating various features and capabilities of SynapSeq. Below is a reference guide describing each sample and its purpose.
 
 ## Text Format
 
