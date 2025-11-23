@@ -6,11 +6,18 @@ This roadmap outlines the next phase of evolution for SynapSeq following the com
 
 ## 1. Licensing Upgrade to GPLv3
 
-**Status: Planned**
+**Status: Under Consideration**
 
 SynapSeq will migrate from GPL v2 to GPL v3 to enable broader compatibility with modern open-source ecosystems, including permissive licenses such as Apache 2.0.
 
 This change expands the range of audio and encoding libraries that can be legally integrated, allowing significant improvements in export formats and tooling.
+
+**Updated:**  
+A potential migration to GPLv3 is under evaluation. This transition depends on the following condition:
+
+A full rewrite of the remaining engine components that still conceptually derive from the SynapSeq v2 / GPL v2 (approximately 20% of the current audio engine).
+
+Because this rewrite is substantial and not currently a priority, this migration may ultimately never happen.
 
 ---
 
@@ -25,6 +32,11 @@ SynapSeq will support direct export to:
 - (Maybe) OPUS
 
 Compressed formats drastically reduce file sizes, making it easier for users to store, distribute, and share their generated sessions. WAV will continue as the high-fidelity default, with optional compressed export.
+
+**Updated:**
+Initial MP3 export experiments using libmp3lame revealed that native support for compressed formats introduces significant technical complexity into the build process. The dependency on external C libraries, platform-specific toolchains, and custom compilation flags breaks the simplicity and portability that SynapSeq is designed to maintain.
+
+This issue is especially severe on Windows, where reliable integration of LAME is difficult and harms reproducibility of builds.
 
 ---
 
