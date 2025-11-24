@@ -96,15 +96,13 @@ This feature would unify the ecosystem, allowing legacy users to migrate their s
 
 Complexity varies per format and will require deeper analysis before implementation.
 
----
+**Updated:**
+Early investigation showed that translating formats like SBG into SPSQ is substantially more complex than anticipated.
 
-## Summary
+SBaGen relies on implicit behaviors (relative timelines, auto-fade rules, automatic transitions, inherited track states, and NOW-dependent timing) that do not map cleanly to SynapSeq’s fully explicit and deterministic model.
 
-The 3.5+ roadmap shifts SynapSeq toward a broader platform:
+Producing an automated converter would require interpreting intent that the source files simply do not encode, and the resulting SPSQ would still need manual correction.
 
-- richer export formats
-- stronger Hub ecosystem
-- web-based creator tools
-- compatibility with legacy systems
+Maintaining such a tool would add disproportionate overhead without meaningful benefit.
 
-The intention is clear: SynapSeq becomes not just a generator, but a full ecosystem for creation, distribution, and collaboration.
+In practice, direct human translation is far more predictable, produces clearer results, and preserves the explicit nature of SPSQ without introducing hidden heuristics.
