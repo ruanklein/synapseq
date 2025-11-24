@@ -69,10 +69,10 @@ build-windows-amd64: prepare windows-res-amd64
 build-windows-arm64: prepare windows-res-arm64
 	GOOS=windows GOARCH=arm64 go build -tags=windows $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-windows-arm64.exe $(MAIN)
 
-build-windows-nohub-amd64: prepare build-windows-amd64
+build-windows-nohub-amd64: prepare
 	GOOS=windows GOARCH=amd64 go build -tags="nohub windows" $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-windows-amd64-nohub.exe $(MAIN)
 
-build-windows-nohub-arm64: prepare build-windows-arm64
+build-windows-nohub-arm64: prepare
 	GOOS=windows GOARCH=arm64 go build -tags="nohub windows" $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-windows-arm64-nohub.exe $(MAIN)
 
 
@@ -83,10 +83,10 @@ build-linux-amd64: prepare
 build-linux-arm64: prepare
 	GOOS=linux GOARCH=arm64 go build $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-linux-arm64 $(MAIN)
 
-build-linux-nohub-amd64: prepare build-linux-amd64
+build-linux-nohub-amd64: prepare
 	GOOS=linux GOARCH=amd64 go build -tags=nohub $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-linux-amd64-nohub $(MAIN)
 
-build-linux-nohub-arm64: prepare build-linux-arm64
+build-linux-nohub-arm64: prepare
 	GOOS=linux GOARCH=arm64 go build -tags=nohub $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-linux-arm64-nohub $(MAIN)
 
 # macOS builds
