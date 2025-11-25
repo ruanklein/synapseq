@@ -14,6 +14,7 @@ import (
 	"syscall/js"
 
 	"github.com/ruanklein/synapseq/v3/internal/audio"
+	"github.com/ruanklein/synapseq/v3/internal/info"
 	"github.com/ruanklein/synapseq/v3/internal/sequence"
 )
 
@@ -82,6 +83,9 @@ func generateWav(this js.Value, args []js.Value) interface{} {
 
 func main() {
 	js.Global().Set("synapseqGenerate", js.FuncOf(generateWav))
+	js.Global().Set("synapseqVersion", js.ValueOf(info.VERSION))
+	js.Global().Set("synapseqBuildDate", js.ValueOf(info.BUILD_DATE))
+	js.Global().Set("synapseqHash", js.ValueOf(info.GIT_COMMIT))
 
 	select {}
 }

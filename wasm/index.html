@@ -378,8 +378,16 @@ alpha-four
       }
 
       // Initialize SynapSeq library
-      function initSynapSeq() {
+      async function initSynapSeq() {
         synapseq = new SynapSeq();
+
+        const version = await synapseq.getVersion();
+        const buildDate = await synapseq.getBuildDate();
+        const hash = await synapseq.getHash();
+
+        console.log(
+          `SynapSeq Version: ${version}, Build Date: ${buildDate}, Hash: ${hash}`
+        );
 
         // Setup event handlers
         synapseq.onloaded = () => {

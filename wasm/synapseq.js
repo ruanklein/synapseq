@@ -76,6 +76,24 @@ class SynapSeq {
 
     /**
      * @private
+     * @type {string}
+     */
+    this._version = "unknown";
+
+    /**
+     * @private
+     * @type {string}
+     */
+    this._buildDate = "";
+
+    /**
+     * @private
+     * @type {string}
+     */
+    this._hash = "";
+
+    /**
+     * @private
      * @type {Promise<void>|null}
      */
     this._initPromise = null;
@@ -121,7 +139,13 @@ class SynapSeq {
 
             go.run(result.instance);
             wasmReady = true;
-            self.postMessage({ type: "ready" });
+
+            self.postMessage({
+              type: "ready",
+              version: synapseqVersion,
+              buildDate: synapseqBuildDate,
+              hash: synapseqHash,
+            });
           } catch (error) {
             self.postMessage({
               type: "error",
@@ -189,6 +213,11 @@ class SynapSeq {
 
           if (data.type === "ready") {
             this._workerReady = true;
+
+            this._version = data.version || "unknown";
+            this._buildDate = data.buildDate || "";
+            this._hash = data.hash || "";
+
             resolve();
           } else if (data.type === "success") {
             this._handleAudioGenerated(data.wav);
@@ -496,6 +525,48 @@ class SynapSeq {
    */
   getAudioBlob() {
     return this._audioBlob;
+  }
+
+  /**
+   * Gets the SynapSeq version
+   * @returns {string} The version string
+   * @example
+   * const version = synapse.getVersion();
+   * console.log('SynapSeq Version:', version);
+   */
+  async getVersion() {
+    if (!this._workerReady) {
+      await this._initPromise;
+    }
+    return this._version;
+  }
+
+  /**
+   * Gets the build date of the SynapSeq WASM
+   * @returns {string} The build date string
+   * @example
+   * const buildDate = synapse.getBuildDate();
+   * console.log('SynapSeq Build Date:', buildDate);
+   */
+  async getBuildDate() {
+    if (!this._workerReady) {
+      await this._initPromise;
+    }
+    return this._buildDate;
+  }
+
+  /**
+   * Gets the hash of the SynapSeq WASM build
+   * @returns {string} The hash string
+   * @example
+   * const hash = synapse.getHash();
+   * console.log('SynapSeq Hash:', hash);
+   */
+  async getHash() {
+    if (!this._workerReady) {
+      await this._initPromise;
+    }
+    return this._hash;
   }
 
   /**
