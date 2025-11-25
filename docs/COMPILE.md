@@ -122,6 +122,21 @@ make build-macos            # macOS ARM64 (Apple Silicon)
 
 **Note for Windows builds:** The Makefile automatically generates Windows resource files (including application icon and metadata) when building for Windows. This requires the `goversioninfo` tool, which will be automatically downloaded during the build process.
 
+**For WebAssembly (Browser):**
+
+You can compile SynapSeq to WebAssembly for use in web browsers:
+
+```bash
+make build-wasm
+```
+
+This will generate the WebAssembly files in the `wasm/` directory:
+
+- `synapseq.wasm` - The WebAssembly binary
+- `wasm_exec.js` - Go WASM runtime (copied from Go installation)
+
+For detailed documentation on using SynapSeq in the browser, see the [WebAssembly Documentation](../wasm/README.md).
+
 ## Installing the Binary
 
 After compilation, you can install the binary system-wide:
@@ -211,6 +226,10 @@ Other available make targets:
 **Cleanup:**
 
 - `make clean` - Remove all compiled binaries and generated files
+
+**WebAssembly:**
+
+- `make build-wasm` - Build WebAssembly version for browsers
 
 **Utilities:**
 
