@@ -1,41 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SynapSeq - Synapse-Sequenced Brainwave Generator</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
+    <meta
+      name="description"
+      content="Lightweight engine that sequences audio tones to guide brainwave states like relaxation, focus, and meditation using a simple text-based format."
     />
-    <!-- For old IEs -->
+
+    <!-- Favicons -->
     <link rel="shortcut icon" href="assets/favicon.ico" />
-
-    <!-- For new browsers multisize ico  -->
-    <link
-      rel="icon"
-      type="image/x-icon"
-      sizes="16x16 32x32"
-      href="assets/favicon.ico"
-    />
-
-    <!-- Chrome for Android -->
-    <link rel="icon" sizes="192x192" href="assets/favicon-192.png" />
-
-    <!-- For iPhone 6+ downscaled for other devices -->
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="assets/favicon-180-precomposed.png"
-    />
-
-    <!-- For IE10 Metro -->
     <meta name="msapplication-TileColor" content="#FFFFFF" />
     <meta
       name="msapplication-TileImage"
       content="assets/favicon-114-precomposed.png"
     />
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="wasm/synapseq.js"></script>
+
     <style>
       * {
         margin: 0;
@@ -43,69 +28,92 @@
         box-sizing: border-box;
       }
 
+      :root {
+        /* Colors from UI spec */
+        --color-gray-50: #f8fafc;
+        --color-gray-100: #f1f5f9;
+        --color-gray-200: #e2e8f0;
+        --color-gray-300: #cbd5e1;
+        --color-gray-400: #94a3b8;
+        --color-gray-500: #64748b;
+        --color-gray-600: #475569;
+        --color-gray-700: #334155;
+        --color-gray-800: #1e293b;
+        --color-gray-850: #172033;
+        --color-gray-900: #0f172a;
+        --color-gray-950: #020617;
+
+        --color-blue-400: #60a5fa;
+        --color-blue-500: #3b82f6;
+        --color-blue-600: #2563eb;
+        --color-blue-700: #1d4ed8;
+
+        --color-cyan-400: #22d3ee;
+        --color-cyan-500: #06b6d4;
+        --color-cyan-600: #0891b2;
+
+        --color-green-600: #16a34a;
+        --color-green-700: #15803d;
+      }
+
       body {
-        font-family: "Inter", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
         background: linear-gradient(
-          135deg,
-          #0a0118 0%,
-          #1a0728 25%,
-          #2d1b69 50%,
-          #5b21b6 75%,
-          #7c3aed 100%
+          to bottom right,
+          var(--color-gray-950),
+          var(--color-gray-950),
+          var(--color-gray-900)
         );
-        color: white;
-        overflow-x: hidden;
-        position: relative;
+        color: var(--color-gray-100);
         min-height: 100vh;
-        min-height: 100dvh;
+        overflow-x: hidden;
+        transition: background 0.3s, color 0.3s;
+      }
+
+      /* Light Mode */
+      body:not(.dark) {
+        background: linear-gradient(
+          to bottom right,
+          var(--color-gray-50),
+          rgba(239, 246, 255, 0.3),
+          rgba(207, 250, 254, 0.3)
+        );
+        color: var(--color-gray-900);
       }
 
       .container {
-        max-width: 1200px;
+        max-width: 1152px;
         margin: 0 auto;
-        padding: 0 20px;
+        padding: 1rem;
       }
 
       /* Header */
       header {
-        padding: 20px 0;
         position: fixed;
         top: 0;
-        width: 100%;
-        background: linear-gradient(
-          135deg,
-          rgba(168, 85, 247, 0.1) 0%,
-          rgba(124, 58, 237, 0.15) 50%,
-          rgba(91, 33, 182, 0.1) 100%
-        );
-        backdrop-filter: blur(20px) saturate(180%);
-        border-bottom: 1px solid rgba(168, 85, 247, 0.2);
-        z-index: 1000;
-        box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1);
-      }
-
-      header::before {
-        content: "";
-        position: absolute;
-        top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(
-            circle at 30% 50%,
-            rgba(168, 85, 247, 0.05) 0%,
-            transparent 70%
-          ),
-          radial-gradient(
-            circle at 70% 50%,
-            rgba(236, 72, 153, 0.05) 0%,
-            transparent 70%
-          );
-        pointer-events: none;
-        border-radius: 0 0 30px 30px;
+        right: 0;
+        z-index: 50;
+        padding: 1rem;
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--color-gray-800);
       }
 
-      nav {
+      body:not(.dark) header {
+        background: rgba(255, 255, 255, 0.8);
+        border-bottom-color: var(--color-gray-200);
+      }
+
+      body:not(.dark) header {
+        background: rgba(255, 255, 255, 0.8);
+        border-bottom-color: var(--color-gray-200);
+      }
+
+      .header-content {
+        max-width: 1152px;
+        margin: 0 auto;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -114,32 +122,23 @@
       .logo {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 0.75rem;
         text-decoration: none;
-        transition: all 0.3s ease;
-      }
-
-      .logo:hover {
-        transform: scale(1.05);
-      }
-
-      .logo-image {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        filter: drop-shadow(0 2px 8px rgba(168, 85, 247, 0.3));
-        transition: all 0.3s ease;
-      }
-
-      .logo:hover .logo-image {
-        filter: drop-shadow(0 4px 12px rgba(168, 85, 247, 0.5));
-        transform: rotate(5deg);
-      }
-
-      .logo-text {
-        font-size: 24px;
+        color: white;
+        font-size: 1.5rem;
         font-weight: 700;
-        background: linear-gradient(45deg, #a855f7, #ec4899);
+      }
+
+      body:not(.dark) .logo {
+        color: var(--color-gray-900);
+      }
+
+      .logo-gradient {
+        background: linear-gradient(
+          to right,
+          var(--color-blue-400),
+          var(--color-cyan-400)
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -147,40 +146,78 @@
 
       .nav-links {
         display: flex;
-        list-style: none;
-        gap: 30px;
+        align-items: center;
+        gap: 1.5rem;
       }
 
       .nav-links a {
-        color: white;
+        color: var(--color-gray-300);
         text-decoration: none;
-        font-weight: 400;
-        transition: color 0.3s ease;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: color 0.2s;
       }
 
       .nav-links a:hover {
-        color: #a855f7;
+        color: var(--color-cyan-400);
+      }
+
+      body:not(.dark) .nav-links a {
+        color: var(--color-gray-600);
+      }
+
+      body:not(.dark) .nav-links a:hover {
+        color: var(--color-blue-600);
+      }
+
+      .theme-toggle {
+        background: var(--color-gray-800);
+        border: 1px solid var(--color-gray-700);
+        color: var(--color-cyan-400);
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .theme-toggle:hover {
+        background: var(--color-gray-700);
+      }
+
+      body:not(.dark) .theme-toggle {
+        background: var(--color-gray-100);
+        border-color: var(--color-gray-200);
+        color: var(--color-gray-700);
+      }
+
+      body:not(.dark) .theme-toggle:hover {
+        background: var(--color-gray-200);
       }
 
       .hamburger {
         display: none;
         flex-direction: column;
+        gap: 0.25rem;
+        background: none;
+        border: none;
         cursor: pointer;
-        padding: 4px;
-        z-index: 1001;
+        padding: 0.5rem;
       }
 
       .hamburger span {
-        width: 25px;
-        height: 3px;
-        background: linear-gradient(45deg, #a855f7, #ec4899);
-        margin: 3px 0;
-        transition: 0.3s;
+        width: 1.5rem;
+        height: 2px;
+        background: var(--color-gray-300);
         border-radius: 2px;
+        transition: all 0.3s;
       }
 
       .hamburger.active span:nth-child(1) {
-        transform: rotate(-45deg) translate(-5px, 6px);
+        transform: rotate(45deg) translate(5px, 5px);
       }
 
       .hamburger.active span:nth-child(2) {
@@ -188,2046 +225,1385 @@
       }
 
       .hamburger.active span:nth-child(3) {
-        transform: rotate(45deg) translate(-5px, -6px);
+        transform: rotate(-45deg) translate(5px, -5px);
+      }
+
+      body:not(.dark) .hamburger span {
+        background: var(--color-gray-700);
+      }
+
+      .header-spacer {
+        height: 5rem;
       }
 
       /* Hero Section */
       .hero {
-        min-height: 100vh;
+        padding: 4rem 1rem 2rem;
+        text-align: center;
+      }
+
+      .hero-logo {
+        width: 6rem;
+        height: 6rem;
+        margin: 0 auto 2rem;
+        border-radius: 50%;
+        box-shadow: 0 10px 30px rgba(96, 165, 250, 0.3);
         display: flex;
         align-items: center;
         justify-content: center;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
+        background: rgba(34, 211, 238, 0.1);
+        border: 2px solid var(--color-cyan-400);
       }
 
-      .hero::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: url("assets/synapseq.png") center/contain no-repeat;
-        opacity: 0.1;
-        z-index: -1;
+      body:not(.dark) .hero-logo {
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+        background: rgba(59, 130, 246, 0.1);
+        border-color: var(--color-blue-500);
       }
 
-      .hero-content h1 {
-        font-size: 4rem;
+      body:not(.dark) .hero-logo i {
+        color: var(--color-blue-500) !important;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
         font-weight: 700;
-        margin-bottom: 20px;
-        background: linear-gradient(45deg, #ffffff, #a855f7, #ec4899);
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+      }
+
+      .hero-gradient {
+        background: linear-gradient(
+          to right,
+          var(--color-blue-400),
+          var(--color-cyan-400),
+          var(--color-blue-400)
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        animation: float 6s ease-in-out infinite;
+        background-size: 200% auto;
+        animation: gradient-shift 3s linear infinite;
       }
 
-      .hero-content p {
-        font-size: 1.2rem;
-        margin-bottom: 30px;
-        max-width: 600px;
-        line-height: 1.6;
-        opacity: 0.9;
+      @keyframes gradient-shift {
+        to {
+          background-position: 200% center;
+        }
       }
 
-      .cta-button {
-        display: inline-block;
-        padding: 18px 45px;
+      .hero-description {
+        font-size: 1.25rem;
+        color: var(--color-gray-300);
+        max-width: 48rem;
+        margin: 0 auto 2rem;
+        line-height: 1.7;
+      }
+
+      body:not(.dark) .hero-description {
+        color: var(--color-gray-600);
+      }
+
+      .hero-features {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+      }
+
+      .hero-feature {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--color-gray-400);
+      }
+
+      body:not(.dark) .hero-feature {
+        color: var(--color-gray-600);
+      }
+
+      /* Playground Section */
+      .playground {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid var(--color-gray-700);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin: 2rem auto;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      body:not(.dark) .playground {
+        background: rgba(255, 255, 255, 0.5);
+        border-color: var(--color-gray-200);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .playground-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .playground-title {
+        font-size: 1.875rem;
+        font-weight: 700;
+        background: linear-gradient(
+          to right,
+          var(--color-blue-400),
+          var(--color-cyan-400)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .docs-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.875rem;
+        background: var(--color-blue-500);
+        color: white;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .docs-link:hover {
+        background: var(--color-blue-600);
+        transform: translateY(-2px);
+      }
+
+      .editor-container {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--color-gray-700);
+        border-radius: 0.75rem;
+        overflow: hidden;
+        background: var(--color-gray-900);
+        transition: opacity 0.2s, border-color 0.2s;
+      }
+
+      .editor-container:has(.editor-textarea:disabled) {
+        opacity: 0.7;
+        border-color: var(--color-gray-600);
+      }
+
+      body:not(.dark) .editor-container {
+        border-color: var(--color-gray-200);
+        background: white;
+      }
+
+      .line-numbers {
+        background: var(--color-gray-800);
+        padding: 1rem 0.75rem;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 0.875rem;
+        color: var(--color-gray-500);
+        user-select: none;
+        line-height: 1.5;
+        min-width: 3.5rem;
+        text-align: right;
+        overflow-y: auto;
+        overflow-x: hidden;
+        white-space: pre;
+        height: 450px;
+        max-height: 450px;
+      }
+
+      body:not(.dark) .line-numbers {
+        background: var(--color-gray-50);
+        color: var(--color-gray-400);
+      }
+
+      .editor-textarea {
+        flex: 1;
+        padding: 1rem;
+        background: transparent;
+        border: none;
+        color: var(--color-gray-100);
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 0.875rem;
+        resize: none;
+        outline: none;
+        line-height: 1.5;
+        overflow-y: auto;
+        height: 450px;
+        max-height: 450px;
+        transition: opacity 0.2s, filter 0.2s;
+      }
+
+      .editor-textarea:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        filter: grayscale(0.3);
+      }
+
+      body:not(.dark) .editor-textarea {
+        color: var(--color-gray-900);
+      }
+
+      .editor-textarea::placeholder {
+        color: var(--color-gray-600);
+      }
+
+      body:not(.dark) .editor-textarea::placeholder {
+        color: var(--color-gray-400);
+      }
+
+      .controls {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 1rem;
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-play {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+      }
+
+      .btn-play:hover:not(:disabled) {
+        background: linear-gradient(135deg, #16a34a, #15803d);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .btn-pause,
+      .btn-stop {
+        background: var(--color-gray-700);
+        color: white;
+      }
+
+      .btn-pause:hover:not(:disabled),
+      .btn-stop:hover:not(:disabled) {
+        background: var(--color-gray-600);
+        transform: translateY(-2px);
+      }
+
+      .btn-upload {
+        background: var(--color-blue-500);
+        color: white;
+      }
+
+      .btn-upload:hover:not(:disabled) {
+        background: var(--color-blue-600);
+        transform: translateY(-2px);
+      }
+
+      .file-input-hidden {
+        display: none;
+      }
+
+      .progress-section {
+        background: var(--color-gray-800);
+        padding: 1rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      body:not(.dark) .progress-section {
+        background: var(--color-gray-100);
+      }
+
+      .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: var(--color-gray-700);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+      }
+
+      body:not(.dark) .progress-bar-container {
+        background: var(--color-gray-200);
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(
+          to right,
+          var(--color-blue-500),
+          var(--color-cyan-500)
+        );
+        width: 0%;
+        transition: width 0.1s;
+      }
+
+      .time-display {
+        font-size: 0.875rem;
+        color: var(--color-gray-400);
+        text-align: center;
+      }
+
+      .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        color: #fca5a5;
+        margin-bottom: 1rem;
+        display: none;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      .status-message {
+        text-align: center;
+        color: var(--color-gray-400);
+        font-size: 0.875rem;
+        margin-top: 1rem;
+      }
+
+      body:not(.dark) .status-message {
+        color: var(--color-gray-600);
+      }
+
+      /* Hub Section */
+      .hub-section {
+        text-align: center;
+        padding: 3rem 1rem;
+      }
+
+      .hub-card {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid var(--color-gray-800);
+        border-radius: 1rem;
+        padding: 3rem 2rem;
+        max-width: 48rem;
+        margin: 0 auto;
+        transition: all 0.2s;
+      }
+
+      .hub-card:hover {
+        border-color: var(--color-cyan-600);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px rgba(34, 211, 238, 0.1);
+      }
+
+      .hub-icon {
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 1.5rem;
+        color: var(--color-cyan-400);
+      }
+
+      .hub-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(
+          to right,
+          var(--color-blue-400),
+          var(--color-cyan-400)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hub-description {
+        color: var(--color-gray-300);
+        margin-bottom: 2rem;
+        line-height: 1.7;
+      }
+
+      .hub-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
         background: linear-gradient(
           135deg,
-          rgba(168, 85, 247, 0.8) 0%,
-          rgba(124, 58, 237, 0.9) 50%,
-          rgba(91, 33, 182, 0.8) 100%
+          var(--color-blue-500),
+          var(--color-cyan-500)
         );
         color: white;
         text-decoration: none;
-        border-radius: 50px;
+        border-radius: 0.75rem;
         font-weight: 600;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 15px 35px rgba(168, 85, 247, 0.3),
-          0 5px 15px rgba(236, 72, 153, 0.2),
-          inset 0 1px 0 rgba(255, 255, 255, 0.2),
-          inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        position: relative;
-        overflow: hidden;
+        font-size: 1.125rem;
+        transition: all 0.2s;
       }
 
-      .cta-button::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.2),
-          transparent
-        );
-        transition: left 0.6s ease;
+      .hub-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 10px rgba(59, 130, 246, 0.3);
       }
 
-      .cta-button:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 25px 50px rgba(168, 85, 247, 0.4),
-          0 10px 25px rgba(236, 72, 153, 0.3),
-          inset 0 1px 0 rgba(255, 255, 255, 0.3);
-        background: linear-gradient(
-          135deg,
-          rgba(168, 85, 247, 0.9) 0%,
-          rgba(124, 58, 237, 1) 50%,
-          rgba(91, 33, 182, 0.9) 100%
-        );
-      }
-
-      .cta-button:hover::before {
-        left: 100%;
-      }
-
-      /* Features Section */
-      .features {
-        padding: 100px 0;
-        background: radial-gradient(
-            circle at 50% 50%,
-            rgba(168, 85, 247, 0.05) 0%,
-            transparent 70%
-          ),
-          linear-gradient(
-            180deg,
-            rgba(0, 0, 0, 0.1) 0%,
-            rgba(168, 85, 247, 0.05) 100%
-          );
-        backdrop-filter: blur(5px);
-        position: relative;
-      }
-
-      .features::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(
-            circle at 20% 80%,
-            rgba(236, 72, 153, 0.03) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            circle at 80% 20%,
-            rgba(168, 85, 247, 0.03) 0%,
-            transparent 50%
-          );
-        pointer-events: none;
+      /* Installation Section */
+      .installation {
+        padding: 3rem 1rem;
       }
 
       .section-title {
-        text-align: center;
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
-        margin-bottom: 60px;
-        background: linear-gradient(45deg, #ffffff, #a855f7);
+        text-align: center;
+        margin-bottom: 3rem;
+        background: linear-gradient(
+          to right,
+          var(--color-blue-400),
+          var(--color-cyan-400)
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
       }
 
-      .features-grid {
+      .install-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 40px;
+        gap: 2rem;
+        margin-bottom: 3rem;
       }
 
-      .feature-card {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.1) 0%,
-          rgba(168, 85, 247, 0.05) 50%,
-          rgba(255, 255, 255, 0.02) 100%
-        );
-        padding: 40px 30px;
-        border-radius: 30px;
-        text-align: center;
-        border: 1px solid rgba(168, 85, 247, 0.2);
-        backdrop-filter: blur(25px) saturate(200%);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1),
-          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      .install-card {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid var(--color-gray-700);
+        border-radius: 1rem;
+        padding: 2rem;
+        transition: all 0.2s;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
 
-      .feature-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(
-            circle at 20% 20%,
-            rgba(168, 85, 247, 0.1) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            circle at 80% 80%,
-            rgba(236, 72, 153, 0.08) 0%,
-            transparent 50%
-          );
-        pointer-events: none;
-        transition: opacity 0.4s ease;
-        opacity: 0;
+      body:not(.dark) .install-card {
+        background: rgba(255, 255, 255, 0.5);
+        border-color: var(--color-gray-200);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       }
 
-      .feature-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        border-color: rgba(168, 85, 247, 0.4);
-        box-shadow: 0 25px 60px rgba(168, 85, 247, 0.25),
-          0 15px 35px rgba(236, 72, 153, 0.15),
-          inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.15) 0%,
-          rgba(168, 85, 247, 0.1) 50%,
-          rgba(255, 255, 255, 0.05) 100%
-        );
+      .install-card:hover {
+        border-color: var(--color-blue-600);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
       }
 
-      .feature-card:hover::before {
-        opacity: 1;
-      }
-
-      .feature-icon {
-        width: 64px;
-        height: 64px;
-        margin: 0 auto 20px;
-        display: block;
-        color: #a855f7;
-        filter: drop-shadow(0 4px 12px rgba(168, 85, 247, 0.3));
-        transition: all 0.3s ease;
-      }
-
-      .feature-card:hover .feature-icon {
-        color: #ec4899;
-        transform: scale(1.1);
-        filter: drop-shadow(0 6px 20px rgba(236, 72, 153, 0.4));
-      }
-
-      .feature-card h3 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-        color: #a855f7;
-      }
-
-      .feature-card p {
-        line-height: 1.6;
-        opacity: 0.9;
-      }
-
-      /* About Section */
-      .about {
-        padding: 100px 0;
-      }
-
-      .about-content {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 60px;
+      .install-card-header {
+        display: flex;
         align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
       }
 
-      .about-text h2 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 30px;
-        background: linear-gradient(45deg, #ffffff, #a855f7);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+      .install-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        color: var(--color-blue-400);
       }
 
-      .about-text p {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        margin-bottom: 20px;
-        opacity: 0.9;
-      }
-
-      .principles {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.08) 0%,
-          rgba(168, 85, 247, 0.06) 50%,
-          rgba(255, 255, 255, 0.04) 100%
-        );
-        padding: 40px;
-        border-radius: 30px;
-        border: 1px solid rgba(168, 85, 247, 0.25);
-        backdrop-filter: blur(20px) saturate(150%);
-        box-shadow: 0 10px 30px rgba(168, 85, 247, 0.15),
-          inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .principles::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(
-            circle at 30% 30%,
-            rgba(168, 85, 247, 0.08) 0%,
-            transparent 60%
-          ),
-          radial-gradient(
-            circle at 70% 70%,
-            rgba(236, 72, 153, 0.06) 0%,
-            transparent 60%
-          );
-        pointer-events: none;
-      }
-
-      .principles h3 {
+      .install-card h3 {
         font-size: 1.5rem;
         font-weight: 600;
-        margin-bottom: 20px;
-        color: #a855f7;
+        color: white;
       }
 
-      .principles ul {
-        list-style: none;
+      .install-code {
+        background: var(--color-gray-900);
+        border: 1px solid var(--color-gray-700);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 0.875rem;
+        color: var(--color-blue-300);
+        overflow-x: auto;
+        margin-bottom: 0.5rem;
       }
 
-      .principles li {
-        padding: 8px 0;
-        position: relative;
-        padding-left: 25px;
+      body:not(.dark) .install-code {
+        background: var(--color-gray-50);
+        border-color: var(--color-gray-200);
+        color: var(--color-blue-700);
       }
 
-      .principles li::before {
-        content: "→";
-        position: absolute;
-        left: 0;
-        color: #a855f7;
-        font-weight: bold;
+      .install-code:last-child {
+        margin-bottom: 0;
+      }
+
+      .downloads-section {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid var(--color-gray-700);
+        border-radius: 1rem;
+        padding: 2rem;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      body:not(.dark) .downloads-section {
+        background: rgba(255, 255, 255, 0.5);
+        border-color: var(--color-gray-200);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .downloads-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        color: white;
+      }
+
+      .downloads-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+      }
+
+      .download-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(
+          135deg,
+          var(--color-blue-500),
+          var(--color-blue-600)
+        );
+        color: white;
+        text-decoration: none;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+
+      .download-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
       }
 
       /* Footer */
       footer {
-        padding: 50px 0;
         text-align: center;
-        background: linear-gradient(
-          135deg,
-          rgba(168, 85, 247, 0.08) 0%,
-          rgba(0, 0, 0, 0.2) 50%,
-          rgba(91, 33, 182, 0.08) 100%
-        );
-        border-top: 1px solid rgba(168, 85, 247, 0.25);
-        backdrop-filter: blur(15px) saturate(120%);
-        position: relative;
+        padding: 3rem 1rem;
+        color: var(--color-gray-400);
+        border-top: 1px solid var(--color-gray-800);
       }
 
-      footer::before {
-        content: "";
-        position: absolute;
+      body:not(.dark) footer {
+        color: var(--color-gray-600);
+        border-top-color: var(--color-gray-200);
+      }
+
+      .footer-links {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .footer-links a {
+        color: var(--color-gray-400);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .footer-links a:hover {
+        color: var(--color-cyan-400);
+      }
+
+      body:not(.dark) .footer-links a {
+        color: var(--color-gray-600);
+      }
+
+      body:not(.dark) .footer-links a:hover {
+        color: var(--color-blue-600);
+      }
+
+      /* Loading Overlay */
+      .loading-overlay {
+        position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(
-          circle at 50% 0%,
-          rgba(168, 85, 247, 0.1) 0%,
-          transparent 50%
-        );
-        pointer-events: none;
-      }
-
-      /* Examples Section */
-      .examples-accordion {
-        max-width: 1000px;
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      .example-item {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.08) 0%,
-          rgba(168, 85, 247, 0.06) 50%,
-          rgba(255, 255, 255, 0.04) 100%
-        );
-        border-radius: 20px;
-        border: 1px solid rgba(168, 85, 247, 0.2);
-        backdrop-filter: blur(20px) saturate(150%);
-        box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1),
-          inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        overflow: hidden;
-        transition: all 0.3s ease;
-      }
-
-      .example-item:hover {
-        border-color: rgba(168, 85, 247, 0.3);
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(168, 85, 247, 0.15),
-          inset 0 1px 0 rgba(255, 255, 255, 0.15);
-      }
-
-      .example-header {
-        display: flex;
-        margin-bottom: 30px;
-        justify-content: space-between;
-        align-items: center;
-        padding: 25px 30px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: rgba(168, 85, 247, 0.05);
-      }
-
-      .example-header:hover {
-        background: rgba(168, 85, 247, 0.1);
-      }
-
-      .example-header-content {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-      }
-
-      .example-header-icon {
-        width: 32px;
-        height: 32px;
-        color: #a855f7;
-        filter: drop-shadow(0 2px 8px rgba(168, 85, 247, 0.3));
-      }
-
-      .example-header-info h3 {
-        color: #a855f7;
-        font-size: 1.4rem;
-        margin-bottom: 5px;
-        font-weight: 600;
-      }
-
-      .example-header-info p {
-        opacity: 0.8;
-        font-size: 0.95rem;
-        margin: 0;
-      }
-
-      .expand-icon {
-        width: 24px;
-        height: 24px;
-        color: #a855f7;
-        transition: transform 0.3s ease;
-      }
-
-      .expand-icon.rotated {
-        transform: rotate(180deg);
-      }
-
-      .example-content {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease-out;
-        padding: 0;
-      }
-
-      .example-content.expanded {
-        max-height: 2000px;
-        padding: 0 30px 30px;
-        transition: max-height 0.4s ease-in, padding 0.4s ease-in;
-      }
-
-      .example-content > * {
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
-        transition-delay: 0s;
-        margin-bottom: 30px;
-      }
-
-      .example-content > *:last-child {
-        margin-bottom: 0;
-      }
-
-      .example-content.expanded > * {
-        opacity: 1;
-        transform: translateY(0);
-        transition-delay: 0.1s;
-      }
-
-      /* Audio Player */
-      .audio-player-section {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.1) 0%,
-          rgba(168, 85, 247, 0.05) 50%,
-          rgba(255, 255, 255, 0.02) 100%
-        );
-        padding: 30px;
-        border-radius: 25px;
-        border: 1px solid rgba(168, 85, 247, 0.2);
-        backdrop-filter: blur(25px) saturate(200%);
-        box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1),
-          inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      }
-
-      .player-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 25px;
-      }
-
-      .player-icon {
-        width: 32px;
-        height: 32px;
-        color: #a855f7;
-        margin-right: 15px;
-      }
-
-      .player-info h3 {
-        color: #a855f7;
-        font-size: 1.3rem;
-        margin-bottom: 5px;
-      }
-
-      .player-info p {
-        opacity: 0.8;
-        font-size: 0.9rem;
-      }
-
-      .custom-audio-player {
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 15px;
-        padding: 20px;
-        border: 1px solid rgba(168, 85, 247, 0.1);
-      }
-
-      .audio-controls {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-      }
-
-      .control-buttons {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-      }
-
-      .control-btn {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        border: none;
-        background: linear-gradient(135deg, #a855f7, #ec4899);
-        color: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        display: none;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+        z-index: 9999;
       }
 
-      .control-btn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
-      }
-
-      .control-btn.stop-btn {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-      }
-
-      .control-btn.stop-btn:hover {
-        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
-      }
-
-      .control-icon {
-        width: 20px;
-        height: 20px;
-      }
-
-      .progress-container {
-        flex: 1;
+      .loading-overlay.show {
         display: flex;
-        flex-direction: column;
-        gap: 8px;
       }
 
-      .progress-bar {
-        height: 6px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 3px;
-        overflow: hidden;
-        cursor: pointer;
+      .loading-content {
+        text-align: center;
+        color: white;
       }
 
-      .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #a855f7, #ec4899);
-        width: 0%;
-        transition: width 0.1s ease;
-        border-radius: 3px;
+      .loading-icon {
+        width: 4rem;
+        height: 4rem;
+        color: var(--color-cyan-400);
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        margin: 0 auto 1.5rem;
       }
 
-      .time-display {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.8rem;
-        opacity: 0.8;
-      }
-
-      .volume-container {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .volume-icon {
-        width: 18px;
-        height: 18px;
-        color: #a855f7;
-      }
-
-      .volume-slider {
-        width: 80px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-        outline: none;
-        cursor: pointer;
-      }
-
-      .volume-slider::-webkit-slider-thumb {
-        appearance: none;
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #a855f7, #ec4899);
-        cursor: pointer;
-        box-shadow: 0 2px 6px rgba(168, 85, 247, 0.3);
-      }
-
-      /* Explanation Section */
-      .explanation-section {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.08) 0%,
-          rgba(168, 85, 247, 0.06) 50%,
-          rgba(255, 255, 255, 0.04) 100%
-        );
-        padding: 30px;
-        border-radius: 25px;
-        border: 1px solid rgba(168, 85, 247, 0.2);
-        backdrop-filter: blur(20px) saturate(150%);
-        box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1),
-          inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      }
-
-      .explanation-section h3 {
-        color: #a855f7;
-        font-size: 1.3rem;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-      }
-
-      .explanation-content {
-        display: grid;
-        gap: 25px;
-      }
-
-      .explanation-item h4 {
-        color: #ec4899;
-        font-size: 1rem;
-        margin-bottom: 8px;
-      }
-
-      .explanation-item p {
-        line-height: 1.6;
-        opacity: 0.9;
-        font-size: 0.95rem;
-      }
-
-      /* Script Section */
-      .script-section {
-        background: linear-gradient(
-          135deg,
-          rgba(0, 0, 0, 0.5) 0%,
-          rgba(168, 85, 247, 0.15) 50%,
-          rgba(0, 0, 0, 0.4) 100%
-        );
-        border-radius: 25px;
-        border: 1px solid rgba(168, 85, 247, 0.3);
-        backdrop-filter: blur(20px) saturate(150%);
-        box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1),
-          inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        overflow: hidden;
-      }
-
-      .script-header {
-        padding: 25px 30px;
-        border-bottom: 1px solid rgba(168, 85, 247, 0.3);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: rgba(168, 85, 247, 0.1);
-      }
-
-      .script-header h3 {
-        color: #a855f7;
-        font-size: 1.2rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .script-icon {
-        width: 20px;
-        height: 20px;
-      }
-
-      .file-name {
-        background: rgba(168, 85, 247, 0.2);
-        color: #a855f7;
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        font-family: "Courier New", monospace;
-      }
-
-      .code-editor {
-        font-family: "Courier New", Monaco, monospace;
-        font-size: 0.85rem;
-        line-height: 1.5;
-      }
-
-      .code-content {
-        padding: 30px;
-        overflow-x: auto;
-        background: rgba(0, 0, 0, 0.4);
-        border-radius: 15px;
-        margin: 10px;
-      }
-
-      .code-content pre {
-        margin: 0;
-        white-space: pre;
-      }
-
-      /* Syntax Highlighting */
-      .comment {
-        color: #d1d5db;
-        font-style: italic;
-        opacity: 0.8;
-      }
-      .preset {
-        color: #fbbf24;
-        font-weight: 600;
-      }
-      .keyword {
-        color: #a78bfa;
-        font-weight: 500;
-      }
-      .value {
-        color: #34d399;
-      }
-      .parameter {
-        color: #22d3ee;
-      }
-      .number {
-        color: #fb7185;
-      }
-      .type {
-        color: #f87171;
-      }
-      .timestamp {
-        color: #c084fc;
-        font-weight: 600;
-      }
-
-      /* Responsive */
-      @media (max-width: 768px) {
-        .example-header {
-          padding: 20px 25px;
-        }
-
-        .example-header-content {
-          gap: 15px;
-        }
-
-        .example-header-icon {
-          width: 28px;
-          height: 28px;
-        }
-
-        .example-header-info h3 {
-          font-size: 1.2rem;
-        }
-
-        .example-header-info p {
-          font-size: 0.9rem;
-        }
-
-        .example-content.expanded {
-          padding: 0 25px 25px;
-        }
-
-        .audio-controls {
-          flex-direction: column;
-          gap: 15px;
-        }
-
-        .progress-container {
-          width: 100%;
-        }
-
-        .volume-container {
-          justify-content: center;
-        }
-
-        .script-header {
-          flex-direction: column;
-          gap: 10px;
-          align-items: flex-start;
-        }
-
-        .code-editor {
-          font-size: 0.75rem;
-        }
-
-        .code-content {
-          padding: 20px;
-          margin: 5px;
-        }
-      }
-
-      /* Animations */
-      @keyframes float {
+      @keyframes pulse {
         0%,
         100% {
-          transform: translateY(0px);
+          opacity: 1;
         }
         50% {
-          transform: translateY(-10px);
+          opacity: 0.5;
         }
+      }
+
+      .loading-text {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--color-gray-100);
+      }
+
+      .loading-subtext {
+        font-size: 0.875rem;
+        color: var(--color-gray-400);
+        margin-top: 0.5rem;
       }
 
       /* Responsive */
       @media (max-width: 768px) {
-        .logo-image {
-          width: 28px;
-          height: 28px;
-        }
-
-        .logo-text {
-          font-size: 20px;
-        }
-
-        .hero-content h1 {
-          font-size: 2.5rem;
-        }
-
         .hamburger {
           display: flex;
         }
 
         .nav-links {
           position: fixed;
-          top: 0;
-          right: -100%;
-          width: 300px;
-          height: 100vh;
-          background: linear-gradient(
-            135deg,
-            rgba(26, 7, 40, 0.98) 0%,
-            rgba(91, 33, 182, 0.95) 100%
-          );
-          backdrop-filter: blur(20px);
+          top: 5rem;
+          left: 0;
+          right: 0;
+          background: rgba(15, 23, 42, 0.98);
+          backdrop-filter: blur(12px);
           flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          gap: 40px;
-          transition: right 0.3s ease;
-          z-index: 1000;
-          border-left: 1px solid rgba(168, 85, 247, 0.3);
+          padding: 2rem;
+          gap: 1.5rem;
+          border-bottom: 1px solid var(--color-gray-800);
+          transform: translateY(-150%);
+          opacity: 0;
+          transition: transform 0.3s, opacity 0.3s;
+          pointer-events: none;
         }
 
         .nav-links.active {
-          right: 0;
-        }
-
-        .nav-links li {
-          opacity: 0;
-          transform: translateX(50px);
-          transition: all 0.3s ease;
-        }
-
-        .nav-links.active li {
+          transform: translateY(0);
           opacity: 1;
-          transform: translateX(0);
+          pointer-events: all;
         }
 
-        .nav-links.active li:nth-child(1) {
-          transition-delay: 0.1s;
-        }
-        .nav-links.active li:nth-child(2) {
-          transition-delay: 0.2s;
-        }
-        .nav-links.active li:nth-child(3) {
-          transition-delay: 0.3s;
-        }
-        .nav-links.active li:nth-child(4) {
-          transition-delay: 0.4s;
-        }
-        .nav-links.active li:nth-child(5) {
-          transition-delay: 0.5s;
-        }
-        .nav-links.active li:nth-child(6) {
-          transition-delay: 0.6s;
-        }
-        .nav-links.active li:nth-child(7) {
-          transition-delay: 0.7s;
+        body:not(.dark) .nav-links {
+          background: rgba(255, 255, 255, 0.98);
+          border-bottom-color: var(--color-gray-200);
         }
 
         .nav-links a {
-          font-size: 1.2rem;
-          padding: 10px 20px;
-          border-radius: 10px;
-          transition: all 0.3s ease;
+          font-size: 1.125rem;
+          padding: 0.5rem 0;
         }
 
-        .nav-links a:hover {
-          background: rgba(168, 85, 247, 0.2);
-          transform: scale(1.05);
+        .theme-toggle {
+          margin-top: 1rem;
         }
 
-        .about-content {
-          grid-template-columns: 1fr;
-          gap: 40px;
+        .hero h1 {
+          font-size: 2rem;
         }
 
-        .features-grid {
-          grid-template-columns: 1fr;
+        .hero-description {
+          font-size: 1rem;
+        }
+
+        .hero-features {
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .playground {
+          padding: 1rem;
+        }
+
+        .playground-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .controls {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
         }
       }
     </style>
   </head>
   <body>
+    <!-- Header -->
     <header>
-      <nav class="container">
-        <a href="#home" class="logo">
+      <div class="header-content">
+        <a href="#" class="logo">
           <img
-            src="assets/synapseq-rounded.png"
-            alt="SynapSeq Logo"
-            class="logo-image"
+            src="assets/logo.png"
+            alt="SynapSeq"
+            style="width: 2rem; height: 2rem; border-radius: 50%"
           />
-          <span class="logo-text">SynapSeq</span>
+          <span class="logo-gradient">SynapSeq</span>
         </a>
-        <div class="hamburger" id="hamburger">
+        <nav class="nav-links">
+          <a href="https://github.com/ruanklein/synapseq" target="_blank"
+            >GitHub</a
+          >
+          <a
+            href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
+            target="_blank"
+            >Docs</a
+          >
+          <a
+            href="https://github.com/ruanklein/synapseq/blob/main/docs/FAQ.md"
+            target="_blank"
+            >FAQ</a
+          >
+          <a href="https://synapseq-hub.ruan.sh/" target="_blank">Hub</a>
+          <button
+            class="theme-toggle"
+            id="themeToggle"
+            aria-label="Toggle theme"
+          >
+            <i
+              data-lucide="lightbulb"
+              style="width: 1.25rem; height: 1.25rem"
+            ></i>
+          </button>
+        </nav>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
           <span></span>
           <span></span>
           <span></span>
-        </div>
-        <ul class="nav-links" id="nav-links">
-          <li><a href="#home">Home</a></li>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#tips">Tips</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#examples">Examples</a></li>
-          <li>
-            <a href="https://github.com/ruanklein/synapseq" target="_blank"
-              >GitHub</a
-            >
-          </li>
-        </ul>
-      </nav>
+        </button>
+      </div>
     </header>
 
+    <div class="header-spacer"></div>
+
     <main>
-      <section id="home" class="hero">
+      <!-- Hero Section -->
+      <section class="hero">
         <div class="container">
-          <div class="hero-content">
-            <h1>SynapSeq</h1>
-            <p
-              style="
-                font-size: 1.4rem;
-                font-weight: 500;
-                margin-bottom: 25px;
-                background: linear-gradient(45deg, #ffffff, #a855f7);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-              "
+          <div class="hero-logo">
+            <i
+              data-lucide="brain"
+              style="width: 4rem; height: 4rem; color: var(--color-cyan-400)"
+            ></i>
+          </div>
+          <h1>
+            <span class="hero-gradient"
+              >Synapse-Sequenced Brainwave Generator</span
             >
-              Synapse-Sequenced Brainwave Generator
-            </p>
-
-            <p style="font-size: 1rem; opacity: 0.9; line-height: 1.6">
-              Open-source, text-based generator for meditation, focus,
-              relaxation, and deep sleep through scientifically-designed sound
-              patterns.
-            </p>
-            <a href="#tips" class="cta-button">Discover More</a>
-          </div>
-        </div>
-      </section>
-
-      <section id="features" class="features">
-        <div class="container">
-          <h2 class="section-title">Brainwave Entrainment Types</h2>
-          <div class="features-grid">
-            <div class="feature-card">
-              <i data-lucide="headphones" class="feature-icon"></i>
-              <h3>Binaural Beats</h3>
-              <p>
-                Two slightly different frequencies played in each ear create a
-                perceived third "beat" frequency. The brain synchronizes with
-                this beat pattern. Requires headphones for optimal
-                effectiveness.
-              </p>
-            </div>
-            <div class="feature-card">
-              <i data-lucide="waves" class="feature-icon"></i>
-              <h3>Monaural Beats</h3>
-              <p>
-                Mirrored frequency offsets in opposite channels create rhythmic
-                pulses. Effective with or without headphones, promoting
-                brainwave entrainment through auditory interference patterns.
-              </p>
-            </div>
-            <div class="feature-card">
-              <i data-lucide="radio" class="feature-icon"></i>
-              <h3>Isochronic Tones</h3>
-              <p>
-                Single tones turned on and off at regular intervals. The brain
-                responds to rhythmic stimulation and begins to resonate with the
-                frequency. Works with or without headphones.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="tips" class="features">
-        <div class="container">
-          <h2 class="section-title">How to Get the Most Out of SynapSeq</h2>
-          <p
-            style="
-              text-align: center;
-              font-size: 1.1rem;
-              margin-bottom: 60px;
-              opacity: 0.9;
-              max-width: 800px;
-              margin-left: auto;
-              margin-right: auto;
-            "
-          >
-            To get the most out of SynapSeq-generated sessions, it's essential
-            to create the right environment and use proper equipment. Brainwave
-            entrainment is subtle. Small distractions or poor audio quality can
-            ruin the effect. Follow these tips:
+          </h1>
+          <p class="hero-description">
+            SynapSeq is a lightweight engine that sequences audio tones to guide
+            brainwave states like relaxation, focus, and meditation using a
+            simple text-based format. Create binaural, monaural, and isochronic
+            tones with precision timing and smooth transitions.
           </p>
-          <div class="features-grid">
-            <div class="feature-card">
-              <i data-lucide="headphones" class="feature-icon"></i>
-              <h3>Equipment</h3>
-              <p>
-                <strong>Headphones required:</strong> Use high-quality, over-ear
-                headphones for binaural or monaural beats. Do not use speakers.
-                They break the phase relationships.
-              </p>
-              <p>
-                <strong>For isochronic tones:</strong> Speakers can work, but
-                headphones are still recommended for a more immersive
-                experience.
-              </p>
-              <p>
-                Avoid using wireless earbuds with aggressive compression or
-                latency. They can interfere with the intended frequency
-                response.
-              </p>
+          <div class="hero-features">
+            <div class="hero-feature">
+              <i data-lucide="zap" style="width: 1.25rem; height: 1.25rem"></i>
+              <span>Text-based sequences</span>
             </div>
-            <div class="feature-card">
-              <i data-lucide="moon" class="feature-icon"></i>
-              <h3>Environment & Timing</h3>
-              <p>
-                <strong>Quiet space:</strong> Find a calm, quiet place where you
-                won't be disturbed.
-              </p>
-              <p>
-                <strong>Low light:</strong> Many users benefit from dim lighting
-                or even complete darkness.
-              </p>
-              <p>
-                <strong>No multitasking:</strong> Don't browse, check your
-                phone, or try to work. Focus inward.
-              </p>
-              <p>
-                Use during meditation, relaxation, before sleep, or deep work.
-                Sessions work best when you are relaxed.
-              </p>
+            <div class="hero-feature">
+              <i
+                data-lucide="headphones"
+                style="width: 1.25rem; height: 1.25rem"
+              ></i>
+              <span>Binaural, monaural & isochronic</span>
             </div>
-            <div class="feature-card">
-              <i data-lucide="target" class="feature-icon"></i>
-              <h3>Consistency</h3>
-              <p>
-                The effects build up with consistent use. Think of it like
-                training your brain.
-              </p>
-              <p>
-                Some people feel results immediately; others may need a few
-                sessions to adjust.
-              </p>
-              <p>
-                If you're using stimulating frequencies (like beta or gamma),
-                avoid close to bedtime.
-              </p>
-              <p>
-                Sessions work best when you are relaxed, sitting or lying down,
-                and not in a rush.
-              </p>
+            <div class="hero-feature">
+              <i
+                data-lucide="code-2"
+                style="width: 1.25rem; height: 1.25rem"
+              ></i>
+              <span>Simple & powerful</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="about" class="about">
-        <div class="container">
-          <div class="about-content">
-            <div class="about-text">
-              <h2>Created for Creators</h2>
-              <p>
-                SynapSeq was designed for creators who want to build their own
-                personalized audio experiences for meditation, relaxation, deep
-                sleep, focus, and more.
-              </p>
-              <p>
-                The tool is intentionally lightweight, portable, and simple -
-                offering an easy-to-understand syntax that gets straight to the
-                point. No complexity, no bloat, just pure functionality for
-                crafting the perfect brainwave entrainment sessions.
-              </p>
-              <p>
-                Whether you're a meditation instructor, sound therapist, or
-                someone who enjoys creating custom soundscapes, SynapSeq gives
-                you the power to design exactly what you need.
-              </p>
-            </div>
-            <div class="principles">
-              <h3>Design Principles</h3>
-              <ul>
-                <li>One way to do it</li>
-                <li>Clarity over cleverness</li>
-                <li>Intention over syntax</li>
-                <li>Less options, more focus</li>
-                <li>You write tones, not code</li>
-              </ul>
-              <div style="margin-top: 30px">
-                <a
-                  href="https://github.com/ruanklein/synapseq"
-                  target="_blank"
-                  class="cta-button"
-                  style="
-                    display: inline-block;
-                    padding: 12px 30px;
-                    font-size: 0.9rem;
-                  "
+      <!-- Playground Section -->
+      <section class="container">
+        <div class="playground">
+          <div class="playground-header">
+            <div>
+              <h2 class="playground-title">🧪 Try it now</h2>
+              <p class="hub-hint">
+                Want more sequences?
+                <a href="https://synapseq-hub.ruan.sh/" target="_blank"
+                  >Visit our Hub!</a
                 >
-                  View on GitHub
-                </a>
-              </div>
+              </p>
             </div>
+            <a
+              href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
+              target="_blank"
+              class="docs-link"
+            >
+              <i data-lucide="book-open" style="width: 1rem; height: 1rem"></i>
+              Documentation
+            </a>
           </div>
+
+          <div id="errorContainer" class="error-message"></div>
+
+          <div class="editor-container">
+            <div id="lineNumbers" class="line-numbers">1</div>
+            <textarea
+              id="spsqEditor"
+              class="editor-textarea"
+              rows="15"
+              placeholder="# Try editing this example sequence!
+# Presets
+alpha
+  noise pink amplitude 30
+  tone 250 binaural 10 amplitude 15
+
+# Timeline
+00:00:00 silence
+00:00:15 alpha
+00:01:00 silence"
+            >
+# Presets
+alpha
+  noise pink amplitude 30
+  tone 250 binaural 10 amplitude 15
+
+# Timeline
+00:00:00 silence
+00:00:15 alpha
+00:04:00 alpha
+00:05:00 silence</textarea
+            >
+          </div>
+
+          <div class="controls">
+            <button id="playBtn" class="btn btn-play" disabled>
+              <i data-lucide="play" style="width: 1.25rem; height: 1.25rem"></i>
+              Play
+            </button>
+            <button id="pauseBtn" class="btn btn-pause" disabled>
+              <i
+                data-lucide="pause"
+                style="width: 1.25rem; height: 1.25rem"
+              ></i>
+              Pause
+            </button>
+            <button id="stopBtn" class="btn btn-stop" disabled>
+              <i
+                data-lucide="square"
+                style="width: 1.25rem; height: 1.25rem"
+              ></i>
+              Stop
+            </button>
+            <button
+              id="uploadBtn"
+              class="btn btn-upload"
+              onclick="document.getElementById('fileInput').click()"
+            >
+              <i
+                data-lucide="upload"
+                style="width: 1.25rem; height: 1.25rem"
+              ></i>
+              Upload
+            </button>
+            <input
+              type="file"
+              id="fileInput"
+              class="file-input-hidden"
+              accept=".spsq"
+            />
+          </div>
+
+          <div class="progress-section">
+            <div class="progress-bar-container">
+              <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div id="timeDisplay" class="time-display">00:00 / 00:00</div>
+          </div>
+
+          <div id="statusMessage" class="status-message">Loading WASM...</div>
         </div>
       </section>
 
-      <section id="examples" class="features">
+      <!-- Installation Section -->
+      <section class="installation">
         <div class="container">
-          <h2 class="section-title">Live Examples</h2>
-          <p
-            style="
-              text-align: center;
-              font-size: 1.1rem;
-              margin-bottom: 60px;
-              opacity: 0.9;
-              max-width: 800px;
-              margin-left: auto;
-              margin-right: auto;
-            "
-          >
-            Explore and compare the three main brainwave entrainment
-            technologies with interactive examples. Click on each method to
-            experience the differences.
-          </p>
+          <h2 class="section-title">Installation</h2>
 
-          <div class="examples-accordion">
-            <!-- Binaural Example -->
-            <div class="example-item">
-              <div class="example-header" onclick="toggleExample('binaural')">
-                <div class="example-header-content">
-                  <i data-lucide="headphones" class="example-header-icon"></i>
-                  <div class="example-header-info">
-                    <h3>Binaural Beats</h3>
-                    <p>
-                      Phantom beat created by brain from two separate
-                      frequencies
-                    </p>
-                  </div>
-                </div>
+          <div class="install-grid">
+            <!-- Windows -->
+            <div class="install-card">
+              <div class="install-card-header">
                 <i
-                  data-lucide="chevron-down"
-                  class="expand-icon"
-                  id="icon-binaural"
+                  data-lucide="monitor"
+                  class="install-icon"
+                  style="width: 2.5rem; height: 2.5rem"
                 ></i>
+                <h3>Windows</h3>
               </div>
-              <div class="example-content" id="content-binaural">
-                <!-- Audio Player Section -->
-                <div class="audio-player-section">
-                  <div class="player-header">
-                    <i data-lucide="play-circle" class="player-icon"></i>
-                    <div class="player-info">
-                      <h3>Alpha Binaural Sequence</h3>
-                      <p>Progressive 8-11Hz demonstration (7 minutes)</p>
-                    </div>
-                  </div>
-                  <div class="custom-audio-player">
-                    <audio id="sample-audio" preload="metadata">
-                      <source
-                        src="audio/sample-binaural.m4a"
-                        type="audio/mp4"
-                      />
-                      Your browser does not support the audio element.
-                    </audio>
-                    <div class="audio-controls">
-                      <div class="control-buttons">
-                        <button id="play-pause-btn" class="control-btn">
-                          <i data-lucide="play" class="control-icon"></i>
-                        </button>
-                        <button id="stop-btn" class="control-btn stop-btn">
-                          <i data-lucide="square" class="control-icon"></i>
-                        </button>
-                      </div>
-                      <div class="progress-container">
-                        <div class="progress-bar">
-                          <div class="progress-fill"></div>
-                        </div>
-                        <div class="time-display">
-                          <span id="current-time">0:00</span>
-                          <span id="duration">7:00</span>
-                        </div>
-                      </div>
-                      <div class="volume-container">
-                        <i data-lucide="volume-2" class="volume-icon"></i>
-                        <input
-                          type="range"
-                          id="volume-slider"
-                          min="0"
-                          max="100"
-                          value="70"
-                          class="volume-slider"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Explanation Section -->
-                <div class="explanation-section">
-                  <h3>
-                    <i
-                      data-lucide="info"
-                      style="width: 20px; height: 20px; margin-right: 8px"
-                    ></i
-                    >How It Works
-                  </h3>
-                  <div class="explanation-content">
-                    <div class="explanation-item">
-                      <h4>Binaural Beat Technology</h4>
-                      <p>
-                        Two slightly different frequencies played in each ear
-                        create a perceived third "phantom" beat that can
-                        influence brainwave activity.
-                      </p>
-                    </div>
-                    <div class="explanation-item">
-                      <h4>Technical Process</h4>
-                      <p>
-                        <strong>Left ear:</strong> 250Hz carrier •
-                        <strong>Right ear:</strong> 250Hz + binaural frequency •
-                        <strong>Brain perceives:</strong> The difference
-                        frequency (8-11Hz)
-                      </p>
-                    </div>
-                    <div class="explanation-item">
-                      <h4>Alpha Frequencies (8-14Hz)</h4>
-                      <p>
-                        <strong>8Hz:</strong> Deep relaxation •
-                        <strong>9Hz:</strong> Enhanced focus •
-                        <strong>10Hz:</strong> Classic alpha state •
-                        <strong>11Hz:</strong> Mental clarity
-                      </p>
-                    </div>
-                    <div class="explanation-item">
-                      <h4>Usage Tips</h4>
-                      <p>
-                        Use stereo headphones, find a quiet environment, ideal
-                        for study sessions, meditation, or creative work.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Script Section -->
-                <div class="script-section">
-                  <div class="script-header">
-                    <i data-lucide="code" class="script-icon"></i>
-                    <h3>SynapSeq Script</h3>
-                    <div class="script-info">
-                      <span class="file-name">sample-binaural.spsq</span>
-                    </div>
-                  </div>
-                  <div class="code-editor">
-                    <div class="code-content">
-                      <pre><code><span class="comment"># A sample binaural sequence</span>
-
-<span class="comment"># Presets</span>
-<span class="preset">alpha-one</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">30</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">binaural</span> <span class="number">8</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="preset">alpha-two</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">25</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">binaural</span> <span class="number">9</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="preset">alpha-three</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">20</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">binaural</span> <span class="number">10</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="preset">alpha-four</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">binaural</span> <span class="number">11</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="comment"># Timeline</span>
-<span class="timestamp">00:00:00</span> <span class="preset">silence</span>
-<span class="timestamp">00:00:15</span> <span class="preset">alpha-one</span>
-<span class="timestamp">00:01:00</span> <span class="preset">alpha-one</span>
-<span class="timestamp">00:02:30</span> <span class="preset">alpha-two</span>
-<span class="timestamp">00:04:00</span> <span class="preset">alpha-three</span>
-<span class="timestamp">00:05:30</span> <span class="preset">alpha-four</span>
-<span class="timestamp">00:07:00</span> <span class="preset">silence</span></code></pre>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div class="install-code">winget install synapseq</div>
             </div>
 
-            <!-- Monaural Example -->
-            <div class="example-item">
-              <div class="example-header" onclick="toggleExample('monaural')">
-                <div class="example-header-content">
-                  <i data-lucide="waves" class="example-header-icon"></i>
-                  <div class="example-header-info">
-                    <h3>Monaural Beats</h3>
-                    <p>Audible beating pattern from mixed frequencies</p>
-                  </div>
-                </div>
+            <!-- macOS/Linux -->
+            <div class="install-card">
+              <div class="install-card-header">
                 <i
-                  data-lucide="chevron-down"
-                  class="expand-icon"
-                  id="icon-monaural"
+                  data-lucide="terminal"
+                  class="install-icon"
+                  style="width: 2.5rem; height: 2.5rem"
                 ></i>
+                <h3>macOS / Linux</h3>
               </div>
-              <div class="example-content" id="content-monaural">
-                <!-- Audio Player Section -->
-                <div class="audio-player-section">
-                  <div class="player-header">
-                    <i data-lucide="radio" class="player-icon"></i>
-                    <div class="player-info">
-                      <h3>Alpha Monaural Sequence</h3>
-                      <p>Progressive 8-11Hz demonstration (7 minutes)</p>
-                    </div>
-                  </div>
-                  <div class="custom-audio-player">
-                    <audio id="sample-audio-monaural" preload="metadata">
-                      <source
-                        src="audio/sample-monaural.m4a"
-                        type="audio/mp4"
-                      />
-                      Your browser does not support the audio element.
-                    </audio>
-                    <div class="audio-controls">
-                      <div class="control-buttons">
-                        <button
-                          id="play-pause-btn-monaural"
-                          class="control-btn"
-                        >
-                          <i data-lucide="play" class="control-icon"></i>
-                        </button>
-                        <button
-                          id="stop-btn-monaural"
-                          class="control-btn stop-btn"
-                        >
-                          <i data-lucide="square" class="control-icon"></i>
-                        </button>
-                      </div>
-                      <div class="progress-container">
-                        <div class="progress-bar" id="progress-bar-monaural">
-                          <div
-                            class="progress-fill"
-                            id="progress-fill-monaural"
-                          ></div>
-                        </div>
-                        <div class="time-display">
-                          <span id="current-time-monaural">0:00</span>
-                          <span id="duration-monaural">7:00</span>
-                        </div>
-                      </div>
-                      <div class="volume-container">
-                        <i data-lucide="volume-2" class="volume-icon"></i>
-                        <input
-                          type="range"
-                          id="volume-slider-monaural"
-                          min="0"
-                          max="100"
-                          value="70"
-                          class="volume-slider"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Explanation Section -->
-                <div class="explanation-section">
-                  <h3>
-                    <i
-                      data-lucide="info"
-                      style="width: 20px; height: 20px; margin-right: 8px"
-                    ></i
-                    >How Monaural Beats Work
-                  </h3>
-                  <div class="explanation-content">
-                    <div class="explanation-item">
-                      <h4>Monaural Beat Technology</h4>
-                      <p>
-                        Two frequencies are mixed together before reaching your
-                        ears, creating an audible beating pattern that both ears
-                        hear simultaneously.
-                      </p>
-                    </div>
-                    <div class="explanation-item">
-                      <h4>Technical Process</h4>
-                      <p>
-                        <strong>Mixed signal:</strong> 250Hz + (250Hz + beat
-                        frequency) • <strong>Result:</strong> Audible beating
-                        pattern • <strong>Both ears:</strong> Receive the same
-                        mixed signal
-                      </p>
-                    </div>
-                    <div class="explanation-item">
-                      <h4>Monaural vs Binaural</h4>
-                      <p>
-                        <strong>Monaural:</strong> Actual beating sound •
-                        <strong>Binaural:</strong> Phantom beat created by brain
-                        • <strong>Advantage:</strong> More direct entrainment,
-                        works with speakers
-                      </p>
-                    </div>
-                    <div class="explanation-item">
-                      <h4>Usage Tips</h4>
-                      <p>
-                        You will hear the actual beating rhythm as a pulsing
-                        sound. Can be used with speakers or headphones, often
-                        considered more effective for entrainment.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Script Section -->
-                <div class="script-section">
-                  <div class="script-header">
-                    <i data-lucide="code" class="script-icon"></i>
-                    <h3>SynapSeq Script</h3>
-                    <div class="script-info">
-                      <span class="file-name">sample-monaural.spsq</span>
-                    </div>
-                  </div>
-                  <div class="code-editor">
-                    <div class="code-content">
-                      <pre><code><span class="comment"># A sample monaural sequence</span>
-
-<span class="comment"># Presets</span>
-<span class="preset">alpha-one</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">30</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">monaural</span> <span class="number">8</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="preset">alpha-two</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">25</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">monaural</span> <span class="number">9</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="preset">alpha-three</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">20</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">monaural</span> <span class="number">10</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="preset">alpha-four</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">monaural</span> <span class="number">11</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="comment"># Timeline</span>
-<span class="timestamp">00:00:00</span> <span class="preset">silence</span>
-<span class="timestamp">00:00:15</span> <span class="preset">alpha-one</span>
-<span class="timestamp">00:01:00</span> <span class="preset">alpha-one</span>
-<span class="timestamp">00:02:30</span> <span class="preset">alpha-two</span>
-<span class="timestamp">00:04:00</span> <span class="preset">alpha-three</span>
-<span class="timestamp">00:05:30</span> <span class="preset">alpha-four</span>
-<span class="timestamp">00:07:00</span> <span class="preset">silence</span></code></pre>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div class="install-code">brew tap ruanklein/synapseq</div>
+              <div class="install-code">brew install synapseq</div>
             </div>
+          </div>
 
-            <!-- Isochronic Example -->
-            <div class="example-item">
-              <div class="example-header" onclick="toggleExample('isochronic')">
-                <div class="example-header-content">
-                  <i data-lucide="zap" class="example-header-icon"></i>
-                  <div class="example-header-info">
-                    <h3>Isochronic Tones</h3>
-                    <p>
-                      Clear distinct pulses - most direct entrainment method
-                    </p>
-                  </div>
-                </div>
+          <div class="downloads-section">
+            <h3 class="downloads-title">Or download directly</h3>
+            <div class="downloads-grid">
+              <a
+                href="https://github.com/ruanklein/synapseq/releases/download/v3.4.0/synapseq-v3.4.0-windows-amd64.zip"
+                class="download-btn"
+              >
                 <i
-                  data-lucide="chevron-down"
-                  class="expand-icon"
-                  id="icon-isochronic"
+                  data-lucide="download"
+                  style="width: 1.25rem; height: 1.25rem"
                 ></i>
-              </div>
-              <div class="example-content" id="content-isochronic">
-                <!-- Audio Player Section -->
-                <div class="audio-player-section">
-                  <div class="player-header">
-                    <i data-lucide="zap" class="player-icon"></i>
-                    <div class="player-info">
-                      <h3>Alpha Isochronic Sequence</h3>
-                      <p>Progressive 8-11Hz demonstration (7 minutes)</p>
-                    </div>
-                  </div>
-                  <div class="custom-audio-player">
-                    <audio id="sample-audio-isochronic" preload="metadata">
-                      <source
-                        src="audio/sample-isochronic.m4a"
-                        type="audio/mp4"
-                      />
-                      Your browser does not support the audio element.
-                    </audio>
-                    <div class="audio-controls">
-                      <div class="control-buttons">
-                        <button
-                          id="play-pause-btn-isochronic"
-                          class="control-btn"
-                        >
-                          <i data-lucide="play" class="control-icon"></i>
-                        </button>
-                        <button
-                          id="stop-btn-isochronic"
-                          class="control-btn stop-btn"
-                        >
-                          <i data-lucide="square" class="control-icon"></i>
-                        </button>
-                      </div>
-                      <div class="progress-container">
-                        <div class="progress-bar" id="progress-bar-isochronic">
-                          <div
-                            class="progress-fill"
-                            id="progress-fill-isochronic"
-                          ></div>
-                        </div>
-                        <div class="time-display">
-                          <span id="current-time-isochronic">0:00</span>
-                          <span id="duration-isochronic">7:00</span>
-                        </div>
-                      </div>
-                      <div class="volume-container">
-                        <i data-lucide="volume-2" class="volume-icon"></i>
-                        <input
-                          type="range"
-                          id="volume-slider-isochronic"
-                          min="0"
-                          max="100"
-                          value="70"
-                          class="volume-slider"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Explanation Section -->
-                <div class="explanation-section">
-                  <h3>
-                    <i
-                      data-lucide="info"
-                      style="width: 20px; height: 20px; margin-right: 8px"
-                    ></i
-                    >How Isochronic Tones Work
-                  </h3>
-                  <div class="explanation-content">
-                    <div class="explanation-item">
-                      <h4>Isochronic Technology</h4>
-                      <p>
-                        Single tones that turn on and off at regular intervals,
-                        creating distinct pulses of sound with clear silence
-                        between them.
-                      </p>
-                    </div>
-                    <div class="explanation-item">
-                      <h4>Technical Process</h4>
-                      <p>
-                        <strong>Method:</strong> 250Hz tone pulsing on/off •
-                        <strong>Example:</strong> 8Hz = 8 pulses per second •
-                        <strong>Result:</strong> Clear, distinct audio pulses
-                      </p>
-                    </div>
-                    <div class="explanation-item">
-                      <h4>Entrainment Comparison</h4>
-                      <p>
-                        <strong>Binaural:</strong> Phantom beat •
-                        <strong>Monaural:</strong> Audible beating •
-                        <strong>Isochronic:</strong> Distinct pulses - most
-                        direct method
-                      </p>
-                    </div>
-                    <div class="explanation-item">
-                      <h4>Advantages</h4>
-                      <p>
-                        Most effective entrainment method with clear,
-                        impossible-to-ignore pulses. Works excellently with
-                        speakers. Ideal for active meditation and focus.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Script Section -->
-                <div class="script-section">
-                  <div class="script-header">
-                    <i data-lucide="code" class="script-icon"></i>
-                    <h3>SynapSeq Script</h3>
-                    <div class="script-info">
-                      <span class="file-name">sample-isochronic.spsq</span>
-                    </div>
-                  </div>
-                  <div class="code-editor">
-                    <div class="code-content">
-                      <pre><code><span class="comment"># A sample isochronic sequence</span>
-
-<span class="comment"># Presets</span>
-<span class="preset">alpha-one</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">30</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">isochronic</span> <span class="number">8</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="preset">alpha-two</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">25</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">isochronic</span> <span class="number">9</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="preset">alpha-three</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">20</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">isochronic</span> <span class="number">10</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="preset">alpha-four</span>
-  <span class="keyword">noise</span> <span class="value">pink</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-  <span class="keyword">tone</span> <span class="number">250</span> <span class="type">isochronic</span> <span class="number">11</span> <span class="parameter">amplitude</span> <span class="number">15</span>
-
-<span class="comment"># Timeline</span>
-<span class="timestamp">00:00:00</span> <span class="preset">silence</span>
-<span class="timestamp">00:00:15</span> <span class="preset">alpha-one</span>
-<span class="timestamp">00:01:00</span> <span class="preset">alpha-one</span>
-<span class="timestamp">00:02:30</span> <span class="preset">alpha-two</span>
-<span class="timestamp">00:04:00</span> <span class="preset">alpha-three</span>
-<span class="timestamp">00:05:30</span> <span class="preset">alpha-four</span>
-<span class="timestamp">00:07:00</span> <span class="preset">silence</span></code></pre>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                Windows (x64)
+              </a>
+              <a
+                href="https://github.com/ruanklein/synapseq/releases/download/v3.4.0/synapseq-v3.4.0-macos-arm64.tar.gz"
+                class="download-btn"
+              >
+                <i
+                  data-lucide="download"
+                  style="width: 1.25rem; height: 1.25rem"
+                ></i>
+                macOS (ARM64)
+              </a>
+              <a
+                href="https://github.com/ruanklein/synapseq/releases/download/v3.4.0/synapseq-v3.4.0-linux-amd64.tar.gz"
+                class="download-btn"
+              >
+                <i
+                  data-lucide="download"
+                  style="width: 1.25rem; height: 1.25rem"
+                ></i>
+                Linux (x64)
+              </a>
             </div>
           </div>
         </div>
       </section>
     </main>
 
-    <footer id="contact">
+    <!-- Footer -->
+    <footer>
       <div class="container">
-        <p>&copy; 2025 SynapSeq. Harmonizing minds through sound.</p>
-        <p style="margin-top: 10px; opacity: 0.7">
-          Open source project available on
-          <a
-            href="https://github.com/ruanklein/synapseq"
-            target="_blank"
-            style="color: #a855f7; text-decoration: none"
+        <div class="footer-links">
+          <a href="https://github.com/ruanklein/synapseq" target="_blank"
             >GitHub</a
           >
-        </p>
+          <a
+            href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
+            target="_blank"
+            >Documentation</a
+          >
+          <a
+            href="https://github.com/ruanklein/synapseq/blob/main/docs/FAQ.md"
+            target="_blank"
+            >FAQ</a
+          >
+          <a href="https://synapseq-hub.ruan.sh/" target="_blank"
+            >SynapSeq Hub</a
+          >
+        </div>
+        <p>&copy; 2025 SynapSeq. Licensed under GPL v2.</p>
       </div>
     </footer>
 
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="loading-content">
+        <i data-lucide="coffee" class="loading-icon"></i>
+        <div class="loading-text">Generating audio...</div>
+        <div class="loading-subtext">This may take a few moments</div>
+      </div>
+    </div>
+
     <script>
-      // Smooth scrolling for navigation links
-      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-        anchor.addEventListener("click", function (e) {
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute("href"));
-          if (target) {
-            target.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }
-        });
-      });
-
-      // Header background on scroll
-      window.addEventListener("scroll", () => {
-        const header = document.querySelector("header");
-        if (window.scrollY > 100) {
-          header.style.background = "rgba(26, 7, 40, 0.95)";
-        } else {
-          header.style.background = "rgba(26, 7, 40, 0.9)";
-        }
-      });
-
-      // Initialize Lucide icons
+      // Initialize Lucide icons first
       lucide.createIcons();
 
-      // Mobile Menu functionality
-      const hamburger = document.getElementById("hamburger");
-      const navLinks = document.getElementById("nav-links");
+      let synapseq = null;
+      let progressInterval = null;
 
-      hamburger.addEventListener("click", () => {
-        hamburger.classList.toggle("active");
-        navLinks.classList.toggle("active");
-      });
+      // Wait for DOM to be fully loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        // Theme toggle
+        const themeToggle = document.getElementById("themeToggle");
+        const body = document.body;
 
-      // Close menu when clicking on links
-      document.querySelectorAll(".nav-links a").forEach((link) => {
-        link.addEventListener("click", () => {
-          hamburger.classList.remove("active");
-          navLinks.classList.remove("active");
+        if (!themeToggle) {
+          console.error("Theme toggle button not found");
+          return;
+        }
+
+        // Load saved theme or default to dark
+        const savedTheme = localStorage.getItem("synapseq-theme") || "dark";
+        if (savedTheme === "light") {
+          body.classList.remove("dark");
+          updateThemeIcon("moon");
+        } else {
+          body.classList.add("dark");
+          updateThemeIcon("lightbulb");
+        }
+
+        function updateThemeIcon(icon) {
+          const iconElement = themeToggle.querySelector("i");
+          if (iconElement) {
+            iconElement.setAttribute("data-lucide", icon);
+            // Force icon update by removing and re-adding
+            iconElement.outerHTML = `<i data-lucide="${icon}" style="width: 1.25rem; height: 1.25rem"></i>`;
+            lucide.createIcons();
+          }
+        }
+
+        themeToggle.addEventListener("click", () => {
+          const isDark = body.classList.contains("dark");
+
+          if (isDark) {
+            body.classList.remove("dark");
+            localStorage.setItem("synapseq-theme", "light");
+            updateThemeIcon("moon");
+          } else {
+            body.classList.add("dark");
+            localStorage.setItem("synapseq-theme", "dark");
+            updateThemeIcon("lightbulb");
+          }
         });
-      });
 
-      // Close menu when clicking outside
-      document.addEventListener("click", (e) => {
-        if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
-          hamburger.classList.remove("active");
-          navLinks.classList.remove("active");
+        // Mobile menu toggle
+        const hamburger = document.getElementById("hamburger");
+        const navLinks = document.querySelector(".nav-links");
+
+        if (hamburger) {
+          hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navLinks.classList.toggle("active");
+          });
+
+          // Close menu when clicking on a link
+          navLinks.querySelectorAll("a").forEach((link) => {
+            link.addEventListener("click", () => {
+              hamburger.classList.remove("active");
+              navLinks.classList.remove("active");
+            });
+          });
         }
       });
 
-      // Accordion functionality
-      function toggleExample(type) {
-        const content = document.getElementById(`content-${type}`);
-        const icon = document.getElementById(`icon-${type}`);
-        const isExpanded = content.classList.contains("expanded");
+      // Line numbers functionality
+      function updateLineNumbers() {
+        const textarea = document.getElementById("spsqEditor");
+        const lineNumbers = document.getElementById("lineNumbers");
+        const lines = textarea.value.split("\n").length;
 
-        // Close all other examples first
-        const allContents = document.querySelectorAll(".example-content");
-        const allIcons = document.querySelectorAll(".expand-icon");
-
-        allContents.forEach((content) => content.classList.remove("expanded"));
-        allIcons.forEach((icon) => icon.classList.remove("rotated"));
-
-        // If this one wasn't expanded, expand it
-        if (!isExpanded) {
-          content.classList.add("expanded");
-          icon.classList.add("rotated");
+        const numbers = [];
+        for (let i = 1; i <= lines; i++) {
+          numbers.push(i);
         }
-
-        // Re-initialize Lucide icons after DOM changes
-        setTimeout(() => {
-          lucide.createIcons();
-        }, 100);
+        lineNumbers.textContent = numbers.join("\n");
       }
 
-      // Auto-expand first example on load
-      window.addEventListener("load", () => {
-        setTimeout(() => {
-          toggleExample("binaural");
-        }, 500);
+      // Sync scroll between line numbers and textarea
+      document.getElementById("spsqEditor").addEventListener("scroll", (e) => {
+        document.getElementById("lineNumbers").scrollTop = e.target.scrollTop;
       });
 
-      // Audio Player Functionality
-      const audio = document.getElementById("sample-audio");
-      const playPauseBtn = document.getElementById("play-pause-btn");
-      const stopBtn = document.getElementById("stop-btn");
-      const progressBar = document.querySelector(".progress-bar");
-      const progressFill = document.querySelector(".progress-fill");
-      const currentTimeSpan = document.getElementById("current-time");
-      const durationSpan = document.getElementById("duration");
-      const volumeSlider = document.getElementById("volume-slider");
-      const playIcon = playPauseBtn.querySelector(".control-icon");
+      // Update line numbers on input
+      document
+        .getElementById("spsqEditor")
+        .addEventListener("input", updateLineNumbers);
 
-      // Set initial volume
-      audio.volume = 0.7;
+      // Initialize line numbers
+      updateLineNumbers();
 
-      // Format time helper
+      // Error handling
+      function showError(message) {
+        const errorContainer = document.getElementById("errorContainer");
+        errorContainer.textContent = message;
+        errorContainer.classList.add("show");
+      }
+
+      function hideError() {
+        const errorContainer = document.getElementById("errorContainer");
+        errorContainer.classList.remove("show");
+      }
+
+      // Status message
+      function setStatus(message) {
+        document.getElementById("statusMessage").textContent = message;
+      }
+
+      // Loading overlay
+      function showLoading() {
+        const overlay = document.getElementById("loadingOverlay");
+        overlay.classList.add("show");
+        lucide.createIcons();
+      }
+
+      function hideLoading() {
+        const overlay = document.getElementById("loadingOverlay");
+        overlay.classList.remove("show");
+      }
+
+      // Time formatting
       function formatTime(seconds) {
+        if (!isFinite(seconds)) return "00:00";
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, "0")}`;
+        return `${mins.toString().padStart(2, "0")}:${secs
+          .toString()
+          .padStart(2, "0")}`;
       }
 
-      // Update duration when metadata loads
-      audio.addEventListener("loadedmetadata", () => {
-        durationSpan.textContent = formatTime(audio.duration);
-      });
+      // Progress tracking
+      function updateProgress() {
+        const currentTime = synapseq.getCurrentTime();
+        const duration = synapseq.getDuration();
 
-      // Play/Pause functionality
-      playPauseBtn.addEventListener("click", () => {
-        if (audio.paused) {
-          audio.play();
-          playIcon.setAttribute("data-lucide", "pause");
-          playIcon.innerHTML = '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
-        } else {
-          audio.pause();
-          playIcon.setAttribute("data-lucide", "play");
-          playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+        if (duration > 0) {
+          const progress = (currentTime / duration) * 100;
+          document.getElementById("progressBar").style.width = progress + "%";
+          document.getElementById("timeDisplay").textContent =
+            formatTime(currentTime) + " / " + formatTime(duration);
+        }
+      }
+
+      function startProgressTracking() {
+        if (progressInterval) clearInterval(progressInterval);
+        progressInterval = setInterval(updateProgress, 100);
+      }
+
+      function stopProgressTracking() {
+        if (progressInterval) {
+          clearInterval(progressInterval);
+          progressInterval = null;
+        }
+      }
+
+      // Initialize SynapSeq
+      async function initSynapSeq() {
+        try {
+          synapseq = new SynapSeq({
+            wasmPath: "wasm/synapseq.wasm",
+            wasmExecPath: "wasm/wasm_exec.js",
+          });
+
+          // Event handlers
+          synapseq.onloaded = () => {
+            console.log("Sequence loaded");
+          };
+
+          synapseq.ongenerating = () => {
+            setStatus("Generating audio...");
+            showLoading();
+            document.getElementById("playBtn").disabled = true;
+            document.getElementById("uploadBtn").disabled = true;
+            document.getElementById("spsqEditor").disabled = true;
+          };
+
+          synapseq.onplaying = () => {
+            hideLoading();
+            setStatus("Playing...");
+            document.getElementById("playBtn").disabled = true;
+            document.getElementById("pauseBtn").disabled = false;
+            document.getElementById("stopBtn").disabled = false;
+            document.getElementById("uploadBtn").disabled = true;
+            document.getElementById("spsqEditor").disabled = true;
+            startProgressTracking();
+          };
+
+          synapseq.onpaused = () => {
+            setStatus("Paused");
+            document.getElementById("playBtn").disabled = false;
+            document.getElementById("pauseBtn").disabled = true;
+            document.getElementById("uploadBtn").disabled = false;
+            stopProgressTracking();
+          };
+
+          synapseq.onstopped = () => {
+            setStatus("Stopped");
+            document.getElementById("playBtn").disabled = false;
+            document.getElementById("pauseBtn").disabled = true;
+            document.getElementById("stopBtn").disabled = true;
+            document.getElementById("uploadBtn").disabled = false;
+            document.getElementById("spsqEditor").disabled = false;
+            stopProgressTracking();
+            document.getElementById("progressBar").style.width = "0%";
+            document.getElementById("timeDisplay").textContent =
+              "00:00 / 00:00";
+          };
+
+          synapseq.onended = () => {
+            setStatus("Playback finished");
+            synapseq.stop();
+          };
+
+          synapseq.onerror = (detail) => {
+            hideLoading();
+            console.error("Error:", detail.error);
+            showError(detail.error.message || detail.error);
+            setStatus("Error");
+            document.getElementById("playBtn").disabled = false;
+            document.getElementById("uploadBtn").disabled = false;
+            document.getElementById("spsqEditor").disabled = false;
+          };
+
+          // Wait for worker to be ready
+          const checkReady = setInterval(() => {
+            if (synapseq.isReady()) {
+              clearInterval(checkReady);
+              setStatus("Ready");
+              document.getElementById("playBtn").disabled = false;
+            }
+          }, 100);
+        } catch (error) {
+          console.error("Failed to initialize:", error);
+          setStatus("Failed to initialize WASM");
+          showError("Failed to load SynapSeq. Please refresh the page.");
+        }
+      }
+
+      // Button handlers
+      document.getElementById("playBtn").addEventListener("click", async () => {
+        if (!synapseq || !synapseq.isReady()) {
+          setStatus("WASM not initialized yet");
+          return;
+        }
+
+        hideError();
+
+        try {
+          const spsq = document.getElementById("spsqEditor").value;
+
+          if (!spsq.trim()) {
+            showError("Please enter SPSQ code");
+            setStatus("Ready");
+            return;
+          }
+
+          // Always reload the sequence to get the latest content
+          if (synapseq.isLoaded()) {
+            synapseq.stop();
+          }
+
+          await synapseq.load(spsq);
+
+          // Play the sequence
+          await synapseq.play();
+        } catch (error) {
+          showError(error.message);
+          setStatus("Error");
         }
       });
 
-      // Stop functionality
-      stopBtn.addEventListener("click", () => {
-        audio.pause();
-        audio.currentTime = 0;
-        playIcon.setAttribute("data-lucide", "play");
-        playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
-        progressFill.style.width = "0%";
-        currentTimeSpan.textContent = "0:00";
-      });
-
-      // Update progress and time
-      audio.addEventListener("timeupdate", () => {
-        const progress = (audio.currentTime / audio.duration) * 100;
-        progressFill.style.width = `${progress}%`;
-        currentTimeSpan.textContent = formatTime(audio.currentTime);
-      });
-
-      // Seek functionality
-      progressBar.addEventListener("click", (e) => {
-        const rect = progressBar.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const width = rect.width;
-        const newTime = (clickX / width) * audio.duration;
-        audio.currentTime = newTime;
-      });
-
-      // Volume control
-      volumeSlider.addEventListener("input", (e) => {
-        audio.volume = e.target.value / 100;
-      });
-
-      // Reset when audio ends
-      audio.addEventListener("ended", () => {
-        playIcon.setAttribute("data-lucide", "play");
-        playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
-        progressFill.style.width = "0%";
-        currentTimeSpan.textContent = "0:00";
-      });
-
-      // Monaural Audio Player Functionality
-      const audioMonaural = document.getElementById("sample-audio-monaural");
-      const playPauseBtnMonaural = document.getElementById(
-        "play-pause-btn-monaural"
-      );
-      const stopBtnMonaural = document.getElementById("stop-btn-monaural");
-      const progressBarMonaural = document.getElementById(
-        "progress-bar-monaural"
-      );
-      const progressFillMonaural = document.getElementById(
-        "progress-fill-monaural"
-      );
-      const currentTimeSpanMonaural = document.getElementById(
-        "current-time-monaural"
-      );
-      const durationSpanMonaural = document.getElementById("duration-monaural");
-      const volumeSliderMonaural = document.getElementById(
-        "volume-slider-monaural"
-      );
-      const playIconMonaural =
-        playPauseBtnMonaural.querySelector(".control-icon");
-
-      // Set initial volume for monaural player
-      audioMonaural.volume = 0.7;
-
-      // Update duration when metadata loads for monaural
-      audioMonaural.addEventListener("loadedmetadata", () => {
-        durationSpanMonaural.textContent = formatTime(audioMonaural.duration);
-      });
-
-      // Play/Pause functionality for monaural
-      playPauseBtnMonaural.addEventListener("click", () => {
-        if (audioMonaural.paused) {
-          audioMonaural.play();
-          playIconMonaural.setAttribute("data-lucide", "pause");
-          playIconMonaural.innerHTML = '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
-        } else {
-          audioMonaural.pause();
-          playIconMonaural.setAttribute("data-lucide", "play");
-          playIconMonaural.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      document.getElementById("pauseBtn").addEventListener("click", () => {
+        if (synapseq) {
+          try {
+            synapseq.pause();
+          } catch (error) {
+            showError(error.message);
+          }
         }
       });
 
-      // Stop functionality for monaural
-      stopBtnMonaural.addEventListener("click", () => {
-        audioMonaural.pause();
-        audioMonaural.currentTime = 0;
-        playIconMonaural.setAttribute("data-lucide", "play");
-        playIconMonaural.innerHTML = '<path d="M8 5v14l11-7z"/>';
-        progressFillMonaural.style.width = "0%";
-        currentTimeSpanMonaural.textContent = "0:00";
-      });
-
-      // Update progress and time for monaural
-      audioMonaural.addEventListener("timeupdate", () => {
-        const progress =
-          (audioMonaural.currentTime / audioMonaural.duration) * 100;
-        progressFillMonaural.style.width = `${progress}%`;
-        currentTimeSpanMonaural.textContent = formatTime(
-          audioMonaural.currentTime
-        );
-      });
-
-      // Seek functionality for monaural
-      progressBarMonaural.addEventListener("click", (e) => {
-        const rect = progressBarMonaural.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const width = rect.width;
-        const newTime = (clickX / width) * audioMonaural.duration;
-        audioMonaural.currentTime = newTime;
-      });
-
-      // Volume control for monaural
-      volumeSliderMonaural.addEventListener("input", (e) => {
-        audioMonaural.volume = e.target.value / 100;
-      });
-
-      // Reset when monaural audio ends
-      audioMonaural.addEventListener("ended", () => {
-        playIconMonaural.setAttribute("data-lucide", "play");
-        playIconMonaural.innerHTML = '<path d="M8 5v14l11-7z"/>';
-        progressFillMonaural.style.width = "0%";
-        currentTimeSpanMonaural.textContent = "0:00";
-      });
-
-      // Isochronic Audio Player Functionality
-      const audioIsochronic = document.getElementById(
-        "sample-audio-isochronic"
-      );
-      const playPauseBtnIsochronic = document.getElementById(
-        "play-pause-btn-isochronic"
-      );
-      const stopBtnIsochronic = document.getElementById("stop-btn-isochronic");
-      const progressBarIsochronic = document.getElementById(
-        "progress-bar-isochronic"
-      );
-      const progressFillIsochronic = document.getElementById(
-        "progress-fill-isochronic"
-      );
-      const currentTimeSpanIsochronic = document.getElementById(
-        "current-time-isochronic"
-      );
-      const durationSpanIsochronic = document.getElementById(
-        "duration-isochronic"
-      );
-      const volumeSliderIsochronic = document.getElementById(
-        "volume-slider-isochronic"
-      );
-      const playIconIsochronic =
-        playPauseBtnIsochronic.querySelector(".control-icon");
-
-      // Set initial volume for isochronic player
-      audioIsochronic.volume = 0.7;
-
-      // Update duration when metadata loads for isochronic
-      audioIsochronic.addEventListener("loadedmetadata", () => {
-        durationSpanIsochronic.textContent = formatTime(
-          audioIsochronic.duration
-        );
-      });
-
-      // Play/Pause functionality for isochronic
-      playPauseBtnIsochronic.addEventListener("click", () => {
-        if (audioIsochronic.paused) {
-          audioIsochronic.play();
-          playIconIsochronic.setAttribute("data-lucide", "pause");
-          playIconIsochronic.innerHTML =
-            '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
-        } else {
-          audioIsochronic.pause();
-          playIconIsochronic.setAttribute("data-lucide", "play");
-          playIconIsochronic.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      document.getElementById("stopBtn").addEventListener("click", () => {
+        if (synapseq) {
+          synapseq.stop();
         }
       });
 
-      // Stop functionality for isochronic
-      stopBtnIsochronic.addEventListener("click", () => {
-        audioIsochronic.pause();
-        audioIsochronic.currentTime = 0;
-        playIconIsochronic.setAttribute("data-lucide", "play");
-        playIconIsochronic.innerHTML = '<path d="M8 5v14l11-7z"/>';
-        progressFillIsochronic.style.width = "0%";
-        currentTimeSpanIsochronic.textContent = "0:00";
-      });
+      // File upload handler
+      document
+        .getElementById("fileInput")
+        .addEventListener("change", async (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
 
-      // Update progress and time for isochronic
-      audioIsochronic.addEventListener("timeupdate", () => {
-        const progress =
-          (audioIsochronic.currentTime / audioIsochronic.duration) * 100;
-        progressFillIsochronic.style.width = `${progress}%`;
-        currentTimeSpanIsochronic.textContent = formatTime(
-          audioIsochronic.currentTime
-        );
-      });
+          // Validate file extension
+          if (!file.name.toLowerCase().endsWith(".spsq")) {
+            showError("Invalid file type. Please upload a .spsq file");
+            event.target.value = "";
+            return;
+          }
 
-      // Seek functionality for isochronic
-      progressBarIsochronic.addEventListener("click", (e) => {
-        const rect = progressBarIsochronic.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const width = rect.width;
-        const newTime = (clickX / width) * audioIsochronic.duration;
-        audioIsochronic.currentTime = newTime;
-      });
+          hideError();
 
-      // Volume control for isochronic
-      volumeSliderIsochronic.addEventListener("input", (e) => {
-        audioIsochronic.volume = e.target.value / 100;
-      });
+          try {
+            // Read file content
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              document.getElementById("spsqEditor").value = e.target.result;
+              updateLineNumbers();
+              setStatus("File loaded: " + file.name);
+            };
+            reader.onerror = () => {
+              showError("Failed to read file");
+            };
+            reader.readAsText(file);
+          } catch (error) {
+            showError("Failed to load file: " + error.message);
+          }
 
-      // Reset when isochronic audio ends
-      audioIsochronic.addEventListener("ended", () => {
-        playIconIsochronic.setAttribute("data-lucide", "play");
-        playIconIsochronic.innerHTML = '<path d="M8 5v14l11-7z"/>';
-        progressFillIsochronic.style.width = "0%";
-        currentTimeSpanIsochronic.textContent = "0:00";
-      });
+          // Reset input
+          event.target.value = "";
+        });
+
+      // Initialize on load
+      setStatus("Loading WASM...");
+      initSynapSeq();
     </script>
   </body>
 </html>
