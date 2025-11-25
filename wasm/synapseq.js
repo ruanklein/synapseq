@@ -483,6 +483,9 @@ class SynapSeq {
     if (!this._audio) {
       return "idle";
     }
+    if (this._audio.src === "" || this._audio.readyState < 3) {
+      return "generating";
+    }
     if (this._audio.paused) {
       return this._audio.currentTime > 0 ? "paused" : "stopped";
     }
