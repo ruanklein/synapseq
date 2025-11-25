@@ -104,18 +104,6 @@ synapseq -h
 
 You can download the latest precompiled binaries for Windows, macOS, or Linux from the [Releases](https://github.com/ruanklein/synapseq/releases/latest) page.
 
-### WebAssembly (Browser)
-
-SynapSeq is also available as a WebAssembly build for use directly in web browsers. You can download the WASM release files from the [Releases](https://github.com/ruanklein/synapseq/releases/latest) page.
-
-The WASM release includes:
-
-- `synapseq.wasm` - The WebAssembly binary
-- `wasm_exec.js` - Go WASM runtime
-- `synapseq.js` - JavaScript wrapper library
-
-For detailed documentation, API reference, and usage examples, see the [WebAssembly Documentation](wasm/README.md).
-
 ## Compilation
 
 For users who prefer to compile from source, please follow the [Compilation](docs/COMPILE.md) instructions.
