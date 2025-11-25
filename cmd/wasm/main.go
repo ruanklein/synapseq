@@ -10,6 +10,7 @@
 package main
 
 import (
+	"fmt"
 	"syscall/js"
 
 	"github.com/ruanklein/synapseq/v3/internal/audio"
@@ -18,49 +19,65 @@ import (
 
 // generateWav(spsqUint8Array) -> { wav: Uint8Array } or { error: "msg" }
 func generateWav(this js.Value, args []js.Value) interface{} {
-	if len(args) == 0 {
-		return map[string]interface{}{
-			"error": "missing SPSQ input buffer",
-		}
-	}
+	promise := js.Global().Get("Promise").New(js.FuncOf(
+		func(_ js.Value, pArgs []js.Value) interface{} {
 
-	spsqJS := args[0]
-	raw := make([]byte, spsqJS.Length())
-	js.CopyBytesToGo(raw, spsqJS)
+			resolve := pArgs[0]
+			reject := pArgs[1]
 
-	seq, err := sequence.LoadTextSequence(raw)
-	if err != nil {
-		return map[string]interface{}{
-			"error": err.Error(),
-		}
-	}
+			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						reject.Invoke(fmt.Sprintf("panic: %v", r))
+					}
+				}()
 
-	renderer, err := audio.NewAudioRenderer(seq.Periods, &audio.AudioRendererOptions{
-		SampleRate:     seq.Options.SampleRate,
-		Volume:         seq.Options.Volume,
-		GainLevel:      seq.Options.GainLevel,
-		BackgroundPath: seq.Options.BackgroundPath,
-	})
-	if err != nil {
-		return map[string]interface{}{
-			"error": err.Error(),
-		}
-	}
+				if len(args) == 0 {
+					reject.Invoke("missing SPSQ input buffer")
+					return
+				}
 
-	wavBytes, err := renderer.RenderWav()
-	if err != nil {
-		return map[string]interface{}{
-			"error": err.Error(),
-		}
-	}
+				input := args[0]
+				raw := make([]byte, input.Length())
+				js.CopyBytesToGo(raw, input)
 
-	uint8Array := js.Global().Get("Uint8Array").New(len(wavBytes))
-	js.CopyBytesToJS(uint8Array, wavBytes)
+				seq, err := sequence.LoadTextSequence(raw)
+				if err != nil {
+					reject.Invoke(err.Error())
+					return
+				}
 
-	return map[string]interface{}{
-		"wav": uint8Array,
-		"ok":  true,
-	}
+				renderer, err := audio.NewAudioRenderer(seq.Periods, &audio.AudioRendererOptions{
+					SampleRate:     seq.Options.SampleRate,
+					Volume:         seq.Options.Volume,
+					GainLevel:      seq.Options.GainLevel,
+					BackgroundPath: seq.Options.BackgroundPath,
+				})
+				if err != nil {
+					reject.Invoke(err.Error())
+					return
+				}
+
+				wavBytes, err := renderer.RenderWav()
+				if err != nil {
+					reject.Invoke(err.Error())
+					return
+				}
+
+				uint8Array := js.Global().Get("Uint8Array").New(len(wavBytes))
+				js.CopyBytesToJS(uint8Array, wavBytes)
+
+				result := js.Global().Get("Object").New()
+				result.Set("wav", uint8Array)
+
+				resolve.Invoke(result)
+			}()
+
+			return nil
+		},
+	))
+
+	return promise
 }
 
 func main() {

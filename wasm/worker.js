@@ -19,7 +19,7 @@ WebAssembly.instantiateStreaming(fetch("synapseq.wasm"), go.importObject)
   });
 
 // Listen for messages from main thread
-self.onmessage = function (e) {
+self.onmessage = async function (e) {
   if (e.data.type === "generate") {
     if (!wasmReady) {
       self.postMessage({
@@ -32,8 +32,8 @@ self.onmessage = function (e) {
     try {
       const spsqBytes = e.data.spsqBytes;
 
-      // Call WASM function
-      const result = synapseqGenerate(spsqBytes);
+      // Call WASM function (now returns a Promise)
+      const result = await synapseqGenerate(spsqBytes);
 
       if (result.error) {
         self.postMessage({
@@ -54,7 +54,7 @@ self.onmessage = function (e) {
     } catch (error) {
       self.postMessage({
         type: "error",
-        error: error.message || "Unknown error occurred",
+        error: error.message || error || "Unknown error occurred",
       });
     }
   }
