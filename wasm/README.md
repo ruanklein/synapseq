@@ -15,7 +15,7 @@ A JavaScript wrapper library for SynapSeq WASM, providing an elegant object-orie
 
 ## Installation
 
-Simply include the `synapseq.js` file in your HTML. No need for separate worker files!
+Simply include the `synapseq.js` file in your HTML:
 
 ```html
 <!DOCTYPE html>
@@ -37,7 +37,7 @@ Simply include the `synapseq.js` file in your HTML. No need for separate worker 
 
 ```javascript
 // Create a new SynapSeq instance
-const synapse = new SynapSeq();
+const synapseq = new SynapSeq();
 
 // Load a sequence
 const spsqCode = `
@@ -47,13 +47,21 @@ alpha
   tone 250 isochronic 10 amplitude 15
 
 # Timeline
-00:00:00 alpha
+00:00:00 silence
+00:00:15 alpha
+00:04:45 alpha
 00:05:00 silence
 `;
 
 async function play() {
-  await synapse.load(spsqCode);
-  await synapse.play();
+  // Load from string
+  await synapseq.load(spsqCode);
+  await synapseq.play();
+
+  // Or...
+  // Load from File object
+  // const fileInput = document.getElementById("fileInput");
+  // await synapseq.load(fileInput.files[0]);
 }
 
 play();
@@ -65,19 +73,19 @@ You can specify custom paths for WASM files, enabling CDN usage or custom direct
 
 ```javascript
 // Local custom paths
-const synapse = new SynapSeq({
+const synapseq = new SynapSeq({
   wasmPath: "./dist/synapseq.wasm",
   wasmExecPath: "./dist/wasm_exec.js",
 });
 
 // Remote CDN
-const synapse = new SynapSeq({
+const synapseq = new SynapSeq({
   wasmPath: "https://cdn.example.com/synapseq/synapseq.wasm",
   wasmExecPath: "https://cdn.example.com/synapseq/wasm_exec.js",
 });
 
 // Mixed (local lib, remote WASM)
-const synapse = new SynapSeq({
+const synapseq = new SynapSeq({
   wasmPath: "https://cdn.example.com/synapseq.wasm",
   // wasmExecPath defaults to local 'wasm_exec.js'
 });
@@ -99,36 +107,6 @@ Creates a new SynapSeq instance and initializes the embedded Web Worker.
 
 **Returns:** `SynapSeq` instance
 
-**Examples:**
-
-```javascript
-// Use default paths (files in same directory)
-const synapse = new SynapSeq();
-
-// Use custom local paths
-const synapse = new SynapSeq({
-  wasmPath: "./assets/synapseq.wasm",
-  wasmExecPath: "./assets/wasm_exec.js",
-});
-
-// Use remote CDN
-const synapse = new SynapSeq({
-  wasmPath: "https://cdn.jsdelivr.net/npm/synapseq/synapseq.wasm",
-  wasmExecPath: "https://cdn.jsdelivr.net/npm/synapseq/wasm_exec.js",
-});
-```
-
----
-
-```javascript
-// Load from string
-await synapse.load("# Presets\nalpha\n  tone 250 isochronic 10");
-
-// Load from File object
-const fileInput = document.getElementById("fileInput");
-await synapse.load(fileInput.files[0]);
-```
-
 ---
 
 #### `play()`
@@ -142,7 +120,7 @@ Plays the loaded sequence. Generates audio if not already generated, or resumes 
 **Example:**
 
 ```javascript
-await synapse.play();
+await synapseq.play();
 ```
 
 ---
@@ -158,7 +136,7 @@ Pauses the currently playing sequence.
 **Example:**
 
 ```javascript
-synapse.pause();
+synapseq.pause();
 ```
 
 ---
@@ -172,7 +150,7 @@ Stops the currently playing sequence and resets playback position.
 **Example:**
 
 ```javascript
-synapse.stop();
+synapseq.stop();
 ```
 
 ---
@@ -186,7 +164,7 @@ Gets the current playback position in seconds.
 **Example:**
 
 ```javascript
-const currentTime = synapse.getCurrentTime();
+const currentTime = synapseq.getCurrentTime();
 console.log(`Current position: ${currentTime}s`);
 ```
 
@@ -201,7 +179,7 @@ Gets the total duration of the loaded audio in seconds.
 **Example:**
 
 ```javascript
-const duration = synapse.getDuration();
+const duration = synapseq.getDuration();
 console.log(`Total duration: ${duration}s`);
 ```
 
@@ -216,7 +194,7 @@ Gets the current playback state.
 **Example:**
 
 ```javascript
-const state = synapse.getState();
+const state = synapseq.getState();
 console.log(`Current state: ${state}`);
 ```
 
@@ -231,8 +209,8 @@ Checks if a sequence is currently loaded.
 **Example:**
 
 ```javascript
-if (synapse.isLoaded()) {
-  await synapse.play();
+if (synapseq.isLoaded()) {
+  await synapseq.play();
 }
 ```
 
@@ -247,29 +225,9 @@ Checks if the Web Worker is initialized and ready.
 **Example:**
 
 ```javascript
-if (synapse.isReady()) {
-  await synapse.load(sequence);
+if (synapseq.isReady()) {
+  await synapseq.load(sequence);
 }
-```
-
----
-
-#### `download(filename)`
-
-Downloads the generated WAV file.
-
-**Parameters:**
-
-- `filename` (string) - Name for the downloaded file (default: `'synapseq.wav'`)
-
-**Returns:** `void`
-
-**Throws:** Error if no audio has been generated
-
-**Example:**
-
-```javascript
-synapse.download("my-meditation.wav");
 ```
 
 ---
@@ -283,7 +241,7 @@ Cleans up resources and terminates the Web Worker.
 **Example:**
 
 ```javascript
-synapse.destroy();
+synapseq.destroy();
 ```
 
 ---
@@ -297,7 +255,7 @@ All event handlers are optional callback functions that can be assigned to handl
 Called when a sequence is successfully loaded.
 
 ```javascript
-synapse.onloaded = () => {
+synapseq.onloaded = () => {
   console.log("Sequence loaded and ready to play");
 };
 ```
@@ -309,9 +267,8 @@ synapse.onloaded = () => {
 Called when audio generation starts.
 
 ```javascript
-synapse.ongenerating = () => {
+synapseq.ongenerating = () => {
   console.log("Generating audio...");
-  showLoadingSpinner();
 };
 ```
 
@@ -322,9 +279,8 @@ synapse.ongenerating = () => {
 Called when playback starts.
 
 ```javascript
-synapse.onplaying = () => {
+synapseq.onplaying = () => {
   console.log("Now playing");
-  updateUIToPlaying();
 };
 ```
 
@@ -335,9 +291,8 @@ synapse.onplaying = () => {
 Called when playback is paused.
 
 ```javascript
-synapse.onpaused = () => {
+synapseq.onpaused = () => {
   console.log("Playback paused");
-  updateUIToPaused();
 };
 ```
 
@@ -348,9 +303,8 @@ synapse.onpaused = () => {
 Called when playback is stopped.
 
 ```javascript
-synapse.onstopped = () => {
+synapseq.onstopped = () => {
   console.log("Playback stopped");
-  updateUIToStopped();
 };
 ```
 
@@ -361,9 +315,8 @@ synapse.onstopped = () => {
 Called when playback ends naturally.
 
 ```javascript
-synapse.onended = () => {
+synapseq.onended = () => {
   console.log("Playback finished");
-  showCompletionMessage();
 };
 ```
 
@@ -378,9 +331,8 @@ Called when an error occurs.
 - `detail` (Object) - Contains `error` property with the Error object
 
 ```javascript
-synapse.onerror = (detail) => {
+synapseq.onerror = (detail) => {
   console.error("Error occurred:", detail.error);
-  showErrorMessage(detail.error.message);
 };
 ```
 
@@ -390,46 +342,46 @@ synapse.onerror = (detail) => {
 
 ```javascript
 // Create instance
-const synapse = new SynapSeq();
+const synapseq = new SynapSeq();
 
 // Setup event handlers
-synapse.onloaded = () => {
+synapseq.onloaded = () => {
   console.log("Sequence loaded!");
   document.getElementById("playBtn").disabled = false;
 };
 
-synapse.ongenerating = () => {
+synapseq.ongenerating = () => {
   console.log("Generating audio...");
   document.getElementById("status").textContent = "Generating...";
 };
 
-synapse.onplaying = () => {
+synapseq.onplaying = () => {
   console.log("Playing");
   document.getElementById("status").textContent = "Playing";
   document.getElementById("playBtn").disabled = true;
   document.getElementById("pauseBtn").disabled = false;
 };
 
-synapse.onpaused = () => {
+synapseq.onpaused = () => {
   console.log("Paused");
   document.getElementById("status").textContent = "Paused";
   document.getElementById("playBtn").disabled = false;
   document.getElementById("pauseBtn").disabled = true;
 };
 
-synapse.onstopped = () => {
+synapseq.onstopped = () => {
   console.log("Stopped");
   document.getElementById("status").textContent = "Stopped";
   document.getElementById("playBtn").disabled = false;
   document.getElementById("pauseBtn").disabled = true;
 };
 
-synapse.onended = () => {
+synapseq.onended = () => {
   console.log("Finished");
   document.getElementById("status").textContent = "Finished";
 };
 
-synapse.onerror = (detail) => {
+synapseq.onerror = (detail) => {
   console.error("Error:", detail.error);
   alert("Error: " + detail.error.message);
 };
@@ -450,12 +402,13 @@ alpha-two
 00:00:00 silence
 00:00:15 alpha-one
 00:02:00 alpha-two
+00:03:00 alpha-two
 00:04:00 silence
   `;
 
   try {
-    await synapse.load(spsqCode);
-    await synapse.play();
+    await synapseq.load(spsqCode);
+    await synapseq.play();
   } catch (error) {
     console.error("Failed to start:", error);
   }
@@ -463,21 +416,17 @@ alpha-two
 
 // Control functions
 function pause() {
-  synapse.pause();
+  synapseq.pause();
 }
 
 function stop() {
-  synapse.stop();
-}
-
-function downloadAudio() {
-  synapse.download("my-sequence.wav");
+  synapseq.stop();
 }
 
 // Progress tracking
 setInterval(() => {
-  const current = synapse.getCurrentTime();
-  const duration = synapse.getDuration();
+  const current = synapseq.getCurrentTime();
+  const duration = synapseq.getDuration();
   if (duration > 0) {
     const progress = (current / duration) * 100;
     document.getElementById("progressBar").style.width = progress + "%";
@@ -512,20 +461,6 @@ To use this library, you need these files:
 - `synapseq.wasm` - Compiled WASM binary
 - `wasm_exec.js` - Go WASM runtime
 
-### CDN Setup
-
-You only need to include `synapseq.js` locally or from CDN, then point to remote WASM files:
-
-```html
-<script src="synapseq.js"></script>
-<script>
-  const synapse = new SynapSeq({
-    wasmPath: "https://your-cdn.com/synapseq.wasm",
-    wasmExecPath: "https://your-cdn.com/wasm_exec.js",
-  });
-</script>
-```
-
 ## License
 
 GNU GPL v2 - See [COPYING.txt](../COPYING.txt) for details.
@@ -539,4 +474,5 @@ GNU GPL v2 - See [COPYING.txt](../COPYING.txt) for details.
 ---
 
 **SynapSeq** - Synapse-Sequenced Brainwave Generator
+
 Copyright (c) 2025 [ruan.sh](https://ruan.sh)
