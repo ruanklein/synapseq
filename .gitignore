@@ -10,4 +10,7 @@ bin/
 scripts/generated
 
 cmd/synapseq/synapseq.syso
+
+wasm/wasm_exec.js
+wasm/*.wasm
     
