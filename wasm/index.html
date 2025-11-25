@@ -333,9 +333,10 @@ alpha-four
         </button>
         <button
           class="btn-upload"
+          id="uploadBtn"
           onclick="document.getElementById('fileInput').click()"
         >
-          Upload SPSQ
+          Upload
         </button>
         <input
           type="file"
@@ -388,6 +389,7 @@ alpha-four
         synapseq.ongenerating = () => {
           setStatus("Generating audio...", "loading");
           document.getElementById("playBtn").disabled = true;
+          document.getElementById("uploadBtn").disabled = true;
           document.getElementById("spsqEditor").disabled = true;
         };
 
@@ -396,6 +398,7 @@ alpha-four
           document.getElementById("playBtn").disabled = true;
           document.getElementById("pauseBtn").disabled = false;
           document.getElementById("stopBtn").disabled = false;
+          document.getElementById("uploadBtn").disabled = true;
           document.getElementById("spsqEditor").disabled = true;
           startProgressTracking();
         };
@@ -404,6 +407,7 @@ alpha-four
           setStatus("Paused", "loading");
           document.getElementById("playBtn").disabled = false;
           document.getElementById("pauseBtn").disabled = true;
+          document.getElementById("uploadBtn").disabled = false;
           document.getElementById("spsqEditor").disabled = false;
           stopProgressTracking();
         };
@@ -413,6 +417,7 @@ alpha-four
           document.getElementById("playBtn").disabled = false;
           document.getElementById("pauseBtn").disabled = true;
           document.getElementById("stopBtn").disabled = true;
+          document.getElementById("uploadBtn").disabled = false;
           document.getElementById("spsqEditor").disabled = false;
           stopProgressTracking();
           document.getElementById("progressBar").style.width = "0%";
@@ -430,6 +435,7 @@ alpha-four
           showError(detail.error.message || detail.error);
           setStatus("Error", "error");
           document.getElementById("playBtn").disabled = false;
+          document.getElementById("uploadBtn").disabled = false;
           document.getElementById("spsqEditor").disabled = false;
         };
 
@@ -540,6 +546,7 @@ alpha-four
           console.error("Error:", error);
           showError(error.message || "Unknown error occurred");
           setStatus("Error", "error");
+          document.getElementById("uploadBtn").disabled = false;
         }
       }
 

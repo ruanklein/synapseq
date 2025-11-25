@@ -6,15 +6,16 @@ A JavaScript wrapper library for SynapSeq WASM, providing an elegant object-orie
 
 - Generate binaural/monaural/isochronic tones from SPSQ sequences
 - WebAssembly-powered for high performance
-- Web Worker integration for non-blocking audio generation
-- Simple, clean object-oriented API
+- Integrated Web Worker for non-blocking audio generation (no external worker file needed!)
+- Single-file library with embedded worker
+- Support for local and remote WASM files
 - Full JSDoc documentation
 - Promise-based async operations
 - Built-in audio playback controls
 
-## Quick Start
+## Installation
 
-### Basic Usage
+Simply include the `synapseq.js` file in your HTML. No need for separate worker files!
 
 ```html
 <!DOCTYPE html>
@@ -24,11 +25,22 @@ A JavaScript wrapper library for SynapSeq WASM, providing an elegant object-orie
   </head>
   <body>
     <script>
-      // Create a new SynapSeq instance
-      const synapse = new SynapSeq();
+      // Your code here
+    </script>
+  </body>
+</html>
+```
 
-      // Load a sequence
-      const spsqCode = `
+## Quick Start
+
+### Basic Usage
+
+```javascript
+// Create a new SynapSeq instance
+const synapse = new SynapSeq();
+
+// Load a sequence
+const spsqCode = `
 # Presets
 alpha
   noise pink amplitude 30
@@ -37,46 +49,76 @@ alpha
 # Timeline
 00:00:00 alpha
 00:05:00 silence
-    `;
+`;
 
-      async function play() {
-        await synapse.load(spsqCode);
-        await synapse.play();
-      }
+async function play() {
+  await synapse.load(spsqCode);
+  await synapse.play();
+}
 
-      play();
-    </script>
-  </body>
-</html>
+play();
+```
+
+### Using Custom Paths
+
+You can specify custom paths for WASM files, enabling CDN usage or custom directory structures:
+
+```javascript
+// Local custom paths
+const synapse = new SynapSeq({
+  wasmPath: "./dist/synapseq.wasm",
+  wasmExecPath: "./dist/wasm_exec.js",
+});
+
+// Remote CDN
+const synapse = new SynapSeq({
+  wasmPath: "https://cdn.example.com/synapseq/synapseq.wasm",
+  wasmExecPath: "https://cdn.example.com/synapseq/wasm_exec.js",
+});
+
+// Mixed (local lib, remote WASM)
+const synapse = new SynapSeq({
+  wasmPath: "https://cdn.example.com/synapseq.wasm",
+  // wasmExecPath defaults to local 'wasm_exec.js'
+});
 ```
 
 ## API Reference
 
 ### Constructor
 
-#### `new SynapSeq()`
+#### `new SynapSeq(options)`
 
-Creates a new SynapSeq instance and initializes the Web Worker.
-
-```javascript
-const synapse = new SynapSeq();
-```
-
----
-
-### Methods
-
-#### `load(input)`
-
-Loads a SPSQ sequence from a string or File object.
+Creates a new SynapSeq instance and initializes the embedded Web Worker.
 
 **Parameters:**
 
-- `input` (string | File) - SPSQ sequence content or File object
+- `options` (Object) - Optional configuration object
+  - `wasmPath` (string) - Path or URL to the WASM file (default: `'synapseq.wasm'`)
+  - `wasmExecPath` (string) - Path or URL to the wasm_exec.js file (default: `'wasm_exec.js'`)
 
-**Returns:** `Promise<void>`
+**Returns:** `SynapSeq` instance
 
-**Example:**
+**Examples:**
+
+```javascript
+// Use default paths (files in same directory)
+const synapse = new SynapSeq();
+
+// Use custom local paths
+const synapse = new SynapSeq({
+  wasmPath: "./assets/synapseq.wasm",
+  wasmExecPath: "./assets/wasm_exec.js",
+});
+
+// Use remote CDN
+const synapse = new SynapSeq({
+  wasmPath: "https://cdn.jsdelivr.net/npm/synapseq/synapseq.wasm",
+  wasmExecPath: "https://cdn.jsdelivr.net/npm/synapseq/wasm_exec.js",
+});
+```
+
+---
 
 ```javascript
 // Load from string
@@ -460,14 +502,29 @@ Tested on:
 - Safari 14+
 - Edge 90+
 
-## Files Required
+## Required Files
 
-To use this library, you need these files in your project:
+To use this library, you need these files:
 
-- `synapseq.js` - Main library
-- `worker.js` - Web Worker for WASM processing
-- `wasm_exec.js` - Go WASM runtime
+### Minimal Setup (Local Files)
+
+- `synapseq.js` - Main library (contains embedded worker)
 - `synapseq.wasm` - Compiled WASM binary
+- `wasm_exec.js` - Go WASM runtime
+
+### CDN Setup
+
+You only need to include `synapseq.js` locally or from CDN, then point to remote WASM files:
+
+```html
+<script src="synapseq.js"></script>
+<script>
+  const synapse = new SynapSeq({
+    wasmPath: "https://your-cdn.com/synapseq.wasm",
+    wasmExecPath: "https://your-cdn.com/wasm_exec.js",
+  });
+</script>
+```
 
 ## License
 
@@ -476,7 +533,8 @@ GNU GPL v2 - See [COPYING.txt](../COPYING.txt) for details.
 ## Links
 
 - [SynapSeq GitHub Repository](https://github.com/ruanklein/synapseq)
-- [Full Documentation](../docs/USAGE.md)
+- [Full Documentation](../README.md)
+- [Usage Guide](../docs/USAGE.md)
 
 ---
 
