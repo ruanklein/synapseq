@@ -535,10 +535,8 @@ alpha-four
             return;
           }
 
-          // Load sequence if not already loaded or if content changed
-          if (!synapseq.isLoaded()) {
-            await synapseq.load(spsq);
-          }
+          // Always reload the sequence to ensure we use the current textarea content
+          await synapseq.load(spsq);
 
           // Play the sequence
           await synapseq.play();
