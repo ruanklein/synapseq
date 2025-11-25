@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SynapSeq WASM</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 900px;
+        width: 100%;
+        padding: 40px;
+      }
+
+      h1 {
+        color: #667eea;
+        margin-bottom: 10px;
+        font-size: 2.5rem;
+        text-align: center;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 0.95rem;
+      }
+
+      .editor-section {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 0;
+      }
+
+      .line-numbers {
+        background: #f5f5f5;
+        border: 2px solid #e0e0e0;
+        border-right: none;
+        border-radius: 8px 0 0 8px;
+        padding: 20px 10px;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #999;
+        text-align: right;
+        user-select: none;
+        min-width: 50px;
+        overflow-y: hidden;
+        overflow-x: hidden;
+        white-space: pre;
+      }
+
+      textarea {
+        flex: 1;
+        min-height: 400px;
+        padding: 20px;
+        border: 2px solid #e0e0e0;
+        border-left: 1px solid #e0e0e0;
+        border-radius: 0 8px 8px 0;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        resize: vertical;
+        transition: border-color 0.3s;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      textarea:focus + .line-numbers,
+      .editor-section:focus-within .line-numbers {
+        border-color: #667eea;
+      }
+
+      textarea:disabled {
+        background: #fafafa;
+        cursor: not-allowed;
+      }
+
+      .error-container {
+        display: none;
+        background: #fee;
+        border: 2px solid #fcc;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #c33;
+      }
+
+      .error-container.visible {
+        display: block;
+      }
+
+      .error-title {
+        font-weight: bold;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .error-message {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+      }
+
+      .controls {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-play {
+        background: #667eea;
+        color: white;
+        flex: 1;
+      }
+
+      .btn-play:hover:not(:disabled) {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-pause {
+        background: #f59e0b;
+        color: white;
+        flex: 1;
+      }
+
+      .btn-pause:hover:not(:disabled) {
+        background: #d97706;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+      }
+
+      .btn-stop {
+        background: #ef4444;
+        color: white;
+        flex: 1;
+      }
+
+      .btn-stop:hover:not(:disabled) {
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+      }
+
+      .btn-upload {
+        background: #10b981;
+        color: white;
+        flex: 1;
+      }
+
+      .btn-upload:hover:not(:disabled) {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      }
+
+      .progress-section {
+        margin-bottom: 20px;
+      }
+
+      .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        width: 0%;
+        transition: width 0.1s linear;
+      }
+
+      .progress-time {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .status {
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+        padding: 10px;
+        border-radius: 8px;
+        background: #f5f5f5;
+      }
+
+      .status.loading {
+        color: #667eea;
+        background: #eef2ff;
+      }
+
+      .status.error {
+        color: #c33;
+        background: #fee;
+      }
+
+      .status.success {
+        color: #059669;
+        background: #d1fae5;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+
+        textarea {
+          min-height: 300px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>SynapSeq</h1>
+      <p class="subtitle">
+        Create and play binaural beats and isochronic tones
+      </p>
+
+      <div class="editor-section">
+        <div class="line-numbers" id="lineNumbers"></div>
+        <textarea
+          id="spsqEditor"
+          placeholder="Enter your SPSQ code here or upload a file..."
+        >
+# A sample isochronic sequence
+
+# Presets
+alpha-one
+  noise pink amplitude 30
+  tone 250 isochronic 8 amplitude 15
+
+alpha-two
+  noise pink amplitude 25
+  tone 250 isochronic 9 amplitude 15
+
+alpha-three
+  noise pink amplitude 20
+  tone 250 isochronic 10 amplitude 15
+
+alpha-four
+  noise pink amplitude 15
+  tone 250 isochronic 11 amplitude 15
+
+# Timeline
+00:00:00 silence
+00:00:15 alpha-one
+00:01:00 alpha-one
+00:02:30 alpha-two
+00:04:00 alpha-three
+00:05:30 alpha-four
+00:07:00 silence</textarea
+        >
+      </div>
+
+      <div class="error-container" id="errorContainer">
+        <div class="error-title">Error</div>
+        <div class="error-message" id="errorMessage"></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn-play" id="playBtn" onclick="handlePlay()">
+          Play
+        </button>
+        <button
+          class="btn-pause"
+          id="pauseBtn"
+          onclick="handlePause()"
+          disabled
+        >
+          Pause
+        </button>
+        <button class="btn-stop" id="stopBtn" onclick="handleStop()" disabled>
+          Stop
+        </button>
+        <button
+          class="btn-upload"
+          id="uploadBtn"
+          onclick="document.getElementById('fileInput').click()"
+        >
+          Upload
+        </button>
+        <input
+          type="file"
+          id="fileInput"
+          accept=".spsq"
+          onchange="handleFileUpload(event)"
+        />
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-time">
+          <span id="currentTime">00:00</span>
+          <span id="totalTime">00:00</span>
+        </div>
+      </div>
+
+      <div class="status" id="status">Ready</div>
+    </div>
+
+    <script src="synapseq.js"></script>
+    <script>
+      let synapseq = null;
+      let progressInterval = null;
+
+      // Initialize line numbers
+      function updateLineNumbers() {
+        const textarea = document.getElementById("spsqEditor");
+        const lineNumbers = document.getElementById("lineNumbers");
+        const lines = textarea.value.split("\n").length;
+
+        const numbers = [];
+        for (let i = 1; i <= lines; i++) {
+          numbers.push(i);
+        }
+        lineNumbers.textContent = numbers.join("\n");
+      }
+
+      // Initialize SynapSeq library
+      async function initSynapSeq() {
+        synapseq = new SynapSeq();
+
+        const version = await synapseq.getVersion();
+        const buildDate = await synapseq.getBuildDate();
+        const hash = await synapseq.getHash();
+
+        console.log(
+          `SynapSeq Version: ${version}, Build Date: ${buildDate}, Hash: ${hash}`
+        );
+
+        // Setup event handlers
+        synapseq.onloaded = () => {
+          console.log("Sequence loaded");
+        };
+
+        synapseq.ongenerating = () => {
+          setStatus("Generating audio...", "loading");
+          document.getElementById("playBtn").disabled = true;
+          document.getElementById("uploadBtn").disabled = true;
+          document.getElementById("spsqEditor").disabled = true;
+        };
+
+        synapseq.onplaying = () => {
+          setStatus("Playing...", "success");
+          document.getElementById("playBtn").disabled = true;
+          document.getElementById("pauseBtn").disabled = false;
+          document.getElementById("stopBtn").disabled = false;
+          document.getElementById("uploadBtn").disabled = true;
+          document.getElementById("spsqEditor").disabled = true;
+          startProgressTracking();
+        };
+
+        synapseq.onpaused = () => {
+          setStatus("Paused", "loading");
+          document.getElementById("playBtn").disabled = false;
+          document.getElementById("pauseBtn").disabled = true;
+          document.getElementById("uploadBtn").disabled = false;
+          document.getElementById("spsqEditor").disabled = false;
+          stopProgressTracking();
+        };
+
+        synapseq.onstopped = () => {
+          setStatus("Stopped", "success");
+          document.getElementById("playBtn").disabled = false;
+          document.getElementById("pauseBtn").disabled = true;
+          document.getElementById("stopBtn").disabled = true;
+          document.getElementById("uploadBtn").disabled = false;
+          document.getElementById("spsqEditor").disabled = false;
+          stopProgressTracking();
+          document.getElementById("progressBar").style.width = "0%";
+          document.getElementById("currentTime").textContent = "00:00";
+          document.getElementById("totalTime").textContent = "00:00";
+        };
+
+        synapseq.onended = () => {
+          setStatus("Playback finished", "success");
+          synapseq.stop();
+        };
+
+        synapseq.onerror = (detail) => {
+          console.error("Error:", detail.error);
+          showError(detail.error.message || detail.error);
+          setStatus("Error", "error");
+          document.getElementById("playBtn").disabled = false;
+          document.getElementById("uploadBtn").disabled = false;
+          document.getElementById("spsqEditor").disabled = false;
+        };
+
+        // Wait for worker to be ready
+        const checkReady = setInterval(() => {
+          if (synapseq.isReady()) {
+            clearInterval(checkReady);
+            setStatus("Ready", "success");
+            updateLineNumbers();
+          }
+        }, 100);
+      }
+
+      // Initialize on load
+      setStatus("Loading WASM...", "loading");
+      initSynapSeq();
+
+      // Update line numbers on input
+      document.addEventListener("DOMContentLoaded", () => {
+        const textarea = document.getElementById("spsqEditor");
+        textarea.addEventListener("input", updateLineNumbers);
+        textarea.addEventListener("scroll", () => {
+          document.getElementById("lineNumbers").scrollTop = textarea.scrollTop;
+        });
+        updateLineNumbers();
+      });
+
+      function setStatus(message, type = "") {
+        const statusEl = document.getElementById("status");
+        statusEl.textContent = message;
+        statusEl.className = "status" + (type ? " " + type : "");
+      }
+
+      function showError(message) {
+        const errorContainer = document.getElementById("errorContainer");
+        const errorMessage = document.getElementById("errorMessage");
+        errorMessage.textContent = message;
+        errorContainer.classList.add("visible");
+      }
+
+      function hideError() {
+        const errorContainer = document.getElementById("errorContainer");
+        errorContainer.classList.remove("visible");
+      }
+
+      function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${String(mins).padStart(2, "0")}:${String(secs).padStart(
+          2,
+          "0"
+        )}`;
+      }
+
+      function updateProgress() {
+        if (!synapseq || synapseq.getState() === "idle") return;
+
+        const currentTime = synapseq.getCurrentTime();
+        const duration = synapseq.getDuration();
+
+        if (duration > 0) {
+          const progress = (currentTime / duration) * 100;
+          document.getElementById("progressBar").style.width = progress + "%";
+          document.getElementById("currentTime").textContent =
+            formatTime(currentTime);
+          document.getElementById("totalTime").textContent =
+            formatTime(duration);
+        }
+      }
+
+      function startProgressTracking() {
+        if (progressInterval) clearInterval(progressInterval);
+        progressInterval = setInterval(updateProgress, 100);
+      }
+
+      function stopProgressTracking() {
+        if (progressInterval) {
+          clearInterval(progressInterval);
+          progressInterval = null;
+        }
+      }
+
+      async function handlePlay() {
+        if (!synapseq || !synapseq.isReady()) {
+          setStatus("WASM not initialized yet", "error");
+          return;
+        }
+
+        hideError();
+
+        try {
+          const spsq = document.getElementById("spsqEditor").value;
+
+          if (!spsq.trim()) {
+            showError("Please enter SPSQ code or upload a file");
+            setStatus("Ready", "success");
+            return;
+          }
+
+          // Always reload the sequence to ensure we use the current textarea content
+          await synapseq.load(spsq);
+
+          // Play the sequence
+          await synapseq.play();
+        } catch (error) {
+          console.error("Error:", error);
+          showError(error.message || "Unknown error occurred");
+          setStatus("Error", "error");
+          document.getElementById("uploadBtn").disabled = false;
+        }
+      }
+
+      function handlePause() {
+        if (!synapseq) return;
+
+        try {
+          synapseq.pause();
+        } catch (error) {
+          console.error("Pause error:", error);
+        }
+      }
+
+      function handleStop() {
+        if (!synapseq) return;
+
+        synapseq.stop();
+      }
+
+      async function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate file extension
+        if (!file.name.toLowerCase().endsWith(".spsq")) {
+          showError("Invalid file type. Please upload a .spsq file");
+          event.target.value = "";
+          return;
+        }
+
+        hideError();
+
+        try {
+          await synapseq.load(file);
+
+          // Read file content to display in textarea
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            document.getElementById("spsqEditor").value = e.target.result;
+            updateLineNumbers();
+            setStatus("File loaded: " + file.name, "success");
+          };
+          reader.readAsText(file);
+        } catch (error) {
+          showError("Failed to load file: " + error.message);
+          setStatus("File read error", "error");
+        }
+
+        // Reset input so the same file can be uploaded again
+        event.target.value = "";
+      }
+    </script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-//go:build !wasm
+//go:build wasm
 
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
@@ -11,32 +11,11 @@ package parser
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
-
-// getFullPath resolves the full path of a given file path
-func getFullPath(path, basePath string) (string, error) {
-	if strings.HasPrefix(path, "~") {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		expanded := filepath.Join(homeDir, strings.TrimPrefix(path, "~"))
-		return filepath.Clean(expanded), nil
-	}
-
-	if filepath.IsAbs(path) {
-		return filepath.Clean(path), nil
-	}
-
-	fullPath := filepath.Join(basePath, path)
-	return filepath.Clean(fullPath), nil
-}
 
 // HasOption checks if the first element is an option
 func (ctx *TextParser) HasOption() bool {
@@ -50,7 +29,7 @@ func (ctx *TextParser) HasOption() bool {
 }
 
 // ParseOption extracts and applies the option from the elements
-func (ctx *TextParser) ParseOption(options *t.SequenceOptions, filePath string) error {
+func (ctx *TextParser) ParseOption(options *t.SequenceOptions) error {
 	ln := ctx.Line.Raw
 	tok, ok := ctx.Line.NextToken()
 	if !ok {
@@ -86,24 +65,14 @@ func (ctx *TextParser) ParseOption(options *t.SequenceOptions, filePath string) 
 		}
 
 		content := strings.Join(ctx.Line.Tokens[1:], " ")
-
-		if content == "-" {
-			return fmt.Errorf("stdin (-) is not supported for background or preset list")
-		}
-
-		fullPath := content
 		if !s.IsRemoteFile(content) {
-			var err error
-			fullPath, err = getFullPath(content, filePath)
-			if err != nil {
-				return fmt.Errorf("path: %v", err)
-			}
+			return fmt.Errorf("file paths are not supported in WASM for background or preset list: %s", content)
 		}
 
 		if option == t.KeywordBackground {
-			options.BackgroundPath = fullPath
+			options.BackgroundPath = content
 		} else {
-			options.PresetList = append(options.PresetList, fullPath)
+			options.PresetList = append(options.PresetList, content)
 		}
 	case t.KeywordOptionGainLevel:
 		gainLevel, ok := ctx.Line.NextToken()

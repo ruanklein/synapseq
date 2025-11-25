@@ -96,6 +96,11 @@ build-macos: prepare
 build-macos-nohub: prepare
 	GOOS=darwin GOARCH=arm64 go build -tags=nohub $(GO_BUILD_FLAGS) -o $(BIN_DIR)/$(BIN_NAME)-macos-arm64-nohub $(MAIN)
 
+# WASM build
+build-wasm:
+	GOOS=js GOARCH=wasm go build -tags=nohub,wasm $(GO_BUILD_FLAGS) -o wasm/$(BIN_NAME).wasm ./cmd/wasm
+	cp $(shell go env GOROOT)/lib/wasm/wasm_exec.js wasm/wasm_exec.js
+
 # POSIX installation
 install:
 	cp $(BIN_DIR)/$(BIN_NAME) /usr/local/bin/$(BIN_NAME)
@@ -107,3 +112,4 @@ install-nohub:
 clean:
 	rm -rf $(BIN_DIR)
 	rm -rf cmd/synapseq/*.syso
+	rm -rf wasm/*.wasm wasm/wasm_exec.js
