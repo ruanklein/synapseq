@@ -358,43 +358,10 @@ alpha-four
       <div class="status" id="status">Ready</div>
     </div>
 
+    <script src="synapseq.js"></script>
     <script>
-      let wasmWorker = null;
-      let wasmReady = false;
-      let audio = null;
-      let audioBlob = null;
+      let synapseq = null;
       let progressInterval = null;
-
-      // Initialize Web Worker
-      function initWorker() {
-        wasmWorker = new Worker("worker.js");
-
-        wasmWorker.onmessage = function (e) {
-          const data = e.data;
-
-          if (data.type === "ready") {
-            wasmReady = true;
-            console.log("WASM ready");
-            setStatus("Ready", "success");
-            updateLineNumbers();
-          } else if (data.type === "success") {
-            // Audio generation completed
-            const wavBytes = data.wav;
-            playAudio(wavBytes);
-          } else if (data.type === "error") {
-            console.error(data.error);
-            showError(data.error);
-            setStatus("Generation failed", "error");
-            document.getElementById("playBtn").disabled = false;
-            document.getElementById("spsqEditor").disabled = false;
-          }
-        };
-
-        wasmWorker.onerror = function (error) {
-          console.error("Worker error:", error);
-          setStatus("Worker error", "error");
-        };
-      }
 
       // Initialize line numbers
       function updateLineNumbers() {
@@ -409,9 +376,76 @@ alpha-four
         lineNumbers.textContent = numbers.join("\n");
       }
 
-      // Initialize Worker on load
+      // Initialize SynapSeq library
+      function initSynapSeq() {
+        synapseq = new SynapSeq();
+
+        // Setup event handlers
+        synapseq.onloaded = () => {
+          console.log("Sequence loaded");
+        };
+
+        synapseq.ongenerating = () => {
+          setStatus("Generating audio...", "loading");
+          document.getElementById("playBtn").disabled = true;
+          document.getElementById("spsqEditor").disabled = true;
+        };
+
+        synapseq.onplaying = () => {
+          setStatus("Playing...", "success");
+          document.getElementById("playBtn").disabled = true;
+          document.getElementById("pauseBtn").disabled = false;
+          document.getElementById("stopBtn").disabled = false;
+          document.getElementById("spsqEditor").disabled = true;
+          startProgressTracking();
+        };
+
+        synapseq.onpaused = () => {
+          setStatus("Paused", "loading");
+          document.getElementById("playBtn").disabled = false;
+          document.getElementById("pauseBtn").disabled = true;
+          document.getElementById("spsqEditor").disabled = false;
+          stopProgressTracking();
+        };
+
+        synapseq.onstopped = () => {
+          setStatus("Stopped", "success");
+          document.getElementById("playBtn").disabled = false;
+          document.getElementById("pauseBtn").disabled = true;
+          document.getElementById("stopBtn").disabled = true;
+          document.getElementById("spsqEditor").disabled = false;
+          stopProgressTracking();
+          document.getElementById("progressBar").style.width = "0%";
+          document.getElementById("currentTime").textContent = "00:00";
+          document.getElementById("totalTime").textContent = "00:00";
+        };
+
+        synapseq.onended = () => {
+          setStatus("Playback finished", "success");
+          synapseq.stop();
+        };
+
+        synapseq.onerror = (detail) => {
+          console.error("Error:", detail.error);
+          showError(detail.error.message || detail.error);
+          setStatus("Error", "error");
+          document.getElementById("playBtn").disabled = false;
+          document.getElementById("spsqEditor").disabled = false;
+        };
+
+        // Wait for worker to be ready
+        const checkReady = setInterval(() => {
+          if (synapseq.isReady()) {
+            clearInterval(checkReady);
+            setStatus("Ready", "success");
+            updateLineNumbers();
+          }
+        }, 100);
+      }
+
+      // Initialize on load
       setStatus("Loading WASM...", "loading");
-      initWorker();
+      initSynapSeq();
 
       // Update line numbers on input
       document.addEventListener("DOMContentLoaded", () => {
@@ -451,16 +485,19 @@ alpha-four
       }
 
       function updateProgress() {
-        if (!audio) return;
+        if (!synapseq || synapseq.getState() === "idle") return;
 
-        const progress = (audio.currentTime / audio.duration) * 100;
-        document.getElementById("progressBar").style.width = progress + "%";
-        document.getElementById("currentTime").textContent = formatTime(
-          audio.currentTime
-        );
-        document.getElementById("totalTime").textContent = formatTime(
-          audio.duration
-        );
+        const currentTime = synapseq.getCurrentTime();
+        const duration = synapseq.getDuration();
+
+        if (duration > 0) {
+          const progress = (currentTime / duration) * 100;
+          document.getElementById("progressBar").style.width = progress + "%";
+          document.getElementById("currentTime").textContent =
+            formatTime(currentTime);
+          document.getElementById("totalTime").textContent =
+            formatTime(duration);
+        }
       }
 
       function startProgressTracking() {
@@ -475,149 +512,81 @@ alpha-four
         }
       }
 
-      function handlePlay() {
-        if (!wasmReady) {
+      async function handlePlay() {
+        if (!synapseq || !synapseq.isReady()) {
           setStatus("WASM not initialized yet", "error");
           return;
         }
 
         hideError();
 
-        // If audio exists and is paused, just resume
-        if (audio && audio.paused && audioBlob) {
-          audio.play();
-          setStatus("Playing...", "success");
-          document.getElementById("playBtn").disabled = true;
-          document.getElementById("pauseBtn").disabled = false;
-          document.getElementById("stopBtn").disabled = false;
-          document.getElementById("spsqEditor").disabled = true;
-          startProgressTracking();
-          return;
-        }
-
-        // Generate new audio
-        setStatus("Generating audio...", "loading");
-        document.getElementById("playBtn").disabled = true;
-        document.getElementById("spsqEditor").disabled = true;
-
-        const spsq = document.getElementById("spsqEditor").value;
-
-        if (!spsq.trim()) {
-          showError("Please enter SPSQ code or upload a file");
-          setStatus("Ready", "success");
-          document.getElementById("playBtn").disabled = false;
-          document.getElementById("spsqEditor").disabled = false;
-          return;
-        }
-
-        // Convert string -> Uint8Array
-        const encoder = new TextEncoder();
-        const spsqBytes = encoder.encode(spsq);
-
-        // Send to worker for processing
-        wasmWorker.postMessage({
-          type: "generate",
-          spsqBytes: spsqBytes,
-        });
-      }
-
-      function playAudio(wavBytes) {
         try {
-          // Create blob and play
-          audioBlob = new Blob([wavBytes], { type: "audio/wav" });
-          const url = URL.createObjectURL(audioBlob);
+          const spsq = document.getElementById("spsqEditor").value;
 
-          if (audio) {
-            audio.pause();
-            audio = null;
+          if (!spsq.trim()) {
+            showError("Please enter SPSQ code or upload a file");
+            setStatus("Ready", "success");
+            return;
           }
 
-          audio = new Audio(url);
+          // Load sequence if not already loaded or if content changed
+          if (!synapseq.isLoaded()) {
+            await synapseq.load(spsq);
+          }
 
-          audio.addEventListener("loadedmetadata", () => {
-            updateProgress();
-          });
-
-          audio.addEventListener("ended", () => {
-            handleStop();
-            setStatus("Playback finished", "success");
-          });
-
-          audio.addEventListener("error", (e) => {
-            console.error("Audio error:", e);
-            showError("Failed to play audio");
-            setStatus("Playback error", "error");
-            handleStop();
-          });
-
-          audio.play();
-          setStatus("Playing...", "success");
-          document.getElementById("pauseBtn").disabled = false;
-          document.getElementById("stopBtn").disabled = false;
-          startProgressTracking();
+          // Play the sequence
+          await synapseq.play();
         } catch (error) {
           console.error("Error:", error);
           showError(error.message || "Unknown error occurred");
           setStatus("Error", "error");
-          document.getElementById("playBtn").disabled = false;
-          document.getElementById("spsqEditor").disabled = false;
         }
       }
 
       function handlePause() {
-        if (audio && !audio.paused) {
-          audio.pause();
-          setStatus("Paused", "loading");
-          document.getElementById("playBtn").disabled = false;
-          document.getElementById("pauseBtn").disabled = true;
-          document.getElementById("spsqEditor").disabled = false;
-          stopProgressTracking();
+        if (!synapseq) return;
+
+        try {
+          synapseq.pause();
+        } catch (error) {
+          console.error("Pause error:", error);
         }
       }
 
       function handleStop() {
-        if (audio) {
-          audio.pause();
-          audio.currentTime = 0;
-          audio = null;
-          audioBlob = null;
-        }
+        if (!synapseq) return;
 
-        stopProgressTracking();
-        document.getElementById("progressBar").style.width = "0%";
-        document.getElementById("currentTime").textContent = "00:00";
-        document.getElementById("totalTime").textContent = "00:00";
-        document.getElementById("playBtn").disabled = false;
-        document.getElementById("pauseBtn").disabled = true;
-        document.getElementById("stopBtn").disabled = true;
-        document.getElementById("spsqEditor").disabled = false;
-        setStatus("Stopped", "success");
+        synapseq.stop();
       }
 
-      function handleFileUpload(event) {
+      async function handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
 
         // Validate file extension
         if (!file.name.toLowerCase().endsWith(".spsq")) {
           showError("Invalid file type. Please upload a .spsq file");
-          event.target.value = ""; // Reset input
+          event.target.value = "";
           return;
         }
 
         hideError();
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          document.getElementById("spsqEditor").value = e.target.result;
-          updateLineNumbers();
-          setStatus("File loaded: " + file.name, "success");
-        };
-        reader.onerror = () => {
-          showError("Failed to read file");
+        try {
+          await synapseq.load(file);
+
+          // Read file content to display in textarea
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            document.getElementById("spsqEditor").value = e.target.result;
+            updateLineNumbers();
+            setStatus("File loaded: " + file.name, "success");
+          };
+          reader.readAsText(file);
+        } catch (error) {
+          showError("Failed to load file: " + error.message);
           setStatus("File read error", "error");
-        };
-        reader.readAsText(file);
+        }
 
         // Reset input so the same file can be uploaded again
         event.target.value = "";
