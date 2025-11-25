@@ -234,21 +234,21 @@ class SynapSeq {
       this._audioBlob = new Blob([wavBytes], { type: "audio/wav" });
       const url = URL.createObjectURL(this._audioBlob);
 
-      if (this._audio) {
-        this._audio.pause();
-        this._audio = null;
+      // Reuse the audio element created during user interaction
+      if (!this._audio) {
+        this._audio = new Audio();
+
+        this._audio.addEventListener("ended", () => {
+          this._dispatchEvent("ended");
+        });
+
+        this._audio.addEventListener("error", (e) => {
+          this._handleError(new Error("Audio playback error"));
+        });
       }
 
-      this._audio = new Audio(url);
-
-      this._audio.addEventListener("ended", () => {
-        this._dispatchEvent("ended");
-      });
-
-      this._audio.addEventListener("error", (e) => {
-        this._handleError(new Error("Audio playback error"));
-      });
-
+      // Set the source and play
+      this._audio.src = url;
       this._audio
         .play()
         .then(() => {
@@ -361,6 +361,22 @@ class SynapSeq {
         throw new Error("Failed to resume playback: " + error.message);
       }
     }
+
+    // Create audio element immediately to satisfy mobile autoplay policies
+    // This must happen during the user interaction (click event)
+    if (this._audio) {
+      this._audio.pause();
+    }
+    this._audio = new Audio();
+
+    // Setup event listeners before generation
+    this._audio.addEventListener("ended", () => {
+      this._dispatchEvent("ended");
+    });
+
+    this._audio.addEventListener("error", (e) => {
+      this._handleError(new Error("Audio playback error"));
+    });
 
     // Generate new audio
     this._dispatchEvent("generating");
