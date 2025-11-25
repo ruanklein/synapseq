@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SynapSeq WASM</title>
-    <script src="wasm_exec.js"></script>
     <style>
       * {
         margin: 0;
@@ -360,12 +359,42 @@ alpha-four
     </div>
 
     <script>
+      let wasmWorker = null;
       let wasmReady = false;
       let audio = null;
       let audioBlob = null;
       let progressInterval = null;
 
-      const go = new Go();
+      // Initialize Web Worker
+      function initWorker() {
+        wasmWorker = new Worker("worker.js");
+
+        wasmWorker.onmessage = function (e) {
+          const data = e.data;
+
+          if (data.type === "ready") {
+            wasmReady = true;
+            console.log("WASM ready");
+            setStatus("Ready", "success");
+            updateLineNumbers();
+          } else if (data.type === "success") {
+            // Audio generation completed
+            const wavBytes = data.wav;
+            playAudio(wavBytes);
+          } else if (data.type === "error") {
+            console.error(data.error);
+            showError(data.error);
+            setStatus("Generation failed", "error");
+            document.getElementById("playBtn").disabled = false;
+            document.getElementById("spsqEditor").disabled = false;
+          }
+        };
+
+        wasmWorker.onerror = function (error) {
+          console.error("Worker error:", error);
+          setStatus("Worker error", "error");
+        };
+      }
 
       // Initialize line numbers
       function updateLineNumbers() {
@@ -380,20 +409,9 @@ alpha-four
         lineNumbers.textContent = numbers.join("\n");
       }
 
-      // Initialize WASM
+      // Initialize Worker on load
       setStatus("Loading WASM...", "loading");
-      WebAssembly.instantiateStreaming(fetch("synapseq.wasm"), go.importObject)
-        .then((result) => {
-          go.run(result.instance);
-          wasmReady = true;
-          console.log("WASM ready");
-          setStatus("Ready", "success");
-          updateLineNumbers();
-        })
-        .catch((error) => {
-          console.error("Failed to load WASM:", error);
-          setStatus("Failed to load WASM", "error");
-        });
+      initWorker();
 
       // Update line numbers on input
       document.addEventListener("DOMContentLoaded", () => {
@@ -496,21 +514,15 @@ alpha-four
         const encoder = new TextEncoder();
         const spsqBytes = encoder.encode(spsq);
 
+        // Send to worker for processing
+        wasmWorker.postMessage({
+          type: "generate",
+          spsqBytes: spsqBytes,
+        });
+      }
+
+      function playAudio(wavBytes) {
         try {
-          // Call WASM
-          const result = synapseqGenerate(spsqBytes);
-
-          if (result.error) {
-            console.error(result.error);
-            showError(result.error);
-            setStatus("Generation failed", "error");
-            document.getElementById("playBtn").disabled = false;
-            document.getElementById("spsqEditor").disabled = false;
-            return;
-          }
-
-          const wavBytes = result.wav;
-
           // Create blob and play
           audioBlob = new Blob([wavBytes], { type: "audio/wav" });
           const url = URL.createObjectURL(audioBlob);
