@@ -1,4 +1,4 @@
-//go:build !wasm
+//go:build wasm
 
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
@@ -11,27 +11,15 @@ package sequence
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/ruanklein/synapseq/v3/internal/parser"
 	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
-// LoadTextSequence loads a sequence from a text file
-func LoadTextSequence(fileName string) (*t.Sequence, error) {
-	rawContent, err := s.GetFile(fileName, t.FormatText)
-	if err != nil {
-		return nil, fmt.Errorf("error loading sequence file: %v", err)
-	}
-
+// LoadTextSequence loads a sequence from a file content
+func LoadTextSequence(rawContent []byte) (*t.Sequence, error) {
 	file := NewSequenceFile(rawContent)
-
-	// Get absolute path of input file
-	absInputFile, err := filepath.Abs(fileName)
-	if err != nil {
-		return nil, fmt.Errorf("cannot resolve absolute path: %w", err)
-	}
 
 	presets := make([]t.Preset, 0, t.MaxPresets)
 
@@ -83,11 +71,11 @@ func LoadTextSequence(fileName string) (*t.Sequence, error) {
 				return nil, fmt.Errorf("line %d: options must be defined on the top of the file, before any presets or timelines", lnn)
 			}
 
-			if err = ctx.ParseOption(options, filepath.Dir(absInputFile)); err != nil {
+			if err := ctx.ParseOption(options); err != nil {
 				return nil, fmt.Errorf("line %d: %v", lnn, err)
 			}
 			// Validate options
-			if err = options.Validate(); err != nil {
+			if err := options.Validate(); err != nil {
 				return nil, fmt.Errorf("line %d: %v", lnn, err)
 			}
 

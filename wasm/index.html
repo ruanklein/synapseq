@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SynapSeq WASM Test</title>
+    <script src="wasm_exec.js"></script>
+    <script>
+      let wasmReady = false;
+
+      const go = new Go();
+
+      WebAssembly.instantiateStreaming(
+        fetch("synapseq.wasm"),
+        go.importObject
+      ).then((result) => {
+        go.run(result.instance);
+        wasmReady = true;
+        console.log("WASM ready");
+      });
+
+      async function testGenerate() {
+        if (!wasmReady) {
+          alert("WASM not initialized yet");
+          return;
+        }
+
+        // Define SPSQ input
+        const spsq = `
+alpha
+  tone 200 binaural 8 amplitude 20
+
+00:00:00 alpha
+00:01:00 alpha
+`;
+
+        // Convert string -> Uint8Array
+        const encoder = new TextEncoder();
+        const spsqBytes = encoder.encode(spsq);
+
+        // Call WASM
+        const result = synapseqGenerate(spsqBytes);
+
+        if (result.error) {
+          console.error(result.error);
+          alert("ERROR: " + result.error);
+          return;
+        }
+
+        const wavBytes = result.wav;
+
+        // Create blob and play
+        const blob = new Blob([wavBytes], { type: "audio/wav" });
+        const url = URL.createObjectURL(blob);
+
+        const audio = new Audio(url);
+        audio.play();
+      }
+    </script>
+  </head>
+
+  <body>
+    <button onclick="testGenerate()">Generate & Play</button>
+  </body>
+</html>
