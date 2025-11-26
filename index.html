@@ -389,6 +389,7 @@
         overflow: hidden;
         background: var(--color-gray-900);
         transition: opacity 0.2s, border-color 0.2s;
+        position: relative;
       }
 
       .editor-container:has(.editor-textarea:disabled) {
@@ -399,6 +400,90 @@
       body:not(.dark) .editor-container {
         border-color: var(--color-gray-200);
         background: white;
+      }
+
+      .editor-wrapper {
+        flex: 1;
+        position: relative;
+        display: flex;
+      }
+
+      .syntax-highlight {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 1rem;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        pointer-events: none;
+        overflow-y: auto;
+        height: 450px;
+        color: transparent;
+      }
+
+      /* Syntax highlighting colors */
+      .syntax-comment {
+        color: #6a9955;
+      }
+      .syntax-directive {
+        color: #c586c0;
+        font-weight: 600;
+      }
+      .syntax-keyword {
+        color: #569cd6;
+        font-weight: 500;
+      }
+      .syntax-type {
+        color: #4ec9b0;
+      }
+      .syntax-waveform {
+        color: #9cdcfe;
+      }
+      .syntax-time {
+        color: #b5cea8;
+      }
+      .syntax-number {
+        color: #b5cea8;
+      }
+      .syntax-preset {
+        color: #dcdcaa;
+        font-weight: 500;
+      }
+      .syntax-timeline-preset {
+        color: #ce9178;
+      }
+      .syntax-text {
+        color: #d4d4d4;
+      }
+
+      body:not(.dark) .syntax-comment {
+        color: #008000;
+      }
+      body:not(.dark) .syntax-directive {
+        color: #af00db;
+      }
+      body:not(.dark) .syntax-keyword {
+        color: #0000ff;
+      }
+      body:not(.dark) .syntax-type {
+        color: #267f99;
+      }
+      body:not(.dark) .syntax-waveform {
+        color: #001080;
+      }
+      body:not(.dark) .syntax-time {
+        color: #098658;
+      }
+      body:not(.dark) .syntax-number {
+        color: #098658;
+      }
+      body:not(.dark) .syntax-preset {
+        color: #795e26;
       }
 
       .line-numbers {
@@ -438,16 +523,16 @@
         height: 450px;
         max-height: 450px;
         transition: opacity 0.2s, filter 0.2s;
-      }
-
-      .editor-textarea:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        filter: grayscale(0.3);
+        position: relative;
+        z-index: 2;
+        color: transparent;
+        caret-color: var(--color-gray-100);
+        white-space: pre-wrap;
+        word-wrap: break-word;
       }
 
       body:not(.dark) .editor-textarea {
-        color: var(--color-gray-900);
+        caret-color: var(--color-gray-900);
       }
 
       .editor-textarea::placeholder {
@@ -1087,11 +1172,14 @@
 
           <div class="editor-container">
             <div id="lineNumbers" class="line-numbers">1</div>
-            <textarea
-              id="spsqEditor"
-              class="editor-textarea"
-              rows="15"
-              placeholder="# Try editing this example sequence!
+            <div class="editor-wrapper">
+              <div id="syntaxHighlight" class="syntax-highlight"></div>
+              <textarea
+                id="spsqEditor"
+                class="editor-textarea"
+                rows="15"
+                spellcheck="false"
+                placeholder="# Try editing this example sequence!
 # Presets
 alpha
   noise pink amplitude 30
@@ -1101,7 +1189,7 @@ alpha
 00:00:00 silence
 00:00:15 alpha
 00:01:00 silence"
-            >
+              >
 # Presets
 alpha
   noise pink amplitude 30
@@ -1112,7 +1200,8 @@ alpha
 00:00:15 alpha
 00:04:00 alpha
 00:05:00 silence</textarea
-            >
+              >
+            </div>
           </div>
 
           <div class="controls">
@@ -1161,78 +1250,6 @@ alpha
           </div>
 
           <div id="statusMessage" class="status-message">Loading WASM...</div>
-        </div>
-      </section>
-
-      <!-- Installation Section -->
-      <section class="installation">
-        <div class="container">
-          <h2 class="section-title">Installation</h2>
-
-          <div class="install-grid">
-            <!-- Windows -->
-            <div class="install-card">
-              <div class="install-card-header">
-                <i
-                  data-lucide="monitor"
-                  class="install-icon"
-                  style="width: 2.5rem; height: 2.5rem"
-                ></i>
-                <h3>Windows</h3>
-              </div>
-              <div class="install-code">winget install synapseq</div>
-            </div>
-
-            <!-- macOS/Linux -->
-            <div class="install-card">
-              <div class="install-card-header">
-                <i
-                  data-lucide="terminal"
-                  class="install-icon"
-                  style="width: 2.5rem; height: 2.5rem"
-                ></i>
-                <h3>macOS / Linux</h3>
-              </div>
-              <div class="install-code">brew tap ruanklein/synapseq</div>
-              <div class="install-code">brew install synapseq</div>
-            </div>
-          </div>
-
-          <div class="downloads-section">
-            <h3 class="downloads-title">Or download directly</h3>
-            <div class="downloads-grid">
-              <a
-                href="https://github.com/ruanklein/synapseq/releases/download/v3.4.0/synapseq-v3.4.0-windows-amd64.zip"
-                class="download-btn"
-              >
-                <i
-                  data-lucide="download"
-                  style="width: 1.25rem; height: 1.25rem"
-                ></i>
-                Windows (x64)
-              </a>
-              <a
-                href="https://github.com/ruanklein/synapseq/releases/download/v3.4.0/synapseq-v3.4.0-macos-arm64.tar.gz"
-                class="download-btn"
-              >
-                <i
-                  data-lucide="download"
-                  style="width: 1.25rem; height: 1.25rem"
-                ></i>
-                macOS (ARM64)
-              </a>
-              <a
-                href="https://github.com/ruanklein/synapseq/releases/download/v3.4.0/synapseq-v3.4.0-linux-amd64.tar.gz"
-                class="download-btn"
-              >
-                <i
-                  data-lucide="download"
-                  style="width: 1.25rem; height: 1.25rem"
-                ></i>
-                Linux (x64)
-              </a>
-            </div>
-          </div>
         </div>
       </section>
     </main>
@@ -1356,18 +1373,106 @@ alpha
         lineNumbers.textContent = numbers.join("\n");
       }
 
+      // Syntax highlighting
+      function highlightSyntax(code) {
+        // Split into lines for better processing
+        const lines = code.split("\n");
+        const highlightedLines = lines.map((line) => {
+          let highlighted = line;
+
+          // Comments (must be first to avoid double-highlighting)
+          if (/^\s*#/.test(line)) {
+            return `<span class="syntax-comment">${line}</span>`;
+          }
+
+          // Directives and their arguments
+          highlighted = highlighted.replace(
+            /(@\w+)(\s+.+)?$/g,
+            (match, directive, rest) => {
+              let result = `<span class="syntax-directive">${directive}</span>`;
+              if (rest) {
+                result += `<span class="syntax-text">${rest}</span>`;
+              }
+              return result;
+            }
+          );
+
+          // Timeline entries (time followed by preset name or silence)
+          highlighted = highlighted.replace(
+            /\b(\d{2}:\d{2}:\d{2})\s+(\w+)/g,
+            (match, time, preset) => {
+              return `<span class="syntax-time">${time}</span> <span class="syntax-timeline-preset">${preset}</span>`;
+            }
+          );
+
+          // Keywords (tone, noise, background, etc)
+          highlighted = highlighted.replace(
+            /\b(tone|noise|background|waveform|amplitude|rate|intensity)\b/g,
+            (match) => `<span class="syntax-keyword">${match}</span>`
+          );
+
+          // Types (binaural, monaural, etc)
+          highlighted = highlighted.replace(
+            /\b(binaural|monaural|isochronic|pulse|spin|white|pink|brown)\b/g,
+            (match) => `<span class="syntax-type">${match}</span>`
+          );
+
+          // Waveforms (sine, square, etc)
+          highlighted = highlighted.replace(
+            /\b(sine|square|triangle|sawtooth)\b/g,
+            (match) => `<span class="syntax-waveform">${match}</span>`
+          );
+
+          // Numbers (not part of time)
+          highlighted = highlighted.replace(
+            /\b(\d+(?:\.\d+)?)\b/g,
+            (match) => `<span class="syntax-number">${match}</span>`
+          );
+
+          // Preset names (lines starting with word character, not already highlighted)
+          if (/^[a-zA-Z]/.test(line) && !highlighted.includes("<span")) {
+            highlighted = highlighted.replace(
+              /^([a-zA-Z][a-zA-Z0-9_-]*)\b/,
+              (match) => `<span class="syntax-preset">${match}</span>`
+            );
+          }
+
+          return highlighted;
+        });
+
+        return highlightedLines.join("\n");
+      }
+
+      function updateSyntaxHighlight() {
+        const textarea = document.getElementById("spsqEditor");
+        const highlight = document.getElementById("syntaxHighlight");
+        const code = textarea.value;
+
+        // Escape HTML and apply syntax highlighting
+        const escaped = code
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+
+        highlight.innerHTML = highlightSyntax(escaped);
+      }
+
       // Sync scroll between line numbers and textarea
       document.getElementById("spsqEditor").addEventListener("scroll", (e) => {
         document.getElementById("lineNumbers").scrollTop = e.target.scrollTop;
+        document.getElementById("syntaxHighlight").scrollTop =
+          e.target.scrollTop;
       });
 
       // Update line numbers on input
-      document
-        .getElementById("spsqEditor")
-        .addEventListener("input", updateLineNumbers);
+      document.getElementById("spsqEditor").addEventListener("input", () => {
+        updateLineNumbers();
+        updateSyntaxHighlight();
+      });
 
       // Initialize line numbers
       updateLineNumbers();
+      updateSyntaxHighlight();
 
       // Error handling
       function showError(message) {
@@ -1463,6 +1568,31 @@ alpha
             document.getElementById("uploadBtn").disabled = true;
             document.getElementById("spsqEditor").disabled = true;
             startProgressTracking();
+
+            if ("mediaSession" in navigator) {
+              navigator.mediaSession.metadata = new MediaMetadata({
+                title: "SynapSeq Sequence",
+                artist: "Synapse-Sequenced Generator",
+                album: "Brainwave Session",
+                artwork: [
+                  {
+                    src: "/assets/logo-512.png",
+                    sizes: "512x512",
+                    type: "image/png",
+                  },
+                ],
+              });
+              navigator.mediaSession.setActionHandler("play", () =>
+                synapseq.play()
+              );
+              navigator.mediaSession.setActionHandler("pause", () =>
+                synapseq.pause()
+              );
+              navigator.mediaSession.setActionHandler("stop", () =>
+                synapseq.stop()
+              );
+              navigator.mediaSession.playbackState = "playing";
+            }
           };
 
           synapseq.onpaused = () => {
@@ -1471,6 +1601,10 @@ alpha
             document.getElementById("pauseBtn").disabled = true;
             document.getElementById("uploadBtn").disabled = false;
             stopProgressTracking();
+
+            if ("mediaSession" in navigator) {
+              navigator.mediaSession.playbackState = "paused";
+            }
           };
 
           synapseq.onstopped = () => {
@@ -1484,11 +1618,17 @@ alpha
             document.getElementById("progressBar").style.width = "0%";
             document.getElementById("timeDisplay").textContent =
               "00:00 / 00:00";
+            if ("mediaSession" in navigator) {
+              navigator.mediaSession.playbackState = "none";
+            }
           };
 
           synapseq.onended = () => {
             setStatus("Playback finished");
             synapseq.stop();
+            if ("mediaSession" in navigator) {
+              navigator.mediaSession.playbackState = "none";
+            }
           };
 
           synapseq.onerror = (detail) => {
@@ -1587,6 +1727,7 @@ alpha
             reader.onload = (e) => {
               document.getElementById("spsqEditor").value = e.target.result;
               updateLineNumbers();
+              updateSyntaxHighlight();
               setStatus("File loaded: " + file.name);
             };
             reader.onerror = () => {
