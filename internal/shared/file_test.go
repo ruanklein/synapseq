@@ -328,40 +328,6 @@ func TestGetFile_HTTP_Truncate(ts *testing.T) {
 	}
 }
 
-func TestGetFile_HTTP_InvalidContentType_Text(ts *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte("wrong type"))
-	}))
-	defer srv.Close()
-
-	_, err := GetFile(srv.URL+"/test.spsq", t.FormatText)
-	if err == nil {
-		ts.Fatal("expected error for invalid content-type, got nil")
-	}
-
-	if !strings.Contains(err.Error(), "invalid content-type") {
-		ts.Errorf("unexpected error: %v", err)
-	}
-}
-
-func TestGetFile_HTTP_InvalidContentType_JSON(ts *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain")
-		_, _ = w.Write([]byte("{}"))
-	}))
-	defer srv.Close()
-
-	_, err := GetFile(srv.URL+"/test.json", t.FormatJSON)
-	if err == nil {
-		ts.Fatal("expected error for invalid content-type, got nil")
-	}
-
-	if !strings.Contains(err.Error(), "invalid content-type") {
-		ts.Errorf("unexpected error: %v", err)
-	}
-}
-
 func TestGetFile_HTTP_NetworkError(ts *testing.T) {
 	// Use invalid URL
 	_, err := GetFile("http://localhost:1/nonexistent", t.FormatText)

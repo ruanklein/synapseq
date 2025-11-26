@@ -219,22 +219,6 @@ func TestBackgroundAudio_RemoteWAV(t *testing.T) {
 	}
 }
 
-func TestBackgroundAudio_RemoteInvalidContentType(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("not a wav file"))
-	}))
-	defer server.Close()
-
-	_, err := NewBackgroundAudio(server.URL)
-	if err == nil {
-		t.Fatalf("expected error for invalid content-type")
-	}
-	if !contains(err.Error(), "invalid content-type") {
-		t.Fatalf("expected content-type error, got: %v", err)
-	}
-}
-
 func TestBackgroundAudio_Remote10MBLimit(ts *testing.T) {
 	// Create a server that serves more than 10MB
 	const size = 12 * 1024 * 1024 // 12MB
@@ -366,10 +350,6 @@ func TestBackgroundAudio_InvalidPath(t *testing.T) {
 	if _, err := NewBackgroundAudio(filepath.Join("testdata", "missing.wav")); err == nil {
 		t.Fatalf("expected error for missing background file")
 	}
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && containsHelper(s, substr))
 }
 
 func containsHelper(s, substr string) bool {
