@@ -144,6 +144,22 @@
         background-clip: text;
       }
 
+      a {
+        color: var(--color-gray-300);
+      }
+
+      a:hover {
+        color: var(--color-cyan-400);
+      }
+
+      body:not(.dark) a {
+        color: var(--color-gray-600);
+      }
+
+      body:not(.dark) a:hover {
+        color: var(--color-blue-600);
+      }
+
       .nav-links {
         display: flex;
         align-items: center;
@@ -380,6 +396,16 @@
         transform: translateY(-2px);
       }
 
+      body:not(.dark) .docs-link {
+        background: var(--color-blue-500);
+        color: white;
+      }
+
+      body:not(.dark) .docs-link:hover {
+        background: var(--color-blue-700);
+        color: white;
+      }
+
       .editor-container {
         display: flex;
         gap: 0.5rem;
@@ -533,6 +559,7 @@
 
       body:not(.dark) .editor-textarea {
         caret-color: var(--color-gray-900);
+        color: var(--color-gray-900);
       }
 
       .editor-textarea::placeholder {
