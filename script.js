@@ -26,7 +26,67 @@ document.addEventListener("DOMContentLoaded", function () {
     updateThemeIcon("lightbulb");
   }
 
-  if (lastSequence.length > 0) {
+  // Check for hub sequence ID in URL
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  let hubSequenceID = urlParams.get("id");
+
+  // Load sequence from hub if ID is present
+  if (hubSequenceID) {
+    fetch("https://synapseq-hub.ruan.sh/manifest.json")
+      .then((response) => {
+        if (!response.ok) {
+          console.error("Failed to fetch manifest:", response.statusText);
+          return;
+        }
+
+        response.json().then((data) => {
+          const sequence = data.entries.find((e) => e.id === hubSequenceID);
+          if (!sequence) {
+            console.error("Sequence ID not found in manifest");
+            return;
+          }
+
+          fetch(sequence.download_url).then((res) => {
+            if (!res.ok) {
+              console.error("Failed to fetch sequence:", res.statusText);
+              return;
+            }
+
+            res.text().then((spsq) => {
+              let newSpsq = spsq;
+              sequence.dependencies.forEach((dep) => {
+                if (dep.type === "background") {
+                  newSpsq = newSpsq.replace(
+                    new RegExp(`^@background ${dep.name}.wav\\b`, "m"),
+                    `@background ${dep.download_url}`
+                  );
+                }
+
+                if (dep.type === "presetlist") {
+                  newSpsq = newSpsq.replace(
+                    new RegExp(`^@presetlist ${dep.name}.spsq\\b`, "m"),
+                    `@presetlist ${dep.download_url}`
+                  );
+                }
+              });
+
+              document.getElementById("spsqEditor").value = newSpsq;
+              updateLineNumbers();
+              //updateSyntaxHighlight();
+
+              lastSequence = newSpsq;
+              localStorage.setItem("last-sequence", lastSequence);
+            });
+          });
+        });
+      })
+      .catch((error) => {
+        console.error("Failed to fetch manifest:", error);
+      });
+  }
+
+  if (hubSequenceID === null && lastSequence.length > 0) {
     document.getElementById("spsqEditor").value = lastSequence;
     updateLineNumbers();
     //updateSyntaxHighlight();
