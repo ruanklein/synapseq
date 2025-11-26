@@ -1275,7 +1275,10 @@ alpha
             >SynapSeq Hub</a
           >
         </div>
-        <p>&copy; 2025 SynapSeq. Licensed under GPL v2.</p>
+        <p style="margin-bottom: 10px">
+          SynapSeq - Synapse-Sequenced Brainwave Generator
+        </p>
+        <p>&copy; 2025 <a href="https://ruan.sh" target="_blank">ruan.sh</a></p>
       </div>
     </footer>
 
@@ -1294,6 +1297,7 @@ alpha
 
       let synapseq = null;
       let progressInterval = null;
+      let lastSequence = "";
 
       // Wait for DOM to be fully loaded
       document.addEventListener("DOMContentLoaded", function () {
@@ -1599,7 +1603,7 @@ alpha
             setStatus("Paused");
             document.getElementById("playBtn").disabled = false;
             document.getElementById("pauseBtn").disabled = true;
-            document.getElementById("uploadBtn").disabled = false;
+            document.getElementById("uploadBtn").disabled = true;
             stopProgressTracking();
 
             if ("mediaSession" in navigator) {
@@ -1675,12 +1679,12 @@ alpha
           }
 
           // Always reload the sequence to get the latest content
-          if (synapseq.isLoaded()) {
+          if (spsq != lastSequence && synapseq.isLoaded()) {
             synapseq.stop();
           }
 
           await synapseq.load(spsq);
-
+          lastSequence = spsq;
           // Play the sequence
           await synapseq.play();
         } catch (error) {
