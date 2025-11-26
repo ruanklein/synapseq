@@ -3,7 +3,7 @@ lucide.createIcons();
 
 let synapseq = null;
 let progressInterval = null;
-let lastSequence = "";
+let lastSequence = localStorage.getItem("last-sequence") || "";
 
 // Wait for DOM to be fully loaded
 document.addEventListener("DOMContentLoaded", function () {
@@ -24,6 +24,12 @@ document.addEventListener("DOMContentLoaded", function () {
   } else {
     body.classList.add("dark");
     updateThemeIcon("lightbulb");
+  }
+
+  if (lastSequence.length > 0) {
+    document.getElementById("spsqEditor").value = lastSequence;
+    updateLineNumbers();
+    //updateSyntaxHighlight();
   }
 
   function updateThemeIcon(icon) {
@@ -384,7 +390,10 @@ document.getElementById("playBtn").addEventListener("click", async () => {
     }
 
     await synapseq.load(spsq);
+
     lastSequence = spsq;
+    localStorage.setItem("last-sequence", lastSequence);
+
     // Play the sequence
     await synapseq.play();
   } catch (error) {
