@@ -525,7 +525,7 @@
         transition: opacity 0.2s, filter 0.2s;
         position: relative;
         z-index: 2;
-        color: transparent;
+        /* color: transparent; */
         caret-color: var(--color-gray-100);
         white-space: pre-wrap;
         word-wrap: break-word;
@@ -1467,12 +1467,12 @@ alpha
       // Update line numbers on input
       document.getElementById("spsqEditor").addEventListener("input", () => {
         updateLineNumbers();
-        updateSyntaxHighlight();
+        //updateSyntaxHighlight();
       });
 
       // Initialize line numbers
       updateLineNumbers();
-      updateSyntaxHighlight();
+      //updateSyntaxHighlight();
 
       // Error handling
       function showError(message) {
@@ -1727,7 +1727,7 @@ alpha
             reader.onload = (e) => {
               document.getElementById("spsqEditor").value = e.target.result;
               updateLineNumbers();
-              updateSyntaxHighlight();
+              //updateSyntaxHighlight();
               setStatus("File loaded: " + file.name);
             };
             reader.onerror = () => {
