@@ -72,6 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
               });
 
               document.getElementById("spsqEditor").value = newSpsq;
+              document.getElementById("editorContainer").focus();
               updateLineNumbers();
               //updateSyntaxHighlight();
 
@@ -351,7 +352,7 @@ async function initSynapSeq() {
           album: "Brainwave Session",
           artwork: [
             {
-              src: "/assets/logo-512.png",
+              src: "/assets/logo.png",
               sizes: "512x512",
               type: "image/png",
             },
