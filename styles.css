@@ -352,6 +352,7 @@ body:not(.dark) .playground {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin-bottom: 5px;
 }
 
 .docs-link {
