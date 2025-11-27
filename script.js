@@ -352,7 +352,7 @@ async function initSynapSeq() {
           album: "Brainwave Session",
           artwork: [
             {
-              src: "/assets/logo.png",
+              src: "/assets/icon-512.png",
               sizes: "512x512",
               type: "image/png",
             },

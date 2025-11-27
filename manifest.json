@@ -1,0 +1,51 @@
+{
+    "id": "/?source=pwa",
+    "name": "SynapSEq Playground",
+    "short_name": "SynapSEq",
+    "description": "Online playground for writing, testing and running SynapSEq sequences.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "display_override": [
+        "window-controls-overlay",
+        "standalone"
+    ],
+    "orientation": "portrait-primary",
+    "background_color": "#ffffff",
+    "theme_color": "#0f172a",
+    "lang": "en",
+    "dir": "ltr",
+    "categories": [
+        "development",
+        "productivity",
+        "education"
+    ],
+    "icons": [
+        {
+            "src": "assets/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/icon-256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/icon-384.png",
+            "sizes": "384x384",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/icon-maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
