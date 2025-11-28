@@ -347,7 +347,7 @@ async function initSynapSeq() {
       setStatus("Generating audio...");
       showLoading();
       document.getElementById("playBtn").disabled = true;
-      document.getElementById("uploadBtn").disabled = true;
+      document.getElementById("fileMenuBtn").disabled = true;
       document.getElementById("spsqEditor").disabled = true;
     };
 
@@ -357,7 +357,7 @@ async function initSynapSeq() {
       document.getElementById("playBtn").disabled = true;
       document.getElementById("pauseBtn").disabled = false;
       document.getElementById("stopBtn").disabled = false;
-      document.getElementById("uploadBtn").disabled = true;
+      document.getElementById("fileMenuBtn").disabled = true;
       document.getElementById("spsqEditor").disabled = true;
       startProgressTracking();
 
@@ -387,7 +387,7 @@ async function initSynapSeq() {
       setStatus("Paused");
       document.getElementById("playBtn").disabled = false;
       document.getElementById("pauseBtn").disabled = true;
-      document.getElementById("uploadBtn").disabled = true;
+      document.getElementById("fileMenuBtn").disabled = true;
       stopProgressTracking();
 
       if ("mediaSession" in navigator) {
@@ -400,7 +400,7 @@ async function initSynapSeq() {
       document.getElementById("playBtn").disabled = false;
       document.getElementById("pauseBtn").disabled = true;
       document.getElementById("stopBtn").disabled = true;
-      document.getElementById("uploadBtn").disabled = false;
+      document.getElementById("fileMenuBtn").disabled = false;
       document.getElementById("spsqEditor").disabled = false;
       stopProgressTracking();
       document.getElementById("progressBar").style.width = "0%";
@@ -425,7 +425,7 @@ async function initSynapSeq() {
       showError(detail.error.message || detail.error);
       setStatus("Error");
       document.getElementById("playBtn").disabled = false;
-      document.getElementById("uploadBtn").disabled = false;
+      document.getElementById("fileMenuBtn").disabled = false;
       document.getElementById("spsqEditor").disabled = false;
     };
 
