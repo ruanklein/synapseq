@@ -720,8 +720,7 @@ body:not(.dark) .syntax-preset {
   line-height: 1.5;
   min-width: 3.5rem;
   text-align: right;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   white-space: pre;
   height: 650px;
   max-height: 650px;
