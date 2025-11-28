@@ -96,13 +96,20 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function updateThemeIcon(icon) {
-    const iconElement = themeToggle.querySelector("i");
+    // Remove the old icon
+    const iconElement = themeToggle.querySelector("i, svg");
     if (iconElement) {
-      iconElement.setAttribute("data-lucide", icon);
-      // Force icon update by removing and re-adding
-      iconElement.outerHTML = `<i data-lucide="${icon}" style="width: 1.25rem; height: 1.25rem"></i>`;
-      lucide.createIcons();
+      iconElement.remove();
     }
+
+    // Create new icon element
+    const newIcon = document.createElement("i");
+    newIcon.setAttribute("data-lucide", icon);
+    newIcon.setAttribute("style", "width: 1.25rem; height: 1.25rem");
+    themeToggle.appendChild(newIcon);
+
+    // Render the icon
+    lucide.createIcons();
   }
 
   themeToggle.addEventListener("click", () => {
