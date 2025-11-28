@@ -105,7 +105,44 @@
             </a>
           </div>
 
-          <div id="errorContainer" class="error-message"></div>
+          <div id="errorContainer" class="error-alert">
+            <div class="error-alert-header">
+              <div class="error-alert-icon">
+                <i
+                  data-lucide="alert-circle"
+                  style="width: 1.5rem; height: 1.5rem"
+                ></i>
+              </div>
+              <div class="error-alert-title">
+                <h3>Syntax Error</h3>
+                <p class="error-alert-subtitle">
+                  There's an issue with your sequence
+                </p>
+              </div>
+              <button
+                id="errorClose"
+                class="error-alert-close"
+                aria-label="Close error"
+              >
+                <i data-lucide="x" style="width: 1.25rem; height: 1.25rem"></i>
+              </button>
+            </div>
+            <div class="error-alert-body">
+              <div class="error-alert-message" id="errorMessage"></div>
+              <div class="error-alert-help">
+                <i data-lucide="info" style="width: 1rem; height: 1rem"></i>
+                <span
+                  >Check the
+                  <a
+                    href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
+                    target="_blank"
+                    >documentation</a
+                  >
+                  for syntax help</span
+                >
+              </div>
+            </div>
+          </div>
 
           <div class="editor-player">
             <!-- Editor Section -->

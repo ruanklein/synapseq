@@ -256,14 +256,27 @@ updateLineNumbers();
 // Error handling
 function showError(message) {
   const errorContainer = document.getElementById("errorContainer");
-  errorContainer.textContent = message;
+  const errorMessage = document.getElementById("errorMessage");
+  errorMessage.textContent = message;
   errorContainer.classList.add("show");
+  lucide.createIcons();
+
+  // Scroll to error
+  errorContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function hideError() {
   const errorContainer = document.getElementById("errorContainer");
   errorContainer.classList.remove("show");
 }
+
+// Close error button handler
+document.addEventListener("DOMContentLoaded", () => {
+  const errorClose = document.getElementById("errorClose");
+  if (errorClose) {
+    errorClose.addEventListener("click", hideError);
+  }
+});
 
 // Status message
 function setStatus(message) {
