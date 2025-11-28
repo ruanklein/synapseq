@@ -219,12 +219,40 @@ alpha
       </div>
     </footer>
 
+    <!-- Spotlight Overlay -->
+    <div id="spotlightOverlay" class="spotlight-overlay">
+      <div class="spotlight-backdrop"></div>
+      <button id="spotlightClose" class="spotlight-close" aria-label="Close">
+        <i data-lucide="x" style="width: 1.5rem; height: 1.5rem"></i>
+      </button>
+      <div class="spotlight-content">
+        <div class="spotlight-message">
+          <i data-lucide="sparkles" style="width: 3rem; height: 3rem"></i>
+          <h3>Sequence Loaded!</h3>
+          <p>Your brainwave session is ready to begin</p>
+          <button id="spotlightPlayBtn" class="spotlight-play-btn">
+            <i data-lucide="play" style="width: 1.5rem; height: 1.5rem"></i>
+            Start Session
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
       <div class="loading-content">
-        <i data-lucide="coffee" class="loading-icon"></i>
-        <div class="loading-text">Generating audio...</div>
-        <div class="loading-subtext">This may take a few moments</div>
+        <div class="loading-coffee-container">
+          <i data-lucide="coffee" class="loading-coffee"></i>
+          <div class="loading-steam">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+        <div class="loading-text">Brewing your audio...</div>
+        <div class="loading-subtext">
+          Crafting the perfect brainwave frequencies
+        </div>
       </div>
     </div>
     <script src="script.js"></script>

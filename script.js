@@ -78,6 +78,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
               lastSequence = newSpsq;
               localStorage.setItem("last-sequence", lastSequence);
+
+              // Show success message and spotlight
+              showHubLoadSuccess();
             });
           });
         });
@@ -516,6 +519,45 @@ document
     event.target.value = "";
   });
 
-// Initialize on load
+// Show hub load success
+function showHubLoadSuccess() {
+  // Wait for WASM to be ready before showing spotlight
+  const checkReady = setInterval(() => {
+    if (synapseq && synapseq.isReady()) {
+      clearInterval(checkReady);
+
+      // Show spotlight after a short delay
+      setTimeout(() => {
+        const spotlightOverlay = document.getElementById("spotlightOverlay");
+        const spotlightClose = document.getElementById("spotlightClose");
+        const spotlightPlayBtn = document.getElementById("spotlightPlayBtn");
+
+        spotlightOverlay.classList.add("show");
+        lucide.createIcons();
+
+        // Remove spotlight function
+        const removeSpotlight = () => {
+          spotlightOverlay.classList.remove("show");
+        };
+
+        // Close button handler
+        spotlightClose.addEventListener("click", removeSpotlight);
+
+        // Spotlight play button handler
+        spotlightPlayBtn.addEventListener("click", async () => {
+          removeSpotlight();
+
+          // Trigger the main play button click
+          const mainPlayBtn = document.getElementById("playBtn");
+          mainPlayBtn.click();
+        });
+
+        // Close when clicking on backdrop
+        const backdrop = spotlightOverlay.querySelector(".spotlight-backdrop");
+        backdrop.addEventListener("click", removeSpotlight);
+      }, 500);
+    }
+  }, 100);
+} // Initialize on load
 setStatus("Loading WASM...");
 initSynapSeq();
