@@ -743,7 +743,7 @@ body:not(.dark) .line-numbers {
   resize: none;
   outline: none;
   line-height: 1.5;
-  overflow-y: auto;
+  overflow: auto;
   height: 650px;
   max-height: 650px;
   transition: opacity 0.2s, filter 0.2s;
@@ -751,8 +751,9 @@ body:not(.dark) .line-numbers {
   z-index: 2;
   /* color: transparent; */
   caret-color: var(--color-gray-100);
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-wrap: normal;
 }
 
 body:not(.dark) .editor-textarea {
