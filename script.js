@@ -300,8 +300,9 @@ function updateProgress() {
   if (duration > 0) {
     const progress = (currentTime / duration) * 100;
     document.getElementById("progressBar").style.width = progress + "%";
-    document.getElementById("timeDisplay").textContent =
-      formatTime(currentTime) + " / " + formatTime(duration);
+    document.getElementById("currentTime").textContent =
+      formatTime(currentTime);
+    document.getElementById("totalTime").textContent = formatTime(duration);
   }
 }
 
@@ -391,7 +392,8 @@ async function initSynapSeq() {
       document.getElementById("spsqEditor").disabled = false;
       stopProgressTracking();
       document.getElementById("progressBar").style.width = "0%";
-      document.getElementById("timeDisplay").textContent = "00:00 / 00:00";
+      document.getElementById("currentTime").textContent = "00:00";
+      document.getElementById("totalTime").textContent = "00:00";
       if ("mediaSession" in navigator) {
         navigator.mediaSession.playbackState = "none";
       }

@@ -107,16 +107,18 @@
 
           <div id="errorContainer" class="error-message"></div>
 
-          <div id="editorContainer" class="editor-container">
-            <div id="lineNumbers" class="line-numbers">1</div>
-            <div class="editor-wrapper">
-              <div id="syntaxHighlight" class="syntax-highlight"></div>
-              <textarea
-                id="spsqEditor"
-                class="editor-textarea"
-                rows="15"
-                spellcheck="false"
-                placeholder="# Try editing this example sequence!
+          <div class="editor-player">
+            <!-- Editor Section -->
+            <div id="editorContainer" class="editor-container">
+              <div id="lineNumbers" class="line-numbers">1</div>
+              <div class="editor-wrapper">
+                <div id="syntaxHighlight" class="syntax-highlight"></div>
+                <textarea
+                  id="spsqEditor"
+                  class="editor-textarea"
+                  rows="15"
+                  spellcheck="false"
+                  placeholder="# Try editing this example sequence!
 # Presets
 alpha
   noise pink amplitude 30
@@ -126,7 +128,7 @@ alpha
 00:00:00 silence
 00:00:15 alpha
 00:01:00 silence"
-              >
+                >
 # Presets
 alpha
   noise pink amplitude 30
@@ -137,56 +139,85 @@ alpha
 00:00:15 alpha
 00:04:00 alpha
 00:05:00 silence</textarea
-              >
+                >
+              </div>
+            </div>
+
+            <!-- Player Controls Section -->
+            <div class="player-controls-section">
+              <!-- Progress Bar -->
+              <div class="player-progress">
+                <div class="progress-bar-container">
+                  <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <div class="progress-time-display">
+                  <span id="currentTime" class="time-current">00:00</span>
+                  <span class="time-separator">/</span>
+                  <span id="totalTime" class="time-total">00:00</span>
+                </div>
+              </div>
+
+              <!-- Control Buttons -->
+              <div class="player-controls">
+                <div class="controls-left">
+                  <button
+                    id="playBtn"
+                    class="btn-control btn-control-play"
+                    disabled
+                  >
+                    <i
+                      data-lucide="play"
+                      style="width: 1.5rem; height: 1.5rem"
+                    ></i>
+                  </button>
+                  <button
+                    id="pauseBtn"
+                    class="btn-control btn-control-pause"
+                    disabled
+                  >
+                    <i
+                      data-lucide="pause"
+                      style="width: 1.25rem; height: 1.25rem"
+                    ></i>
+                  </button>
+                  <button
+                    id="stopBtn"
+                    class="btn-control btn-control-stop"
+                    disabled
+                  >
+                    <i
+                      data-lucide="square"
+                      style="width: 1.25rem; height: 1.25rem"
+                    ></i>
+                  </button>
+                </div>
+                <div class="controls-right">
+                  <button
+                    id="uploadBtn"
+                    class="btn-control btn-control-upload"
+                    onclick="document.getElementById('fileInput').click()"
+                  >
+                    <i
+                      data-lucide="upload"
+                      style="width: 1.25rem; height: 1.25rem"
+                    ></i>
+                    <span class="btn-label">Upload</span>
+                  </button>
+                  <input
+                    type="file"
+                    id="fileInput"
+                    class="file-input-hidden"
+                    accept=".spsq"
+                  />
+                </div>
+              </div>
+
+              <!-- Status Message -->
+              <div id="statusMessage" class="player-status">
+                Loading WASM...
+              </div>
             </div>
           </div>
-
-          <div class="controls">
-            <button id="playBtn" class="btn btn-play" disabled>
-              <i data-lucide="play" style="width: 1.25rem; height: 1.25rem"></i>
-              Play
-            </button>
-            <button id="pauseBtn" class="btn btn-pause" disabled>
-              <i
-                data-lucide="pause"
-                style="width: 1.25rem; height: 1.25rem"
-              ></i>
-              Pause
-            </button>
-            <button id="stopBtn" class="btn btn-stop" disabled>
-              <i
-                data-lucide="square"
-                style="width: 1.25rem; height: 1.25rem"
-              ></i>
-              Stop
-            </button>
-            <button
-              id="uploadBtn"
-              class="btn btn-upload"
-              onclick="document.getElementById('fileInput').click()"
-            >
-              <i
-                data-lucide="upload"
-                style="width: 1.25rem; height: 1.25rem"
-              ></i>
-              Upload
-            </button>
-            <input
-              type="file"
-              id="fileInput"
-              class="file-input-hidden"
-              accept=".spsq"
-            />
-          </div>
-
-          <div class="progress-section">
-            <div class="progress-bar-container">
-              <div id="progressBar" class="progress-bar"></div>
-            </div>
-            <div id="timeDisplay" class="time-display">00:00 / 00:00</div>
-          </div>
-
-          <div id="statusMessage" class="status-message">Loading WASM...</div>
         </div>
       </section>
     </main>
