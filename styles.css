@@ -930,6 +930,7 @@ body:not(.dark) .btn-control-stop:not(:disabled):hover {
   background: var(--color-blue-600);
   color: white;
   border-color: transparent;
+  position: relative;
 }
 
 .btn-control-upload:hover {
@@ -941,6 +942,90 @@ body:not(.dark) .btn-control-stop:not(:disabled):hover {
   display: none;
 }
 
+.menu-chevron {
+  margin-left: 0.25rem;
+  opacity: 0.7;
+  transition: transform 0.2s;
+}
+
+.btn-control-upload.menu-open .menu-chevron {
+  transform: rotate(180deg);
+}
+
+/* File Menu Dropdown */
+.file-menu-container {
+  position: relative;
+  flex: 1;
+}
+
+.file-menu {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  background: var(--color-gray-800);
+  border: 1px solid var(--color-gray-700);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(0.5rem);
+  transition: all 0.2s;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+body:not(.dark) .file-menu {
+  background: white;
+  border-color: var(--color-gray-300);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.file-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.file-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--color-gray-300);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+body:not(.dark) .file-menu-item {
+  color: var(--color-gray-700);
+}
+
+.file-menu-item:hover {
+  background: var(--color-gray-700);
+  color: white;
+}
+
+body:not(.dark) .file-menu-item:hover {
+  background: var(--color-gray-100);
+  color: var(--color-gray-900);
+}
+
+.file-menu-item i {
+  color: var(--color-cyan-400);
+  flex-shrink: 0;
+}
+
+body:not(.dark) .file-menu-item i {
+  color: var(--color-blue-600);
+}
+
 @media (min-width: 640px) {
   .btn-label {
     display: inline;
@@ -948,6 +1033,16 @@ body:not(.dark) .btn-control-stop:not(:disabled):hover {
 
   .btn-control-upload {
     padding: 0.75rem 1.25rem;
+  }
+
+  .file-menu-container {
+    flex: initial;
+  }
+
+  .file-menu {
+    left: auto;
+    right: 0;
+    min-width: 12rem;
   }
 }
 

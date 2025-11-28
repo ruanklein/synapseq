@@ -229,17 +229,39 @@ alpha
                   </button>
                 </div>
                 <div class="controls-right">
-                  <button
-                    id="uploadBtn"
-                    class="btn-control btn-control-upload"
-                    onclick="document.getElementById('fileInput').click()"
-                  >
-                    <i
-                      data-lucide="upload"
-                      style="width: 1.25rem; height: 1.25rem"
-                    ></i>
-                    <span class="btn-label">Upload</span>
-                  </button>
+                  <div class="file-menu-container">
+                    <button
+                      id="fileMenuBtn"
+                      class="btn-control btn-control-upload"
+                    >
+                      <i
+                        data-lucide="folder"
+                        style="width: 1.25rem; height: 1.25rem"
+                      ></i>
+                      <span class="btn-label">File</span>
+                      <i
+                        data-lucide="chevron-down"
+                        class="menu-chevron"
+                        style="width: 1rem; height: 1rem"
+                      ></i>
+                    </button>
+                    <div id="fileMenu" class="file-menu">
+                      <button class="file-menu-item" id="uploadMenuItem">
+                        <i
+                          data-lucide="upload"
+                          style="width: 1.125rem; height: 1.125rem"
+                        ></i>
+                        <span>Upload sequence</span>
+                      </button>
+                      <button class="file-menu-item" id="saveMenuItem">
+                        <i
+                          data-lucide="download"
+                          style="width: 1.125rem; height: 1.125rem"
+                        ></i>
+                        <span>Save sequence</span>
+                      </button>
+                    </div>
+                  </div>
                   <input
                     type="file"
                     id="fileInput"

@@ -496,6 +496,84 @@ document.getElementById("stopBtn").addEventListener("click", () => {
   }
 });
 
+// File menu dropdown handler
+const fileMenuBtn = document.getElementById("fileMenuBtn");
+const fileMenu = document.getElementById("fileMenu");
+let menuTimeout;
+
+fileMenuBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  const isOpen = fileMenu.classList.contains("show");
+
+  if (isOpen) {
+    closeFileMenu();
+  } else {
+    openFileMenu();
+  }
+});
+
+function openFileMenu() {
+  fileMenu.classList.add("show");
+  fileMenuBtn.classList.add("menu-open");
+  lucide.createIcons();
+}
+
+function closeFileMenu() {
+  fileMenu.classList.remove("show");
+  fileMenuBtn.classList.remove("menu-open");
+}
+
+// Close menu when clicking outside
+document.addEventListener("click", (e) => {
+  if (!fileMenu.contains(e.target) && !fileMenuBtn.contains(e.target)) {
+    closeFileMenu();
+  }
+});
+
+// Upload menu item
+document.getElementById("uploadMenuItem").addEventListener("click", () => {
+  closeFileMenu();
+  document.getElementById("fileInput").click();
+});
+
+// Save menu item
+document.getElementById("saveMenuItem").addEventListener("click", () => {
+  closeFileMenu();
+  saveSequenceToFile();
+});
+
+// Save sequence to file
+function saveSequenceToFile() {
+  const content = document.getElementById("spsqEditor").value;
+
+  if (!content.trim()) {
+    showError("Cannot save empty sequence");
+    return;
+  }
+
+  // Generate timestamp-based filename
+  const now = new Date();
+  const timestamp = now
+    .toISOString()
+    .replace(/:/g, "-")
+    .replace(/\./g, "-")
+    .substring(0, 19);
+  const filename = `synapseq-${timestamp}.spsq`;
+
+  // Create blob and download
+  const blob = new Blob([content], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  setStatus("Sequence saved: " + filename);
+}
+
 // File upload handler
 document
   .getElementById("fileInput")
