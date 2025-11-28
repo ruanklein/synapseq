@@ -79,8 +79,8 @@ document.addEventListener("DOMContentLoaded", function () {
               lastSequence = newSpsq;
               localStorage.setItem("last-sequence", lastSequence);
 
-              // Show success message and spotlight
-              showHubLoadSuccess();
+              // Show success message and spotlight with sequence name
+              showHubLoadSuccess(sequence.name);
             });
           });
         });
@@ -89,7 +89,6 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Failed to fetch manifest:", error);
       });
   }
-
   if (hubSequenceID === null && lastSequence.length > 0) {
     document.getElementById("spsqEditor").value = lastSequence;
     updateLineNumbers();
@@ -535,7 +534,7 @@ document
   });
 
 // Show hub load success
-function showHubLoadSuccess() {
+function showHubLoadSuccess(sequenceName) {
   // Wait for WASM to be ready before showing spotlight
   const checkReady = setInterval(() => {
     if (synapseq && synapseq.isReady()) {
@@ -546,6 +545,14 @@ function showHubLoadSuccess() {
         const spotlightOverlay = document.getElementById("spotlightOverlay");
         const spotlightClose = document.getElementById("spotlightClose");
         const spotlightPlayBtn = document.getElementById("spotlightPlayBtn");
+        const spotlightSequenceName = document.getElementById(
+          "spotlightSequenceName"
+        );
+
+        // Set sequence name
+        if (sequenceName && spotlightSequenceName) {
+          spotlightSequenceName.textContent = sequenceName;
+        }
 
         spotlightOverlay.classList.add("show");
         lucide.createIcons();
