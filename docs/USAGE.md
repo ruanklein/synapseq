@@ -1067,46 +1067,6 @@ SynapSeq enforces different file size limits depending on the file type:
   - Applies to: files loaded with `@background` option
   - Files larger than 10 MB will be read up to the 10 MB limit; the rest will be ignored
 
-### Channel Limits
+### Track Limits
 
-The total number of tones and noises per timestamp cannot exceed **16 channels**. This limit applies to all formats (text and structured).
-
-### Content-Type Validation for HTTP/HTTPS URLs
-
-When loading files from web URLs, SynapSeq validates the `Content-Type` header returned by the server. If the Content-Type does not match the expected format, the request will be rejected.
-
-#### Text Format Files (.spsq)
-
-For sequence files and preset files loaded via HTTP/HTTPS, the server must return:
-
-- `text/plain`
-
-#### Structured Format Files
-
-**JSON files** must return one of:
-
-- `application/json`
-- `text/json`
-- Any Content-Type ending with `+json` (e.g., `application/vnd.api+json`)
-
-**XML files** must return one of:
-
-- `application/xml`
-- `text/xml`
-- Any Content-Type ending with `+xml` (e.g., `application/atom+xml`)
-
-**YAML files** must return one of:
-
-- `application/x-yaml`
-- `application/yaml`
-- `text/yaml`
-- `text/x-yaml`
-- Any Content-Type ending with `+yaml` or `+yml`
-
-#### Background Audio Files (.wav)
-
-For background audio files loaded via HTTP/HTTPS, the server must return one of:
-
-- `audio/wav`
-- `audio/x-wav`
-- `audio/wave`
+The total number of tones and noises per preset cannot exceed **16 tracks**. This limit applies to all formats (text and structured).
