@@ -46,6 +46,10 @@ const autocompleteKeywords = {
   square: { desc: "Square wave" },
   triangle: { desc: "Triangle wave" },
   sawtooth: { desc: "Sawtooth wave" },
+  steady: { desc: "Linear transition" },
+  "ease-in": { desc: "Ease-in transition" },
+  "ease-out": { desc: "Ease-out transition" },
+  smooth: { desc: "Smooth transition" },
 };
 
 let selectedOptionIndex = 0; // Track selected option in autocomplete menu
@@ -501,6 +505,115 @@ function parseLineContext(line) {
   };
 }
 
+// Parse timeline context (lines starting with timestamp)
+function parseTimelineContext(line) {
+  // Timeline format: <hh>:<mm>:<ss> <preset> [ramp:<slide>]
+  const timestampRegex = /^(\d{2}:\d{2}:\d{2})\s*/;
+  const match = line.match(timestampRegex);
+
+  if (!match) {
+    return { isTimeline: false };
+  }
+
+  const timestamp = match[1];
+  const afterTimestamp = line.substring(match[0].length);
+  const trimmed = afterTimestamp.trim();
+  const tokens = trimmed.split(/\s+/).filter((t) => t.length > 0);
+
+  return {
+    isTimeline: true,
+    timestamp,
+    tokens,
+    lastToken: tokens[tokens.length - 1] || "",
+    isComplete: afterTimestamp.endsWith(" ") || afterTimestamp === "",
+    raw: line,
+  };
+}
+
+// Get available presets from the document
+function getAvailablePresets() {
+  const textarea = document.getElementById("spsqEditor");
+  const text = textarea.value;
+  const lines = text.split("\n");
+  const presets = [];
+
+  for (const line of lines) {
+    // Match preset definitions: lines that start with word characters (no indentation, no @)
+    // and are not comments (don't start with #) and are not timestamps
+    const trimmed = line.trim();
+    if (
+      trimmed &&
+      !trimmed.startsWith("#") &&
+      !trimmed.match(/^\d{2}:\d{2}:\d{2}/)
+    ) {
+      // Check if line starts at column 0 (no indentation) and is just a name
+      if (line.match(/^[\w-]+$/)) {
+        presets.push(line.trim());
+      }
+    }
+  }
+
+  return presets;
+}
+
+// Get timeline suggestions based on context
+function getTimelineSuggestions(context) {
+  const { tokens, isComplete, lastToken } = context;
+
+  // After timestamp, suggest presets
+  if (tokens.length === 0) {
+    if (isComplete) {
+      const presets = getAvailablePresets();
+      if (presets.length > 0) {
+        return presets.map((name) => ({ keyword: name, desc: "Preset" }));
+      }
+    }
+    return null;
+  }
+
+  // While typing preset name, filter presets
+  if (tokens.length === 1 && !isComplete) {
+    const presets = getAvailablePresets();
+    if (presets.length === 0) return null;
+    const partial = lastToken.toLowerCase();
+    const filtered = presets
+      .filter((name) => name.toLowerCase().startsWith(partial))
+      .map((name) => ({ keyword: name, desc: "Preset" }));
+    // Return filtered results, or all presets if no match (user might be typing a custom preset)
+    return filtered.length > 0
+      ? filtered
+      : presets.map((name) => ({ keyword: name, desc: "Preset" }));
+  }
+
+  // After preset name, suggest ramp/slide options
+  if (tokens.length === 1 && isComplete) {
+    return [
+      { keyword: "steady", desc: autocompleteKeywords.steady.desc },
+      { keyword: "ease-in", desc: autocompleteKeywords["ease-in"].desc },
+      { keyword: "ease-out", desc: autocompleteKeywords["ease-out"].desc },
+      { keyword: "smooth", desc: autocompleteKeywords.smooth.desc },
+    ];
+  }
+
+  // While typing ramp, filter options
+  if (tokens.length === 2 && !isComplete) {
+    const partial = lastToken.toLowerCase();
+    const rampOptions = [
+      { keyword: "steady", desc: autocompleteKeywords.steady.desc },
+      { keyword: "ease-in", desc: autocompleteKeywords["ease-in"].desc },
+      { keyword: "ease-out", desc: autocompleteKeywords["ease-out"].desc },
+      { keyword: "smooth", desc: autocompleteKeywords.smooth.desc },
+    ];
+
+    const filtered = rampOptions.filter((opt) =>
+      opt.keyword.startsWith(partial)
+    );
+    return filtered.length > 0 ? filtered : null;
+  }
+
+  return null;
+}
+
 function getNextSuggestions(context) {
   const { tokens, lastToken, isComplete } = context;
 
@@ -951,6 +1064,18 @@ function checkAutocomplete() {
   const lastNewLine = beforeCursor.lastIndexOf("\n");
   const currentLine = beforeCursor.substring(lastNewLine + 1);
 
+  // Check if it's a timeline line (starts with timestamp)
+  const timelineContext = parseTimelineContext(currentLine);
+  if (timelineContext.isTimeline) {
+    const suggestions = getTimelineSuggestions(timelineContext);
+    if (suggestions && suggestions.length > 0) {
+      showAutocomplete(suggestions, cursorPos);
+    } else {
+      hideAutocomplete();
+    }
+    return;
+  }
+
   // Only show autocomplete for lines starting with 2 spaces (keyword lines)
   if (!/^  /.test(currentLine)) {
     hideAutocomplete();
@@ -1115,7 +1240,52 @@ function applyAutocomplete() {
   const currentLine = beforeCursor.substring(lastNewLine + 1);
   const lineStart = lastNewLine + 1;
 
-  // Parse current line to find where to insert
+  // Check if it's a timeline line
+  const timelineContext = parseTimelineContext(currentLine);
+  if (timelineContext.isTimeline) {
+    const { tokens, isComplete, timestamp, lastToken } = timelineContext;
+    let newLine;
+
+    if (isComplete || !lastToken) {
+      // Just append
+      newLine = currentLine + selectedKeyword + " ";
+    } else {
+      // Replace partial token
+      const afterTimestamp = currentLine
+        .substring(timestamp.length)
+        .trimStart();
+      const existingPart =
+        timestamp +
+        " " +
+        afterTimestamp.substring(0, afterTimestamp.lastIndexOf(lastToken));
+      newLine = existingPart + selectedKeyword + " ";
+    }
+
+    // Get rest of document after current line
+    const afterCursor = text.substring(cursorPos);
+    const nextNewLine = afterCursor.indexOf("\n");
+    const restOfDoc =
+      nextNewLine === -1 ? "" : afterCursor.substring(nextNewLine);
+
+    // Build new text
+    const newText = text.substring(0, lineStart) + newLine + restOfDoc;
+    textarea.value = newText;
+
+    // Set cursor after inserted keyword
+    const newCursorPos = lineStart + newLine.length;
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+
+    // Update UI
+    updateLineNumbers();
+    updateSyntaxHighlight();
+    hideAutocomplete();
+
+    // Trigger autocomplete check again
+    setTimeout(() => checkAutocomplete(), 50);
+    return;
+  }
+
+  // Original logic for keyword lines
   const context = parseLineContext(currentLine);
   const { tokens, isComplete } = context;
 
