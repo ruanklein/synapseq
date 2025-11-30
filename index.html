@@ -107,8 +107,8 @@
             </a>
           </div>
 
-          <!-- Error/Success Alert Container -->
-          <div id="alertContainer" class="alert-container">
+          <!-- Error Alert Container -->
+          <div id="errorAlertContainer" class="alert-container">
             <div class="alert-header">
               <div class="alert-icon">
                 <i
@@ -117,13 +117,13 @@
                 ></i>
               </div>
               <div class="alert-title">
-                <h3 id="alertTitle">Syntax Error</h3>
-                <p class="alert-subtitle" id="alertSubtitle">
+                <h3 id="errorAlertTitle">Syntax Error</h3>
+                <p class="alert-subtitle" id="errorAlertSubtitle">
                   There's an issue with your sequence
                 </p>
               </div>
               <button
-                id="alertClose"
+                id="errorAlertClose"
                 class="alert-close"
                 aria-label="Close alert"
               >
@@ -131,8 +131,8 @@
               </button>
             </div>
             <div class="alert-body">
-              <div class="alert-message" id="alertMessage"></div>
-              <div class="alert-help" id="alertHelp">
+              <div class="alert-message" id="errorAlertMessage"></div>
+              <div class="alert-help" id="errorAlertHelp">
                 <i data-lucide="info" style="width: 1rem; height: 1rem"></i>
                 <span
                   >Check the
@@ -144,6 +144,31 @@
                   for syntax help</span
                 >
               </div>
+            </div>
+          </div>
+
+          <!-- Success Alert Container -->
+          <div id="successAlertContainer" class="alert-container">
+            <div class="alert-header">
+              <div class="alert-icon">
+                <i
+                  data-lucide="check-circle"
+                  style="width: 1.5rem; height: 1.5rem"
+                ></i>
+              </div>
+              <div class="alert-title">
+                <h3 id="successAlertTitle">Saved</h3>
+                <p class="alert-subtitle" id="successAlertSubtitle">
+                  Sequence auto-saved
+                </p>
+              </div>
+              <button
+                id="successAlertClose"
+                class="alert-close"
+                aria-label="Close alert"
+              >
+                <i data-lucide="x" style="width: 1.25rem; height: 1.25rem"></i>
+              </button>
             </div>
           </div>
 

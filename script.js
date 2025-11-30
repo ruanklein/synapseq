@@ -332,66 +332,69 @@ function saveCurrentSequenceDebounced() {
   }, 1000);
 }
 
-// Show alert (unified for errors and success)
+// Show alert - uses separate containers for error and success
 function showAlert(type, title, message, help = null) {
-  const alertContainer = document.getElementById("alertContainer");
-  const alertIcon = alertContainer.querySelector(".alert-icon i");
-  const alertTitle = document.getElementById("alertTitle");
-  const alertSubtitle = document.getElementById("alertSubtitle");
-  const alertMessage = document.getElementById("alertMessage");
-  const alertHelp = document.getElementById("alertHelp");
-  const alertClose = document.getElementById("alertClose");
-
-  // Set content
-  alertTitle.textContent = title;
-  alertSubtitle.textContent = message;
-  alertMessage.textContent = "";
-
-  // Update icon and style based on type
   if (type === "error") {
-    alertContainer.className = "alert-container show error";
-    if (alertIcon) {
-      alertIcon.setAttribute("data-lucide", "alert-circle");
-    }
-    alertClose.style.display = "flex";
+    const container = document.getElementById("errorAlertContainer");
+    const alertTitle = document.getElementById("errorAlertTitle");
+    const alertSubtitle = document.getElementById("errorAlertSubtitle");
+    const alertMessage = document.getElementById("errorAlertMessage");
+    const alertHelp = document.getElementById("errorAlertHelp");
+
+    alertTitle.textContent = title;
+    alertSubtitle.textContent = message;
+    alertMessage.textContent = "";
+
     if (help) {
       alertHelp.style.display = "flex";
     } else {
       alertHelp.style.display = "none";
     }
+
+    container.className = "alert-container show error";
+    lucide.createIcons();
   } else if (type === "success") {
-    alertContainer.className = "alert-container show success";
-    if (alertIcon) {
-      alertIcon.setAttribute("data-lucide", "check-circle");
-    }
-    alertClose.style.display = "flex";
-    alertHelp.style.display = "none";
+    const container = document.getElementById("successAlertContainer");
+    const alertTitle = document.getElementById("successAlertTitle");
+    const alertSubtitle = document.getElementById("successAlertSubtitle");
+
+    alertTitle.textContent = title;
+    alertSubtitle.textContent = message;
+
+    container.className = "alert-container show success";
+    lucide.createIcons();
   }
-
-  lucide.createIcons();
-
-  // Scroll to alert
-  alertContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
   // Force sync overlay scroll after layout shift
   setTimeout(() => {
     const textarea = document.getElementById("spsqEditor");
     const highlight = document.getElementById("syntaxHighlight");
-    highlight.scrollTop = textarea.scrollTop;
-    highlight.scrollLeft = textarea.scrollLeft;
+    if (textarea && highlight) {
+      highlight.scrollTop = textarea.scrollTop;
+      highlight.scrollLeft = textarea.scrollLeft;
+    }
   }, 100);
 }
 
-function hideAlert() {
-  const alertContainer = document.getElementById("alertContainer");
-  alertContainer.classList.remove("show");
+function hideAlert(type = null) {
+  if (type === "error" || type === null) {
+    const container = document.getElementById("errorAlertContainer");
+    if (container) container.classList.remove("show");
+  }
+
+  if (type === "success" || type === null) {
+    const container = document.getElementById("successAlertContainer");
+    if (container) container.classList.remove("show");
+  }
 
   // Force sync overlay scroll after layout shift
   setTimeout(() => {
     const textarea = document.getElementById("spsqEditor");
     const highlight = document.getElementById("syntaxHighlight");
-    highlight.scrollTop = textarea.scrollTop;
-    highlight.scrollLeft = textarea.scrollLeft;
+    if (textarea && highlight) {
+      highlight.scrollTop = textarea.scrollTop;
+      highlight.scrollLeft = textarea.scrollLeft;
+    }
   }, 100);
 }
 
@@ -399,10 +402,10 @@ function hideAlert() {
 function updateSaveTimeDisplay() {
   if (!lastSequenceData || !lastSequenceData.date) return;
 
-  const alertSubtitle = document.getElementById("alertSubtitle");
-  const alertContainer = document.getElementById("alertContainer");
+  const alertSubtitle = document.getElementById("successAlertSubtitle");
+  const container = document.getElementById("successAlertContainer");
 
-  if (alertSubtitle && alertContainer.classList.contains("success")) {
+  if (alertSubtitle && container && container.classList.contains("show")) {
     alertSubtitle.textContent = `Sequence auto-saved ${dayjs(
       lastSequenceData.date
     ).fromNow()}`;
@@ -590,9 +593,9 @@ function showError(message) {
     "error",
     "Syntax Error",
     "There's an issue with your sequence",
-    true
+    "Check the documentation for syntax help"
   );
-  const alertMessage = document.getElementById("alertMessage");
+  const alertMessage = document.getElementById("errorAlertMessage");
   alertMessage.textContent = message;
 }
 
@@ -600,11 +603,16 @@ function hideError() {
   hideAlert();
 }
 
-// Close alert button handler
+// Close alert button handlers
 document.addEventListener("DOMContentLoaded", () => {
-  const alertClose = document.getElementById("alertClose");
-  if (alertClose) {
-    alertClose.addEventListener("click", hideAlert);
+  const errorAlertClose = document.getElementById("errorAlertClose");
+  if (errorAlertClose) {
+    errorAlertClose.addEventListener("click", () => hideAlert("error"));
+  }
+
+  const successAlertClose = document.getElementById("successAlertClose");
+  if (successAlertClose) {
+    successAlertClose.addEventListener("click", () => hideAlert("success"));
   }
 });
 
@@ -817,8 +825,12 @@ document.getElementById("playBtn").addEventListener("click", async () => {
     // Play the sequence
     await synapseq.play();
   } catch (error) {
+    hideLoading();
     showError(error.message);
     setStatus("Error");
+    document.getElementById("playBtn").disabled = false;
+    document.getElementById("fileMenuBtn").disabled = false;
+    document.getElementById("spsqEditor").disabled = false;
   }
 });
 
