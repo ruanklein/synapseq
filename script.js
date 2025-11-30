@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
               document.getElementById("spsqEditor").value = newSpsq;
               document.getElementById("editorContainer").focus();
               updateLineNumbers();
-              //updateSyntaxHighlight();
+              updateSyntaxHighlight();
 
               const now = new Date().toISOString();
               lastSequenceData = {
@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
   ) {
     document.getElementById("spsqEditor").value = lastSequenceData.sequence;
     updateLineNumbers();
-    //updateSyntaxHighlight();
+    updateSyntaxHighlight();
   }
 
   // Start time updater if there's a saved sequence
@@ -296,13 +296,15 @@ function updateSyntaxHighlight() {
 // Sync scroll between line numbers and textarea
 document.getElementById("spsqEditor").addEventListener("scroll", (e) => {
   document.getElementById("lineNumbers").scrollTop = e.target.scrollTop;
-  document.getElementById("syntaxHighlight").scrollTop = e.target.scrollTop;
+  const highlight = document.getElementById("syntaxHighlight");
+  highlight.scrollTop = e.target.scrollTop;
+  highlight.scrollLeft = e.target.scrollLeft;
 });
 
 // Update line numbers on input
 document.getElementById("spsqEditor").addEventListener("input", () => {
   updateLineNumbers();
-  //updateSyntaxHighlight();
+  updateSyntaxHighlight();
 
   // Debounced save to lastSequence
   saveCurrentSequenceDebounced();
@@ -515,6 +517,7 @@ function loadSequenceFromHistory(index) {
   const seq = savedSequences[index];
   document.getElementById("spsqEditor").value = seq.content;
   updateLineNumbers();
+  updateSyntaxHighlight();
 
   // Update lastSequenceData immediately
   const now = new Date().toISOString();
@@ -562,7 +565,7 @@ function getTimeAgo(timestamp) {
 
 // Initialize line numbers
 updateLineNumbers();
-//updateSyntaxHighlight();
+updateSyntaxHighlight();
 
 // Initialize history UI
 document.addEventListener("DOMContentLoaded", () => {
@@ -929,7 +932,7 @@ document
       reader.onload = (e) => {
         document.getElementById("spsqEditor").value = e.target.result;
         updateLineNumbers();
-        //updateSyntaxHighlight();
+        updateSyntaxHighlight();
         setStatus("File loaded: " + file.name);
       };
       reader.onerror = () => {

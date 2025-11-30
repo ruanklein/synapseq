@@ -1016,12 +1016,18 @@ body:not(.dark) .editor-container {
   font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 0.875rem;
   line-height: 1.5;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-wrap: normal;
   pointer-events: none;
-  overflow-y: auto;
-  height: 450px;
-  color: transparent;
+  overflow: auto;
+  height: 650px;
+  max-height: 650px;
+  color: var(--color-gray-300);
+}
+
+body:not(.dark) .syntax-highlight {
+  color: var(--color-gray-700);
 }
 
 /* Syntax highlighting colors */
@@ -1122,7 +1128,7 @@ body:not(.dark) .line-numbers {
   transition: opacity 0.2s, filter 0.2s;
   position: relative;
   z-index: 2;
-  /* color: transparent; */
+  color: transparent;
   caret-color: var(--color-gray-100);
   white-space: pre;
   word-wrap: normal;
@@ -1131,7 +1137,6 @@ body:not(.dark) .line-numbers {
 
 body:not(.dark) .editor-textarea {
   caret-color: var(--color-gray-900);
-  color: var(--color-gray-900);
 }
 
 .editor-textarea::placeholder {
@@ -1140,6 +1145,16 @@ body:not(.dark) .editor-textarea {
 
 body:not(.dark) .editor-textarea::placeholder {
   color: var(--color-gray-400);
+}
+
+/* Hide scrollbars from syntax highlight overlay */
+.syntax-highlight::-webkit-scrollbar {
+  display: none;
+}
+
+.syntax-highlight {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Scrollbar styling for editor textarea - Dark mode */
@@ -2223,6 +2238,18 @@ body:not(.dark) .spotlight-message p {
   .line-numbers {
     /* Adjust width for smaller screens */
     min-width: 2.5rem;
+    height: 450px;
+    max-height: 450px;
+  }
+
+  .editor-textarea {
+    height: 450px;
+    max-height: 450px;
+  }
+
+  .syntax-highlight {
+    height: 450px;
+    max-height: 450px;
   }
 
   .player-controls {
