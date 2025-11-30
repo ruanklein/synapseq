@@ -409,21 +409,7 @@ function updateSyntaxHighlight() {
 }
 
 // Sync scroll between line numbers and textarea
-// Sync scroll between line numbers and textarea
-let lastScrollTop = 0;
-let lastScrollLeft = 0;
-
 document.getElementById("spsqEditor").addEventListener("scroll", (e) => {
-  // Block manual scroll during playback
-  if (isPlaying) {
-    e.target.scrollTop = lastScrollTop;
-    e.target.scrollLeft = lastScrollLeft;
-    return;
-  }
-
-  lastScrollTop = e.target.scrollTop;
-  lastScrollLeft = e.target.scrollLeft;
-
   document.getElementById("lineNumbers").scrollTop = e.target.scrollTop;
   const highlight = document.getElementById("syntaxHighlight");
   highlight.scrollTop = e.target.scrollTop;
@@ -838,10 +824,6 @@ function scrollToActiveLine() {
     (activePresetLines.start - 1) * lineHeight - containerHeight / 3;
 
   textarea.scrollTop = Math.max(0, targetScrollTop);
-
-  // Update tracking variables
-  lastScrollTop = textarea.scrollTop;
-  lastScrollLeft = textarea.scrollLeft;
 
   // Sync overlay scroll
   const highlight = document.getElementById("syntaxHighlight");
