@@ -13,6 +13,8 @@ let savedSequences = JSON.parse(
 let saveDebounceTimer = null;
 let saveTimeUpdateInterval = null;
 let errorLine = null; // Store the line number with syntax error
+let activePresetLines = null; // Store the line range of active preset
+let isPlaying = false; // Track if sequence is playing
 
 // Load last sequence from localStorage
 try {
@@ -218,11 +220,17 @@ function highlightSyntax(code) {
     let highlighted = line;
     const lineNumber = lineIndex + 1;
     const hasError = errorLine === lineNumber;
+    const isActive =
+      activePresetLines &&
+      lineNumber >= activePresetLines.start &&
+      lineNumber <= activePresetLines.end;
 
     // Comments (must be first to avoid double-highlighting)
     if (/^\s*#/.test(line)) {
       const result = `<span class="syntax-comment">${line}</span>`;
-      return hasError ? `<span class="error-line">${result}</span>` : result;
+      if (hasError) return `<span class="error-line">${result}</span>`;
+      if (isActive) return `<span class="active-preset-line">${result}</span>`;
+      return result;
     }
 
     // Directives and their arguments
@@ -308,12 +316,87 @@ function highlightSyntax(code) {
       (match) => `<span class="syntax-number">${match}</span>`
     );
 
-    return hasError
-      ? `<span class="error-line">${highlighted}</span>`
-      : highlighted;
+    // Wrap with active preset or error styling
+    if (hasError) {
+      return `<span class="error-line">${highlighted}</span>`;
+    }
+    if (isActive) {
+      return `<span class="active-preset-line">${highlighted}</span>`;
+    }
+    return highlighted;
   });
 
   return highlightedLines.join("\n");
+}
+
+// Find which preset is active based on current time
+function findActivePreset(code, currentTimeSeconds) {
+  const lines = code.split("\n");
+  const timeline = [];
+
+  // Parse timeline entries
+  lines.forEach((line, index) => {
+    const timeMatch = line.match(
+      /^\s*(\d{2}):(\d{2}):(\d{2})\s+([a-zA-Z][a-zA-Z0-9_-]*)/
+    );
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      const seconds = parseInt(timeMatch[3], 10);
+      const presetName = timeMatch[4];
+      const timeInSeconds = hours * 3600 + minutes * 60 + seconds;
+
+      timeline.push({
+        time: timeInSeconds,
+        preset: presetName,
+        lineIndex: index,
+      });
+    }
+  });
+
+  // Find active preset (last timeline entry before or at current time)
+  let activePreset = null;
+  for (let i = timeline.length - 1; i >= 0; i--) {
+    if (timeline[i].time <= currentTimeSeconds) {
+      activePreset = timeline[i].preset;
+      break;
+    }
+  }
+
+  if (!activePreset) return null;
+
+  // Find preset definition lines
+  const presetStartLine = lines.findIndex((line) => {
+    const match = line.match(/^([a-zA-Z][a-zA-Z0-9_-]*)/);
+    return match && match[1] === activePreset;
+  });
+
+  if (presetStartLine === -1) return null; // Preset not in editor (from @presetlist)
+
+  // Find end of preset (next preset definition or empty line or directive)
+  let presetEndLine = presetStartLine;
+  for (let i = presetStartLine + 1; i < lines.length; i++) {
+    const line = lines[i];
+    // Stop at next preset, directive, timeline, or significant empty section
+    if (
+      /^[a-zA-Z]/.test(line) ||
+      /^@/.test(line) ||
+      /^\d{2}:\d{2}:\d{2}/.test(line)
+    ) {
+      break;
+    }
+    // Include lines starting with 2 spaces (tracks) or comments
+    if (/^  /.test(line) || /^\s*#/.test(line) || line.trim() === "") {
+      presetEndLine = i;
+    } else {
+      break;
+    }
+  }
+
+  return {
+    start: presetStartLine + 1, // 1-indexed
+    end: presetEndLine + 1,
+  };
 }
 
 function updateSyntaxHighlight() {
@@ -326,7 +409,21 @@ function updateSyntaxHighlight() {
 }
 
 // Sync scroll between line numbers and textarea
+// Sync scroll between line numbers and textarea
+let lastScrollTop = 0;
+let lastScrollLeft = 0;
+
 document.getElementById("spsqEditor").addEventListener("scroll", (e) => {
+  // Block manual scroll during playback
+  if (isPlaying) {
+    e.target.scrollTop = lastScrollTop;
+    e.target.scrollLeft = lastScrollLeft;
+    return;
+  }
+
+  lastScrollTop = e.target.scrollTop;
+  lastScrollLeft = e.target.scrollLeft;
+
   document.getElementById("lineNumbers").scrollTop = e.target.scrollTop;
   const highlight = document.getElementById("syntaxHighlight");
   highlight.scrollTop = e.target.scrollTop;
@@ -706,7 +803,53 @@ function updateProgress() {
     document.getElementById("currentTime").textContent =
       formatTime(currentTime);
     document.getElementById("totalTime").textContent = formatTime(duration);
+
+    // Update active preset highlight
+    if (isPlaying) {
+      const code = document.getElementById("spsqEditor").value;
+      const newActiveLines = findActivePreset(code, currentTime);
+
+      // Only update if changed
+      if (
+        JSON.stringify(newActiveLines) !== JSON.stringify(activePresetLines)
+      ) {
+        activePresetLines = newActiveLines;
+        updateSyntaxHighlight();
+
+        // Auto-scroll to active preset
+        if (activePresetLines) {
+          scrollToActiveLine();
+        }
+      }
+    }
   }
+}
+
+// Auto-scroll to active preset line
+function scrollToActiveLine() {
+  if (!activePresetLines) return;
+
+  const textarea = document.getElementById("spsqEditor");
+  const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight);
+  const containerHeight = textarea.clientHeight;
+
+  // Scroll to center the active preset
+  const targetScrollTop =
+    (activePresetLines.start - 1) * lineHeight - containerHeight / 3;
+
+  textarea.scrollTop = Math.max(0, targetScrollTop);
+
+  // Update tracking variables
+  lastScrollTop = textarea.scrollTop;
+  lastScrollLeft = textarea.scrollLeft;
+
+  // Sync overlay scroll
+  const highlight = document.getElementById("syntaxHighlight");
+  highlight.scrollTop = textarea.scrollTop;
+  highlight.scrollLeft = textarea.scrollLeft;
+
+  const lineNumbers = document.getElementById("lineNumbers");
+  lineNumbers.scrollTop = textarea.scrollTop;
 }
 
 function startProgressTracking() {
@@ -750,6 +893,7 @@ async function initSynapSeq() {
       document.getElementById("stopBtn").disabled = false;
       document.getElementById("fileMenuBtn").disabled = true;
       document.getElementById("spsqEditor").disabled = true;
+      isPlaying = true;
       startProgressTracking();
 
       if ("mediaSession" in navigator) {
@@ -779,6 +923,9 @@ async function initSynapSeq() {
       document.getElementById("playBtn").disabled = false;
       document.getElementById("pauseBtn").disabled = true;
       document.getElementById("fileMenuBtn").disabled = true;
+      isPlaying = false;
+      activePresetLines = null;
+      updateSyntaxHighlight();
       stopProgressTracking();
 
       if ("mediaSession" in navigator) {
@@ -793,6 +940,9 @@ async function initSynapSeq() {
       document.getElementById("stopBtn").disabled = true;
       document.getElementById("fileMenuBtn").disabled = false;
       document.getElementById("spsqEditor").disabled = false;
+      isPlaying = false;
+      activePresetLines = null;
+      updateSyntaxHighlight();
       stopProgressTracking();
       document.getElementById("progressBar").style.width = "0%";
       document.getElementById("currentTime").textContent = "00:00";

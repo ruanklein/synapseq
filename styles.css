@@ -1100,6 +1100,20 @@ body:not(.dark) .error-line {
   border-left-color: #dc2626;
 }
 
+/* Active preset highlighting during playback */
+.active-preset-line {
+  display: block;
+  background: rgba(59, 130, 246, 0.15);
+  border-left: 3px solid var(--color-blue-500);
+  margin-left: -0.5rem;
+  padding-left: calc(0.5rem - 3px);
+}
+
+body:not(.dark) .active-preset-line {
+  background: rgba(59, 130, 246, 0.12);
+  border-left-color: #3b82f6;
+}
+
 body:not(.dark) .syntax-comment {
   color: #008000;
 }
@@ -1177,6 +1191,11 @@ body:not(.dark) .line-numbers {
   white-space: pre;
   word-wrap: normal;
   overflow-wrap: normal;
+}
+
+.editor-textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.9;
 }
 
 body:not(.dark) .editor-textarea {
