@@ -240,10 +240,14 @@ function highlightSyntax(code) {
         (match, preset, space1, keyword, space2, target) => {
           let result = `<span class="syntax-preset">${preset}</span>`;
           if (keyword) {
-            result += `${space1 || ''}<span class="syntax-template">${keyword}</span>`;
+            result += `${
+              space1 || ""
+            }<span class="syntax-template">${keyword}</span>`;
           }
           if (target) {
-            result += `${space2 || ''}<span class="syntax-${keyword === 'as' ? 'template' : 'preset'}">${target}</span>`;
+            result += `${space2 || ""}<span class="syntax-${
+              keyword === "as" ? "template" : "preset"
+            }">${target}</span>`;
           }
           return result;
         }
@@ -256,7 +260,7 @@ function highlightSyntax(code) {
       (match, time, space1, preset, space2, ramp) => {
         let result = `<span class="syntax-time">${time}</span>${space1}<span class="syntax-timeline-preset">${preset}</span>`;
         if (ramp) {
-          result += `${space2 || ''}<span class="syntax-ramp">${ramp}</span>`;
+          result += `${space2 || ""}<span class="syntax-ramp">${ramp}</span>`;
         }
         return result;
       }
