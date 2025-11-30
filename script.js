@@ -12,6 +12,7 @@ let savedSequences = JSON.parse(
 );
 let saveDebounceTimer = null;
 let saveTimeUpdateInterval = null;
+let errorLine = null; // Store the line number with syntax error
 
 // Load last sequence from localStorage
 try {
@@ -213,12 +214,15 @@ function updateLineNumbers() {
 function highlightSyntax(code) {
   // Split into lines for better processing
   const lines = code.split("\n");
-  const highlightedLines = lines.map((line) => {
+  const highlightedLines = lines.map((line, lineIndex) => {
     let highlighted = line;
+    const lineNumber = lineIndex + 1;
+    const hasError = errorLine === lineNumber;
 
     // Comments (must be first to avoid double-highlighting)
     if (/^\s*#/.test(line)) {
-      return `<span class="syntax-comment">${line}</span>`;
+      const result = `<span class="syntax-comment">${line}</span>`;
+      return hasError ? `<span class="error-line">${result}</span>` : result;
     }
 
     // Directives and their arguments
@@ -304,7 +308,9 @@ function highlightSyntax(code) {
       (match) => `<span class="syntax-number">${match}</span>`
     );
 
-    return highlighted;
+    return hasError
+      ? `<span class="error-line">${highlighted}</span>`
+      : highlighted;
   });
 
   return highlightedLines.join("\n");
@@ -331,6 +337,12 @@ document.getElementById("spsqEditor").addEventListener("scroll", (e) => {
 document.getElementById("spsqEditor").addEventListener("input", () => {
   updateLineNumbers();
   updateSyntaxHighlight();
+
+  // Clear error highlight when user starts typing
+  if (errorLine !== null) {
+    errorLine = null;
+    hideAlert("error");
+  }
 
   // Debounced save to lastSequence
   saveCurrentSequenceDebounced();
@@ -620,6 +632,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Error handling
 function showError(message) {
+  // Try to extract line number from error message
+  const lineMatch = message.match(/line\s+(\d+)/i);
+  if (lineMatch) {
+    errorLine = parseInt(lineMatch[1], 10);
+    updateSyntaxHighlight(); // Re-render to show error line
+  }
+
   showAlert(
     "error",
     "Syntax Error",
@@ -631,6 +650,8 @@ function showError(message) {
 }
 
 function hideError() {
+  errorLine = null; // Clear error line
+  updateSyntaxHighlight(); // Re-render to remove error highlight
   hideAlert();
 }
 

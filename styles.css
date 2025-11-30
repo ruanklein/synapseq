@@ -1086,6 +1086,20 @@ body:not(.dark) .syntax-highlight {
   font-weight: 600;
 }
 
+/* Error line highlighting */
+.error-line {
+  display: block;
+  background: rgba(255, 0, 0, 0.1);
+  border-left: 3px solid var(--color-red-500);
+  margin-left: -0.5rem;
+  padding-left: calc(0.5rem - 3px);
+}
+
+body:not(.dark) .error-line {
+  background: rgba(255, 0, 0, 0.08);
+  border-left-color: #dc2626;
+}
+
 body:not(.dark) .syntax-comment {
   color: #008000;
 }
