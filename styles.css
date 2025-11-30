@@ -1076,6 +1076,15 @@ body:not(.dark) .syntax-highlight {
 .syntax-text {
   color: #d4d4d4;
 }
+.syntax-ramp {
+  color: #ce9178;
+  font-weight: 500;
+  font-style: italic;
+}
+.syntax-template {
+  color: #c586c0;
+  font-weight: 600;
+}
 
 body:not(.dark) .syntax-comment {
   color: #008000;
@@ -1100,6 +1109,15 @@ body:not(.dark) .syntax-number {
 }
 body:not(.dark) .syntax-preset {
   color: #795e26;
+}
+body:not(.dark) .syntax-ramp {
+  color: #a31515;
+  font-weight: 500;
+  font-style: italic;
+}
+body:not(.dark) .syntax-template {
+  color: #af00db;
+  font-weight: 600;
 }
 
 .line-numbers {

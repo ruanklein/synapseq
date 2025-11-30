@@ -236,16 +236,29 @@ function highlightSyntax(code) {
     // Preset names (lines starting with word character, must be before keywords)
     if (/^[a-zA-Z]/.test(line) && !highlighted.includes("<span")) {
       highlighted = highlighted.replace(
-        /^([a-zA-Z][a-zA-Z0-9_-]*)/,
-        (match) => `<span class="syntax-preset">${match}</span>`
+        /^([a-zA-Z][a-zA-Z0-9_-]*)(\s+)?(as|from)?(\s+)?(template|[a-zA-Z][a-zA-Z0-9_-]*)?/,
+        (match, preset, space1, keyword, space2, target) => {
+          let result = `<span class="syntax-preset">${preset}</span>`;
+          if (keyword) {
+            result += `${space1 || ''}<span class="syntax-template">${keyword}</span>`;
+          }
+          if (target) {
+            result += `${space2 || ''}<span class="syntax-${keyword === 'as' ? 'template' : 'preset'}">${target}</span>`;
+          }
+          return result;
+        }
       );
     }
 
     // Timeline entries (time followed by preset name or silence)
     highlighted = highlighted.replace(
-      /\b(\d{2}:\d{2}:\d{2})(\s+)([a-zA-Z][a-zA-Z0-9_-]*)/g,
-      (match, time, space, preset) => {
-        return `<span class="syntax-time">${time}</span>${space}<span class="syntax-timeline-preset">${preset}</span>`;
+      /\b(\d{2}:\d{2}:\d{2})(\s+)([a-zA-Z][a-zA-Z0-9_-]*)(\s+)?(steady|ease-out|ease-in|smooth)?/g,
+      (match, time, space1, preset, space2, ramp) => {
+        let result = `<span class="syntax-time">${time}</span>${space1}<span class="syntax-timeline-preset">${preset}</span>`;
+        if (ramp) {
+          result += `${space2 || ''}<span class="syntax-ramp">${ramp}</span>`;
+        }
+        return result;
       }
     );
 
