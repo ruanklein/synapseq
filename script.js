@@ -236,19 +236,26 @@ function highlightSyntax(code) {
     // Preset names (lines starting with word character, must be before keywords)
     if (/^[a-zA-Z]/.test(line) && !highlighted.includes("<span")) {
       highlighted = highlighted.replace(
-        /^([a-zA-Z][a-zA-Z0-9_-]*)(\s+)?(as|from)?(\s+)?(template|[a-zA-Z][a-zA-Z0-9_-]*)?/,
-        (match, preset, space1, keyword, space2, target) => {
+        /^([a-zA-Z][a-zA-Z0-9_-]*)(\s+(?:as|from)\s+(?:template|[a-zA-Z][a-zA-Z0-9_-]*))?(.*)$/,
+        (match, preset, templatePart, rest) => {
           let result = `<span class="syntax-preset">${preset}</span>`;
-          if (keyword) {
-            result += `${
-              space1 || ""
-            }<span class="syntax-template">${keyword}</span>`;
+          if (templatePart) {
+            // Parse the template part to preserve all spaces
+            const templateMatch = templatePart.match(
+              /(\s+)(as|from)(\s+)(template|[a-zA-Z][a-zA-Z0-9_-]*)/
+            );
+            if (templateMatch) {
+              const [, space1, keyword, space2, target] = templateMatch;
+              result +=
+                space1 +
+                `<span class="syntax-template">${keyword}</span>` +
+                space2 +
+                `<span class="syntax-${
+                  keyword === "as" ? "template" : "preset"
+                }">${target}</span>`;
+            }
           }
-          if (target) {
-            result += `${space2 || ""}<span class="syntax-${
-              keyword === "as" ? "template" : "preset"
-            }">${target}</span>`;
-          }
+          result += rest;
           return result;
         }
       );
@@ -256,11 +263,18 @@ function highlightSyntax(code) {
 
     // Timeline entries (time followed by preset name or silence)
     highlighted = highlighted.replace(
-      /\b(\d{2}:\d{2}:\d{2})(\s+)([a-zA-Z][a-zA-Z0-9_-]*)(\s+)?(steady|ease-out|ease-in|smooth)?/g,
-      (match, time, space1, preset, space2, ramp) => {
+      /\b(\d{2}:\d{2}:\d{2})(\s+)([a-zA-Z][a-zA-Z0-9_-]*)(\s+(?:steady|ease-out|ease-in|smooth))?/g,
+      (match, time, space1, preset, rampPart) => {
         let result = `<span class="syntax-time">${time}</span>${space1}<span class="syntax-timeline-preset">${preset}</span>`;
-        if (ramp) {
-          result += `${space2 || ""}<span class="syntax-ramp">${ramp}</span>`;
+        if (rampPart) {
+          // Parse the ramp part to preserve all spaces
+          const rampMatch = rampPart.match(
+            /(\s+)(steady|ease-out|ease-in|smooth)/
+          );
+          if (rampMatch) {
+            const [, space2, ramp] = rampMatch;
+            result += space2 + `<span class="syntax-ramp">${ramp}</span>`;
+          }
         }
         return result;
       }
