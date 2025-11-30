@@ -21,6 +21,8 @@
     />
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="wasm/synapseq.js"></script>
 
@@ -105,31 +107,32 @@
             </a>
           </div>
 
-          <div id="errorContainer" class="error-alert">
-            <div class="error-alert-header">
-              <div class="error-alert-icon">
+          <!-- Error/Success Alert Container -->
+          <div id="alertContainer" class="alert-container">
+            <div class="alert-header">
+              <div class="alert-icon">
                 <i
                   data-lucide="alert-circle"
                   style="width: 1.5rem; height: 1.5rem"
                 ></i>
               </div>
-              <div class="error-alert-title">
-                <h3>Syntax Error</h3>
-                <p class="error-alert-subtitle">
+              <div class="alert-title">
+                <h3 id="alertTitle">Syntax Error</h3>
+                <p class="alert-subtitle" id="alertSubtitle">
                   There's an issue with your sequence
                 </p>
               </div>
               <button
-                id="errorClose"
-                class="error-alert-close"
-                aria-label="Close error"
+                id="alertClose"
+                class="alert-close"
+                aria-label="Close alert"
               >
                 <i data-lucide="x" style="width: 1.25rem; height: 1.25rem"></i>
               </button>
             </div>
-            <div class="error-alert-body">
-              <div class="error-alert-message" id="errorMessage"></div>
-              <div class="error-alert-help">
+            <div class="alert-body">
+              <div class="alert-message" id="alertMessage"></div>
+              <div class="alert-help" id="alertHelp">
                 <i data-lucide="info" style="width: 1rem; height: 1rem"></i>
                 <span
                   >Check the
@@ -145,17 +148,19 @@
           </div>
 
           <div class="editor-player">
-            <!-- Editor Section -->
-            <div id="editorContainer" class="editor-container">
-              <div id="lineNumbers" class="line-numbers">1</div>
-              <div class="editor-wrapper">
-                <div id="syntaxHighlight" class="syntax-highlight"></div>
-                <textarea
-                  id="spsqEditor"
-                  class="editor-textarea"
-                  rows="15"
-                  spellcheck="false"
-                  placeholder="# Try editing this example sequence!
+            <div class="editor-history-container">
+              <!-- Editor Section -->
+              <div class="editor-section">
+                <div id="editorContainer" class="editor-container">
+                  <div id="lineNumbers" class="line-numbers">1</div>
+                  <div class="editor-wrapper">
+                    <div id="syntaxHighlight" class="syntax-highlight"></div>
+                    <textarea
+                      id="spsqEditor"
+                      class="editor-textarea"
+                      rows="15"
+                      spellcheck="false"
+                      placeholder="# Try editing this example sequence!
 # Presets
 alpha
   noise pink amplitude 30
@@ -165,7 +170,7 @@ alpha
 00:00:00 silence
 00:00:15 alpha
 00:01:00 silence"
-                >
+                    >
 # Presets
 alpha
   noise pink amplitude 30
@@ -176,8 +181,45 @@ alpha
 00:00:15 alpha
 00:04:00 alpha
 00:05:00 silence</textarea
-                >
+                    >
+                  </div>
+                </div>
               </div>
+
+              <!-- Sequence History Panel -->
+              <aside class="sequence-history-panel">
+                <div class="history-header">
+                  <h3>
+                    <i
+                      data-lucide="history"
+                      style="width: 1rem; height: 1rem"
+                    ></i>
+                    Recent Sequences
+                  </h3>
+                  <button
+                    id="clearHistoryBtn"
+                    class="clear-history-btn"
+                    aria-label="Clear all history"
+                  >
+                    <i
+                      data-lucide="trash-2"
+                      style="width: 1rem; height: 1rem"
+                    ></i>
+                  </button>
+                </div>
+
+                <div class="history-content">
+                  <div id="sequenceHistoryEmpty" class="history-empty">
+                    <i
+                      data-lucide="inbox"
+                      style="width: 2rem; height: 2rem"
+                    ></i>
+                    <p>No sequences saved yet</p>
+                    <span>Play a sequence to save it here</span>
+                  </div>
+                  <div id="sequenceHistoryList" class="history-list"></div>
+                </div>
+              </aside>
             </div>
 
             <!-- Player Controls Section -->

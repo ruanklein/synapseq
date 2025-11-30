@@ -1,9 +1,43 @@
 // Initialize Lucide icons first
 lucide.createIcons();
 
+// Initialize dayjs with relativeTime plugin
+dayjs.extend(dayjs_plugin_relativeTime);
+
 let synapseq = null;
 let progressInterval = null;
-let lastSequence = localStorage.getItem("last-sequence") || "";
+let lastSequenceData = null;
+let savedSequences = JSON.parse(
+  localStorage.getItem("saved-sequences") || "[]"
+);
+let saveDebounceTimer = null;
+let saveTimeUpdateInterval = null;
+
+// Load last sequence from localStorage
+try {
+  const stored = localStorage.getItem("last-sequence");
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    if (parsed && typeof parsed === "object" && parsed.sequence) {
+      lastSequenceData = parsed;
+    } else {
+      // Old format - migrate to new format
+      lastSequenceData = {
+        sequence: typeof parsed === "string" ? parsed : stored,
+        date: new Date().toISOString(),
+      };
+    }
+  }
+} catch (e) {
+  // Old format - migrate to new format
+  const stored = localStorage.getItem("last-sequence") || "";
+  if (stored) {
+    lastSequenceData = {
+      sequence: stored,
+      date: new Date().toISOString(),
+    };
+  }
+}
 
 // Wait for DOM to be fully loaded
 document.addEventListener("DOMContentLoaded", function () {
@@ -17,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Load saved theme or default to dark
-  const savedTheme = localStorage.getItem("synapseq-theme") || "dark";
+  const savedTheme = localStorage.getItem("synapseq-theme") || "light";
   if (savedTheme === "light") {
     body.classList.remove("dark");
     updateThemeIcon("moon");
@@ -76,8 +110,15 @@ document.addEventListener("DOMContentLoaded", function () {
               updateLineNumbers();
               //updateSyntaxHighlight();
 
-              lastSequence = newSpsq;
-              localStorage.setItem("last-sequence", lastSequence);
+              const now = new Date().toISOString();
+              lastSequenceData = {
+                sequence: newSpsq,
+                date: now,
+              };
+              localStorage.setItem(
+                "last-sequence",
+                JSON.stringify(lastSequenceData)
+              );
 
               // Show success message and spotlight with sequence name
               showHubLoadSuccess(sequence.name);
@@ -89,10 +130,19 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Failed to fetch manifest:", error);
       });
   }
-  if (hubSequenceID === null && lastSequence.length > 0) {
-    document.getElementById("spsqEditor").value = lastSequence;
+  if (
+    hubSequenceID === null &&
+    lastSequenceData &&
+    lastSequenceData.sequence.length > 0
+  ) {
+    document.getElementById("spsqEditor").value = lastSequenceData.sequence;
     updateLineNumbers();
     //updateSyntaxHighlight();
+  }
+
+  // Start time updater if there's a saved sequence
+  if (lastSequenceData && lastSequenceData.date) {
+    startSaveTimeUpdater();
   }
 
   function updateThemeIcon(icon) {
@@ -253,34 +303,299 @@ document.getElementById("spsqEditor").addEventListener("scroll", (e) => {
 document.getElementById("spsqEditor").addEventListener("input", () => {
   updateLineNumbers();
   //updateSyntaxHighlight();
+
+  // Debounced save to lastSequence
+  saveCurrentSequenceDebounced();
 });
+
+// Debounced save function
+function saveCurrentSequenceDebounced() {
+  // Clear existing timer
+  if (saveDebounceTimer) {
+    clearTimeout(saveDebounceTimer);
+  }
+
+  // Set new timer
+  saveDebounceTimer = setTimeout(() => {
+    const content = document.getElementById("spsqEditor").value;
+    const now = new Date().toISOString();
+    lastSequenceData = {
+      sequence: content,
+      date: now,
+    };
+    localStorage.setItem("last-sequence", JSON.stringify(lastSequenceData));
+
+    // Update alert with current time
+    updateSaveTimeDisplay();
+    showAlert(
+      "success",
+      "Saved",
+      `Sequence auto-saved ${dayjs(lastSequenceData.date).fromNow()}`
+    );
+  }, 1000);
+}
+
+// Show alert (unified for errors and success)
+function showAlert(type, title, message, help = null) {
+  const alertContainer = document.getElementById("alertContainer");
+  const alertIcon = alertContainer.querySelector(".alert-icon i");
+  const alertTitle = document.getElementById("alertTitle");
+  const alertSubtitle = document.getElementById("alertSubtitle");
+  const alertMessage = document.getElementById("alertMessage");
+  const alertHelp = document.getElementById("alertHelp");
+  const alertClose = document.getElementById("alertClose");
+
+  // Set content
+  alertTitle.textContent = title;
+  alertSubtitle.textContent = message;
+  alertMessage.textContent = "";
+
+  // Update icon and style based on type
+  if (type === "error") {
+    alertContainer.className = "alert-container show error";
+    if (alertIcon) {
+      alertIcon.setAttribute("data-lucide", "alert-circle");
+    }
+    alertClose.style.display = "flex";
+    if (help) {
+      alertHelp.style.display = "flex";
+    } else {
+      alertHelp.style.display = "none";
+    }
+  } else if (type === "success") {
+    alertContainer.className = "alert-container show success";
+    if (alertIcon) {
+      alertIcon.setAttribute("data-lucide", "check-circle");
+    }
+    alertClose.style.display = "flex";
+    alertHelp.style.display = "none";
+  }
+
+  lucide.createIcons();
+
+  // Scroll to alert
+  alertContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function hideAlert() {
+  const alertContainer = document.getElementById("alertContainer");
+  alertContainer.classList.remove("show");
+}
+
+// Update save time display
+function updateSaveTimeDisplay() {
+  if (!lastSequenceData || !lastSequenceData.date) return;
+
+  const alertSubtitle = document.getElementById("alertSubtitle");
+  const alertContainer = document.getElementById("alertContainer");
+
+  if (alertSubtitle && alertContainer.classList.contains("success")) {
+    alertSubtitle.textContent = `Sequence auto-saved ${dayjs(
+      lastSequenceData.date
+    ).fromNow()}`;
+  }
+}
+
+// Start continuous time updater (runs always in background)
+function startSaveTimeUpdater() {
+  stopSaveTimeUpdater();
+
+  saveTimeUpdateInterval = setInterval(() => {
+    updateSaveTimeDisplay();
+  }, 1000);
+}
+
+function stopSaveTimeUpdater() {
+  if (saveTimeUpdateInterval) {
+    clearInterval(saveTimeUpdateInterval);
+    saveTimeUpdateInterval = null;
+  }
+}
+
+// Show save status indicator
+function showSaveStatus(status) {
+  // Deprecated - now using showAlert
+}
+
+// Save sequence to history
+function saveSequenceToHistory(content) {
+  if (!content || !content.trim()) return;
+
+  const timestamp = new Date()
+    .toISOString()
+    .replace(/:/g, "-")
+    .replace(/\./g, "-")
+    .substring(0, 19);
+  const name = `synapseq-${timestamp}`;
+
+  const sequence = {
+    name: name,
+    content: content,
+    timestamp: Date.now(),
+  };
+
+  // Remove if already exists (by content)
+  savedSequences = savedSequences.filter((s) => s.content !== content);
+
+  // Add to beginning
+  savedSequences.unshift(sequence);
+
+  // Keep only last 10
+  if (savedSequences.length > 10) {
+    savedSequences = savedSequences.slice(0, 10);
+  }
+
+  // Save to localStorage
+  localStorage.setItem("saved-sequences", JSON.stringify(savedSequences));
+
+  // Update UI
+  renderSequenceHistory();
+}
+
+// Render sequence history
+function renderSequenceHistory() {
+  const historyList = document.getElementById("sequenceHistoryList");
+  const emptyState = document.getElementById("sequenceHistoryEmpty");
+
+  if (!historyList || !emptyState) return;
+
+  if (savedSequences.length === 0) {
+    historyList.style.display = "none";
+    emptyState.style.display = "block";
+  } else {
+    historyList.style.display = "block";
+    emptyState.style.display = "none";
+
+    historyList.innerHTML = savedSequences
+      .map((seq, index) => {
+        const date = new Date(seq.timestamp);
+        const timeAgo = getTimeAgo(seq.timestamp);
+
+        return `
+        <div class="history-item" data-index="${index}">
+          <div class="history-item-header">
+            <span class="history-item-name">${seq.name}</span>
+            <button class="history-item-delete" data-index="${index}" aria-label="Delete sequence">
+              <i data-lucide="trash-2" style="width: 0.875rem; height: 0.875rem"></i>
+            </button>
+          </div>
+          <div class="history-item-time">${timeAgo}</div>
+        </div>
+      `;
+      })
+      .join("");
+
+    lucide.createIcons();
+
+    // Add click handlers
+    historyList.querySelectorAll(".history-item").forEach((item) => {
+      item.addEventListener("click", (e) => {
+        if (e.target.closest(".history-item-delete")) return;
+
+        const index = parseInt(item.dataset.index);
+        loadSequenceFromHistory(index);
+      });
+    });
+
+    // Add delete handlers
+    historyList.querySelectorAll(".history-item-delete").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const index = parseInt(btn.dataset.index);
+        deleteSequenceFromHistory(index);
+      });
+    });
+  }
+}
+
+// Load sequence from history
+function loadSequenceFromHistory(index) {
+  if (index < 0 || index >= savedSequences.length) return;
+
+  const seq = savedSequences[index];
+  document.getElementById("spsqEditor").value = seq.content;
+  updateLineNumbers();
+
+  // Update lastSequenceData immediately
+  const now = new Date().toISOString();
+  lastSequenceData = {
+    sequence: seq.content,
+    date: now,
+  };
+  localStorage.setItem("last-sequence", JSON.stringify(lastSequenceData));
+
+  showAlert("success", "Loaded", "Sequence loaded from history");
+  setTimeout(() => hideAlert(), 1000);
+}
+
+// Delete sequence from history
+function deleteSequenceFromHistory(index) {
+  if (index < 0 || index >= savedSequences.length) return;
+
+  savedSequences.splice(index, 1);
+  localStorage.setItem("saved-sequences", JSON.stringify(savedSequences));
+  renderSequenceHistory();
+}
+
+// Clear all history
+function clearAllHistory() {
+  if (savedSequences.length === 0) return;
+
+  if (confirm("Are you sure you want to clear all saved sequences?")) {
+    savedSequences = [];
+    localStorage.setItem("saved-sequences", JSON.stringify(savedSequences));
+    renderSequenceHistory();
+  }
+}
+
+// Time ago helper
+function getTimeAgo(timestamp) {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+  return new Date(timestamp).toLocaleDateString();
+}
 
 // Initialize line numbers
 updateLineNumbers();
 //updateSyntaxHighlight();
 
+// Initialize history UI
+document.addEventListener("DOMContentLoaded", () => {
+  renderSequenceHistory();
+
+  // Clear history button
+  const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener("click", clearAllHistory);
+  }
+});
+
 // Error handling
 function showError(message) {
-  const errorContainer = document.getElementById("errorContainer");
-  const errorMessage = document.getElementById("errorMessage");
-  errorMessage.textContent = message;
-  errorContainer.classList.add("show");
-  lucide.createIcons();
-
-  // Scroll to error
-  errorContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  showAlert(
+    "error",
+    "Syntax Error",
+    "There's an issue with your sequence",
+    true
+  );
+  const alertMessage = document.getElementById("alertMessage");
+  alertMessage.textContent = message;
 }
 
 function hideError() {
-  const errorContainer = document.getElementById("errorContainer");
-  errorContainer.classList.remove("show");
+  hideAlert();
 }
 
-// Close error button handler
+// Close alert button handler
 document.addEventListener("DOMContentLoaded", () => {
-  const errorClose = document.getElementById("errorClose");
-  if (errorClose) {
-    errorClose.addEventListener("click", hideError);
+  const alertClose = document.getElementById("alertClose");
+  if (alertClose) {
+    alertClose.addEventListener("click", hideAlert);
   }
 });
 
@@ -470,14 +785,25 @@ document.getElementById("playBtn").addEventListener("click", async () => {
     }
 
     // Always reload the sequence to get the latest content
-    if (spsq != lastSequence && synapseq.isLoaded()) {
+    if (
+      lastSequenceData &&
+      spsq != lastSequenceData.sequence &&
+      synapseq.isLoaded()
+    ) {
       synapseq.stop();
     }
 
     await synapseq.load(spsq);
 
-    lastSequence = spsq;
-    localStorage.setItem("last-sequence", lastSequence);
+    const now = new Date().toISOString();
+    lastSequenceData = {
+      sequence: spsq,
+      date: now,
+    };
+    localStorage.setItem("last-sequence", JSON.stringify(lastSequenceData));
+
+    // Save to history
+    saveSequenceToHistory(spsq);
 
     // Play the sequence
     await synapseq.play();

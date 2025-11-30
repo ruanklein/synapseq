@@ -1,4 +1,4 @@
-const CACHE_VERSION = "synapseq-pwa-v1.0.1";
+const CACHE_VERSION = "synapseq-pwa-v1.0.2";
 
 const APP_SHELL = [
   "/",
