@@ -233,18 +233,26 @@ function highlightSyntax(code) {
       }
     );
 
+    // Preset names (lines starting with word character, must be before keywords)
+    if (/^[a-zA-Z]/.test(line) && !highlighted.includes("<span")) {
+      highlighted = highlighted.replace(
+        /^([a-zA-Z][a-zA-Z0-9_-]*)/,
+        (match) => `<span class="syntax-preset">${match}</span>`
+      );
+    }
+
     // Timeline entries (time followed by preset name or silence)
     highlighted = highlighted.replace(
-      /\b(\d{2}:\d{2}:\d{2})\s+(\w+)/g,
-      (match, time, preset) => {
-        return `<span class="syntax-time">${time}</span> <span class="syntax-timeline-preset">${preset}</span>`;
+      /\b(\d{2}:\d{2}:\d{2})(\s+)([a-zA-Z][a-zA-Z0-9_-]*)/g,
+      (match, time, space, preset) => {
+        return `<span class="syntax-time">${time}</span>${space}<span class="syntax-timeline-preset">${preset}</span>`;
       }
     );
 
-    // Keywords (tone, noise, background, etc)
+    // Keywords (tone, noise, background, etc) - must be preceded by exactly 2 spaces
     highlighted = highlighted.replace(
-      /\b(tone|noise|background|waveform|amplitude|rate|intensity)\b/g,
-      (match) => `<span class="syntax-keyword">${match}</span>`
+      /^  (tone|noise|background|track|waveform|amplitude|rate|intensity)\b/g,
+      (match, keyword) => `  <span class="syntax-keyword">${keyword}</span>`
     );
 
     // Types (binaural, monaural, etc)
@@ -265,14 +273,6 @@ function highlightSyntax(code) {
       (match) => `<span class="syntax-number">${match}</span>`
     );
 
-    // Preset names (lines starting with word character, not already highlighted)
-    if (/^[a-zA-Z]/.test(line) && !highlighted.includes("<span")) {
-      highlighted = highlighted.replace(
-        /^([a-zA-Z][a-zA-Z0-9_-]*)\b/,
-        (match) => `<span class="syntax-preset">${match}</span>`
-      );
-    }
-
     return highlighted;
   });
 
@@ -284,13 +284,8 @@ function updateSyntaxHighlight() {
   const highlight = document.getElementById("syntaxHighlight");
   const code = textarea.value;
 
-  // Escape HTML and apply syntax highlighting
-  const escaped = code
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
-  highlight.innerHTML = highlightSyntax(escaped);
+  // Apply syntax highlighting directly (no need to escape for SPSQ syntax)
+  highlight.innerHTML = highlightSyntax(code);
 }
 
 // Sync scroll between line numbers and textarea
@@ -377,11 +372,27 @@ function showAlert(type, title, message, help = null) {
 
   // Scroll to alert
   alertContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+  // Force sync overlay scroll after layout shift
+  setTimeout(() => {
+    const textarea = document.getElementById("spsqEditor");
+    const highlight = document.getElementById("syntaxHighlight");
+    highlight.scrollTop = textarea.scrollTop;
+    highlight.scrollLeft = textarea.scrollLeft;
+  }, 100);
 }
 
 function hideAlert() {
   const alertContainer = document.getElementById("alertContainer");
   alertContainer.classList.remove("show");
+
+  // Force sync overlay scroll after layout shift
+  setTimeout(() => {
+    const textarea = document.getElementById("spsqEditor");
+    const highlight = document.getElementById("syntaxHighlight");
+    highlight.scrollTop = textarea.scrollTop;
+    highlight.scrollLeft = textarea.scrollLeft;
+  }, 100);
 }
 
 // Update save time display
@@ -412,11 +423,6 @@ function stopSaveTimeUpdater() {
     clearInterval(saveTimeUpdateInterval);
     saveTimeUpdateInterval = null;
   }
-}
-
-// Show save status indicator
-function showSaveStatus(status) {
-  // Deprecated - now using showAlert
 }
 
 // Save sequence to history
@@ -665,7 +671,7 @@ async function initSynapSeq() {
 
     // Event handlers
     synapseq.onloaded = () => {
-      console.log("Sequence loaded");
+      // Sequence loaded successfully
     };
 
     synapseq.ongenerating = () => {

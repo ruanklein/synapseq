@@ -1030,6 +1030,17 @@ body:not(.dark) .syntax-highlight {
   color: var(--color-gray-700);
 }
 
+/* Ensure syntax spans don't affect layout */
+.syntax-highlight span {
+  display: inline;
+  line-height: inherit;
+  font-size: inherit;
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  letter-spacing: inherit;
+}
+
 /* Syntax highlighting colors */
 .syntax-comment {
   color: #6a9955;
