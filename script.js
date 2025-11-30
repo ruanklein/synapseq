@@ -15,6 +15,40 @@ let saveTimeUpdateInterval = null;
 let errorLine = null; // Store the line number with syntax error
 let activePresetLines = null; // Store the line range of active preset
 let isPlaying = false; // Track if sequence is playing
+let currentSuggestion = null; // Store current autocomplete suggestion
+
+// Autocomplete keyword definitions with descriptions
+const autocompleteKeywords = {
+  tone: { desc: "Carrier tone", next: ["binaural", "monaural", "isochronic"] },
+  noise: { desc: "Noise type", options: ["white", "pink", "brown"] },
+  background: {
+    desc: "Background audio control",
+    options: ["amplitude", "pulse", "spin"],
+  },
+  waveform: {
+    desc: "Track waveform",
+    options: ["sine", "square", "triangle", "sawtooth"],
+    next: ["tone", "noise", "background"],
+  },
+  track: { desc: "Track volume", next: null },
+  binaural: { desc: "Binaural beat" },
+  monaural: { desc: "Monaural beat" },
+  isochronic: { desc: "Isochronic tone" },
+  white: { desc: "White noise" },
+  pink: { desc: "Pink noise" },
+  brown: { desc: "Brown noise" },
+  amplitude: { desc: "Volume level" },
+  pulse: { desc: "Pulse effect" },
+  spin: { desc: "Spin effect" },
+  rate: { desc: "Rate parameter" },
+  intensity: { desc: "Intensity level" },
+  sine: { desc: "Sine wave" },
+  square: { desc: "Square wave" },
+  triangle: { desc: "Triangle wave" },
+  sawtooth: { desc: "Sawtooth wave" },
+};
+
+let selectedOptionIndex = 0; // Track selected option in autocomplete menu
 
 // Load last sequence from localStorage
 try {
@@ -427,9 +461,747 @@ document.getElementById("spsqEditor").addEventListener("input", () => {
     hideAlert("error");
   }
 
+  // Check for autocomplete
+  checkAutocomplete();
+
   // Debounced save to lastSequence
   saveCurrentSequenceDebounced();
 });
+
+// Handle Tab key for autocomplete
+document.getElementById("spsqEditor").addEventListener("keydown", (e) => {
+  if (!currentSuggestion) return;
+
+  if (e.key === "Tab") {
+    e.preventDefault();
+    applyAutocomplete();
+  } else if (e.key === "ArrowDown" || e.key === "PageDown") {
+    e.preventDefault();
+    navigateAutocomplete(1);
+  } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+    e.preventDefault();
+    navigateAutocomplete(-1);
+  } else if (e.key === "Escape") {
+    hideAutocomplete();
+  }
+});
+
+// Autocomplete functions
+function parseLineContext(line) {
+  // Parse tokens from current line (after initial 2 spaces for keywords)
+  const afterSpaces = line.substring(2);
+  const trimmed = afterSpaces.trim();
+  const tokens = trimmed.split(/\s+/).filter((t) => t.length > 0);
+
+  return {
+    tokens,
+    lastToken: tokens[tokens.length - 1] || "",
+    isComplete: afterSpaces.endsWith(" ") || afterSpaces === "", // Complete if ends with space or empty
+    raw: line,
+  };
+}
+
+function getNextSuggestions(context) {
+  const { tokens, lastToken, isComplete } = context;
+
+  // If empty line or just spaces, suggest main keywords
+  if (tokens.length === 0) {
+    return [
+      {
+        keyword: "tone",
+        desc: autocompleteKeywords.tone?.desc || "Carrier tone",
+      },
+      {
+        keyword: "noise",
+        desc: autocompleteKeywords.noise?.desc || "Noise type",
+      },
+      {
+        keyword: "background",
+        desc:
+          autocompleteKeywords.background?.desc || "Background audio control",
+      },
+      {
+        keyword: "waveform",
+        desc: autocompleteKeywords.waveform?.desc || "Track waveform",
+      },
+      {
+        keyword: "track",
+        desc: autocompleteKeywords.track?.desc || "Track volume",
+      },
+    ];
+  }
+
+  const firstKeyword = tokens[0];
+
+  // Handle tone keyword
+  if (firstKeyword === "tone") {
+    if (tokens.length === 1 && !isComplete) return null; // typing "tone", wait
+    if (tokens.length === 1 && isComplete) {
+      // After "tone ", expect number (no suggestions)
+      return null;
+    }
+    if (tokens.length === 2 && !isComplete) return null; // typing number
+    if (tokens.length === 2 && isComplete) {
+      // After "tone <num> ", suggest binaural/monaural/isochronic
+      return [
+        { keyword: "binaural", desc: autocompleteKeywords.binaural.desc },
+        { keyword: "monaural", desc: autocompleteKeywords.monaural.desc },
+        { keyword: "isochronic", desc: autocompleteKeywords.isochronic.desc },
+      ];
+    }
+    if (tokens.length === 3 && !isComplete) {
+      // typing binaural/monaural/isochronic, offer suggestions
+      const partial = lastToken.toLowerCase();
+      const validTypes = ["binaural", "monaural", "isochronic"];
+      // Don't suggest if already a valid complete keyword
+      if (validTypes.includes(partial)) return null;
+      return [
+        { keyword: "binaural", desc: autocompleteKeywords.binaural.desc },
+        { keyword: "monaural", desc: autocompleteKeywords.monaural.desc },
+        { keyword: "isochronic", desc: autocompleteKeywords.isochronic.desc },
+      ].filter((s) => s.keyword.startsWith(partial));
+    }
+    if (tokens.length === 3 && isComplete) return null; // expect number
+    if (tokens.length === 4 && !isComplete) return null; // typing number
+    if (tokens.length === 4 && isComplete) {
+      // After "tone <num> <type> <num> ", suggest amplitude
+      return [
+        { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+      ];
+    }
+    if (tokens.length === 5 && !isComplete) {
+      const partial = lastToken.toLowerCase();
+      // Don't suggest if already complete
+      if (partial === "amplitude") return null;
+      if ("amplitude".startsWith(partial)) {
+        return [
+          { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+        ];
+      }
+    }
+  }
+
+  // Handle noise keyword
+  if (firstKeyword === "noise") {
+    if (tokens.length === 1 && !isComplete) return null;
+    if (tokens.length === 1 && isComplete) {
+      // After "noise ", suggest white/pink/brown
+      return [
+        { keyword: "white", desc: autocompleteKeywords.white.desc },
+        { keyword: "pink", desc: autocompleteKeywords.pink.desc },
+        { keyword: "brown", desc: autocompleteKeywords.brown.desc },
+      ];
+    }
+    if (tokens.length === 2 && !isComplete) {
+      const partial = lastToken.toLowerCase();
+      const validTypes = ["white", "pink", "brown"];
+      // Don't suggest if already a valid complete keyword
+      if (validTypes.includes(partial)) return null;
+      return [
+        { keyword: "white", desc: autocompleteKeywords.white.desc },
+        { keyword: "pink", desc: autocompleteKeywords.pink.desc },
+        { keyword: "brown", desc: autocompleteKeywords.brown.desc },
+      ].filter((s) => s.keyword.startsWith(partial));
+    }
+    // After "noise <type> ", suggest amplitude
+    if (tokens.length === 2 && isComplete) {
+      return [
+        { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+      ];
+    }
+    if (tokens.length === 3 && !isComplete) {
+      const partial = lastToken.toLowerCase();
+      // Don't suggest if already complete
+      if (partial === "amplitude") return null;
+      if ("amplitude".startsWith(partial)) {
+        return [
+          { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+        ];
+      }
+    }
+    if (tokens.length === 4 && !isComplete) {
+      const partial = lastToken.toLowerCase();
+      // Don't suggest if already complete
+      if (partial === "amplitude") return null;
+      if ("amplitude".startsWith(partial)) {
+        return [
+          { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+        ];
+      }
+    }
+  }
+
+  // Handle background keyword
+  if (firstKeyword === "background") {
+    if (tokens.length === 1 && !isComplete) return null;
+    if (tokens.length === 1 && isComplete) {
+      return [
+        { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+        { keyword: "pulse", desc: autocompleteKeywords.pulse.desc },
+        { keyword: "spin", desc: autocompleteKeywords.spin.desc },
+      ];
+    }
+    if (tokens.length === 2 && !isComplete) {
+      const partial = lastToken.toLowerCase();
+      const validTypes = ["amplitude", "pulse", "spin"];
+      // Don't suggest if already a valid complete keyword
+      if (validTypes.includes(partial)) return null;
+      return [
+        { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+        { keyword: "pulse", desc: autocompleteKeywords.pulse.desc },
+        { keyword: "spin", desc: autocompleteKeywords.spin.desc },
+      ].filter((s) => s.keyword.startsWith(partial));
+    }
+
+    const secondKeyword = tokens[1];
+
+    // background amplitude <num>
+    if (secondKeyword === "amplitude") {
+      return null; // only expects number
+    }
+
+    // background pulse <num> intensity <num> amplitude <num>
+    if (secondKeyword === "pulse") {
+      if (tokens.length === 2 && isComplete) return null; // expect number
+      if (tokens.length === 3 && !isComplete) return null; // typing number
+      if (tokens.length === 3 && isComplete) {
+        return [
+          { keyword: "intensity", desc: autocompleteKeywords.intensity.desc },
+        ];
+      }
+      if (tokens.length === 4 && !isComplete) {
+        const partial = lastToken.toLowerCase();
+        // Don't suggest if already complete
+        if (partial === "intensity") return null;
+        if ("intensity".startsWith(partial)) {
+          return [
+            { keyword: "intensity", desc: autocompleteKeywords.intensity.desc },
+          ];
+        }
+      }
+      if (tokens.length === 4 && isComplete) return null; // expect number
+      if (tokens.length === 5 && !isComplete) return null; // typing number
+      if (tokens.length === 5 && isComplete) {
+        return [
+          { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+        ];
+      }
+      if (tokens.length === 6 && !isComplete) {
+        const partial = lastToken.toLowerCase();
+        // Don't suggest if already complete
+        if (partial === "amplitude") return null;
+        if ("amplitude".startsWith(partial)) {
+          return [
+            { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+          ];
+        }
+      }
+    }
+
+    // background spin <num> rate <num> intensity <num> amplitude <num>
+    if (secondKeyword === "spin") {
+      if (tokens.length === 2 && isComplete) return null; // expect number
+      if (tokens.length === 3 && !isComplete) return null; // typing number
+      if (tokens.length === 3 && isComplete) {
+        return [{ keyword: "rate", desc: autocompleteKeywords.rate.desc }];
+      }
+      if (tokens.length === 4 && !isComplete) {
+        const partial = lastToken.toLowerCase();
+        // Don't suggest if already complete
+        if (partial === "rate") return null;
+        if ("rate".startsWith(partial)) {
+          return [{ keyword: "rate", desc: autocompleteKeywords.rate.desc }];
+        }
+      }
+      if (tokens.length === 4 && isComplete) return null; // expect number
+      if (tokens.length === 5 && !isComplete) return null; // typing number
+      if (tokens.length === 5 && isComplete) {
+        return [
+          { keyword: "intensity", desc: autocompleteKeywords.intensity.desc },
+        ];
+      }
+      if (tokens.length === 6 && !isComplete) {
+        const partial = lastToken.toLowerCase();
+        // Don't suggest if already complete
+        if (partial === "intensity") return null;
+        if ("intensity".startsWith(partial)) {
+          return [
+            { keyword: "intensity", desc: autocompleteKeywords.intensity.desc },
+          ];
+        }
+      }
+      if (tokens.length === 6 && isComplete) return null; // expect number
+      if (tokens.length === 7 && !isComplete) return null; // typing number
+      if (tokens.length === 7 && isComplete) {
+        return [
+          { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+        ];
+      }
+      if (tokens.length === 8 && !isComplete) {
+        const partial = lastToken.toLowerCase();
+        // Don't suggest if already complete
+        if (partial === "amplitude") return null;
+        if ("amplitude".startsWith(partial)) {
+          return [
+            { keyword: "amplitude", desc: autocompleteKeywords.amplitude.desc },
+          ];
+        }
+      }
+    }
+  }
+
+  // Handle waveform keyword
+  if (firstKeyword === "waveform") {
+    if (tokens.length === 1 && !isComplete) return null;
+    if (tokens.length === 1 && isComplete) {
+      return [
+        { keyword: "sine", desc: autocompleteKeywords.sine.desc },
+        { keyword: "square", desc: autocompleteKeywords.square.desc },
+        { keyword: "triangle", desc: autocompleteKeywords.triangle.desc },
+        { keyword: "sawtooth", desc: autocompleteKeywords.sawtooth.desc },
+      ];
+    }
+    if (tokens.length === 2 && !isComplete) {
+      const partial = lastToken.toLowerCase();
+      const validTypes = ["sine", "square", "triangle", "sawtooth"];
+      // Don't suggest if already a valid complete keyword
+      if (validTypes.includes(partial)) return null;
+      return [
+        { keyword: "sine", desc: autocompleteKeywords.sine.desc },
+        { keyword: "square", desc: autocompleteKeywords.square.desc },
+        { keyword: "triangle", desc: autocompleteKeywords.triangle.desc },
+        { keyword: "sawtooth", desc: autocompleteKeywords.sawtooth.desc },
+      ].filter((s) => s.keyword.startsWith(partial));
+    }
+    // After waveform type, can have tone or background (noise doesn't support waveform)
+    if (tokens.length === 2 && isComplete) {
+      return [
+        { keyword: "tone", desc: autocompleteKeywords.tone.desc },
+        { keyword: "background", desc: autocompleteKeywords.background.desc },
+      ];
+    }
+    // Handle waveform <type> tone/noise/background (recursive)
+    if (tokens.length >= 3) {
+      const waveformType = tokens[1];
+      const validWaveforms = ["sine", "square", "triangle", "sawtooth"];
+      if (validWaveforms.includes(waveformType)) {
+        // Create new context starting from the third token
+        const recursiveTokens = tokens.slice(2);
+        const recursiveContext = {
+          tokens: recursiveTokens,
+          lastToken: recursiveTokens[recursiveTokens.length - 1] || "",
+          isComplete: isComplete,
+          raw: recursiveTokens.join(" "),
+        };
+        return getNextSuggestions(recursiveContext);
+      }
+    }
+  }
+
+  // Handle track keyword
+  if (firstKeyword === "track") {
+    return null; // only expects number
+  }
+
+  return null;
+}
+
+// Validate if numbers are present where expected
+function validateSyntax(context) {
+  const { tokens, isComplete } = context;
+
+  if (tokens.length === 0) return null;
+
+  const firstKeyword = tokens[0];
+  const isValidNumber = (str) => /^-?\d+(\.\d+)?$/.test(str);
+
+  // Helper to create error object
+  const makeError = (msg) => ({ error: true, message: msg });
+
+  // Handle tone keyword: tone <num> [binaural|monaural|isochronic] <num> amplitude <num>
+  if (firstKeyword === "tone") {
+    // After "tone ", must have number
+    if (tokens.length === 1 && isComplete) {
+      return makeError("Expected: number (base frequency)");
+    }
+    // Check if user typed invalid keyword instead of number after "tone"
+    if (tokens.length === 2 && !isValidNumber(tokens[1])) {
+      const validTypes = ["binaural", "monaural", "isochronic"];
+      if (validTypes.includes(tokens[1])) {
+        return makeError("Expected: number before " + tokens[1]);
+      }
+    }
+    // After "tone <num> <type> ", must have number
+    if (tokens.length === 3 && isComplete) {
+      const validTypes = ["binaural", "monaural", "isochronic"];
+      if (isValidNumber(tokens[1]) && validTypes.includes(tokens[2])) {
+        return makeError("Expected: number (beat frequency)");
+      }
+    }
+    // Check if user typed amplitude without number after type
+    if (tokens.length === 4 && !isValidNumber(tokens[3])) {
+      if (tokens[3] === "amplitude") {
+        return makeError("Expected: number before amplitude");
+      }
+    }
+    // After "tone <num> <type> <num> amplitude ", must have number
+    if (tokens.length === 5 && tokens[4] === "amplitude" && isComplete) {
+      return makeError("Expected: number (amplitude 0.0-1.0)");
+    }
+  }
+
+  // Handle noise keyword: noise [white|pink|brown] amplitude <num>
+  if (firstKeyword === "noise") {
+    // After "noise ", must have type
+    if (tokens.length === 1 && isComplete) {
+      return makeError("Expected: noise type (white, pink, or brown)");
+    }
+    // After "noise <type> ", must have amplitude
+    if (tokens.length === 2 && isComplete) {
+      const validTypes = ["white", "pink", "brown"];
+      if (validTypes.includes(tokens[1])) {
+        return makeError("Expected: amplitude");
+      }
+    }
+    // After "noise <type> amplitude ", must have number
+    if (tokens.length === 3 && tokens[2] === "amplitude" && isComplete) {
+      return makeError("Expected: number (amplitude 0.0-1.0)");
+    }
+  }
+
+  // Handle background keyword
+  if (firstKeyword === "background") {
+    if (tokens.length >= 2) {
+      const secondKeyword = tokens[1];
+
+      // background amplitude <num>
+      if (secondKeyword === "amplitude") {
+        if (tokens.length === 2 && isComplete) {
+          return makeError("Expected: number (amplitude 0.0-1.0)");
+        }
+      }
+
+      // background pulse <num> intensity <num> amplitude <num>
+      else if (secondKeyword === "pulse") {
+        if (tokens.length === 2 && isComplete) {
+          return makeError("Expected: number (pulse frequency)");
+        }
+        if (tokens.length === 4 && tokens[3] === "intensity" && isComplete) {
+          return makeError("Expected: number (intensity 0.0-1.0)");
+        }
+        if (tokens.length === 6 && tokens[5] === "amplitude" && isComplete) {
+          return makeError("Expected: number (amplitude 0.0-1.0)");
+        }
+      }
+
+      // background spin <num> rate <num> intensity <num> amplitude <num>
+      else if (secondKeyword === "spin") {
+        if (tokens.length === 2 && isComplete) {
+          return makeError("Expected: number (spin frequency)");
+        }
+        if (tokens.length === 4 && tokens[3] === "rate" && isComplete) {
+          return makeError("Expected: number (rotation rate)");
+        }
+        if (tokens.length === 6 && tokens[5] === "intensity" && isComplete) {
+          return makeError("Expected: number (intensity 0.0-1.0)");
+        }
+        if (tokens.length === 8 && tokens[7] === "amplitude" && isComplete) {
+          return makeError("Expected: number (amplitude 0.0-1.0)");
+        }
+      }
+    }
+  }
+
+  // Handle waveform keyword
+  if (firstKeyword === "waveform") {
+    if (tokens.length >= 3) {
+      const waveformType = tokens[1];
+      const validWaveforms = ["sine", "square", "triangle", "sawtooth"];
+      if (validWaveforms.includes(waveformType)) {
+        // Recursively validate the tone/noise/background part
+        const recursiveTokens = tokens.slice(2);
+        const recursiveContext = {
+          tokens: recursiveTokens,
+          lastToken: recursiveTokens[recursiveTokens.length - 1] || "",
+          isComplete: isComplete,
+          raw: recursiveTokens.join(" "),
+        };
+        return validateSyntax(recursiveContext);
+      }
+    }
+  }
+
+  // Handle track keyword: track <num>
+  if (firstKeyword === "track") {
+    if (tokens.length === 1 && isComplete) {
+      return makeError("Expected: track number");
+    }
+  }
+
+  return null; // No error
+}
+
+function checkAutocomplete() {
+  const textarea = document.getElementById("spsqEditor");
+  const cursorPos = textarea.selectionStart;
+  const text = textarea.value;
+
+  // Get current line
+  const beforeCursor = text.substring(0, cursorPos);
+  const lastNewLine = beforeCursor.lastIndexOf("\n");
+  const currentLine = beforeCursor.substring(lastNewLine + 1);
+
+  // Only show autocomplete for lines starting with 2 spaces (keyword lines)
+  if (!/^  /.test(currentLine)) {
+    hideAutocomplete();
+    return;
+  }
+
+  // Parse context
+  const context = parseLineContext(currentLine);
+
+  // Check for syntax errors first
+  const validationError = validateSyntax(context);
+  if (validationError) {
+    showValidationError(validationError.message, cursorPos);
+    return;
+  }
+
+  // If no errors, check for autocomplete suggestions
+  const suggestions = getNextSuggestions(context);
+
+  if (suggestions && suggestions.length > 0) {
+    showAutocomplete(suggestions, cursorPos);
+  } else {
+    hideAutocomplete();
+  }
+}
+
+function showValidationError(message, cursorPos) {
+  const textarea = document.getElementById("spsqEditor");
+  const balloon = document.getElementById("autocompleteBalloon");
+  const optionsContainer = balloon.querySelector(".autocomplete-options");
+
+  currentSuggestion = null;
+  selectedOptionIndex = 0;
+
+  // Clear and show error message
+  optionsContainer.innerHTML = "";
+  const errorDiv = document.createElement("div");
+  errorDiv.className = "autocomplete-error";
+
+  // Create icon element using Lucide
+  const icon = document.createElement("i");
+  icon.setAttribute("data-lucide", "alert-triangle");
+  icon.style.width = "1rem";
+  icon.style.height = "1rem";
+  icon.style.display = "inline-block";
+  icon.style.marginRight = "0.5rem";
+
+  errorDiv.appendChild(icon);
+  errorDiv.appendChild(document.createTextNode(message));
+  optionsContainer.appendChild(errorDiv);
+
+  // Initialize Lucide icons
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+
+  // Show balloon first to calculate height
+  balloon.classList.add("show");
+
+  // Calculate position (above cursor with more offset)
+  const coords = getCaretCoordinates(textarea, cursorPos);
+  const balloonRect = balloon.getBoundingClientRect();
+  const balloonHeight = balloonRect.height;
+  const lineHeight = parseInt(getComputedStyle(textarea).lineHeight);
+
+  balloon.style.left = coords.left + "px";
+  balloon.style.top = coords.top - balloonHeight - lineHeight - 5 + "px";
+}
+
+function showAutocomplete(suggestions, cursorPos) {
+  const textarea = document.getElementById("spsqEditor");
+  const balloon = document.getElementById("autocompleteBalloon");
+  const optionsContainer = balloon.querySelector(".autocomplete-options");
+
+  currentSuggestion = suggestions;
+  selectedOptionIndex = 0;
+
+  // Clear and populate options
+  optionsContainer.innerHTML = "";
+  suggestions.forEach((suggestion, index) => {
+    const div = document.createElement("div");
+    div.className = "autocomplete-option" + (index === 0 ? " selected" : "");
+    div.dataset.index = index;
+
+    // Create keyword and description elements
+    const keywordSpan = document.createElement("span");
+    keywordSpan.className = "autocomplete-keyword";
+    keywordSpan.textContent = suggestion.keyword;
+
+    const descSpan = document.createElement("span");
+    descSpan.className = "autocomplete-desc";
+    descSpan.textContent = suggestion.desc;
+
+    div.appendChild(keywordSpan);
+    div.appendChild(descSpan);
+
+    // Click handler for touch/mouse
+    div.addEventListener("click", (e) => {
+      selectedOptionIndex = parseInt(e.currentTarget.dataset.index);
+      applyAutocomplete();
+    });
+
+    optionsContainer.appendChild(div);
+  });
+
+  // Show balloon first to calculate height
+  balloon.classList.add("show");
+
+  // Calculate position (above cursor with more offset)
+  const coords = getCaretCoordinates(textarea, cursorPos);
+  const balloonHeight = balloon.offsetHeight;
+  const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight);
+
+  balloon.style.left = coords.left + "px";
+  balloon.style.top = coords.top - balloonHeight - lineHeight - 5 + "px"; // More space above
+}
+
+function navigateAutocomplete(direction) {
+  if (!currentSuggestion) return;
+
+  const optionsContainer = document.querySelector(".autocomplete-options");
+  const options = optionsContainer.querySelectorAll(".autocomplete-option");
+
+  // Remove current selection
+  options[selectedOptionIndex].classList.remove("selected");
+
+  // Update index
+  selectedOptionIndex += direction;
+  if (selectedOptionIndex < 0) selectedOptionIndex = options.length - 1;
+  if (selectedOptionIndex >= options.length) selectedOptionIndex = 0;
+
+  // Add new selection
+  options[selectedOptionIndex].classList.add("selected");
+
+  // Scroll into view
+  options[selectedOptionIndex].scrollIntoView({
+    block: "nearest",
+    behavior: "smooth",
+  });
+}
+
+function hideAutocomplete() {
+  const balloon = document.getElementById("autocompleteBalloon");
+  balloon.classList.remove("show");
+  currentSuggestion = null;
+  selectedOptionIndex = 0;
+}
+
+function applyAutocomplete() {
+  if (!currentSuggestion) return;
+
+  const textarea = document.getElementById("spsqEditor");
+  const cursorPos = textarea.selectionStart;
+  const text = textarea.value;
+
+  // Get selected keyword
+  const selectedKeyword = currentSuggestion[selectedOptionIndex].keyword;
+
+  // Get current line
+  const beforeCursor = text.substring(0, cursorPos);
+  const lastNewLine = beforeCursor.lastIndexOf("\n");
+  const currentLine = beforeCursor.substring(lastNewLine + 1);
+  const lineStart = lastNewLine + 1;
+
+  // Parse current line to find where to insert
+  const context = parseLineContext(currentLine);
+  const { tokens, isComplete } = context;
+
+  let newLine;
+  if (tokens.length === 0 || (tokens.length === 1 && !isComplete)) {
+    // Replace entire content after "  "
+    newLine = "  " + selectedKeyword + " ";
+  } else {
+    // Append to existing line
+    if (isComplete || !context.lastToken) {
+      // If line ends with space or no lastToken, just append
+      newLine = currentLine + selectedKeyword + " ";
+    } else {
+      // Replace the partial token being typed
+      const existingPart = currentLine.substring(
+        0,
+        currentLine.lastIndexOf(context.lastToken)
+      );
+      newLine = existingPart + selectedKeyword + " ";
+    }
+  }
+
+  // Get rest of document after current line
+  const afterCursor = text.substring(cursorPos);
+  const nextNewLine = afterCursor.indexOf("\n");
+  const restOfDoc =
+    nextNewLine === -1 ? "" : afterCursor.substring(nextNewLine);
+
+  // Build new text
+  const newText = text.substring(0, lineStart) + newLine + restOfDoc;
+  textarea.value = newText;
+
+  // Set cursor after inserted keyword
+  const newCursorPos = lineStart + newLine.length;
+  textarea.setSelectionRange(newCursorPos, newCursorPos);
+
+  // Update UI
+  updateLineNumbers();
+  updateSyntaxHighlight();
+  hideAutocomplete();
+
+  // Trigger autocomplete check again (for next suggestions)
+  setTimeout(() => checkAutocomplete(), 50);
+}
+
+// Get caret coordinates (for positioning balloon)
+function getCaretCoordinates(element, position) {
+  const div = document.createElement("div");
+  const style = getComputedStyle(element);
+
+  // Copy styles
+  [
+    "fontFamily",
+    "fontSize",
+    "fontWeight",
+    "letterSpacing",
+    "lineHeight",
+    "padding",
+    "border",
+  ].forEach((prop) => {
+    div.style[prop] = style[prop];
+  });
+
+  div.style.position = "absolute";
+  div.style.visibility = "hidden";
+  div.style.whiteSpace = "pre-wrap";
+  div.style.wordWrap = "break-word";
+  div.style.width = element.clientWidth + "px";
+
+  document.body.appendChild(div);
+
+  const text = element.value.substring(0, position);
+  div.textContent = text;
+
+  const span = document.createElement("span");
+  span.textContent = element.value.substring(position) || ".";
+  div.appendChild(span);
+
+  const coordinates = {
+    top: span.offsetTop + element.offsetTop - element.scrollTop,
+    left: span.offsetLeft + element.offsetLeft - element.scrollLeft,
+  };
+
+  document.body.removeChild(div);
+  return coordinates;
+}
 
 // Debounced save function
 function saveCurrentSequenceDebounced() {
