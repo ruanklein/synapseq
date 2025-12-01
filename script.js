@@ -55,6 +55,10 @@ const autocompleteKeywords = {
   "@volume": { desc: "Global volume (0-100)", requiresNumber: true },
   "@presetlist": { desc: "URL to preset list", requiresURL: true },
   "@background": { desc: "URL to background audio", requiresURL: true },
+  "@gainlevel": {
+    desc: "Gain level for background audio",
+    options: ["off", "high", "medium", "low"],
+  },
 
   // Regular keywords
   tone: { desc: "Carrier tone", next: ["binaural", "monaural", "isochronic"] },
@@ -514,6 +518,12 @@ document.getElementById("spsqEditor").addEventListener("input", () => {
 
 // Handle Tab key for autocomplete
 document.getElementById("spsqEditor").addEventListener("keydown", (e) => {
+  // ESC always closes autocomplete and error balloons
+  if (e.key === "Escape") {
+    hideAutocomplete();
+    return;
+  }
+
   if (!currentSuggestion) return;
 
   if (e.key === "Tab") {
@@ -525,8 +535,6 @@ document.getElementById("spsqEditor").addEventListener("keydown", (e) => {
   } else if (e.key === "ArrowUp" || e.key === "PageUp") {
     e.preventDefault();
     navigateAutocomplete(-1);
-  } else if (e.key === "Escape") {
-    hideAutocomplete();
   }
 });
 
@@ -702,6 +710,10 @@ function getGlobalOptionSuggestions(context) {
         keyword: "@background",
         desc: autocompleteKeywords["@background"].desc,
       },
+      {
+        keyword: "@gainlevel",
+        desc: autocompleteKeywords["@gainlevel"].desc,
+      },
     ];
 
     // If just typed @, show all
@@ -714,7 +726,31 @@ function getGlobalOptionSuggestions(context) {
     return filtered.length > 0 ? filtered : null;
   }
 
-  // No suggestions after the option name (user needs to type number/URL)
+  // If user typed @gainlevel, suggest the 4 level options
+  if (tokens.length >= 1 && tokens[0] === "@gainlevel") {
+    const partial = tokens.length === 2 ? lastToken.toLowerCase() : "";
+    const levels = [
+      { keyword: "off", desc: "0dB (no attenuation)" },
+      { keyword: "high", desc: "-3dB" },
+      { keyword: "medium", desc: "-9dB" },
+      { keyword: "low", desc: "-18dB" },
+    ];
+
+    // If just typed space after @gainlevel, show all options
+    if (isComplete && tokens.length === 1) {
+      return levels;
+    }
+
+    // If typing a partial level name, filter
+    if (tokens.length === 2) {
+      const filtered = levels.filter((level) =>
+        level.keyword.startsWith(partial)
+      );
+      return filtered.length > 0 ? filtered : null;
+    }
+  }
+
+  // No suggestions after the option name for numbers/URLs
   return null;
 }
 
@@ -1051,6 +1087,16 @@ function validateGlobalOption(context) {
     if (tokens.length === 2 && !isValidNumber(tokens[1])) {
       return makeError("Expected: number (volume 0-100)");
     }
+  }
+
+  // Validate @gainlevel
+  if (option === "@gainlevel") {
+    const validLevels = ["off", "high", "medium", "low"];
+    // Only validate if user has typed something after @gainlevel
+    if (tokens.length === 2 && !validLevels.includes(tokens[1])) {
+      return makeError("Expected: off, high, medium, or low");
+    }
+    // Don't show error if just "@gainlevel " - let autocomplete show suggestions
   }
 
   // Validate @presetlist
@@ -1588,12 +1634,29 @@ function applyAutocomplete() {
     const { tokens, isComplete, lastToken } = context;
     let newLine;
 
-    if (isComplete || !lastToken || lastToken === "@") {
-      // Just append
-      newLine = selectedKeyword + " ";
+    // If completing a @gainlevel option (tokens[0] is @gainlevel)
+    if (tokens.length >= 1 && tokens[0] === "@gainlevel") {
+      // Keep @gainlevel and add/replace the option
+      if (tokens.length === 1 && isComplete) {
+        // User typed "@gainlevel ", append the option
+        newLine = currentLine + selectedKeyword + " ";
+      } else if (tokens.length === 2) {
+        // User is typing a partial option, replace it
+        const optionStart = currentLine.indexOf(tokens[1]);
+        newLine = currentLine.substring(0, optionStart) + selectedKeyword + " ";
+      } else {
+        // Default: append
+        newLine = currentLine + selectedKeyword + " ";
+      }
     } else {
-      // Replace partial token
-      newLine = selectedKeyword + " ";
+      // For other global options (@samplerate, @volume, etc.)
+      if (isComplete || !lastToken || lastToken === "@") {
+        // Just append
+        newLine = selectedKeyword + " ";
+      } else {
+        // Replace partial token
+        newLine = selectedKeyword + " ";
+      }
     }
 
     // Get rest of document after current line
