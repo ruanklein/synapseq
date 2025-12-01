@@ -72,7 +72,20 @@ const autocompleteKeywords = {
     options: ["sine", "square", "triangle", "sawtooth"],
     next: ["tone", "noise", "background"],
   },
-  track: { desc: "Track volume", next: null },
+  track: {
+    desc: "Modify preset track parameter",
+    requiresInteger: true,
+    next: [
+      "binaural",
+      "monaural",
+      "isochronic",
+      "amplitude",
+      "spin",
+      "rate",
+      "pulse",
+      "tone",
+    ],
+  },
   binaural: { desc: "Binaural beat" },
   monaural: { desc: "Monaural beat" },
   isochronic: { desc: "Isochronic tone" },
@@ -1053,7 +1066,59 @@ function getNextSuggestions(context) {
 
   // Handle track keyword
   if (firstKeyword === "track") {
-    return null; // only expects number
+    // If we have track + number, suggest the parameter keywords
+    if (tokens.length >= 2) {
+      const trackNumber = tokens[1];
+      const isValidInteger = /^[1-9]\d*$/.test(trackNumber);
+
+      if (isValidInteger && tokens.length === 2 && isComplete) {
+        // Show parameter options only when user typed "track 1 "
+        return [
+          { keyword: "binaural", desc: "Binaural beat frequency" },
+          { keyword: "monaural", desc: "Monaural beat frequency" },
+          { keyword: "isochronic", desc: "Isochronic tone frequency" },
+          { keyword: "amplitude", desc: "Track amplitude (0-100)" },
+          { keyword: "spin", desc: "Spin effect parameter" },
+          { keyword: "rate", desc: "Rate parameter" },
+          { keyword: "pulse", desc: "Pulse effect parameter" },
+          { keyword: "tone", desc: "Carrier tone frequency" },
+        ];
+      }
+
+      // If typing a parameter keyword (partial), filter suggestions
+      if (isValidInteger && tokens.length === 3 && !isComplete) {
+        const partial = lastToken.toLowerCase();
+        const validParams = [
+          "binaural",
+          "monaural",
+          "isochronic",
+          "amplitude",
+          "spin",
+          "rate",
+          "pulse",
+          "tone",
+        ];
+
+        // Only show suggestions if the third token is NOT a valid parameter yet
+        if (!validParams.includes(tokens[2])) {
+          const options = [
+            { keyword: "binaural", desc: "Binaural beat frequency" },
+            { keyword: "monaural", desc: "Monaural beat frequency" },
+            { keyword: "isochronic", desc: "Isochronic tone frequency" },
+            { keyword: "amplitude", desc: "Track amplitude (0-100)" },
+            { keyword: "spin", desc: "Spin effect parameter" },
+            { keyword: "rate", desc: "Rate parameter" },
+            { keyword: "pulse", desc: "Pulse effect parameter" },
+            { keyword: "tone", desc: "Carrier tone frequency" },
+          ];
+          const filtered = options.filter((opt) =>
+            opt.keyword.startsWith(partial)
+          );
+          return filtered.length > 0 ? filtered : null;
+        }
+      }
+    }
+    return null;
   }
 
   return null;
@@ -1249,7 +1314,48 @@ function validateSyntax(context) {
   // Handle track keyword: track <num>
   if (firstKeyword === "track") {
     if (tokens.length === 1 && isComplete) {
-      return makeError("Expected: track number");
+      return makeError("Expected: track number (positive integer)");
+    }
+    if (tokens.length === 2) {
+      const trackNum = tokens[1];
+      const isValidInteger = /^[1-9]\d*$/.test(trackNum);
+      if (!isValidInteger) {
+        return makeError("Expected: positive integer (cannot be 0 or decimal)");
+      }
+    }
+    if (tokens.length === 3) {
+      const validParams = [
+        "binaural",
+        "monaural",
+        "isochronic",
+        "amplitude",
+        "spin",
+        "rate",
+        "pulse",
+        "tone",
+      ];
+
+      // Check if it's a valid parameter
+      if (!validParams.includes(tokens[2])) {
+        if (isComplete) {
+          return makeError(
+            "Expected: binaural, monaural, isochronic, amplitude, spin, rate, pulse, or tone"
+          );
+        }
+      } else {
+        // Valid parameter, now expect a number
+        if (isComplete) {
+          return makeError("Expected: number value for " + tokens[2]);
+        }
+      }
+    }
+    if (tokens.length === 4) {
+      const param = tokens[2];
+      const value = tokens[3];
+      const isValidNumber = /^-?\d+(\.\d+)?$/.test(value);
+      if (!isValidNumber) {
+        return makeError("Expected: number value for " + param);
+      }
     }
   }
 
