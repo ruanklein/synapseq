@@ -323,18 +323,8 @@ alpha-four
       async function initSynapSeq() {
         synapseq = new SynapSeq();
 
-        const version = await synapseq.getVersion();
-        const buildDate = await synapseq.getBuildDate();
-        const hash = await synapseq.getHash();
-
-        console.log(
-          `SynapSeq Version: ${version}, Build Date: ${buildDate}, Hash: ${hash}`
-        );
-
         // Setup event handlers
-        synapseq.onloaded = () => {
-          console.log("Sequence loaded");
-        };
+        synapseq.onloaded = () => {};
 
         synapseq.ongenerating = () => {
           setStatus("Generating audio...", "loading");
@@ -344,7 +334,8 @@ alpha-four
         };
 
         synapseq.onplaying = () => {
-          setStatus("Playing...", "success");
+          const sampleRate = synapseq.getSampleRate();
+          setStatus(`Playing (${sampleRate} Hz)`, "success");
           document.getElementById("playBtn").disabled = true;
           document.getElementById("stopBtn").disabled = false;
           document.getElementById("uploadBtn").disabled = true;
@@ -365,7 +356,6 @@ alpha-four
         };
 
         synapseq.onerror = (detail) => {
-          console.error("Error:", detail.error);
           showError(detail.error.message || detail.error);
           setStatus("Error", "error");
           document.getElementById("playBtn").disabled = false;
@@ -438,7 +428,6 @@ alpha-four
           // Play the sequence
           await synapseq.play();
         } catch (error) {
-          console.error("Error:", error);
           showError(error.message || "Unknown error occurred");
           setStatus("Error", "error");
           document.getElementById("uploadBtn").disabled = false;

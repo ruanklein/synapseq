@@ -107,6 +107,18 @@ class SynapSeq {
      */
     this._isStreaming = false;
 
+    /**
+     * @private
+     * @type {number}
+     */
+    this._sampleRate = 44100;
+
+    /**
+     * @private
+     * @type {number}
+     */
+    this._playStartTime = 0;
+
     this._initializeWorker();
   }
 
@@ -159,6 +171,31 @@ class SynapSeq {
             self.postMessage({
               type: "error",
               error: "Failed to load WASM: " + error.message,
+            });
+          }
+          return;
+        }
+
+        if (e.data.type === "getSampleRate") {
+          if (!wasmReady) {
+            self.postMessage({
+              type: "sampleRate",
+              sampleRate: 44100,
+            });
+            return;
+          }
+
+          try {
+            const spsqBytes = e.data.spsqBytes;
+            const sampleRate = synapseqGetSampleRate(spsqBytes);
+            self.postMessage({
+              type: "sampleRate",
+              sampleRate: sampleRate,
+            });
+          } catch (error) {
+            self.postMessage({
+              type: "sampleRate",
+              sampleRate: 44100,
             });
           }
           return;
@@ -326,15 +363,23 @@ class SynapSeq {
   /**
    * Initializes AudioContext and AudioWorklet for streaming
    * @private
+   * @param {number} sampleRate - Sample rate for the AudioContext
    * @returns {Promise<void>}
    */
-  async _initializeAudioContext() {
+  async _initializeAudioContext(sampleRate) {
+    // Close existing context if sample rate changed
+    if (this._audioContext && this._audioContext.sampleRate !== sampleRate) {
+      await this._audioContext.close();
+      this._audioContext = null;
+    }
+
     if (this._audioContext) {
       return;
     }
 
-    this._audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
+    this._audioContext = new (window.AudioContext || window.webkitAudioContext)(
+      { sampleRate: sampleRate }
+    );
 
     // Create AudioWorklet processor inline
     const processorCode = `
@@ -508,7 +553,27 @@ class SynapSeq {
     this.stop();
 
     try {
-      await this._initializeAudioContext();
+      // Get sample rate from the sequence
+      const encoder = new TextEncoder();
+      const spsqBytes = encoder.encode(this._sequence);
+
+      const sampleRate = await new Promise((resolve) => {
+        const handler = (e) => {
+          if (e.data.type === "sampleRate") {
+            this._worker.removeEventListener("message", handler);
+            resolve(e.data.sampleRate);
+          }
+        };
+        this._worker.addEventListener("message", handler);
+        this._worker.postMessage({
+          type: "getSampleRate",
+          spsqBytes: spsqBytes,
+        });
+      });
+
+      this._sampleRate = sampleRate;
+
+      await this._initializeAudioContext(sampleRate);
 
       // Create AudioWorklet node with stereo output
       this._audioWorkletNode = new AudioWorkletNode(
@@ -536,12 +601,10 @@ class SynapSeq {
       }
 
       this._isStreaming = true;
+      this._playStartTime = this._audioContext.currentTime;
       this._dispatchEvent("generating");
 
-      // Start streaming
-      const encoder = new TextEncoder();
-      const spsqBytes = encoder.encode(this._sequence);
-
+      // Start streaming (reuse spsqBytes from above)
       this._worker.postMessage({
         type: "stream",
         spsqBytes: spsqBytes,
@@ -565,8 +628,22 @@ class SynapSeq {
       this._audioWorkletNode.disconnect();
       this._audioWorkletNode = null;
       this._isStreaming = false;
+      this._playStartTime = 0;
       this._dispatchEvent("stopped");
     }
+  }
+
+  /**
+   * Gets the current playback position in seconds
+   * @returns {number} Current time in seconds since playback started
+   * @example
+   * const currentTime = synapse.getCurrentTime();
+   */
+  getCurrentTime() {
+    if (!this._isStreaming || !this._audioContext) {
+      return 0;
+    }
+    return this._audioContext.currentTime - this._playStartTime;
   }
 
   /**
@@ -592,6 +669,17 @@ class SynapSeq {
    */
   isLoaded() {
     return this._sequence !== null;
+  }
+
+  /**
+   * Gets the sample rate of the loaded sequence
+   * @returns {number} Sample rate in Hz
+   * @example
+   * const sampleRate = synapse.getSampleRate();
+   * console.log('Sample Rate:', sampleRate, 'Hz');
+   */
+  getSampleRate() {
+    return this._sampleRate;
   }
 
   /**

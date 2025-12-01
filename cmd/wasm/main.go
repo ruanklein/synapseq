@@ -18,6 +18,29 @@ import (
 	"github.com/ruanklein/synapseq/v3/internal/sequence"
 )
 
+// getSampleRate(spsqUint8Array) -> int
+func getSampleRate(this js.Value, args []js.Value) interface{} {
+	if len(args) == 0 {
+		return 44100 // Default fallback
+	}
+
+	input := args[0]
+	raw := make([]byte, input.Length())
+	js.CopyBytesToGo(raw, input)
+
+	seq, err := sequence.LoadTextSequence(raw)
+	if err != nil {
+		return 44100 // Return default on error
+	}
+
+	sampleRate := seq.Options.SampleRate
+	if sampleRate == 0 {
+		return 44100
+	}
+
+	return sampleRate
+}
+
 // streamPcm(onChunk, onDone, onError, spsqUint8Array)
 func streamPcm(this js.Value, args []js.Value) interface{} {
 	if len(args) < 3 {
@@ -104,6 +127,7 @@ func streamPcm(this js.Value, args []js.Value) interface{} {
 }
 
 func main() {
+	js.Global().Set("synapseqGetSampleRate", js.FuncOf(getSampleRate))
 	js.Global().Set("synapseqStreamPcm", js.FuncOf(streamPcm))
 	js.Global().Set("synapseqVersion", js.ValueOf(info.VERSION))
 	js.Global().Set("synapseqBuildDate", js.ValueOf(info.BUILD_DATE))
