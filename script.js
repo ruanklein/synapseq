@@ -16,6 +16,8 @@ let errorLine = null; // Store the line number with syntax error
 let activePresetLines = null; // Store the line range of active preset
 let isPlaying = false; // Track if sequence is playing
 let currentSuggestion = null; // Store current autocomplete suggestion
+let wakeLock = null; // Wake Lock API
+let currentPresetName = null; // Current playing preset name
 
 // Detect if device is mobile - prioritize user agent for real mobile devices
 function checkIsMobile() {
@@ -2300,10 +2302,13 @@ function updateProgress() {
 
   if (duration > 0) {
     const progress = (currentTime / duration) * 100;
-    document.getElementById("progressBar").style.width = progress + "%";
-    document.getElementById("currentTime").textContent =
+
+    // Update playback overlay progress
+    document.getElementById("playbackProgressBar").style.width = progress + "%";
+    document.getElementById("playbackCurrentTime").textContent =
       formatTime(currentTime);
-    document.getElementById("totalTime").textContent = formatTime(duration);
+    document.getElementById("playbackTotalTime").textContent =
+      formatTime(duration);
 
     // Update active preset highlight
     if (isPlaying) {
@@ -2317,36 +2322,20 @@ function updateProgress() {
         activePresetLines = newActiveLines;
         updateSyntaxHighlight();
 
-        // Auto-scroll to active preset
+        // Update current preset name in playback overlay
         if (activePresetLines) {
-          scrollToActiveLine();
+          const lines = code.split("\n");
+          const presetLine = lines[activePresetLines.start - 1];
+          const presetMatch = presetLine.match(/^([a-z_][a-z0-9_]*)/i);
+          if (presetMatch) {
+            currentPresetName = presetMatch[1];
+            document.getElementById("playbackPresetName").textContent =
+              currentPresetName;
+          }
         }
       }
     }
   }
-}
-
-// Auto-scroll to active preset line
-function scrollToActiveLine() {
-  if (!activePresetLines) return;
-
-  const textarea = document.getElementById("spsqEditor");
-  const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight);
-  const containerHeight = textarea.clientHeight;
-
-  // Scroll to center the active preset
-  const targetScrollTop =
-    (activePresetLines.start - 1) * lineHeight - containerHeight / 3;
-
-  textarea.scrollTop = Math.max(0, targetScrollTop);
-
-  // Sync overlay scroll
-  const highlight = document.getElementById("syntaxHighlight");
-  highlight.scrollTop = textarea.scrollTop;
-  highlight.scrollLeft = textarea.scrollLeft;
-
-  const lineNumbers = document.getElementById("lineNumbers");
-  lineNumbers.scrollTop = textarea.scrollTop;
 }
 
 function startProgressTracking() {
@@ -2359,6 +2348,56 @@ function stopProgressTracking() {
     clearInterval(progressInterval);
     progressInterval = null;
   }
+}
+
+// Wake Lock API functions
+async function requestWakeLock() {
+  try {
+    if ("wakeLock" in navigator) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      console.log("Wake Lock activated");
+
+      wakeLock.addEventListener("release", () => {
+        console.log("Wake Lock released");
+      });
+    }
+  } catch (err) {
+    console.error("Wake Lock error:", err);
+  }
+}
+
+async function releaseWakeLock() {
+  if (wakeLock) {
+    try {
+      await wakeLock.release();
+      wakeLock = null;
+      console.log("Wake Lock manually released");
+    } catch (err) {
+      console.error("Wake Lock release error:", err);
+    }
+  }
+}
+
+// Show/Hide Playback Overlay
+function showPlaybackOverlay() {
+  const overlay = document.getElementById("playbackOverlay");
+  overlay.classList.add("show");
+
+  // Re-initialize Lucide icons for the overlay
+  setTimeout(() => {
+    lucide.createIcons();
+  }, 100);
+}
+
+function hidePlaybackOverlay() {
+  const overlay = document.getElementById("playbackOverlay");
+  overlay.classList.remove("show");
+
+  // Reset progress
+  document.getElementById("playbackProgressBar").style.width = "0%";
+  document.getElementById("playbackCurrentTime").textContent = "00:00";
+  document.getElementById("playbackTotalTime").textContent = "00:00";
+  document.getElementById("playbackPresetName").textContent = "—";
 }
 
 // Initialize SynapSeq
@@ -2377,55 +2416,45 @@ async function initSynapSeq() {
     synapseq.onplaying = () => {
       setStatus("Playing...");
       document.getElementById("playBtn").disabled = true;
-      document.getElementById("stopBtn").disabled = false;
       document.getElementById("fileMenuBtn").disabled = true;
       document.getElementById("spsqEditor").disabled = true;
       isPlaying = true;
       startProgressTracking();
 
-      if ("mediaSession" in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: "SynapSeq Sequence",
-          artist: "Synapse-Sequenced Generator",
-          album: "Brainwave Session",
-          artwork: [
-            {
-              src: "/assets/icon-512.png",
-              sizes: "512x512",
-              type: "image/png",
-            },
-          ],
-        });
-        navigator.mediaSession.setActionHandler("play", () => synapseq.play());
-        navigator.mediaSession.setActionHandler("stop", () => synapseq.stop());
-        navigator.mediaSession.playbackState = "playing";
-      }
+      // Show playback overlay
+      showPlaybackOverlay();
+
+      // Request Wake Lock
+      requestWakeLock();
     };
 
     synapseq.onstopped = () => {
       setStatus("Stopped");
       document.getElementById("playBtn").disabled = false;
-      document.getElementById("stopBtn").disabled = true;
       document.getElementById("fileMenuBtn").disabled = false;
       document.getElementById("spsqEditor").disabled = false;
       isPlaying = false;
       activePresetLines = null;
+      currentPresetName = null;
       updateSyntaxHighlight();
       stopProgressTracking();
-      document.getElementById("progressBar").style.width = "0%";
-      document.getElementById("currentTime").textContent = "00:00";
-      document.getElementById("totalTime").textContent = "00:00";
-      if ("mediaSession" in navigator) {
-        navigator.mediaSession.playbackState = "none";
-      }
+
+      // Hide playback overlay
+      hidePlaybackOverlay();
+
+      // Release Wake Lock
+      releaseWakeLock();
     };
 
     synapseq.onended = () => {
       setStatus("Playback finished");
       synapseq.stop();
-      if ("mediaSession" in navigator) {
-        navigator.mediaSession.playbackState = "none";
-      }
+
+      // Hide playback overlay
+      hidePlaybackOverlay();
+
+      // Release Wake Lock
+      releaseWakeLock();
     };
 
     synapseq.onerror = (detail) => {
@@ -2433,16 +2462,19 @@ async function initSynapSeq() {
       showError(detail.error.message || detail.error);
       setStatus("Error");
       document.getElementById("playBtn").disabled = false;
-      document.getElementById("stopBtn").disabled = true;
       document.getElementById("fileMenuBtn").disabled = false;
       document.getElementById("spsqEditor").disabled = false;
       isPlaying = false;
       activePresetLines = null;
+      currentPresetName = null;
       updateSyntaxHighlight();
       stopProgressTracking();
-      document.getElementById("progressBar").style.width = "0%";
-      document.getElementById("currentTime").textContent = "00:00";
-      document.getElementById("totalTime").textContent = "00:00";
+
+      // Hide playback overlay
+      hidePlaybackOverlay();
+
+      // Release Wake Lock
+      releaseWakeLock();
     };
 
     // Wait for worker to be ready
@@ -2505,20 +2537,24 @@ document.getElementById("playBtn").addEventListener("click", async () => {
     showError(error.message);
     setStatus("Error");
     document.getElementById("playBtn").disabled = false;
-    document.getElementById("stopBtn").disabled = true;
     document.getElementById("fileMenuBtn").disabled = false;
     document.getElementById("spsqEditor").disabled = false;
     isPlaying = false;
     activePresetLines = null;
+    currentPresetName = null;
     updateSyntaxHighlight();
     stopProgressTracking();
-    document.getElementById("progressBar").style.width = "0%";
-    document.getElementById("currentTime").textContent = "00:00";
-    document.getElementById("totalTime").textContent = "00:00";
+
+    // Hide playback overlay
+    hidePlaybackOverlay();
+
+    // Release Wake Lock
+    releaseWakeLock();
   }
 });
 
-document.getElementById("stopBtn").addEventListener("click", () => {
+// Playback overlay stop button
+document.getElementById("playbackStopBtn").addEventListener("click", () => {
   if (synapseq) {
     synapseq.stop();
   }

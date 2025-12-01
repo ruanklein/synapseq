@@ -262,18 +262,6 @@ alpha
 
             <!-- Player Controls Section -->
             <div class="player-controls-section">
-              <!-- Progress Bar -->
-              <div class="player-progress">
-                <div class="progress-bar-container">
-                  <div id="progressBar" class="progress-bar"></div>
-                </div>
-                <div class="progress-time-display">
-                  <span id="currentTime" class="time-current">00:00</span>
-                  <span class="time-separator">/</span>
-                  <span id="totalTime" class="time-total">00:00</span>
-                </div>
-              </div>
-
               <!-- Control Buttons -->
               <div class="player-controls">
                 <div class="controls-left">
@@ -285,16 +273,6 @@ alpha
                     <i
                       data-lucide="play"
                       style="width: 1.5rem; height: 1.5rem"
-                    ></i>
-                  </button>
-                  <button
-                    id="stopBtn"
-                    class="btn-control btn-control-stop"
-                    disabled
-                  >
-                    <i
-                      data-lucide="square"
-                      style="width: 1.25rem; height: 1.25rem"
                     ></i>
                   </button>
                 </div>
@@ -414,6 +392,50 @@ alpha
         <div class="loading-subtext">
           Crafting the perfect brainwave frequencies
         </div>
+      </div>
+    </div>
+
+    <!-- Playback Overlay -->
+    <div id="playbackOverlay" class="playback-overlay">
+      <div class="playback-backdrop"></div>
+      <div class="playback-content">
+        <!-- Animated Icon -->
+        <div class="playback-animation">
+          <i data-lucide="waves" class="playback-wave-icon"></i>
+          <div class="playback-rings">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+
+        <!-- Current Preset -->
+        <div class="playback-preset">
+          <div class="playback-preset-label">Now Playing</div>
+          <div class="playback-preset-name" id="playbackPresetName">—</div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="playback-progress">
+          <div class="playback-progress-bar">
+            <div id="playbackProgressBar" class="playback-progress-fill"></div>
+          </div>
+          <div class="playback-time">
+            <span id="playbackCurrentTime" class="playback-time-current"
+              >00:00</span
+            >
+            <span class="playback-time-separator">/</span>
+            <span id="playbackTotalTime" class="playback-time-total"
+              >00:00</span
+            >
+          </div>
+        </div>
+
+        <!-- Stop Button -->
+        <button id="playbackStopBtn" class="playback-stop-btn">
+          <i data-lucide="square" style="width: 1.5rem; height: 1.5rem"></i>
+          <span>Stop</span>
+        </button>
       </div>
     </div>
     <script src="script.js"></script>
