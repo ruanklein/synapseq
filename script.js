@@ -17,14 +17,22 @@ let activePresetLines = null; // Store the line range of active preset
 let isPlaying = false; // Track if sequence is playing
 let currentSuggestion = null; // Store current autocomplete suggestion
 
-// Detect if device is mobile - check both user agent and screen width
+// Detect if device is mobile - prioritize user agent for real mobile devices
 function checkIsMobile() {
+  // Check mobile user agent first (most reliable for real devices)
   const mobileUA =
-    /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
     );
-  const mobileWidth = window.innerWidth <= 768;
-  return mobileUA || mobileWidth;
+
+  // If it's a mobile device, always return true
+  if (mobileUA) {
+    return true;
+  }
+
+  // For desktop, check if window is resized to mobile size
+  const smallScreen = window.innerWidth <= 768;
+  return smallScreen;
 }
 
 let isMobileDevice = checkIsMobile();
@@ -1105,7 +1113,7 @@ function validateSyntax(context) {
     }
     // After "tone <num> <type> <num> amplitude ", must have number
     if (tokens.length === 5 && tokens[4] === "amplitude" && isComplete) {
-      return makeError("Expected: number (amplitude 0.0-1.0)");
+      return makeError("Expected: number (amplitude 0-100)");
     }
   }
 
@@ -1405,6 +1413,10 @@ function hideAutocomplete() {
 }
 
 function showMobileAutocomplete(suggestions) {
+  // First, make sure desktop balloon is hidden
+  const balloon = document.getElementById("autocompleteBalloon");
+  balloon.classList.remove("show");
+
   const mobileBar = document.getElementById("mobileAutocompleteBar");
   const chipsContainer = mobileBar.querySelector(".mobile-autocomplete-chips");
 

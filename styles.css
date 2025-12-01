@@ -1106,6 +1106,13 @@ body:not(.dark) .syntax-highlight {
   min-width: 200px;
 }
 
+/* Hide balloon on mobile devices */
+@media (max-width: 768px) {
+  .autocomplete-balloon {
+    display: none !important;
+  }
+}
+
 .autocomplete-balloon.show {
   display: block;
 }
