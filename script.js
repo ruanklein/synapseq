@@ -480,8 +480,10 @@ function updateSyntaxHighlight() {
   const highlight = document.getElementById("syntaxHighlight");
   const code = textarea.value;
 
-  // Apply syntax highlighting directly (no need to escape for SPSQ syntax)
-  highlight.innerHTML = highlightSyntax(code);
+  // Apply syntax highlighting with proper scroll height matching
+  highlight.innerHTML = `<div style="min-height: ${
+    textarea.scrollHeight
+  }px;">${highlightSyntax(code)}</div>`;
 }
 
 // Sync scroll between line numbers and textarea
