@@ -1178,6 +1178,81 @@ body:not(.dark) .syntax-highlight {
   flex-wrap: wrap;
 }
 
+/* Mobile Autocomplete Bar */
+.mobile-autocomplete-bar {
+  display: none;
+  background: var(--color-gray-850);
+  border-top: 1px solid var(--color-gray-700);
+  padding: 0.75rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+body:not(.dark) .mobile-autocomplete-bar {
+  background: var(--color-gray-50);
+  border-top-color: var(--color-gray-300);
+}
+
+.mobile-autocomplete-bar.show {
+  display: block;
+}
+
+.mobile-autocomplete-chips {
+  display: flex;
+  gap: 0.5rem;
+  min-width: min-content;
+}
+
+.mobile-autocomplete-chip {
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 0.875rem;
+  color: var(--color-gray-100);
+  background: var(--color-gray-700);
+  padding: 0.5rem 1rem;
+  border-radius: 1.5rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid var(--color-gray-600);
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+body:not(.dark) .mobile-autocomplete-chip {
+  background: white;
+  color: var(--color-gray-900);
+  border-color: var(--color-gray-300);
+}
+
+.mobile-autocomplete-chip:active {
+  background: var(--color-cyan-600);
+  border-color: var(--color-cyan-500);
+  color: white;
+  transform: scale(0.95);
+}
+
+body:not(.dark) .mobile-autocomplete-chip:active {
+  background: var(--color-blue-500);
+  border-color: var(--color-blue-600);
+  color: white;
+}
+
+.mobile-autocomplete-chip-keyword {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.mobile-autocomplete-chip-desc {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
 .autocomplete-hint kbd {
   background: var(--color-gray-700);
   border: 1px solid var(--color-gray-600);

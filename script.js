@@ -17,6 +17,18 @@ let activePresetLines = null; // Store the line range of active preset
 let isPlaying = false; // Track if sequence is playing
 let currentSuggestion = null; // Store current autocomplete suggestion
 
+// Detect if device is mobile - check both user agent and screen width
+function checkIsMobile() {
+  const mobileUA =
+    /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  const mobileWidth = window.innerWidth <= 768;
+  return mobileUA || mobileWidth;
+}
+
+const isMobileDevice = checkIsMobile();
+
 // Autocomplete keyword definitions with descriptions
 const autocompleteKeywords = {
   tone: { desc: "Carrier tone", next: ["binaural", "monaural", "isochronic"] },
@@ -1151,6 +1163,12 @@ function showValidationError(message, cursorPos) {
 }
 
 function showAutocomplete(suggestions, cursorPos) {
+  // Use mobile bar on mobile devices
+  if (isMobileDevice) {
+    showMobileAutocomplete(suggestions);
+    return;
+  }
+
   const textarea = document.getElementById("spsqEditor");
   const balloon = document.getElementById("autocompleteBalloon");
   const optionsContainer = balloon.querySelector(".autocomplete-options");
@@ -1227,6 +1245,143 @@ function hideAutocomplete() {
   balloon.classList.remove("show");
   currentSuggestion = null;
   selectedOptionIndex = 0;
+
+  // Also hide mobile bar
+  if (isMobileDevice) {
+    hideMobileAutocomplete();
+  }
+}
+
+function showMobileAutocomplete(suggestions) {
+  const mobileBar = document.getElementById("mobileAutocompleteBar");
+  const chipsContainer = mobileBar.querySelector(".mobile-autocomplete-chips");
+
+  // Clear existing chips
+  chipsContainer.innerHTML = "";
+
+  // Create chips for each suggestion
+  suggestions.forEach((suggestion) => {
+    const chip = document.createElement("div");
+    chip.className = "mobile-autocomplete-chip";
+
+    const keyword = document.createElement("div");
+    keyword.className = "mobile-autocomplete-chip-keyword";
+    keyword.textContent = suggestion.keyword;
+    chip.appendChild(keyword);
+
+    if (suggestion.desc) {
+      const desc = document.createElement("div");
+      desc.className = "mobile-autocomplete-chip-desc";
+      desc.textContent = suggestion.desc;
+      chip.appendChild(desc);
+    }
+
+    // Add click handler
+    chip.addEventListener("click", () => {
+      applyMobileAutocomplete(suggestion.keyword);
+    });
+
+    chipsContainer.appendChild(chip);
+  });
+
+  // Show the bar
+  mobileBar.classList.add("show");
+}
+
+function hideMobileAutocomplete() {
+  const mobileBar = document.getElementById("mobileAutocompleteBar");
+  mobileBar.classList.remove("show");
+}
+
+function applyMobileAutocomplete(keyword) {
+  const textarea = document.getElementById("spsqEditor");
+  const cursorPos = textarea.selectionStart;
+  const text = textarea.value;
+
+  // Get current line
+  const beforeCursor = text.substring(0, cursorPos);
+  const lastNewLine = beforeCursor.lastIndexOf("\n");
+  const currentLine = beforeCursor.substring(lastNewLine + 1);
+  const lineStart = lastNewLine + 1;
+
+  // Check if timeline or keyword line
+  const timelineContext = parseTimelineContext(currentLine);
+
+  if (timelineContext.isTimeline) {
+    // Timeline autocomplete
+    const afterTimestamp = currentLine
+      .substring(timelineContext.timestamp.length)
+      .trimStart();
+    const tokens = afterTimestamp.split(/\s+/).filter((t) => t);
+
+    let newText;
+    if (tokens.length === 0) {
+      // No preset yet, insert preset name
+      newText =
+        text.substring(0, lineStart) +
+        timelineContext.timestamp +
+        " " +
+        keyword +
+        text.substring(cursorPos);
+      textarea.value = newText;
+      textarea.selectionStart = textarea.selectionEnd =
+        lineStart + timelineContext.timestamp.length + 1 + keyword.length + 1;
+    } else if (tokens.length === 1) {
+      // Has preset, insert ramp
+      newText =
+        text.substring(0, lineStart) +
+        timelineContext.timestamp +
+        " " +
+        tokens[0] +
+        " " +
+        keyword +
+        text.substring(cursorPos);
+      textarea.value = newText;
+      textarea.selectionStart = textarea.selectionEnd =
+        lineStart +
+        timelineContext.timestamp.length +
+        1 +
+        tokens[0].length +
+        1 +
+        keyword.length +
+        1;
+    }
+  } else {
+    // Keyword line autocomplete
+    const context = parseLineContext(currentLine);
+    const tokens = context.tokens;
+    const partial = context.lastToken;
+
+    let newText;
+    if (context.isComplete) {
+      // Just append the keyword
+      newText =
+        text.substring(0, cursorPos) +
+        keyword +
+        " " +
+        text.substring(cursorPos);
+      textarea.value = newText;
+      textarea.selectionStart = textarea.selectionEnd =
+        cursorPos + keyword.length + 1;
+    } else {
+      // Replace partial token
+      const tokenStartPos = cursorPos - partial.length;
+      newText =
+        text.substring(0, tokenStartPos) +
+        keyword +
+        " " +
+        text.substring(cursorPos);
+      textarea.value = newText;
+      textarea.selectionStart = textarea.selectionEnd =
+        tokenStartPos + keyword.length + 1;
+    }
+  }
+
+  // Hide mobile autocomplete and update display
+  hideMobileAutocomplete();
+  updateSyntaxHighlight();
+  updateLineNumbers();
+  checkAutocomplete();
 }
 
 function applyAutocomplete() {
