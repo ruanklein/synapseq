@@ -27,7 +27,18 @@ function checkIsMobile() {
   return mobileUA || mobileWidth;
 }
 
-const isMobileDevice = checkIsMobile();
+let isMobileDevice = checkIsMobile();
+
+// Update mobile detection on resize
+window.addEventListener("resize", () => {
+  const wasMobile = isMobileDevice;
+  isMobileDevice = checkIsMobile();
+
+  // If changed from mobile to desktop or vice versa, hide current autocomplete
+  if (wasMobile !== isMobileDevice) {
+    hideAutocomplete();
+  }
+});
 
 // Autocomplete keyword definitions with descriptions
 const autocompleteKeywords = {
@@ -1164,6 +1175,12 @@ function showValidationError(message, cursorPos) {
 
 function showAutocomplete(suggestions, cursorPos) {
   // Use mobile bar on mobile devices
+  console.log(
+    "showAutocomplete - isMobileDevice:",
+    isMobileDevice,
+    "width:",
+    window.innerWidth
+  );
   if (isMobileDevice) {
     showMobileAutocomplete(suggestions);
     return;
@@ -1243,13 +1260,15 @@ function navigateAutocomplete(direction) {
 function hideAutocomplete() {
   const balloon = document.getElementById("autocompleteBalloon");
   balloon.classList.remove("show");
+
+  // Always try to hide mobile bar too (in case of mode switch)
+  const mobileBar = document.getElementById("mobileAutocompleteBar");
+  if (mobileBar) {
+    mobileBar.classList.remove("show");
+  }
+
   currentSuggestion = null;
   selectedOptionIndex = 0;
-
-  // Also hide mobile bar
-  if (isMobileDevice) {
-    hideMobileAutocomplete();
-  }
 }
 
 function showMobileAutocomplete(suggestions) {
