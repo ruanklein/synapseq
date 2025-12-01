@@ -2433,8 +2433,16 @@ async function initSynapSeq() {
       showError(detail.error.message || detail.error);
       setStatus("Error");
       document.getElementById("playBtn").disabled = false;
+      document.getElementById("stopBtn").disabled = true;
       document.getElementById("fileMenuBtn").disabled = false;
       document.getElementById("spsqEditor").disabled = false;
+      isPlaying = false;
+      activePresetLines = null;
+      updateSyntaxHighlight();
+      stopProgressTracking();
+      document.getElementById("progressBar").style.width = "0%";
+      document.getElementById("currentTime").textContent = "00:00";
+      document.getElementById("totalTime").textContent = "00:00";
     };
 
     // Wait for worker to be ready
@@ -2497,8 +2505,16 @@ document.getElementById("playBtn").addEventListener("click", async () => {
     showError(error.message);
     setStatus("Error");
     document.getElementById("playBtn").disabled = false;
+    document.getElementById("stopBtn").disabled = true;
     document.getElementById("fileMenuBtn").disabled = false;
     document.getElementById("spsqEditor").disabled = false;
+    isPlaying = false;
+    activePresetLines = null;
+    updateSyntaxHighlight();
+    stopProgressTracking();
+    document.getElementById("progressBar").style.width = "0%";
+    document.getElementById("currentTime").textContent = "00:00";
+    document.getElementById("totalTime").textContent = "00:00";
   }
 });
 
