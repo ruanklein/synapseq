@@ -18,6 +18,10 @@ let isPlaying = false; // Track if sequence is playing
 let currentSuggestion = null; // Store current autocomplete suggestion
 let wakeLock = null; // Wake Lock API
 let currentPresetName = null; // Current playing preset name
+let presetlistCache = {}; // Cache for fetched presetlist files
+let lastDetectedFrequency = null; // Track last frequency to detect changes
+let frequencyCache = {}; // Cache: { "preset-name": frequency }
+let isCacheProcessing = false; // Flag to prevent concurrent cache updates
 
 // Detect if device is mobile - prioritize user agent for real mobile devices
 function checkIsMobile() {
@@ -208,6 +212,9 @@ document.addEventListener("DOMContentLoaded", function () {
               updateLineNumbers();
               updateSyntaxHighlight();
 
+              // Rebuild frequency cache with loaded sequence
+              buildFrequencyCache();
+
               const now = new Date().toISOString();
               lastSequenceData = {
                 sequence: newSpsq,
@@ -237,6 +244,9 @@ document.addEventListener("DOMContentLoaded", function () {
     updateLineNumbers();
     updateSyntaxHighlight();
   }
+
+  // Build initial frequency cache
+  buildFrequencyCache();
 
   // Start time updater if there's a saved sequence
   if (lastSequenceData && lastSequenceData.date) {
@@ -430,9 +440,10 @@ function findActivePreset(code, currentTimeSeconds) {
   const timeline = [];
 
   // Parse timeline entries
+  // Timeline format: HH:MM:SS preset-name [slide-type]
   lines.forEach((line, index) => {
     const timeMatch = line.match(
-      /^\s*(\d{2}):(\d{2}):(\d{2})\s+([a-zA-Z][a-zA-Z0-9_-]*)/
+      /^\s*(\d{2}):(\d{2}):(\d{2})\s+([a-zA-Z][a-zA-Z0-9_-]*)(?:\s+\S+)?/
     );
     if (timeMatch) {
       const hours = parseInt(timeMatch[1], 10);
@@ -529,6 +540,9 @@ document.getElementById("spsqEditor").addEventListener("input", () => {
 
   // Debounced save to lastSequence
   saveCurrentSequenceDebounced();
+
+  // Debounced cache update (after save)
+  debouncedCacheUpdate();
 });
 
 // Handle Tab key for autocomplete
@@ -2310,31 +2324,123 @@ function updateProgress() {
     document.getElementById("playbackTotalTime").textContent =
       formatTime(duration);
 
-    // Update active preset highlight
+    // Update active preset highlight and current preset name
     if (isPlaying) {
       const code = document.getElementById("spsqEditor").value;
+      const lines = code.split("\n");
       const newActiveLines = findActivePreset(code, currentTime);
 
-      // Only update if changed
+      // Find current preset name from timeline (works for both local and @presetlist presets)
+      let newPresetName = null;
+      const timeline = [];
+
+      // Parse timeline to find current preset
+      // Timeline format: HH:MM:SS preset-name [slide-type]
+      lines.forEach((line) => {
+        const timeMatch = line.match(
+          /^\s*(\d{2}):(\d{2}):(\d{2})\s+([a-zA-Z][a-zA-Z0-9_-]*)(?:\s+\S+)?/
+        );
+        if (timeMatch) {
+          const hours = parseInt(timeMatch[1], 10);
+          const minutes = parseInt(timeMatch[2], 10);
+          const seconds = parseInt(timeMatch[3], 10);
+          const timeInSeconds = hours * 3600 + minutes * 60 + seconds;
+          timeline.push({ time: timeInSeconds, preset: timeMatch[4] });
+        }
+      });
+
+      // Find active preset from timeline
+      for (let i = timeline.length - 1; i >= 0; i--) {
+        if (timeline[i].time <= currentTime) {
+          newPresetName = timeline[i].preset;
+          break;
+        }
+      }
+
+      // Update preset name and animation if changed
+      if (newPresetName && newPresetName !== currentPresetName) {
+        currentPresetName = newPresetName;
+        document.getElementById("playbackPresetName").textContent =
+          currentPresetName;
+
+        // Get frequency from cache and update animation
+        const frequency = frequencyCache[currentPresetName] || null;
+
+        // Only update if frequency actually changed
+        if (frequency !== lastDetectedFrequency) {
+          lastDetectedFrequency = frequency;
+          updateWaveAnimation(frequency);
+        }
+      }
+
+      // Only update syntax highlighting if active lines changed
       if (
         JSON.stringify(newActiveLines) !== JSON.stringify(activePresetLines)
       ) {
         activePresetLines = newActiveLines;
         updateSyntaxHighlight();
-
-        // Update current preset name in playback overlay
-        if (activePresetLines) {
-          const lines = code.split("\n");
-          const presetLine = lines[activePresetLines.start - 1];
-          const presetMatch = presetLine.match(/^([a-z_][a-z0-9_]*)/i);
-          if (presetMatch) {
-            currentPresetName = presetMatch[1];
-            document.getElementById("playbackPresetName").textContent =
-              currentPresetName;
-          }
-        }
       }
     }
+  }
+}
+
+// Extract binaural/monaural/isochronic frequency from preset (kept for backward compatibility)
+function extractPresetFrequency(lines, presetLines) {
+  if (!presetLines) return null;
+
+  // Look for tone lines within the preset
+  for (
+    let i = presetLines.start;
+    i <= presetLines.end && i < lines.length;
+    i++
+  ) {
+    const line = lines[i].trim();
+
+    // Check if line starts with "tone" (with optional leading spaces)
+    if (/^\s*tone\s+/i.test(line)) {
+      // Look for binaural/monaural/isochronic followed by a number
+      const binauralMatch = line.match(/binaural\s+(\d+(?:\.\d+)?)/i);
+      if (binauralMatch) {
+        return parseFloat(binauralMatch[1]);
+      }
+
+      const monauralMatch = line.match(/monaural\s+(\d+(?:\.\d+)?)/i);
+      if (monauralMatch) {
+        return parseFloat(monauralMatch[1]);
+      }
+
+      const isochronicMatch = line.match(/isochronic\s+(\d+(?:\.\d+)?)/i);
+      if (isochronicMatch) {
+        return parseFloat(isochronicMatch[1]);
+      }
+    }
+  }
+
+  return null; // No frequency found
+}
+
+// Update wave animation based on frequency
+function updateWaveAnimation(frequency) {
+  const waveIcon = document.querySelector(".playback-wave-icon");
+  if (!waveIcon) return;
+
+  if (frequency && frequency > 0) {
+    // Convert Hz to animation duration (in seconds)
+    // Lower frequencies = slower pulse, higher = faster pulse
+    const duration = 1 / frequency; // Period in seconds
+
+    // Clamp duration between reasonable values (0.05s to 3s)
+    const clampedDuration = Math.max(0.05, Math.min(3, duration));
+
+    // Apply custom animation with more pronounced scale
+    waveIcon.style.animation = `wavePulse ${clampedDuration}s ease-in-out infinite`;
+
+    // Update CSS custom property for this specific animation
+    waveIcon.style.setProperty("--wave-scale", frequency > 10 ? "1.15" : "1.1");
+  } else {
+    // Default animation (2s cycle)
+    waveIcon.style.animation = "wavePulse 2s ease-in-out infinite";
+    waveIcon.style.setProperty("--wave-scale", "1.1");
   }
 }
 
@@ -2349,6 +2455,226 @@ function stopProgressTracking() {
     progressInterval = null;
   }
 }
+
+// ============= FREQUENCY CACHE SYSTEM =============
+
+let cacheDebounceTimer = null;
+
+// Debounced cache update
+function debouncedCacheUpdate() {
+  if (cacheDebounceTimer) clearTimeout(cacheDebounceTimer);
+  cacheDebounceTimer = setTimeout(() => {
+    buildFrequencyCache();
+  }, 1000); // Wait 1s after last edit
+}
+
+// Build complete frequency cache for all presets
+async function buildFrequencyCache() {
+  if (isCacheProcessing) return;
+  isCacheProcessing = true;
+
+  try {
+    const code = document.getElementById("spsqEditor").value;
+    const newCache = {};
+
+    // Extract all presetlist URLs (using matchAll for multiple @presetlist)
+    const presetlistRegex = /@presetlist\s+(https?:\/\/[^\s]+)/gi;
+    const presetlistMatches = [...code.matchAll(presetlistRegex)];
+    let externalPresets = {};
+
+    // Fetch and merge all presetlists
+    for (const match of presetlistMatches) {
+      const presetlistUrl = match[1];
+      const presets = await fetchAndParsePresetlist(presetlistUrl);
+      externalPresets = { ...externalPresets, ...presets };
+    }
+
+    // Parse local presets
+    const lines = code.split("\n");
+    const localPresets = parseLocalPresets(lines);
+
+    // Merge external and local presets (local overrides external)
+    frequencyCache = { ...externalPresets, ...localPresets };
+  } catch (error) {
+    console.error("Error building frequency cache:", error);
+  } finally {
+    isCacheProcessing = false;
+  }
+}
+
+// Fetch and parse presetlist file
+async function fetchAndParsePresetlist(url) {
+  // Check cache first
+  if (presetlistCache[url]) {
+    return parsePresetsFromContent(presetlistCache[url]);
+  }
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`Failed to fetch presetlist: ${response.statusText}`);
+      return {};
+    }
+
+    const content = await response.text();
+    presetlistCache[url] = content;
+
+    return parsePresetsFromContent(content);
+  } catch (error) {
+    console.error("Error fetching presetlist:", error);
+    return {};
+  }
+}
+
+// Parse presets from content and extract frequencies
+function parsePresetsFromContent(content) {
+  const lines = content.split("\n");
+  const presets = {};
+
+  let currentPreset = null;
+  let presetStartLine = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Skip comments and empty lines
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    // Check if it's a preset name (no leading spaces AND valid format)
+    if (
+      !line.startsWith(" ") &&
+      !line.startsWith("\t") &&
+      /^[a-z_][a-z0-9_-]*$/i.test(trimmed)
+    ) {
+      // Save previous preset if exists
+      if (currentPreset && presetStartLine !== -1) {
+        const frequency = extractFrequencyFromLines(
+          lines,
+          presetStartLine,
+          i - 1
+        );
+        if (frequency) {
+          presets[currentPreset] = frequency;
+        }
+      }
+
+      // Start new preset
+      currentPreset = trimmed;
+      presetStartLine = i;
+    }
+  }
+
+  // Don't forget last preset
+  if (currentPreset && presetStartLine !== -1) {
+    const frequency = extractFrequencyFromLines(
+      lines,
+      presetStartLine,
+      lines.length - 1
+    );
+    if (frequency) {
+      presets[currentPreset] = frequency;
+    }
+  }
+
+  return presets;
+}
+
+// Parse local presets from editor
+function parseLocalPresets(lines) {
+  const presets = {};
+  let currentPreset = null;
+  let presetStartLine = -1;
+  let inTimeline = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+
+    // Skip comments and directives
+    if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith("@"))
+      continue;
+
+    // Check if we're in timeline section (timestamp detected)
+    if (/^\d{2}:\d{2}:\d{2}/.test(trimmed)) {
+      inTimeline = true;
+      // Save last preset before timeline
+      if (currentPreset && presetStartLine !== -1) {
+        const frequency = extractFrequencyFromLines(
+          lines,
+          presetStartLine,
+          i - 1
+        );
+        if (frequency) {
+          presets[currentPreset] = frequency;
+        }
+      }
+      break; // Stop parsing after timeline starts
+    }
+
+    // Check if it's a preset name (no leading spaces)
+    if (!lines[i].startsWith(" ") && /^[a-z_][a-z0-9_-]*$/i.test(trimmed)) {
+      // Save previous preset if exists
+      if (currentPreset && presetStartLine !== -1) {
+        const frequency = extractFrequencyFromLines(
+          lines,
+          presetStartLine,
+          i - 1
+        );
+        if (frequency) {
+          presets[currentPreset] = frequency;
+        }
+      }
+
+      // Start new preset
+      currentPreset = trimmed;
+      presetStartLine = i;
+    }
+  }
+
+  // Save last preset if not in timeline yet
+  if (!inTimeline && currentPreset && presetStartLine !== -1) {
+    const frequency = extractFrequencyFromLines(
+      lines,
+      presetStartLine,
+      lines.length - 1
+    );
+    if (frequency) {
+      presets[currentPreset] = frequency;
+    }
+  }
+
+  return presets;
+}
+
+// Extract frequency from line range
+function extractFrequencyFromLines(lines, startLine, endLine) {
+  for (let i = startLine; i <= endLine && i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Check if line contains "tone" (with leading spaces for preset content)
+    if (/^\s*tone\s+/i.test(lines[i])) {
+      // Look for binaural/monaural/isochronic followed by a number
+      const binauralMatch = line.match(/binaural\s+(\d+(?:\.\d+)?)/i);
+      if (binauralMatch) {
+        return parseFloat(binauralMatch[1]);
+      }
+
+      const monauralMatch = line.match(/monaural\s+(\d+(?:\.\d+)?)/i);
+      if (monauralMatch) {
+        return parseFloat(monauralMatch[1]);
+      }
+
+      const isochronicMatch = line.match(/isochronic\s+(\d+(?:\.\d+)?)/i);
+      if (isochronicMatch) {
+        return parseFloat(isochronicMatch[1]);
+      }
+    }
+  }
+
+  return null;
+}
+
+// ============= END CACHE SYSTEM =============
 
 // Wake Lock API functions
 async function requestWakeLock() {
@@ -2398,6 +2724,10 @@ function hidePlaybackOverlay() {
   document.getElementById("playbackCurrentTime").textContent = "00:00";
   document.getElementById("playbackTotalTime").textContent = "00:00";
   document.getElementById("playbackPresetName").textContent = "—";
+
+  // Reset animation to default
+  updateWaveAnimation(null);
+  lastDetectedFrequency = null;
 }
 
 // Initialize SynapSeq
