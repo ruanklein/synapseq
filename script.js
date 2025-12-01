@@ -2269,10 +2269,34 @@ function formatTime(seconds) {
     .padStart(2, "0")}`;
 }
 
+// Extract total duration from SPSQ timeline
+function getTimelineDuration() {
+  const spsq = document.getElementById("spsqEditor").value;
+  const lines = spsq.split("\n");
+
+  let lastTimestamp = null;
+
+  // Find the last timeline entry
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i].trim();
+    // Match timestamp format: hh:mm:ss
+    const timestampMatch = line.match(/^(\d{2}):(\d{2}):(\d{2})\s+/);
+    if (timestampMatch) {
+      const hours = parseInt(timestampMatch[1], 10);
+      const minutes = parseInt(timestampMatch[2], 10);
+      const seconds = parseInt(timestampMatch[3], 10);
+      lastTimestamp = hours * 3600 + minutes * 60 + seconds;
+      break;
+    }
+  }
+
+  return lastTimestamp || 0;
+}
+
 // Progress tracking
 function updateProgress() {
   const currentTime = synapseq.getCurrentTime();
-  const duration = synapseq.getDuration();
+  const duration = getTimelineDuration();
 
   if (duration > 0) {
     const progress = (currentTime / duration) * 100;
@@ -2350,19 +2374,9 @@ async function initSynapSeq() {
       // Sequence loaded successfully
     };
 
-    synapseq.ongenerating = () => {
-      setStatus("Generating audio...");
-      showLoading();
-      document.getElementById("playBtn").disabled = true;
-      document.getElementById("fileMenuBtn").disabled = true;
-      document.getElementById("spsqEditor").disabled = true;
-    };
-
     synapseq.onplaying = () => {
-      hideLoading();
       setStatus("Playing...");
       document.getElementById("playBtn").disabled = true;
-      document.getElementById("pauseBtn").disabled = false;
       document.getElementById("stopBtn").disabled = false;
       document.getElementById("fileMenuBtn").disabled = true;
       document.getElementById("spsqEditor").disabled = true;
@@ -2383,33 +2397,14 @@ async function initSynapSeq() {
           ],
         });
         navigator.mediaSession.setActionHandler("play", () => synapseq.play());
-        navigator.mediaSession.setActionHandler("pause", () =>
-          synapseq.pause()
-        );
         navigator.mediaSession.setActionHandler("stop", () => synapseq.stop());
         navigator.mediaSession.playbackState = "playing";
-      }
-    };
-
-    synapseq.onpaused = () => {
-      setStatus("Paused");
-      document.getElementById("playBtn").disabled = false;
-      document.getElementById("pauseBtn").disabled = true;
-      document.getElementById("fileMenuBtn").disabled = true;
-      isPlaying = false;
-      activePresetLines = null;
-      updateSyntaxHighlight();
-      stopProgressTracking();
-
-      if ("mediaSession" in navigator) {
-        navigator.mediaSession.playbackState = "paused";
       }
     };
 
     synapseq.onstopped = () => {
       setStatus("Stopped");
       document.getElementById("playBtn").disabled = false;
-      document.getElementById("pauseBtn").disabled = true;
       document.getElementById("stopBtn").disabled = true;
       document.getElementById("fileMenuBtn").disabled = false;
       document.getElementById("spsqEditor").disabled = false;
@@ -2434,7 +2429,6 @@ async function initSynapSeq() {
     };
 
     synapseq.onerror = (detail) => {
-      hideLoading();
       console.error("Error:", detail.error);
       showError(detail.error.message || detail.error);
       setStatus("Error");
@@ -2500,22 +2494,11 @@ document.getElementById("playBtn").addEventListener("click", async () => {
     // Play the sequence
     await synapseq.play();
   } catch (error) {
-    hideLoading();
     showError(error.message);
     setStatus("Error");
     document.getElementById("playBtn").disabled = false;
     document.getElementById("fileMenuBtn").disabled = false;
     document.getElementById("spsqEditor").disabled = false;
-  }
-});
-
-document.getElementById("pauseBtn").addEventListener("click", () => {
-  if (synapseq) {
-    try {
-      synapseq.pause();
-    } catch (error) {
-      showError(error.message);
-    }
   }
 });
 

@@ -1674,18 +1674,15 @@ body:not(.dark) .btn-control {
   box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
 }
 
-.btn-control-pause,
 .btn-control-stop {
   width: 3rem;
 }
 
-.btn-control-pause:not(:disabled):hover,
 .btn-control-stop:not(:disabled):hover {
   background: var(--color-gray-700);
   border-color: var(--color-gray-600);
 }
 
-body:not(.dark) .btn-control-pause:not(:disabled):hover,
 body:not(.dark) .btn-control-stop:not(:disabled):hover {
   background: var(--color-gray-100);
   border-color: var(--color-gray-400);
