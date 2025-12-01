@@ -553,6 +553,11 @@ function getAvailablePresets() {
     }
   }
 
+  // Add built-in preset "silence"
+  if (!presets.includes("silence")) {
+    presets.push("silence");
+  }
+
   return presets;
 }
 

@@ -757,6 +757,7 @@ body:not(.dark) .save-status.saved {
   display: flex;
   gap: 1rem;
   background: transparent;
+  align-items: flex-start;
 }
 
 .editor-section {
@@ -774,6 +775,8 @@ body:not(.dark) .save-status.saved {
   flex-direction: column;
   overflow: hidden;
   flex-shrink: 0;
+  height: 750px;
+  max-height: 750px;
 }
 
 body:not(.dark) .sequence-history-panel {
@@ -836,6 +839,39 @@ body:not(.dark) .clear-history-btn:hover {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  min-height: 0;
+}
+
+/* Scrollbar styling for history content - Dark mode */
+.history-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.history-content::-webkit-scrollbar-track {
+  background: var(--color-gray-800);
+  border-radius: 4px;
+}
+
+.history-content::-webkit-scrollbar-thumb {
+  background: var(--color-gray-600);
+  border-radius: 4px;
+}
+
+.history-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}
+
+/* Scrollbar styling for history content - Light mode */
+body:not(.dark) .history-content::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+}
+
+body:not(.dark) .history-content::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+}
+
+body:not(.dark) .history-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-400);
 }
 
 .history-empty {
@@ -972,11 +1008,18 @@ body:not(.dark) .history-item-time {
 @media (max-width: 768px) {
   .editor-history-container {
     flex-direction: column;
+    width: 100%;
   }
 
   .sequence-history-panel {
     width: 100%;
     max-height: 300px;
+    order: 2;
+  }
+
+  .editor-section {
+    order: 1;
+    width: 100%;
   }
 
   .save-status {
@@ -1023,8 +1066,8 @@ body:not(.dark) .editor-container {
   overflow-wrap: normal;
   pointer-events: none;
   overflow: auto;
-  height: 650px;
-  max-height: 650px;
+  height: 750px;
+  max-height: 750px;
   color: var(--color-gray-300);
 }
 
@@ -1306,8 +1349,8 @@ body:not(.dark) .syntax-template {
   text-align: right;
   overflow: hidden;
   white-space: pre;
-  height: 650px;
-  max-height: 650px;
+  height: 750px;
+  max-height: 750px;
 }
 
 body:not(.dark) .line-numbers {
@@ -1327,8 +1370,9 @@ body:not(.dark) .line-numbers {
   outline: none;
   line-height: 1.5;
   overflow: auto;
-  height: 650px;
-  max-height: 650px;
+  height: 750px;
+  max-height: 750px;
+  width: 100%;
   transition: opacity 0.2s, filter 0.2s;
   position: relative;
   z-index: 2;
@@ -2447,18 +2491,32 @@ body:not(.dark) .spotlight-message p {
   .line-numbers {
     /* Adjust width for smaller screens */
     min-width: 2.5rem;
-    height: 450px;
-    max-height: 450px;
+    height: 600px;
+    max-height: 600px;
+  }
+
+  .editor-container {
+    min-height: 600px;
+    width: 100%;
+  }
+
+  .editor-wrapper {
+    flex: 1;
+    height: 600px;
+    max-height: 600px;
+    max-width: 100%;
   }
 
   .editor-textarea {
-    height: 450px;
-    max-height: 450px;
+    height: 600px;
+    max-height: 600px;
+    width: 100%;
   }
 
   .syntax-highlight {
-    height: 450px;
-    max-height: 450px;
+    height: 600px;
+    max-height: 600px;
+    width: 100%;
   }
 
   .player-controls {
