@@ -161,18 +161,6 @@
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
       }
 
-      .btn-pause {
-        background: #f59e0b;
-        color: white;
-        flex: 1;
-      }
-
-      .btn-pause:hover:not(:disabled) {
-        background: #d97706;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-      }
-
       .btn-stop {
         background: #ef4444;
         color: white;
@@ -195,33 +183,6 @@
         background: #059669;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-      }
-
-      .progress-section {
-        margin-bottom: 20px;
-      }
-
-      .progress-bar-container {
-        width: 100%;
-        height: 8px;
-        background: #e0e0e0;
-        border-radius: 4px;
-        overflow: hidden;
-        margin-bottom: 10px;
-      }
-
-      .progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        width: 0%;
-        transition: width 0.1s linear;
-      }
-
-      .progress-time {
-        display: flex;
-        justify-content: space-between;
-        font-size: 12px;
-        color: #666;
       }
 
       .status {
@@ -320,14 +281,6 @@ alpha-four
         <button class="btn-play" id="playBtn" onclick="handlePlay()">
           Play
         </button>
-        <button
-          class="btn-pause"
-          id="pauseBtn"
-          onclick="handlePause()"
-          disabled
-        >
-          Pause
-        </button>
         <button class="btn-stop" id="stopBtn" onclick="handleStop()" disabled>
           Stop
         </button>
@@ -346,23 +299,12 @@ alpha-four
         />
       </div>
 
-      <div class="progress-section">
-        <div class="progress-bar-container">
-          <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div class="progress-time">
-          <span id="currentTime">00:00</span>
-          <span id="totalTime">00:00</span>
-        </div>
-      </div>
-
       <div class="status" id="status">Ready</div>
     </div>
 
     <script src="synapseq.js"></script>
     <script>
       let synapseq = null;
-      let progressInterval = null;
 
       // Initialize line numbers
       function updateLineNumbers() {
@@ -404,33 +346,17 @@ alpha-four
         synapseq.onplaying = () => {
           setStatus("Playing...", "success");
           document.getElementById("playBtn").disabled = true;
-          document.getElementById("pauseBtn").disabled = false;
           document.getElementById("stopBtn").disabled = false;
           document.getElementById("uploadBtn").disabled = true;
           document.getElementById("spsqEditor").disabled = true;
-          startProgressTracking();
-        };
-
-        synapseq.onpaused = () => {
-          setStatus("Paused", "loading");
-          document.getElementById("playBtn").disabled = false;
-          document.getElementById("pauseBtn").disabled = true;
-          document.getElementById("uploadBtn").disabled = false;
-          document.getElementById("spsqEditor").disabled = false;
-          stopProgressTracking();
         };
 
         synapseq.onstopped = () => {
           setStatus("Stopped", "success");
           document.getElementById("playBtn").disabled = false;
-          document.getElementById("pauseBtn").disabled = true;
           document.getElementById("stopBtn").disabled = true;
           document.getElementById("uploadBtn").disabled = false;
           document.getElementById("spsqEditor").disabled = false;
-          stopProgressTracking();
-          document.getElementById("progressBar").style.width = "0%";
-          document.getElementById("currentTime").textContent = "00:00";
-          document.getElementById("totalTime").textContent = "00:00";
         };
 
         synapseq.onended = () => {
@@ -489,43 +415,6 @@ alpha-four
         errorContainer.classList.remove("visible");
       }
 
-      function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${String(mins).padStart(2, "0")}:${String(secs).padStart(
-          2,
-          "0"
-        )}`;
-      }
-
-      function updateProgress() {
-        if (!synapseq || synapseq.getState() === "idle") return;
-
-        const currentTime = synapseq.getCurrentTime();
-        const duration = synapseq.getDuration();
-
-        if (duration > 0) {
-          const progress = (currentTime / duration) * 100;
-          document.getElementById("progressBar").style.width = progress + "%";
-          document.getElementById("currentTime").textContent =
-            formatTime(currentTime);
-          document.getElementById("totalTime").textContent =
-            formatTime(duration);
-        }
-      }
-
-      function startProgressTracking() {
-        if (progressInterval) clearInterval(progressInterval);
-        progressInterval = setInterval(updateProgress, 100);
-      }
-
-      function stopProgressTracking() {
-        if (progressInterval) {
-          clearInterval(progressInterval);
-          progressInterval = null;
-        }
-      }
-
       async function handlePlay() {
         if (!synapseq || !synapseq.isReady()) {
           setStatus("WASM not initialized yet", "error");
@@ -553,16 +442,6 @@ alpha-four
           showError(error.message || "Unknown error occurred");
           setStatus("Error", "error");
           document.getElementById("uploadBtn").disabled = false;
-        }
-      }
-
-      function handlePause() {
-        if (!synapseq) return;
-
-        try {
-          synapseq.pause();
-        } catch (error) {
-          console.error("Pause error:", error);
         }
       }
 
