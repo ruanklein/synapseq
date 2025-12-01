@@ -42,6 +42,13 @@ window.addEventListener("resize", () => {
 
 // Autocomplete keyword definitions with descriptions
 const autocompleteKeywords = {
+  // Global options (start with @)
+  "@samplerate": { desc: "Sample rate in Hz", requiresNumber: true },
+  "@volume": { desc: "Global volume (0-100)", requiresNumber: true },
+  "@presetlist": { desc: "URL to preset list", requiresURL: true },
+  "@background": { desc: "URL to background audio", requiresURL: true },
+
+  // Regular keywords
   tone: { desc: "Carrier tone", next: ["binaural", "monaural", "isochronic"] },
   noise: { desc: "Noise type", options: ["white", "pink", "brown"] },
   background: {
@@ -514,6 +521,29 @@ document.getElementById("spsqEditor").addEventListener("keydown", (e) => {
 });
 
 // Autocomplete functions
+function isValidURL(string) {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function parseGlobalOptionContext(line) {
+  // Global options format: @option <value>
+  const trimmed = line.trim();
+  const tokens = trimmed.split(/\s+/).filter((t) => t.length > 0);
+
+  return {
+    tokens,
+    lastToken: tokens[tokens.length - 1] || "",
+    isComplete:
+      line.endsWith(" ") || (tokens.length === 1 && line.endsWith(tokens[0])),
+    raw: line,
+  };
+}
+
 function parseLineContext(line) {
   // Parse tokens from current line (after initial 2 spaces for keywords)
   const afterSpaces = line.substring(2);
@@ -639,6 +669,42 @@ function getTimelineSuggestions(context) {
     return filtered.length > 0 ? filtered : null;
   }
 
+  return null;
+}
+
+function getGlobalOptionSuggestions(context) {
+  const { tokens, lastToken, isComplete } = context;
+
+  // If typing @ or @something (first token), suggest all global options
+  if (tokens.length === 1) {
+    const partial = lastToken.toLowerCase();
+    const options = [
+      {
+        keyword: "@samplerate",
+        desc: autocompleteKeywords["@samplerate"].desc,
+      },
+      { keyword: "@volume", desc: autocompleteKeywords["@volume"].desc },
+      {
+        keyword: "@presetlist",
+        desc: autocompleteKeywords["@presetlist"].desc,
+      },
+      {
+        keyword: "@background",
+        desc: autocompleteKeywords["@background"].desc,
+      },
+    ];
+
+    // If just typed @, show all
+    if (partial === "@") {
+      return options;
+    }
+
+    // Filter by what's typed
+    const filtered = options.filter((opt) => opt.keyword.startsWith(partial));
+    return filtered.length > 0 ? filtered : null;
+  }
+
+  // No suggestions after the option name (user needs to type number/URL)
   return null;
 }
 
@@ -948,6 +1014,58 @@ function getNextSuggestions(context) {
 }
 
 // Validate if numbers are present where expected
+function validateGlobalOption(context) {
+  const { tokens, isComplete } = context;
+
+  if (tokens.length === 0) return null;
+
+  const option = tokens[0];
+  const isValidNumber = (str) => /^-?\d+(\.\d+)?$/.test(str);
+  const makeError = (msg) => ({ error: true, message: msg });
+
+  // Validate @samplerate
+  if (option === "@samplerate") {
+    if (tokens.length === 1 && isComplete) {
+      return makeError("Expected: number (sample rate in Hz)");
+    }
+    if (tokens.length === 2 && !isValidNumber(tokens[1])) {
+      return makeError("Expected: number (sample rate in Hz)");
+    }
+  }
+
+  // Validate @volume
+  if (option === "@volume") {
+    if (tokens.length === 1 && isComplete) {
+      return makeError("Expected: number (volume 0-100)");
+    }
+    if (tokens.length === 2 && !isValidNumber(tokens[1])) {
+      return makeError("Expected: number (volume 0-100)");
+    }
+  }
+
+  // Validate @presetlist
+  if (option === "@presetlist") {
+    if (tokens.length === 1 && isComplete) {
+      return makeError("Expected: URL to preset list");
+    }
+    if (tokens.length === 2 && !isValidURL(tokens[1])) {
+      return makeError("Expected: valid URL");
+    }
+  }
+
+  // Validate @background
+  if (option === "@background") {
+    if (tokens.length === 1 && isComplete) {
+      return makeError("Expected: URL to background audio");
+    }
+    if (tokens.length === 2 && !isValidURL(tokens[1])) {
+      return makeError("Expected: valid URL");
+    }
+  }
+
+  return null;
+}
+
 function validateSyntax(context) {
   const { tokens, isComplete } = context;
 
@@ -1006,7 +1124,7 @@ function validateSyntax(context) {
     }
     // After "noise <type> amplitude ", must have number
     if (tokens.length === 3 && tokens[2] === "amplitude" && isComplete) {
-      return makeError("Expected: number (amplitude 0.0-1.0)");
+      return makeError("Expected: number (amplitude 0-100)");
     }
   }
 
@@ -1018,7 +1136,7 @@ function validateSyntax(context) {
       // background amplitude <num>
       if (secondKeyword === "amplitude") {
         if (tokens.length === 2 && isComplete) {
-          return makeError("Expected: number (amplitude 0.0-1.0)");
+          return makeError("Expected: number (amplitude 0-100)");
         }
       }
 
@@ -1028,10 +1146,10 @@ function validateSyntax(context) {
           return makeError("Expected: number (pulse frequency)");
         }
         if (tokens.length === 4 && tokens[3] === "intensity" && isComplete) {
-          return makeError("Expected: number (intensity 0.0-1.0)");
+          return makeError("Expected: number (intensity 0-100)");
         }
         if (tokens.length === 6 && tokens[5] === "amplitude" && isComplete) {
-          return makeError("Expected: number (amplitude 0.0-1.0)");
+          return makeError("Expected: number (amplitude 0-100)");
         }
       }
 
@@ -1044,10 +1162,10 @@ function validateSyntax(context) {
           return makeError("Expected: number (rotation rate)");
         }
         if (tokens.length === 6 && tokens[5] === "intensity" && isComplete) {
-          return makeError("Expected: number (intensity 0.0-1.0)");
+          return makeError("Expected: number (intensity 0-100)");
         }
         if (tokens.length === 8 && tokens[7] === "amplitude" && isComplete) {
-          return makeError("Expected: number (amplitude 0.0-1.0)");
+          return makeError("Expected: number (amplitude 0-100)");
         }
       }
     }
@@ -1091,6 +1209,27 @@ function checkAutocomplete() {
   const beforeCursor = text.substring(0, cursorPos);
   const lastNewLine = beforeCursor.lastIndexOf("\n");
   const currentLine = beforeCursor.substring(lastNewLine + 1);
+
+  // Check if it's a global option line (starts with @)
+  if (/^@/.test(currentLine)) {
+    const context = parseGlobalOptionContext(currentLine);
+
+    // Check for validation errors
+    const validationError = validateGlobalOption(context);
+    if (validationError) {
+      showValidationError(validationError.message, cursorPos);
+      return;
+    }
+
+    // Show suggestions
+    const suggestions = getGlobalOptionSuggestions(context);
+    if (suggestions && suggestions.length > 0) {
+      showAutocomplete(suggestions, cursorPos);
+    } else {
+      hideAutocomplete();
+    }
+    return;
+  }
 
   // Check if it's a timeline line (starts with timestamp)
   const timelineContext = parseTimelineContext(currentLine);
@@ -1175,12 +1314,6 @@ function showValidationError(message, cursorPos) {
 
 function showAutocomplete(suggestions, cursorPos) {
   // Use mobile bar on mobile devices
-  console.log(
-    "showAutocomplete - isMobileDevice:",
-    isMobileDevice,
-    "width:",
-    window.innerWidth
-  );
   if (isMobileDevice) {
     showMobileAutocomplete(suggestions);
     return;
@@ -1323,6 +1456,22 @@ function applyMobileAutocomplete(keyword) {
   const currentLine = beforeCursor.substring(lastNewLine + 1);
   const lineStart = lastNewLine + 1;
 
+  // Check if global option line
+  if (/^@/.test(currentLine)) {
+    const newText =
+      text.substring(0, lineStart) + keyword + " " + text.substring(cursorPos);
+    textarea.value = newText;
+    textarea.selectionStart = textarea.selectionEnd =
+      lineStart + keyword.length + 1;
+
+    // Hide mobile autocomplete and update display
+    hideMobileAutocomplete();
+    updateSyntaxHighlight();
+    updateLineNumbers();
+    checkAutocomplete();
+    return;
+  }
+
   // Check if timeline or keyword line
   const timelineContext = parseTimelineContext(currentLine);
 
@@ -1418,6 +1567,44 @@ function applyAutocomplete() {
   const lastNewLine = beforeCursor.lastIndexOf("\n");
   const currentLine = beforeCursor.substring(lastNewLine + 1);
   const lineStart = lastNewLine + 1;
+
+  // Check if it's a global option line
+  if (/^@/.test(currentLine)) {
+    const context = parseGlobalOptionContext(currentLine);
+    const { tokens, isComplete, lastToken } = context;
+    let newLine;
+
+    if (isComplete || !lastToken || lastToken === "@") {
+      // Just append
+      newLine = selectedKeyword + " ";
+    } else {
+      // Replace partial token
+      newLine = selectedKeyword + " ";
+    }
+
+    // Get rest of document after current line
+    const afterCursor = text.substring(cursorPos);
+    const nextNewLine = afterCursor.indexOf("\n");
+    const restOfDoc =
+      nextNewLine === -1 ? "" : afterCursor.substring(nextNewLine);
+
+    // Build new text
+    const newText = text.substring(0, lineStart) + newLine + restOfDoc;
+    textarea.value = newText;
+
+    // Set cursor after inserted keyword
+    const newCursorPos = lineStart + newLine.length;
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+
+    // Update UI
+    updateLineNumbers();
+    updateSyntaxHighlight();
+    hideAutocomplete();
+
+    // Trigger autocomplete check again
+    setTimeout(() => checkAutocomplete(), 50);
+    return;
+  }
 
   // Check if it's a timeline line
   const timelineContext = parseTimelineContext(currentLine);
