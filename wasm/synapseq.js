@@ -176,31 +176,6 @@ class SynapSeq {
           return;
         }
 
-        if (e.data.type === "getSampleRate") {
-          if (!wasmReady) {
-            self.postMessage({
-              type: "sampleRate",
-              sampleRate: 44100,
-            });
-            return;
-          }
-
-          try {
-            const spsqBytes = e.data.spsqBytes;
-            const sampleRate = synapseqGetSampleRate(spsqBytes);
-            self.postMessage({
-              type: "sampleRate",
-              sampleRate: sampleRate,
-            });
-          } catch (error) {
-            self.postMessage({
-              type: "sampleRate",
-              sampleRate: 44100,
-            });
-          }
-          return;
-        }
-
         if (e.data.type === "stream") {
           if (!wasmReady) {
             self.postMessage({
@@ -534,6 +509,27 @@ class SynapSeq {
   }
 
   /**
+   * Extracts sample rate from SPSQ text
+   * @private
+   * @param {string} spsq - SPSQ sequence text
+   * @returns {number} Sample rate in Hz
+   */
+  _extractSampleRateFromText(spsq) {
+    const lines = spsq.split("\n");
+    for (const line of lines) {
+      const trimmed = line.trim();
+      // Look for @samplerate directive
+      if (trimmed.startsWith("@samplerate")) {
+        const match = trimmed.match(/@samplerate\s+(\d+)/);
+        if (match) {
+          return parseInt(match[1], 10);
+        }
+      }
+    }
+    return 44100; // Default sample rate
+  }
+
+  /**
    * Plays the loaded sequence
    * @returns {Promise<void>}
    * @throws {Error} If no sequence is loaded or worker is not ready
@@ -553,25 +549,13 @@ class SynapSeq {
     this.stop();
 
     try {
-      // Get sample rate from the sequence
+      // Get sample rate directly from SPSQ text (no need to call WASM)
+      const sampleRate = this._extractSampleRateFromText(this._sequence);
+      this._sampleRate = sampleRate;
+
+      // Encode sequence to bytes for streaming
       const encoder = new TextEncoder();
       const spsqBytes = encoder.encode(this._sequence);
-
-      const sampleRate = await new Promise((resolve) => {
-        const handler = (e) => {
-          if (e.data.type === "sampleRate") {
-            this._worker.removeEventListener("message", handler);
-            resolve(e.data.sampleRate);
-          }
-        };
-        this._worker.addEventListener("message", handler);
-        this._worker.postMessage({
-          type: "getSampleRate",
-          spsqBytes: spsqBytes,
-        });
-      });
-
-      this._sampleRate = sampleRate;
 
       await this._initializeAudioContext(sampleRate);
 
