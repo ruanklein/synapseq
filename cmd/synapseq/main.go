@@ -134,6 +134,12 @@ func run(opts *cli.CLIOptions, args []string) error {
 	// Detect format flags
 	format := detectFormat(opts)
 
+	// Play mode
+	if opts.Play {
+		externalTool := newExternalTool(opts.FFmpegPath, opts.FFplayPath)
+		return externalTool.play(inputFile, format, opts.Quiet)
+	}
+
 	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, format)
 	if err != nil {
 		return err

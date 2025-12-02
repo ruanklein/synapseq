@@ -56,6 +56,12 @@ type CLIOptions struct {
 	InstallFileAssociation bool
 	// Clean Windows file association removal
 	UninstallFileAssociation bool
+	// Play (with ffplay)
+	Play bool
+	// Path to ffplay executable
+	FFplayPath string
+	// Path to ffmpeg executable
+	FFmpegPath string
 }
 
 // Help prints the help message
@@ -77,6 +83,7 @@ func Help() {
 	fmt.Printf("    Standard output:     - (raw PCM, 24-bit stereo)\n\n")
 
 	fmt.Printf("Main options:\n")
+	fmt.Printf("  -play          		Play audio using ffplay\n")
 	fmt.Printf("  -json          		Read input as JSON format\n")
 	fmt.Printf("  -xml           		Read input as XML format\n")
 	fmt.Printf("  -yaml          		Read input as YAML format\n")
@@ -84,6 +91,8 @@ func Help() {
 	fmt.Printf("  -test          		Validate syntax without generating output\n")
 	fmt.Printf("  -extract       		Extract text sequence from WAV file\n")
 	fmt.Printf("  -convert       		Convert to text from json/xml/yaml\n")
+	fmt.Printf("  -ffmpeg-path  		Path to ffmpeg executable (default: ffmpeg)\n")
+	fmt.Printf("  -ffplay-path  		Path to ffplay executable (default: ffplay)\n")
 	fmt.Printf("  -unsafe-no-metadata  	  	Do not embed metadata in output WAV file\n")
 	fmt.Printf("  -version       		Show version information\n")
 	fmt.Printf("  -help         		Show this help message\n\n")
@@ -146,6 +155,9 @@ func ParseFlags() (*CLIOptions, []string, error) {
 	fs.BoolVar(&opts.ExtractTextSequence, "extract", false, "Extract text sequence from WAV file")
 	fs.BoolVar(&opts.UnsafeNoMetadata, "unsafe-no-metadata", false, "Do not embed metadata in output WAV file")
 	fs.BoolVar(&opts.ConvertToText, "convert", false, "Convert to text from json/xml/yaml")
+	fs.BoolVar(&opts.Play, "play", false, "Play audio using ffplay")
+	fs.StringVar(&opts.FFmpegPath, "ffmpeg-path", "", "Path to ffmpeg executable")
+	fs.StringVar(&opts.FFplayPath, "ffplay-path", "", "Path to ffplay executable")
 	fs.BoolVar(&opts.ShowHelp, "help", false, "Show help")
 
 	// Windows-specific options
