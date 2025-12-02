@@ -36,3 +36,12 @@ func (ac *AppContext) Comments() []string {
 	}
 	return ac.sequence.Comments
 }
+
+// SampleRate returns the sample rate from the loaded sequence options
+func (ac *AppContext) SampleRate() int {
+	if ac.sequence == nil || ac.sequence.Options == nil {
+		return 0
+	}
+
+	return ac.sequence.Options.SampleRate
+}

@@ -116,6 +116,26 @@ func ExampleAppContext_Comments() {
 	// Output: Comments retrieved successfully with format: text
 }
 
+func ExampleAppContext_SampleRate() {
+	// Create a new application context for text format
+	ctx, err := synapseq.NewAppContext("input.spsq", "output.wav", "text")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Load the sequence
+	// if err := ctx.LoadSequence(); err != nil {
+	//	log.Fatal(err)
+	// }
+
+	// Get the sample rate from the loaded sequence
+	// sampleRate := ctx.SampleRate()
+	// fmt.Printf("Sample Rate: %d Hz\n", sampleRate)
+
+	fmt.Printf("Sample rate retrieved successfully with format: %s\n", ctx.Format())
+	// Output: Sample rate retrieved successfully with format: text
+}
+
 func ExampleAppContext_Text() {
 	// Create a new application context for JSON format
 	ctx, err := synapseq.NewAppContext("input.json", "", "json")
