@@ -103,8 +103,14 @@ func run(opts *cli.CLIOptions, args []string) error {
 		return fmt.Errorf("invalid number of flags\nUse -help for usage information")
 	}
 
+	// Determine output format
+	outputFormat := "wav"
+	if opts.Mp3 {
+		outputFormat = "mp3"
+	}
+
 	inputFile := args[0]
-	outputFile := getDefaultOutputFile(inputFile, "wav")
+	outputFile := getDefaultOutputFile(inputFile, outputFormat)
 	if len(args) == 2 {
 		outputFile = args[1]
 	}
@@ -134,10 +140,16 @@ func run(opts *cli.CLIOptions, args []string) error {
 	// Detect format flags
 	format := detectFormat(opts)
 
-	// Play mode
+	// --- Handle External tool
+	externalTool := newExternalTool(opts.FFmpegPath, opts.FFplayPath)
+
+	// -play using ffplay
 	if opts.Play {
-		externalTool := newExternalTool(opts.FFmpegPath, opts.FFplayPath)
 		return externalTool.play(inputFile, format, opts.Quiet)
+	}
+	// -mp3 using ffmpeg
+	if opts.Mp3 {
+		return externalTool.mp3(inputFile, outputFile, format, opts.Quiet)
 	}
 
 	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, format)

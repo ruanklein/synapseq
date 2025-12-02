@@ -97,3 +97,65 @@ func (et *externalTool) play(inputFile, format string, quiet bool) error {
 
 	return nil
 }
+
+// mp3 encodes streaming PCM into an MP3 file using ffmpeg.
+func (et *externalTool) mp3(inputFile, outputFile, format string, quiet bool) error {
+	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, format)
+	if err != nil {
+		return err
+	}
+
+	if err := appCtx.LoadSequence(); err != nil {
+		return err
+	}
+
+	if !quiet {
+		appCtx = appCtx.WithVerbose(os.Stderr)
+
+		for _, c := range appCtx.Comments() {
+			fmt.Fprintf(os.Stderr, "> %s\n", c)
+		}
+	}
+
+	// ffmpeg command for highest MP3 quality (LAME V0)
+	ffmpeg := exec.Command(
+		et.ffmpegPath,
+		"-hide_banner",
+		"-loglevel", "error",
+		"-f", "s16le",
+		"-ch_layout", "stereo",
+		"-ar", strconv.Itoa(appCtx.SampleRate()),
+		"-i", "pipe:0",
+		"-c:a", "libmp3lame",
+		"-q:a", "0", // Highest VBR quality (V0)
+		"-vn",
+		outputFile,
+	)
+
+	stdin, err := ffmpeg.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	ffmpeg.Stdout = os.Stdout
+	ffmpeg.Stderr = os.Stderr
+
+	if err := ffmpeg.Start(); err != nil {
+		stdin.Close()
+		return err
+	}
+
+	streamErr := appCtx.Stream(stdin)
+
+	stdin.Close()
+	waitErr := ffmpeg.Wait()
+
+	if streamErr != nil {
+		return streamErr
+	}
+	if waitErr != nil {
+		return waitErr
+	}
+
+	return nil
+}
