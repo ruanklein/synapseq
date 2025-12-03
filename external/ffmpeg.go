@@ -17,7 +17,7 @@ import (
 )
 
 // FFmpeg represents the ffmpeg external tool
-type FFmpeg struct{ *externalTool }
+type FFmpeg struct{ path string }
 
 // NewFFmpeg creates a new FFmpeg instance with given ffmpeg path
 func NewFFmpeg(ffmpegPath string) (*FFmpeg, error) {
@@ -25,7 +25,7 @@ func NewFFmpeg(ffmpegPath string) (*FFmpeg, error) {
 		ffmpegPath = "ffmpeg"
 	}
 
-	et, err := newUtility(ffmpegPath)
+	path, err := newUtility(ffmpegPath)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func NewFFmpeg(ffmpegPath string) (*FFmpeg, error) {
 
 // Path returns the path to the ffmpeg executable
 func (fm *FFmpeg) Path() string {
-	return fm.utilityPath
+	return fm.externalTool
 }
 
 // MP3 encodes streaming PCM into an MP3 file using ffmpeg.

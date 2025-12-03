@@ -1,0 +1,74 @@
+/*
+ * SynapSeq - Synapse-Sequenced Brainwave Generator
+ *
+ * Copyright (c) 2025 Ruan <https://ruan.sh/>
+ * Licensed under GNU GPL v2. See COPYING.txt for details.
+ */
+
+package external
+
+import (
+	"fmt"
+	"os"
+	"os/exec"
+
+	synapseq "github.com/ruanklein/synapseq/v3/core"
+)
+
+// utilityPath checks and returns the absolute path of the given utility executable
+func utilityPath(utilPath string) (string, error) {
+	if utilPath == "" {
+		return "", fmt.Errorf("utility path cannot be empty")
+	}
+
+	filePath, err := exec.LookPath(utilPath)
+	if err == nil {
+		return filePath, nil
+	}
+
+	fileInfo, err := os.Stat(utilPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", fmt.Errorf("executable not found at custom path: %s", utilPath)
+		}
+		return "", fmt.Errorf("error checking path: %s, error: %v", utilPath, err)
+	}
+
+	if fileInfo.Mode().IsRegular() && (fileInfo.Mode().Perm()&0111 != 0) {
+		return utilPath, nil
+	}
+
+	return "", fmt.Errorf("file at path is not executable: %s", utilPath)
+}
+
+// startPipeCmd starts the given command and pipes appCtx streaming audio to its stdin
+func startPipeCmd(cmd *exec.Cmd, appCtx *synapseq.AppContext) error {
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Start(); err != nil {
+		stdin.Close()
+		return err
+	}
+
+	streamErr := appCtx.Stream(stdin)
+
+	stdin.Close()
+
+	waitErr := cmd.Wait()
+
+	if streamErr != nil {
+		return streamErr
+	}
+
+	if waitErr != nil {
+		return waitErr
+	}
+
+	return nil
+}

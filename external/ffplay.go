@@ -9,7 +9,6 @@ package external
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"strconv"
 
@@ -17,7 +16,7 @@ import (
 )
 
 // FFplay represents the ffplay external tool
-type FFplay struct{ *externalTool }
+type FFplay struct{ path string }
 
 // NewFFPlay creates a new FFplay instance with given ffplay path
 func NewFFPlay(ffplayPath string) (*FFplay, error) {
@@ -25,19 +24,14 @@ func NewFFPlay(ffplayPath string) (*FFplay, error) {
 		ffplayPath = "ffplay"
 	}
 
-	et, err := newUtility(ffplayPath)
+	path, err := newUtility(ffplayPath)
 	if err != nil {
 		return nil, err
 	}
 
 	return &FFplay{
-		externalTool: et,
+		path: path,
 	}, nil
-}
-
-// Path returns the path to the ffplay executable
-func (fp *FFplay) Path() string {
-	return fp.utilityPath
 }
 
 // Play invokes ffplay to play from streaming audio input
@@ -47,7 +41,7 @@ func (fp *FFplay) Play(appCtx *synapseq.AppContext) error {
 	}
 
 	ffplay := exec.Command(
-		fp.utilityPath,
+		fp.path,
 		"-nodisp",
 		"-hide_banner",
 		"-loglevel", "error",
@@ -58,31 +52,8 @@ func (fp *FFplay) Play(appCtx *synapseq.AppContext) error {
 		"-i", "pipe:0",
 	)
 
-	stdin, err := ffplay.StdinPipe()
-	if err != nil {
+	if err := startPipeCmd(ffplay, appCtx); err != nil {
 		return err
-	}
-
-	ffplay.Stdout = os.Stdout
-	ffplay.Stderr = os.Stderr
-
-	if err := ffplay.Start(); err != nil {
-		stdin.Close()
-		return err
-	}
-
-	streamErr := appCtx.Stream(stdin)
-
-	stdin.Close()
-
-	waitErr := ffplay.Wait()
-
-	if streamErr != nil {
-		return streamErr
-	}
-
-	if waitErr != nil {
-		return waitErr
 	}
 
 	return nil
