@@ -140,16 +140,13 @@ func run(opts *cli.CLIOptions, args []string) error {
 	// Detect format flags
 	format := detectFormat(opts)
 
-	// --- Handle External tool
-	externalTool := newExternalTool(opts.FFmpegPath, opts.FFplayPath)
-
-	// -play using ffplay
+	// -play using external utility
 	if opts.Play {
-		return externalTool.play(inputFile, format, opts.Quiet)
+		return play(opts.FFplayPath, inputFile, format, opts.Quiet)
 	}
-	// -mp3 using ffmpeg
+	// -mp3 using external utility
 	if opts.Mp3 {
-		return externalTool.mp3(inputFile, outputFile, format, opts.Quiet)
+		return mp3(opts.FFmpegPath, inputFile, outputFile, format, opts.Quiet)
 	}
 
 	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, format)

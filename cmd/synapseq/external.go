@@ -10,35 +10,13 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"strconv"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
+	"github.com/ruanklein/synapseq/v3/external"
 )
 
-// externalTool holds paths to external Unix tools like ffmpeg and ffplay
-type externalTool struct {
-	ffmpegPath string
-	ffplayPath string
-}
-
-// newExternalTool creates a new externalTool instance with given paths
-func newExternalTool(ffmpegPath, ffplayPath string) *externalTool {
-	if ffmpegPath == "" {
-		ffmpegPath = "ffmpeg"
-	}
-	if ffplayPath == "" {
-		ffplayPath = "ffplay"
-	}
-
-	return &externalTool{
-		ffmpegPath: ffmpegPath,
-		ffplayPath: ffplayPath,
-	}
-}
-
-// play invokes ffplay to play from streaming audio input
-func (et *externalTool) play(inputFile, format string, quiet bool) error {
+// play invokes utility tool to play from streaming audio input
+func play(playerPath, inputFile, format string, quiet bool) error {
 	appCtx, err := synapseq.NewAppContext(inputFile, "", format)
 	if err != nil {
 		return err
@@ -56,50 +34,20 @@ func (et *externalTool) play(inputFile, format string, quiet bool) error {
 		}
 	}
 
-	ffplay := exec.Command(
-		et.ffplayPath,
-		"-nodisp",
-		"-hide_banner",
-		"-loglevel", "error",
-		"-autoexit",
-		"-f", "s16le",
-		"-ch_layout", "stereo",
-		"-ar", strconv.Itoa(appCtx.SampleRate()),
-		"-i", "pipe:0",
-	)
-
-	stdin, err := ffplay.StdinPipe()
+	ffplay, err := external.NewFFPlay(playerPath)
 	if err != nil {
 		return err
 	}
 
-	ffplay.Stdout = os.Stdout
-	ffplay.Stderr = os.Stderr
-
-	if err := ffplay.Start(); err != nil {
-		stdin.Close()
+	if err := ffplay.Play(appCtx); err != nil {
 		return err
-	}
-
-	streamErr := appCtx.Stream(stdin)
-
-	stdin.Close()
-
-	waitErr := ffplay.Wait()
-
-	if streamErr != nil {
-		return streamErr
-	}
-
-	if waitErr != nil {
-		return waitErr
 	}
 
 	return nil
 }
 
-// mp3 encodes streaming PCM into an MP3 file using ffmpeg.
-func (et *externalTool) mp3(inputFile, outputFile, format string, quiet bool) error {
+// mp3 encodes streaming PCM into an MP3 file using external utility
+func mp3(converterPath, inputFile, outputFile, format string, quiet bool) error {
 	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, format)
 	if err != nil {
 		return err
@@ -117,44 +65,13 @@ func (et *externalTool) mp3(inputFile, outputFile, format string, quiet bool) er
 		}
 	}
 
-	// ffmpeg command for highest MP3 quality (LAME V0)
-	ffmpeg := exec.Command(
-		et.ffmpegPath,
-		"-hide_banner",
-		"-loglevel", "error",
-		"-f", "s16le",
-		"-ch_layout", "stereo",
-		"-ar", strconv.Itoa(appCtx.SampleRate()),
-		"-i", "pipe:0",
-		"-c:a", "libmp3lame",
-		"-q:a", "0", // Highest VBR quality (V0)
-		"-vn",
-		outputFile,
-	)
-
-	stdin, err := ffmpeg.StdinPipe()
+	ffmpeg, err := external.NewFFmpeg(converterPath)
 	if err != nil {
 		return err
 	}
 
-	ffmpeg.Stdout = os.Stdout
-	ffmpeg.Stderr = os.Stderr
-
-	if err := ffmpeg.Start(); err != nil {
-		stdin.Close()
+	if err := ffmpeg.MP3(appCtx); err != nil {
 		return err
-	}
-
-	streamErr := appCtx.Stream(stdin)
-
-	stdin.Close()
-	waitErr := ffmpeg.Wait()
-
-	if streamErr != nil {
-		return streamErr
-	}
-	if waitErr != nil {
-		return waitErr
 	}
 
 	return nil
