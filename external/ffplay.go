@@ -9,14 +9,13 @@ package external
 
 import (
 	"fmt"
-	"os/exec"
 	"strconv"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
 )
 
 // FFplay represents the ffplay external tool
-type FFplay struct{ path string }
+type FFplay struct{ baseUtility }
 
 // NewFFPlay creates a new FFplay instance with given ffplay path
 func NewFFPlay(ffplayPath string) (*FFplay, error) {
@@ -24,14 +23,12 @@ func NewFFPlay(ffplayPath string) (*FFplay, error) {
 		ffplayPath = "ffplay"
 	}
 
-	path, err := newUtility(ffplayPath)
+	util, err := newUtility(ffplayPath)
 	if err != nil {
 		return nil, err
 	}
 
-	return &FFplay{
-		path: path,
-	}, nil
+	return &FFplay{baseUtility: *util}, nil
 }
 
 // Play invokes ffplay to play from streaming audio input
@@ -40,8 +37,7 @@ func (fp *FFplay) Play(appCtx *synapseq.AppContext) error {
 		return fmt.Errorf("app context cannot be nil")
 	}
 
-	ffplay := exec.Command(
-		fp.path,
+	ffplay := fp.Command(
 		"-nodisp",
 		"-hide_banner",
 		"-loglevel", "error",

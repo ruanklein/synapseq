@@ -10,14 +10,13 @@ package external
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strconv"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
 )
 
 // FFmpeg represents the ffmpeg external tool
-type FFmpeg struct{ path string }
+type FFmpeg struct{ baseUtility }
 
 // NewFFmpeg creates a new FFmpeg instance with given ffmpeg path
 func NewFFmpeg(ffmpegPath string) (*FFmpeg, error) {
@@ -25,19 +24,12 @@ func NewFFmpeg(ffmpegPath string) (*FFmpeg, error) {
 		ffmpegPath = "ffmpeg"
 	}
 
-	path, err := newUtility(ffmpegPath)
+	util, err := newUtility(ffmpegPath)
 	if err != nil {
 		return nil, err
 	}
 
-	return &FFmpeg{
-		externalTool: et,
-	}, nil
-}
-
-// Path returns the path to the ffmpeg executable
-func (fm *FFmpeg) Path() string {
-	return fm.externalTool
+	return &FFmpeg{baseUtility: *util}, nil
 }
 
 // MP3 encodes streaming PCM into an MP3 file using ffmpeg.
@@ -46,9 +38,16 @@ func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext) error {
 		return fmt.Errorf("app context cannot be nil")
 	}
 
+	// Remove existing output file if it exists
+	outputFile := appCtx.OutputFile()
+	if _, err := os.Stat(outputFile); err == nil {
+		if err := os.Remove(outputFile); err != nil {
+			return fmt.Errorf("failed to remove existing output file: %v", err)
+		}
+	}
+
 	// ffmpeg command for highest MP3 quality (LAME V0)
-	ffmpeg := exec.Command(
-		fm.utilityPath,
+	ffmpeg := fm.Command(
 		"-hide_banner",
 		"-loglevel", "error",
 		"-f", "s16le",
@@ -58,32 +57,11 @@ func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext) error {
 		"-c:a", "libmp3lame",
 		"-q:a", "0", // Highest VBR quality (V0)
 		"-vn",
-		appCtx.OutputFile(),
+		outputFile,
 	)
 
-	stdin, err := ffmpeg.StdinPipe()
-	if err != nil {
+	if err := startPipeCmd(ffmpeg, appCtx); err != nil {
 		return err
-	}
-
-	ffmpeg.Stdout = os.Stdout
-	ffmpeg.Stderr = os.Stderr
-
-	if err := ffmpeg.Start(); err != nil {
-		stdin.Close()
-		return err
-	}
-
-	streamErr := appCtx.Stream(stdin)
-
-	stdin.Close()
-	waitErr := ffmpeg.Wait()
-
-	if streamErr != nil {
-		return streamErr
-	}
-	if waitErr != nil {
-		return waitErr
 	}
 
 	return nil

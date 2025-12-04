@@ -11,9 +11,20 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
 )
+
+// newUtility creates a new baseUtility instance after validating the utility path
+func newUtility(utilPath string) (*baseUtility, error) {
+	path, err := utilityPath(utilPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return &baseUtility{path: path}, nil
+}
 
 // utilityPath checks and returns the absolute path of the given utility executable
 func utilityPath(utilPath string) (string, error) {
@@ -34,8 +45,10 @@ func utilityPath(utilPath string) (string, error) {
 		return "", fmt.Errorf("error checking path: %s, error: %v", utilPath, err)
 	}
 
-	if fileInfo.Mode().IsRegular() && (fileInfo.Mode().Perm()&0111 != 0) {
-		return utilPath, nil
+	if fileInfo.Mode().IsRegular() {
+		if runtime.GOOS == "windows" || fileInfo.Mode()&0111 != 0 {
+			return utilPath, nil
+		}
 	}
 
 	return "", fmt.Errorf("file at path is not executable: %s", utilPath)
