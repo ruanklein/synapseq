@@ -31,6 +31,15 @@ func NewFFPlay(ffplayPath string) (*FFplay, error) {
 	return &FFplay{baseUtility: *util}, nil
 }
 
+// NewFFPlayUnsafe creates an FFplay instance without validating the path.
+// Useful for documentation examples and testing environments.
+func NewFFPlayUnsafe(path string) *FFplay {
+	if path == "" {
+		path = "ffplay"
+	}
+	return &FFplay{baseUtility: baseUtility{path: path}}
+}
+
 // Play invokes ffplay to play from streaming audio input
 func (fp *FFplay) Play(appCtx *synapseq.AppContext) error {
 	if appCtx == nil {

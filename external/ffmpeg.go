@@ -32,6 +32,15 @@ func NewFFmpeg(ffmpegPath string) (*FFmpeg, error) {
 	return &FFmpeg{baseUtility: *util}, nil
 }
 
+// NewFFmpegUnsafe creates an FFmpeg instance without validating the path.
+// Useful for documentation examples and testing environments.
+func NewFFmpegUnsafe(path string) *FFmpeg {
+	if path == "" {
+		path = "ffmpeg"
+	}
+	return &FFmpeg{baseUtility: baseUtility{path: path}}
+}
+
 // MP3 encodes streaming PCM into an MP3 file using ffmpeg.
 func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext) error {
 	if appCtx == nil {
