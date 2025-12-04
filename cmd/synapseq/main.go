@@ -146,7 +146,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 	}
 	// -mp3 using external utility
 	if opts.Mp3 {
-		return mp3(opts.FFmpegPath, inputFile, outputFile, format, opts.Quiet)
+		return mp3(opts.FFmpegPath, opts.Mp3Mode, inputFile, outputFile, format, opts.Quiet)
 	}
 
 	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, format)

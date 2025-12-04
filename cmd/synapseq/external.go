@@ -47,7 +47,7 @@ func play(playerPath, inputFile, format string, quiet bool) error {
 }
 
 // mp3 encodes streaming PCM into an MP3 file using external utility
-func mp3(converterPath, inputFile, outputFile, format string, quiet bool) error {
+func mp3(converterPath, mode, inputFile, outputFile, format string, quiet bool) error {
 	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, format)
 	if err != nil {
 		return err
@@ -70,7 +70,17 @@ func mp3(converterPath, inputFile, outputFile, format string, quiet bool) error 
 		return err
 	}
 
-	if err := ffmpeg.MP3(appCtx); err != nil {
+	var mp3Mode external.MP3Mode
+	switch mode {
+	case "vbr":
+		mp3Mode = external.MP3ModeVBR
+	case "cbr":
+		mp3Mode = external.MP3ModeCBR
+	default:
+		return fmt.Errorf("invalid MP3 mode: %s", mode)
+	}
+
+	if err := ffmpeg.MP3(appCtx, &external.MP3Options{Mode: mp3Mode}); err != nil {
 		return err
 	}
 

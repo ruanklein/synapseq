@@ -42,7 +42,7 @@ func NewFFmpegUnsafe(path string) *FFmpeg {
 }
 
 // MP3 encodes streaming PCM into an MP3 file using ffmpeg.
-func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext) error {
+func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext, options *MP3Options) error {
 	if appCtx == nil {
 		return fmt.Errorf("app context cannot be nil")
 	}
@@ -55,6 +55,12 @@ func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext) error {
 		}
 	}
 
+	optsLine := [2]string{"-q:a", "0"} // Default to highest VBR quality (V0)
+	if options != nil && options.Mode == MP3ModeCBR {
+		optsLine[0] = "-b:a"
+		optsLine[1] = "320k" // CBR at 320 kbps
+	}
+
 	// ffmpeg command for highest MP3 quality (LAME V0)
 	ffmpeg := fm.Command(
 		"-hide_banner",
@@ -64,7 +70,7 @@ func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext) error {
 		"-ar", strconv.Itoa(appCtx.SampleRate()),
 		"-i", "pipe:0",
 		"-c:a", "libmp3lame",
-		"-q:a", "0", // Highest VBR quality (V0)
+		optsLine[0], optsLine[1],
 		"-vn",
 		outputFile,
 	)
