@@ -132,7 +132,7 @@ func (fm *FFmpeg) OPUS(appCtx *synapseq.AppContext) error {
 	}
 
 	// Use libopus with specified target bitrate
-	cmd := fm.Command(
+	ffmpeg := fm.Command(
 		"-hide_banner",
 		"-loglevel", "error",
 		"-f", "s16le",
@@ -145,7 +145,7 @@ func (fm *FFmpeg) OPUS(appCtx *synapseq.AppContext) error {
 		outputFile,
 	)
 
-	if err := startPipeCmd(cmd, appCtx); err != nil {
+	if err := startPipeCmd(ffmpeg, appCtx); err != nil {
 		return err
 	}
 
