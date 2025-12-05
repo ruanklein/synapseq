@@ -85,6 +85,7 @@ func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext, options *MP3Options) error {
 		"-ar", strconv.Itoa(appCtx.SampleRate()),
 		"-i", "pipe:0",
 		"-c:a", "libmp3lame",
+		"-f", "mp3",
 		optsLine[0], optsLine[1],
 	}
 
@@ -143,6 +144,7 @@ func (fm *FFmpeg) OGG(appCtx *synapseq.AppContext) error {
 		"-i", "pipe:0",
 		"-c:a", "libvorbis",
 		"-q:a", "10", // Highest quality
+		"-f", "ogg",
 		"-vn",
 		outputFile,
 	)
@@ -178,6 +180,7 @@ func (fm *FFmpeg) OPUS(appCtx *synapseq.AppContext) error {
 		"-i", "pipe:0",
 		"-c:a", "libopus",
 		"-b:a", "96k",
+		"-f", "opus",
 		"-vn",
 		outputFile,
 	)
