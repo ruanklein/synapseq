@@ -111,6 +111,9 @@ func run(opts *cli.CLIOptions, args []string) error {
 	if opts.Ogg {
 		outputFormat = "ogg"
 	}
+	if opts.Opus {
+		outputFormat = "opus"
+	}
 
 	inputFile := args[0]
 	outputFile := getDefaultOutputFile(inputFile, outputFormat)
