@@ -45,3 +45,12 @@ func (ac *AppContext) SampleRate() int {
 
 	return ac.sequence.Options.SampleRate
 }
+
+// RawContent returns the raw content of the loaded sequence
+func (ac *AppContext) RawContent() []byte {
+	if ac.sequence == nil {
+		return nil
+	}
+
+	return ac.sequence.RawContent
+}

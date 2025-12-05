@@ -13,6 +13,7 @@ import (
 	"strconv"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
+	"github.com/ruanklein/synapseq/v3/internal/info"
 )
 
 // FFmpeg represents the ffmpeg external tool
@@ -41,6 +42,21 @@ func NewFFmpegUnsafe(path string) *FFmpeg {
 	return &FFmpeg{baseUtility: baseUtility{path: path}}
 }
 
+// metadataArgs returns ffmpeg arguments for embedding metadata.
+func metadataArgs(metadata *info.Metadata) map[string]string {
+	if metadata == nil {
+		return nil
+	}
+
+	return map[string]string{
+		"synapseq_id":        metadata.ID(),
+		"synapseq_generated": metadata.Generated(),
+		"synapseq_version":   metadata.Version(),
+		"synapseq_platform":  metadata.Platform(),
+		"synapseq_content":   metadata.Content(),
+	}
+}
+
 // MP3 encodes streaming PCM into an MP3 file using ffmpeg.
 func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext, options *MP3Options) error {
 	if appCtx == nil {
@@ -61,8 +77,7 @@ func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext, options *MP3Options) error {
 		optsLine[1] = "320k" // CBR at 320 kbps
 	}
 
-	// ffmpeg command for highest MP3 quality (LAME V0)
-	ffmpeg := fm.Command(
+	args := []string{
 		"-hide_banner",
 		"-loglevel", "error",
 		"-f", "s16le",
@@ -71,10 +86,32 @@ func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext, options *MP3Options) error {
 		"-i", "pipe:0",
 		"-c:a", "libmp3lame",
 		optsLine[0], optsLine[1],
+	}
+
+	if !appCtx.UnsafeNoMetadata() && appCtx.Format() == "text" {
+		rawContent := appCtx.RawContent()
+		if rawContent == nil {
+			return fmt.Errorf("raw content is nil for metadata embedding")
+		}
+
+		metadata, err := info.NewMetadata(rawContent)
+		if err != nil {
+			return fmt.Errorf("failed to create metadata: %v", err)
+		}
+
+		metaArgs := metadataArgs(metadata)
+		for key, value := range metaArgs {
+			args = append(args, "-metadata", fmt.Sprintf("%s=%s", key, value))
+		}
+	}
+
+	args = append(args, []string{
 		"-vn",
 		outputFile,
-	)
+	}...)
 
+	// ffmpeg command for highest MP3 quality (LAME V0)
+	ffmpeg := fm.Command(args...)
 	if err := startPipeCmd(ffmpeg, appCtx); err != nil {
 		return err
 	}
