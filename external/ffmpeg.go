@@ -116,3 +116,38 @@ func (fm *FFmpeg) OGG(appCtx *synapseq.AppContext) error {
 
 	return nil
 }
+
+// OPUS encodes streaming PCM into an OPUS file using ffmpeg.
+func (fm *FFmpeg) OPUS(appCtx *synapseq.AppContext) error {
+	if appCtx == nil {
+		return fmt.Errorf("app context cannot be nil")
+	}
+
+	// Remove existing output file if it exists
+	outputFile := appCtx.OutputFile()
+	if _, err := os.Stat(outputFile); err == nil {
+		if err := os.Remove(outputFile); err != nil {
+			return fmt.Errorf("failed to remove existing output file: %v", err)
+		}
+	}
+
+	// Use libopus with specified target bitrate
+	cmd := fm.Command(
+		"-hide_banner",
+		"-loglevel", "error",
+		"-f", "s16le",
+		"-ch_layout", "stereo",
+		"-ar", strconv.Itoa(appCtx.SampleRate()),
+		"-i", "pipe:0",
+		"-c:a", "libopus",
+		"-b:a", "96k",
+		"-vn",
+		outputFile,
+	)
+
+	if err := startPipeCmd(cmd, appCtx); err != nil {
+		return err
+	}
+
+	return nil
+}

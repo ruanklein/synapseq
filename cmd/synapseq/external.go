@@ -65,3 +65,17 @@ func externalOgg(ffmpegPath string, appCtx *synapseq.AppContext) error {
 
 	return nil
 }
+
+// externalOpus encodes streaming PCM into an MP3 file using external utility
+func externalOpus(ffmpegPath string, appCtx *synapseq.AppContext) error {
+	ffmpeg, err := external.NewFFmpeg(ffmpegPath)
+	if err != nil {
+		return err
+	}
+
+	if err := ffmpeg.OPUS(appCtx); err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -218,7 +218,12 @@ func run(opts *cli.CLIOptions, args []string) error {
 	if opts.Ogg {
 		return externalOgg(opts.FFmpegPath, appCtx)
 	}
+	// --- Handle OPUS output using external ffmpeg
+	if opts.Opus {
+		return externalOpus(opts.FFmpegPath, appCtx)
+	}
 
+	// Default: Render to WAV
 	return appCtx.WAV()
 }
 

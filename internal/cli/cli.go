@@ -64,6 +64,8 @@ type CLIOptions struct {
 	Mp3Mode string
 	// Ogg output format (with ffmpeg)
 	Ogg bool
+	// Opus output format (with ffmpeg)
+	Opus bool
 	// Path to ffplay executable
 	FFplayPath string
 	// Path to ffmpeg executable
@@ -105,6 +107,7 @@ func Help() {
 	fmt.Printf("  -mp3 				Output MP3 format (requires ffmpeg)\n")
 	fmt.Printf("  -mp3-mode      		MP3 encoding mode: vbr (default) or cbr\n")
 	fmt.Printf("  -ogg 				Output OGG format (requires ffmpeg)\n")
+	fmt.Printf("  -opus 			Output OPUS format (requires ffmpeg)\n")
 	fmt.Printf("  -ffmpeg-path  		Path to ffmpeg executable (default: ffmpeg)\n")
 	fmt.Printf("  -ffplay-path  		Path to ffplay executable (default: ffplay)\n\n")
 
@@ -172,6 +175,7 @@ func ParseFlags() (*CLIOptions, []string, error) {
 	fs.BoolVar(&opts.Play, "play", false, "Play audio using ffplay")
 	fs.BoolVar(&opts.Mp3, "mp3", false, "Output MP3 format (requires ffmpeg)")
 	fs.BoolVar(&opts.Ogg, "ogg", false, "Output OGG format (requires ffmpeg)")
+	fs.BoolVar(&opts.Opus, "opus", false, "Output OPUS format (requires ffmpeg)")
 	fs.StringVar(&opts.Mp3Mode, "mp3-mode", "vbr", "MP3 encoding mode: vbr (default) or cbr")
 	fs.StringVar(&opts.FFmpegPath, "ffmpeg-path", "", "Path to ffmpeg executable")
 	fs.StringVar(&opts.FFplayPath, "ffplay-path", "", "Path to ffplay executable")
