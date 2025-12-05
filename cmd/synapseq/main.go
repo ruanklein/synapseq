@@ -108,6 +108,9 @@ func run(opts *cli.CLIOptions, args []string) error {
 	if opts.Mp3 {
 		outputFormat = "mp3"
 	}
+	if opts.Ogg {
+		outputFormat = "ogg"
+	}
 
 	inputFile := args[0]
 	outputFile := getDefaultOutputFile(inputFile, outputFormat)
@@ -140,22 +143,13 @@ func run(opts *cli.CLIOptions, args []string) error {
 	// Detect format flags
 	format := detectFormat(opts)
 
-	// -play using external utility
-	if opts.Play {
-		return play(opts.FFplayPath, inputFile, format, opts.Quiet)
-	}
-	// -mp3 using external utility
-	if opts.Mp3 {
-		return mp3(opts.FFmpegPath, opts.Mp3Mode, inputFile, outputFile, format, opts.Quiet)
-	}
-
 	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, format)
 	if err != nil {
 		return err
 	}
 
 	if !opts.Quiet && outputFile != "-" {
-		appCtx = appCtx.WithVerbose(os.Stdout)
+		appCtx = appCtx.WithVerbose(os.Stderr)
 	}
 
 	// Load sequence file
@@ -208,8 +202,21 @@ func run(opts *cli.CLIOptions, args []string) error {
 	// --- Render to WAV (default mode)
 	if !opts.Quiet {
 		for _, c := range appCtx.Comments() {
-			fmt.Printf("> %s\n", c)
+			fmt.Fprintf(os.Stderr, "> %s\n", c)
 		}
+	}
+
+	// --- Handle Play using external ffplay
+	if opts.Play {
+		return externalPlay(opts.FFplayPath, appCtx)
+	}
+	// --- Handle MP3 output using external ffmpeg
+	if opts.Mp3 {
+		return externalMp3(opts.FFmpegPath, opts.Mp3Mode, appCtx)
+	}
+	// --- Handle OGG output using external ffmpeg
+	if opts.Ogg {
+		return externalOgg(opts.FFmpegPath, appCtx)
 	}
 
 	return appCtx.WAV()

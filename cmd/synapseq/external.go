@@ -9,32 +9,14 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
 	"github.com/ruanklein/synapseq/v3/external"
 )
 
-// play invokes utility tool to play from streaming audio input
-func play(playerPath, inputFile, format string, quiet bool) error {
-	appCtx, err := synapseq.NewAppContext(inputFile, "", format)
-	if err != nil {
-		return err
-	}
-
-	if err := appCtx.LoadSequence(); err != nil {
-		return err
-	}
-
-	if !quiet {
-		appCtx = appCtx.WithVerbose(os.Stderr)
-
-		for _, c := range appCtx.Comments() {
-			fmt.Fprintf(os.Stderr, "> %s\n", c)
-		}
-	}
-
-	ffplay, err := external.NewFFPlay(playerPath)
+// externalPlay invokes utility tool to play from streaming audio input
+func externalPlay(ffplayPath string, appCtx *synapseq.AppContext) error {
+	ffplay, err := external.NewFFPlay(ffplayPath)
 	if err != nil {
 		return err
 	}
@@ -46,26 +28,9 @@ func play(playerPath, inputFile, format string, quiet bool) error {
 	return nil
 }
 
-// mp3 encodes streaming PCM into an MP3 file using external utility
-func mp3(converterPath, mode, inputFile, outputFile, format string, quiet bool) error {
-	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, format)
-	if err != nil {
-		return err
-	}
-
-	if err := appCtx.LoadSequence(); err != nil {
-		return err
-	}
-
-	if !quiet {
-		appCtx = appCtx.WithVerbose(os.Stderr)
-
-		for _, c := range appCtx.Comments() {
-			fmt.Fprintf(os.Stderr, "> %s\n", c)
-		}
-	}
-
-	ffmpeg, err := external.NewFFmpeg(converterPath)
+// externalMp3 encodes streaming PCM into an MP3 file using external utility
+func externalMp3(ffmpegPath, mode string, appCtx *synapseq.AppContext) error {
+	ffmpeg, err := external.NewFFmpeg(ffmpegPath)
 	if err != nil {
 		return err
 	}
@@ -81,6 +46,20 @@ func mp3(converterPath, mode, inputFile, outputFile, format string, quiet bool) 
 	}
 
 	if err := ffmpeg.MP3(appCtx, &external.MP3Options{Mode: mp3Mode}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// externalOgg encodes streaming PCM into an MP3 file using external utility
+func externalOgg(ffmpegPath string, appCtx *synapseq.AppContext) error {
+	ffmpeg, err := external.NewFFmpeg(ffmpegPath)
+	if err != nil {
+		return err
+	}
+
+	if err := ffmpeg.OGG(appCtx); err != nil {
 		return err
 	}
 
