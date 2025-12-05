@@ -81,3 +81,38 @@ func (fm *FFmpeg) MP3(appCtx *synapseq.AppContext, options *MP3Options) error {
 
 	return nil
 }
+
+// OGG encodes streaming PCM into an OGG file using ffmpeg.
+func (fm *FFmpeg) OGG(appCtx *synapseq.AppContext) error {
+	if appCtx == nil {
+		return fmt.Errorf("app context cannot be nil")
+	}
+
+	// Remove existing output file if it exists
+	outputFile := appCtx.OutputFile()
+	if _, err := os.Stat(outputFile); err == nil {
+		if err := os.Remove(outputFile); err != nil {
+			return fmt.Errorf("failed to remove existing output file: %v", err)
+		}
+	}
+
+	// Vorbis quality scale is typically 0..10
+	ffmpeg := fm.Command(
+		"-hide_banner",
+		"-loglevel", "error",
+		"-f", "s16le",
+		"-ch_layout", "stereo",
+		"-ar", strconv.Itoa(appCtx.SampleRate()),
+		"-i", "pipe:0",
+		"-c:a", "libvorbis",
+		"-q:a", "10", // Highest quality
+		"-vn",
+		outputFile,
+	)
+
+	if err := startPipeCmd(ffmpeg, appCtx); err != nil {
+		return err
+	}
+
+	return nil
+}
