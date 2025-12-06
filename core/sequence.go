@@ -46,6 +46,47 @@ func (ac *AppContext) SampleRate() int {
 	return ac.sequence.Options.SampleRate
 }
 
+// PresetList returns the preset list from the loaded sequence options
+func (ac *AppContext) PresetList() []string {
+	if ac.sequence == nil || ac.sequence.Options == nil {
+		return []string{}
+	}
+
+	return ac.sequence.Options.PresetList
+}
+
+// Volume returns the volume from the loaded sequence options
+func (ac *AppContext) Volume() int {
+	if ac.sequence == nil || ac.sequence.Options == nil {
+		return 0
+	}
+
+	return ac.sequence.Options.Volume
+}
+
+// GainLevel returns the gain level from the loaded sequence options.
+// Gain levels:
+// 0 = 0 dB,
+// 3 = -3 dB,
+// 9 = -9 dB,
+// 18 = -18 dB
+func (ac *AppContext) GainLevel() int {
+	if ac.sequence == nil || ac.sequence.Options == nil {
+		return 0
+	}
+
+	return int(ac.sequence.Options.GainLevel)
+}
+
+// BackgroundPath returns the background audio path from the loaded sequence options
+func (ac *AppContext) BackgroundPath() string {
+	if ac.sequence == nil || ac.sequence.Options == nil {
+		return ""
+	}
+
+	return ac.sequence.Options.BackgroundPath
+}
+
 // RawContent returns the raw content of the loaded sequence
 func (ac *AppContext) RawContent() []byte {
 	if ac.sequence == nil {
