@@ -22,3 +22,9 @@ type MP3Options struct {
 	// Mode specifies the MP3 encoding mode (VBR or CBR)
 	Mode MP3Mode
 }
+
+// CodecOptions holds options for codec encoding
+type CodecOptions struct {
+	// MP3Options specifies the options for MP3 encoding
+	MP3Options *MP3Options
+}

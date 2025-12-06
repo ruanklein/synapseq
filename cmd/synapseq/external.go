@@ -45,7 +45,11 @@ func externalMp3(ffmpegPath, mode string, appCtx *synapseq.AppContext) error {
 		return fmt.Errorf("invalid MP3 mode: %s", mode)
 	}
 
-	if err := ffmpeg.MP3(appCtx, &external.MP3Options{Mode: mp3Mode}); err != nil {
+	options := &external.CodecOptions{
+		MP3Options: &external.MP3Options{Mode: mp3Mode},
+	}
+
+	if err := ffmpeg.Convert(appCtx, "mp3", options); err != nil {
 		return err
 	}
 
@@ -59,7 +63,7 @@ func externalOgg(ffmpegPath string, appCtx *synapseq.AppContext) error {
 		return err
 	}
 
-	if err := ffmpeg.OGG(appCtx); err != nil {
+	if err := ffmpeg.Convert(appCtx, "ogg", nil); err != nil {
 		return err
 	}
 
@@ -73,7 +77,7 @@ func externalOpus(ffmpegPath string, appCtx *synapseq.AppContext) error {
 		return err
 	}
 
-	if err := ffmpeg.OPUS(appCtx); err != nil {
+	if err := ffmpeg.Convert(appCtx, "opus", nil); err != nil {
 		return err
 	}
 
