@@ -124,7 +124,7 @@ func (fm *FFmpeg) Convert(appCtx *synapseq.AppContext, format string, options *C
 	}
 
 	// Metadata embedding
-	if !appCtx.UnsafeNoMetadata() && appCtx.Format() == "text" {
+	if len(appCtx.PresetList()) == 0 && !appCtx.UnsafeNoMetadata() && appCtx.Format() == "text" {
 		rawContent := appCtx.RawContent()
 		if rawContent == nil {
 			return fmt.Errorf("raw content is nil for metadata embedding")
