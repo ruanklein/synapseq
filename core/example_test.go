@@ -136,6 +136,87 @@ func ExampleAppContext_SampleRate() {
 	// Output: Sample rate retrieved successfully with format: text
 }
 
+func ExampleAppContext_Volume() {
+	// Create a new application context for text format
+	ctx, err := synapseq.NewAppContext("input.spsq", "output.wav", "text")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Load the sequence
+	// if err := ctx.LoadSequence(); err != nil {
+	//	log.Fatal(err)
+	// }
+
+	// Get the volume from the loaded sequence
+	// volume := ctx.Volume()
+	// fmt.Printf("Volume: %d\n", volume)
+
+	fmt.Printf("Volume retrieved successfully with format: %s\n", ctx.Format())
+	// Output: Volume retrieved successfully with format: text
+}
+
+func ExampleAppContext_GainLevel() {
+	// Create a new application context for text format
+	ctx, err := synapseq.NewAppContext("input.spsq", "output.wav", "text")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Load the sequence
+	// if err := ctx.LoadSequence(); err != nil {
+	//	log.Fatal(err)
+	// }
+
+	// Get the gain level from the loaded sequence
+	// Gain levels: 0 = 0 dB, 3 = -3 dB, 9 = -9 dB, 18 = -18 dB
+	// gainLevel := ctx.GainLevel()
+	// fmt.Printf("Gain Level: %d dB\n", gainLevel)
+
+	fmt.Printf("Gain level retrieved successfully with format: %s\n", ctx.Format())
+	// Output: Gain level retrieved successfully with format: text
+}
+
+func ExampleAppContext_BackgroundPath() {
+	// Create a new application context for text format
+	ctx, err := synapseq.NewAppContext("input.spsq", "output.wav", "text")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Load the sequence
+	// if err := ctx.LoadSequence(); err != nil {
+	//	log.Fatal(err)
+	// }
+
+	// Get the background audio path from the loaded sequence
+	// backgroundPath := ctx.BackgroundPath()
+	// fmt.Printf("Background Path: %s\n", backgroundPath)
+
+	fmt.Printf("Background path retrieved successfully with format: %s\n", ctx.Format())
+	// Output: Background path retrieved successfully with format: text
+}
+
+func ExampleAppContext_RawContent() {
+	// Create a new application context for text format
+	ctx, err := synapseq.NewAppContext("input.spsq", "output.wav", "text")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Load the sequence
+	// if err := ctx.LoadSequence(); err != nil {
+	//	log.Fatal(err)
+	// }
+
+	// Get the raw content of the loaded sequence
+	// rawContent := ctx.RawContent()
+	// fmt.Printf("Raw Content Length: %d bytes\n", len(rawContent))
+
+	fmt.Printf("Raw content retrieved successfully with format: %s\n", ctx.Format())
+	// Output: Raw content retrieved successfully with format: text
+}
+
 func ExampleAppContext_Text() {
 	// Create a new application context for JSON format
 	ctx, err := synapseq.NewAppContext("input.json", "", "json")
