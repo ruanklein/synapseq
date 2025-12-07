@@ -80,8 +80,11 @@ func ExampleFFmpeg_Convert_mp3() {
 	// 	log.Fatal(err)
 	// }
 
-	// Encode MP3 using default VBR mode (highest quality)
-	// _ = encoder.Convert(ctx, "mp3", nil)
+	// Encode MP3 using VBR mode (highest quality)
+	// opts := &external.CodecOptions{
+	// 	MP3Options: &external.MP3Options{Mode: external.MP3ModeVBR},
+	// }
+	// _ = encoder.Convert(ctx, "mp3", opts)
 
 	fmt.Printf("MP3 encoding (VBR) executed successfully for output: %s\n", ctx.OutputFile())
 	// Output:
