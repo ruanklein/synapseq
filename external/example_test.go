@@ -64,7 +64,7 @@ func ExampleNewFFmpeg() {
 	// ffmpeg initialized: ffmpeg
 }
 
-func ExampleFFmpeg_MP3() {
+func ExampleFFmpeg_Convert_mp3() {
 	// Create SynapSeq application context
 	ctx, err := synapseq.NewAppContext("input.spsq", "output.mp3", "text")
 	if err != nil {
@@ -75,20 +75,20 @@ func ExampleFFmpeg_MP3() {
 	// _ = ctx.LoadSequence()
 
 	// Create ffmpeg instance
-	// _, err = external.NewFFmpeg("")
+	// encoder, err := external.NewFFmpeg("")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
 
 	// Encode MP3 using default VBR mode (highest quality)
-	// _ = encoder.MP3(ctx, nil)
+	// _ = encoder.Convert(ctx, "mp3", nil)
 
 	fmt.Printf("MP3 encoding (VBR) executed successfully for output: %s\n", ctx.OutputFile())
 	// Output:
 	// MP3 encoding (VBR) executed successfully for output: output.mp3
 }
 
-func ExampleFFmpeg_MP3_cbr() {
+func ExampleFFmpeg_Convert_mp3CBR() {
 	// Create SynapSeq application context
 	ctx, err := synapseq.NewAppContext("input.spsq", "output.mp3", "text")
 	if err != nil {
@@ -99,15 +99,116 @@ func ExampleFFmpeg_MP3_cbr() {
 	// _ = ctx.LoadSequence()
 
 	// Create ffmpeg instance
-	// _, err = external.NewFFmpeg("")
+	// encoder, err := external.NewFFmpeg("")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
 
 	// Encode MP3 using CBR mode at 320 kbps
-	// _ = encoder.MP3(ctx, &external.MP3Options{Mode: external.MP3ModeCBR})
+	// opts := &external.CodecOptions{
+	// 	MP3Options: &external.MP3Options{Mode: external.MP3ModeCBR},
+	// }
+	// _ = encoder.Convert(ctx, "mp3", opts)
 
 	fmt.Printf("MP3 encoding (CBR) executed successfully for output: %s\n", ctx.OutputFile())
 	// Output:
 	// MP3 encoding (CBR) executed successfully for output: output.mp3
+}
+
+func ExampleFFmpeg_Convert_ogg() {
+	// Create SynapSeq application context
+	ctx, err := synapseq.NewAppContext("input.spsq", "output.ogg", "text")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Load sequence (required before encoding)
+	// _ = ctx.LoadSequence()
+
+	// Create ffmpeg instance
+	// encoder, err := external.NewFFmpeg("")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// Encode OGG/Vorbis at highest quality
+	// _ = encoder.Convert(ctx, "ogg", nil)
+
+	fmt.Printf("OGG encoding executed successfully for output: %s\n", ctx.OutputFile())
+	// Output:
+	// OGG encoding executed successfully for output: output.ogg
+}
+
+func ExampleFFmpeg_Convert_opus() {
+	// Create SynapSeq application context
+	ctx, err := synapseq.NewAppContext("input.spsq", "output.opus", "text")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Load sequence (required before encoding)
+	// _ = ctx.LoadSequence()
+
+	// Create ffmpeg instance
+	// encoder, err := external.NewFFmpeg("")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// Encode OPUS at 96 kbps (requires 48000 Hz sample rate)
+	// _ = encoder.Convert(ctx, "opus", nil)
+
+	fmt.Printf("OPUS encoding executed successfully for output: %s\n", ctx.OutputFile())
+	// Output:
+	// OPUS encoding executed successfully for output: output.opus
+}
+
+func ExampleNewFFprobe() {
+	// Create ffprobe instance using executable from PATH
+	// probe, err := external.NewFFprobe("")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	probe := external.NewFFprobeUnsafe("")
+	fmt.Println("ffprobe initialized:", probe.Path())
+	// Output:
+	// ffprobe initialized: ffprobe
+}
+
+func ExampleFFprobe_ExtractTextSequence() {
+	// Create ffprobe instance
+	// probe, err := external.NewFFprobe("")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// Extract text sequence from encoded file
+	// content, err := probe.ExtractTextSequence("output.mp3")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(content)
+
+	fmt.Println("Text sequence extracted successfully from MP3 file")
+	// Output:
+	// Text sequence extracted successfully from MP3 file
+}
+
+func ExampleFFprobe_SaveExtractedTextSequence() {
+	// Create ffprobe instance
+	// probe, err := external.NewFFprobe("")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// Extract and save text sequence
+	// err = probe.SaveExtractedTextSequence("output.mp3", "extracted.spsq")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	fmt.Println("Text sequence extracted and saved successfully")
+	// Output:
+	// Text sequence extracted and saved successfully
 }
