@@ -58,7 +58,7 @@ func (fm *FFmpeg) metadataArgs(metadata *info.Metadata) map[string]string {
 }
 
 // Convert encodes streaming PCM into the specified format using ffmpeg.
-func (fm *FFmpeg) Convert(appCtx *synapseq.AppContext, format string, options *CodecOptions) error {
+func (fm *FFmpeg) Convert(appCtx *synapseq.AppContext, format string) error {
 	if appCtx == nil {
 		return fmt.Errorf("app context cannot be nil")
 	}
@@ -71,18 +71,13 @@ func (fm *FFmpeg) Convert(appCtx *synapseq.AppContext, format string, options *C
 		}
 	}
 
-	sampleRate := appCtx.SampleRate()
-	if format == "opus" && sampleRate != 48000 {
-		return fmt.Errorf("opus format requires a sample rate of 48000 Hz")
-	}
-
 	// Base ffmpeg arguments
 	args := []string{
 		"-hide_banner",
 		"-loglevel", "error",
 		"-f", "s16le",
 		"-ch_layout", "stereo",
-		"-ar", strconv.Itoa(sampleRate),
+		"-ar", strconv.Itoa(appCtx.SampleRate()),
 		"-i", "pipe:0",
 	}
 
@@ -91,41 +86,11 @@ func (fm *FFmpeg) Convert(appCtx *synapseq.AppContext, format string, options *C
 	case "mp3":
 		args = append(args, []string{
 			"-c:a", "libmp3lame",
-		}...)
-
-		if options == nil {
-			return fmt.Errorf("codec options cannot be nil for mp3 format")
-		}
-		if options.MP3Options == nil {
-			return fmt.Errorf("MP3Options cannot be nil for mp3 format")
-		}
-
-		// Determine MP3 encoding mode
-		if options.MP3Options.Mode == MP3ModeCBR {
-			args = append(args, []string{
-				"-b:a", "320k", // CBR at 320 kbps
-			}...)
-		} else {
-			args = append(args, []string{
-				"-q:a", "0", // Highest VBR quality (V0)
-			}...)
-		}
-
-		args = append(args, []string{
+			"-b:a", "320k",
 			"-f", "mp3",
 		}...)
-	case "ogg":
-		args = append(args, []string{
-			"-c:a", "libvorbis",
-			"-q:a", "10", // Highest quality
-			"-f", "ogg",
-		}...)
-	case "opus":
-		args = append(args, []string{
-			"-c:a", "libopus",
-			"-b:a", "96k",
-			"-f", "opus",
-		}...)
+	// TODO: more formats can be added here
+	// BUT for brainwave entrainment, only MP3 is currently relevant
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}

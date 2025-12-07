@@ -108,12 +108,6 @@ func run(opts *cli.CLIOptions, args []string) error {
 	if opts.Mp3 {
 		outputFormat = "mp3"
 	}
-	if opts.Ogg {
-		outputFormat = "ogg"
-	}
-	if opts.Opus {
-		outputFormat = "opus"
-	}
 
 	inputFile := args[0]
 	outputFile := getDefaultOutputFile(inputFile, outputFormat)
@@ -123,7 +117,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 
 	// --- Handle Extract mode
 	if opts.ExtractTextSequence {
-		if opts.Mp3 || opts.Ogg || opts.Opus {
+		if opts.Mp3 {
 			if outputFile == "-" {
 				content, err := externalExtractTextSequence(opts.FFprobePath, inputFile)
 				if err != nil {
@@ -237,15 +231,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 	}
 	// --- Handle MP3 output using external ffmpeg
 	if opts.Mp3 {
-		return externalMp3(opts.FFmpegPath, opts.Mp3Mode, appCtx)
-	}
-	// --- Handle OGG output using external ffmpeg
-	if opts.Ogg {
-		return externalOgg(opts.FFmpegPath, appCtx)
-	}
-	// --- Handle OPUS output using external ffmpeg
-	if opts.Opus {
-		return externalOpus(opts.FFmpegPath, appCtx)
+		return externalMp3(opts.FFmpegPath, appCtx)
 	}
 
 	// Default: Render to WAV
