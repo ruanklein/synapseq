@@ -144,26 +144,26 @@ for applications requiring fixed bitrate output.
 This example streams PCM audio to ffmpeg and saves it as an OGG file
 using Vorbis codec at highest quality.
 
-	package main
+		package main
 
-	import (
-	    "log"
+		import (
+		    "log"
 
-	    synapseq "github.com/ruanklein/synapseq/v3/core"
-	    "github.com/ruanklein/synapseq/v3/external"
-	)
+		    synapseq "github.com/ruanklein/synapseq/v3/core"
+		    "github.com/ruanklein/synapseq/v3/external"
+		)
 
-	func main() {
-	    // Create application context for OGG output
-	    ctx, err := synapseq.NewAppContext("input.spsq", "output.ogg", "text")
-	    if err != nil {
-	        log.Fatal(err)
-	    }
+		func main() {
+		    // Create application context for OGG output
+		    ctx, err := synapseq.NewAppContext("input.spsq", "output.ogg", "text")
+		    if err != nil {
+		        log.Fatal(err)
+		    }
 
-	    // Load sequence
-	    if err := ctx.LoadSequence(); err != nil {
-	        log.Fatal(err)
-	    }
+		    // Load sequence
+		    if err := ctx.LoadSequence(); err != nil {
+		        log.Fatal(err)
+		    }
 
 	    // Create ffmpeg converter
 	    encoder, err := external.NewFFmpeg("")
@@ -171,37 +171,35 @@ using Vorbis codec at highest quality.
 	        log.Fatal(err)
 	    }
 
-	    // Encode OGG/Vorbis at highest quality
+	    // Encode OGG/Vorbis at highest quality (options can be nil for OGG)
 	    if err := encoder.Convert(ctx, "ogg", nil); err != nil {
 	        log.Fatal(err)
 	    }
 	}
 
-# Example: OPUS Encoding
-
-This example streams PCM audio to ffmpeg and saves it as an OPUS file.
+# Example: OPUS EncodingThis example streams PCM audio to ffmpeg and saves it as an OPUS file.
 Note that OPUS encoding requires a sample rate of 48000 Hz.
 
-	package main
+		package main
 
-	import (
-	    "log"
+		import (
+		    "log"
 
-	    synapseq "github.com/ruanklein/synapseq/v3/core"
-	    "github.com/ruanklein/synapseq/v3/external"
-	)
+		    synapseq "github.com/ruanklein/synapseq/v3/core"
+		    "github.com/ruanklein/synapseq/v3/external"
+		)
 
-	func main() {
-	    // Create application context for OPUS output
-	    ctx, err := synapseq.NewAppContext("input.spsq", "output.opus", "text")
-	    if err != nil {
-	        log.Fatal(err)
-	    }
+		func main() {
+		    // Create application context for OPUS output
+		    ctx, err := synapseq.NewAppContext("input.spsq", "output.opus", "text")
+		    if err != nil {
+		        log.Fatal(err)
+		    }
 
-	    // Load sequence
-	    if err := ctx.LoadSequence(); err != nil {
-	        log.Fatal(err)
-	    }
+		    // Load sequence
+		    if err := ctx.LoadSequence(); err != nil {
+		        log.Fatal(err)
+		    }
 
 	    // Create ffmpeg converter
 	    encoder, err := external.NewFFmpeg("")
@@ -209,15 +207,13 @@ Note that OPUS encoding requires a sample rate of 48000 Hz.
 	        log.Fatal(err)
 	    }
 
-	    // Encode OPUS at 96 kbps
+	    // Encode OPUS at 96 kbps (options can be nil for OPUS)
 	    if err := encoder.Convert(ctx, "opus", nil); err != nil {
 	        log.Fatal(err)
 	    }
 	}
 
-# Example: Metadata Extraction
-
-This example extracts the original SynapSeq text sequence from an encoded
+# Example: Metadata ExtractionThis example extracts the original SynapSeq text sequence from an encoded
 audio file (MP3, OGG, or OPUS) using ffprobe.
 
 	package main
@@ -275,9 +271,9 @@ from an encoded audio file to a new file.
 
 The Convert method supports the following audio formats:
 
-  - MP3: Uses libmp3lame encoder with two modes:
+  - MP3: Uses libmp3lame encoder with two modes (mode selection is required):
 
-  - VBR (Variable Bit Rate): LAME V0 quality preset (default), best quality-to-size ratio
+  - VBR (Variable Bit Rate): LAME V0 quality preset, best quality-to-size ratio
 
   - CBR (Constant Bit Rate): Fixed 320 kbps bitrate, useful for compatibility
 
@@ -324,7 +320,10 @@ using the WithUnsafeNoMetadata() method:
 	    log.Fatal(err)
 	}
 
-	if err := encoder.Convert(ctx, "mp3", nil); err != nil {
+	opts := &external.CodecOptions{
+	    MP3Options: &external.MP3Options{Mode: external.MP3ModeVBR},
+	}
+	if err := encoder.Convert(ctx, "mp3", opts); err != nil {
 	    log.Fatal(err)
 	}
 
