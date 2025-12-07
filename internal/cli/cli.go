@@ -179,7 +179,7 @@ func ParseFlags() (*CLIOptions, []string, error) {
 	fs.BoolVar(&opts.Mp3, "mp3", false, "Output MP3 format (requires ffmpeg)")
 	fs.BoolVar(&opts.Ogg, "ogg", false, "Output OGG format (requires ffmpeg)")
 	fs.BoolVar(&opts.Opus, "opus", false, "Output OPUS format (requires ffmpeg)")
-	fs.StringVar(&opts.Mp3Mode, "mp3-mode", "vbr", "MP3 encoding mode: vbr (default) or cbr")
+	fs.StringVar(&opts.Mp3Mode, "mp3-mode", "cbr", "MP3 encoding mode: vbr or cbr (default: cbr)")
 	fs.StringVar(&opts.FFmpegPath, "ffmpeg-path", "", "Path to ffmpeg executable")
 	fs.StringVar(&opts.FFplayPath, "ffplay-path", "", "Path to ffplay executable")
 	fs.StringVar(&opts.FFprobePath, "ffprobe-path", "", "Path to ffprobe executable")

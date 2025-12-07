@@ -93,8 +93,15 @@ func (fm *FFmpeg) Convert(appCtx *synapseq.AppContext, format string, options *C
 			"-c:a", "libmp3lame",
 		}...)
 
+		if options == nil {
+			return fmt.Errorf("codec options cannot be nil for mp3 format")
+		}
+		if options.MP3Options == nil {
+			return fmt.Errorf("MP3Options cannot be nil for mp3 format")
+		}
+
 		// Determine MP3 encoding mode
-		if options != nil && options.MP3Options != nil && options.MP3Options.Mode == MP3ModeCBR {
+		if options.MP3Options.Mode == MP3ModeCBR {
 			args = append(args, []string{
 				"-b:a", "320k", // CBR at 320 kbps
 			}...)
