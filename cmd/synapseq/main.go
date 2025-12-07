@@ -123,6 +123,28 @@ func run(opts *cli.CLIOptions, args []string) error {
 
 	// --- Handle Extract mode
 	if opts.ExtractTextSequence {
+		if opts.Mp3 || opts.Ogg || opts.Opus {
+			if outputFile == "-" {
+				content, err := externalExtractTextSequence(opts.FFprobePath, inputFile)
+				if err != nil {
+					return fmt.Errorf("failed to extract text sequence. Error\n  %w", err)
+				}
+				fmt.Println(content)
+				return nil
+			}
+
+			outputFile = getDefaultOutputFile(inputFile, "spsq")
+			if err := externalSaveExtractedTextSequence(opts.FFprobePath, inputFile, outputFile); err != nil {
+				return fmt.Errorf("failed to extract text sequence. Error\n  %w", err)
+			}
+
+			if !opts.Quiet {
+				fmt.Println("Extraction completed successfully.")
+			}
+
+			return nil
+		}
+
 		if outputFile == "-" {
 			content, err := synapseq.Extract(inputFile)
 			if err != nil {

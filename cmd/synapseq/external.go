@@ -83,3 +83,32 @@ func externalOpus(ffmpegPath string, appCtx *synapseq.AppContext) error {
 
 	return nil
 }
+
+// externalExtractTextSequence extracts text sequence from input file using ffprobe
+func externalExtractTextSequence(ffprobePath string, inputFile string) (string, error) {
+	ffprobe, err := external.NewFFprobe(ffprobePath)
+	if err != nil {
+		return "", err
+	}
+
+	content, err := ffprobe.ExtractTextSequence(inputFile)
+	if err != nil {
+		return "", err
+	}
+
+	return content, nil
+}
+
+// externalSaveExtractedTextSequence saves extracted text sequence to output file using ffprobe
+func externalSaveExtractedTextSequence(ffprobePath, inputFile, outputFile string) error {
+	ffprobe, err := external.NewFFprobe(ffprobePath)
+	if err != nil {
+		return err
+	}
+
+	if err := ffprobe.SaveExtractedTextSequence(inputFile, outputFile); err != nil {
+		return err
+	}
+
+	return nil
+}

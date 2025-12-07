@@ -70,6 +70,8 @@ type CLIOptions struct {
 	FFplayPath string
 	// Path to ffmpeg executable
 	FFmpegPath string
+	// Path to ffprobe executable
+	FFprobePath string
 }
 
 // Help prints the help message
@@ -109,7 +111,8 @@ func Help() {
 	fmt.Printf("  -ogg 				Output OGG format (requires ffmpeg)\n")
 	fmt.Printf("  -opus 			Output OPUS format (requires ffmpeg)\n")
 	fmt.Printf("  -ffmpeg-path  		Path to ffmpeg executable (default: ffmpeg)\n")
-	fmt.Printf("  -ffplay-path  		Path to ffplay executable (default: ffplay)\n\n")
+	fmt.Printf("  -ffplay-path  		Path to ffplay executable (default: ffplay)\n")
+	fmt.Printf("  -ffprobe-path  		Path to ffprobe executable (default: ffprobe)\n\n")
 
 	fmt.Printf("Hub options:\n")
 	fmt.Printf("  -hub-update      		Update index of available sequences\n")
@@ -179,6 +182,7 @@ func ParseFlags() (*CLIOptions, []string, error) {
 	fs.StringVar(&opts.Mp3Mode, "mp3-mode", "vbr", "MP3 encoding mode: vbr (default) or cbr")
 	fs.StringVar(&opts.FFmpegPath, "ffmpeg-path", "", "Path to ffmpeg executable")
 	fs.StringVar(&opts.FFplayPath, "ffplay-path", "", "Path to ffplay executable")
+	fs.StringVar(&opts.FFprobePath, "ffprobe-path", "", "Path to ffprobe executable")
 
 	// Windows-specific options
 	fs.BoolVar(&opts.InstallFileAssociation, "install-file-association", false, "Associate .spsq files with SynapSeq (Windows only)")
