@@ -9,7 +9,11 @@
 
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/ruanklein/synapseq/v3/internal/cli"
+)
 
 // hubRunUpdate is disabled when built with -tags=nohub
 func hubRunUpdate(quiet bool) error {
@@ -22,7 +26,7 @@ func hubRunClean(quiet bool) error {
 }
 
 // hubRunGet is disabled when built with -tags=nohub
-func hubRunGet(sequenceId, outputFile string, quiet bool) error {
+func hubRunGet(sequenceId, outputFile string, opts *cli.CLIOptions) error {
 	return fmt.Errorf("Hub functionality is disabled in this build")
 }
 

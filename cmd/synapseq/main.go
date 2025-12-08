@@ -56,7 +56,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 		if len(args) == 1 {
 			outputFile = args[0]
 		}
-		return hubRunGet(opts.HubGet, outputFile, opts.Quiet)
+		return hubRunGet(opts.HubGet, outputFile, opts)
 	}
 
 	// --hub-list
@@ -205,37 +205,18 @@ func run(opts *cli.CLIOptions, args []string) error {
 		return nil
 	}
 
-	// --- Handle Stream mode (output = "-")
-	if outputFile == "-" {
-		return appCtx.Stream(os.Stdout)
+	// --- Process output using centralized handler
+	outputOpts := &outputOptions{
+		OutputFile:       outputFile,
+		Quiet:            opts.Quiet,
+		Play:             opts.Play,
+		Mp3:              opts.Mp3,
+		UnsafeNoMetadata: opts.UnsafeNoMetadata,
+		FFplayPath:       opts.FFplayPath,
+		FFmpegPath:       opts.FFmpegPath,
 	}
 
-	// --- Unsafe mode
-	if opts.UnsafeNoMetadata {
-		appCtx, err = appCtx.WithUnsafeNoMetadata()
-		if err != nil {
-			return err
-		}
-	}
-
-	// --- Render to WAV (default mode)
-	if !opts.Quiet {
-		for _, c := range appCtx.Comments() {
-			fmt.Fprintf(os.Stderr, "> %s\n", c)
-		}
-	}
-
-	// --- Handle Play using external ffplay
-	if opts.Play {
-		return externalPlay(opts.FFplayPath, appCtx)
-	}
-	// --- Handle MP3 output using external ffmpeg
-	if opts.Mp3 {
-		return externalMp3(opts.FFmpegPath, appCtx)
-	}
-
-	// Default: Render to WAV
-	return appCtx.WAV()
+	return processSequenceOutput(appCtx, outputOpts)
 }
 
 // detectFormat detects the input format based on CLI options
