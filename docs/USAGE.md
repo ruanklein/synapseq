@@ -1160,6 +1160,26 @@ synapseq -extract -mp3 -ffprobe-path C:\Tools\ffprobe.exe input.mp3 output.spsq
 
 Show the help and exit.
 
+#### `-unsafe-no-metadata`
+
+Prevents embedding the original SPSQ sequence and metadata into the generated WAV or MP3 file.
+
+Syntax:
+
+```
+synapseq -unsafe-no-metadata [input-file] [output-file]
+```
+
+Examples:
+
+```
+# Generate WAV without metadata
+synapseq -unsafe-no-metadata sample.spsq output.wav
+
+# Generate MP3 without metadata
+synapseq -unsafe-no-metadata -mp3 sample.spsq output.mp3
+```
+
 #### `-quiet`
 
 Quiet mode. Used to hide terminal output. Errors and comments will be displayed.
