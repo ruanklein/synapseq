@@ -863,7 +863,7 @@ synapseq -hub-download synapseq.samples.genesis ./downloads
 
 #### `-hub-get`
 
-Generates a WAV file directly from a Hub sequence without downloading it first.
+Generates audio output directly from a Hub sequence without downloading it first.
 
 This command fetches the sequence from the Hub, loads it into memory, and generates the audio output. This is useful for quickly rendering sequences without cluttering your local filesystem.
 
@@ -873,26 +873,47 @@ Syntax:
 synapseq -hub-get [sequence-id] [output-file]
 ```
 
-If no output file is specified or `-` is used, the audio is streamed to stdout in RAW format.
-
-Example:
+**Basic Usage (WAV output):**
 
 ```
 synapseq -hub-get synapseq.samples.genesis output.wav
 ```
 
-Stream to stdout:
+**Stream to stdout:**
+
+If no output file is specified or `-` is used, the audio is streamed to stdout in RAW format.
 
 ```
 synapseq -hub-get synapseq.samples.genesis -
 synapseq -hub-get synapseq.samples.genesis
 ```
 
+**Play in real-time:**
+
+You can combine `-hub-get` with `-play` to stream and play a Hub sequence directly without creating any files.
+
+```
+synapseq -hub-get synapseq.samples.genesis -play
+```
+
+**Convert to MP3:**
+
+You can combine `-hub-get` with `-mp3` to convert a Hub sequence directly to MP3 format.
+
+```
+synapseq -hub-get synapseq.samples.genesis -mp3
+synapseq -hub-get synapseq.samples.genesis -mp3 custom-output.mp3
+```
+
+**Quiet mode:**
+
 You can use `-quiet` to suppress verbose output:
 
 ```
 synapseq -quiet -hub-get synapseq.samples.genesis output.wav
 ```
+
+**Error handling:**
 
 If the sequence is not found:
 
@@ -922,14 +943,111 @@ Hub cache cleaned successfully.
 
 #### `-extract`
 
-Extracts the original sequence and metadata embedded in a WAV file. Requires an input WAV file and an output file (text or stdout).
+Extracts the original sequence and metadata embedded in a WAV or MP3 file. Requires an input file and an output file (text or stdout).
 
-Examples:
+**For WAV files:**
 
 ```
 synapseq -extract input.wav output.spsq
 synapseq -extract input.wav -
 ```
+
+**For MP3 files:**
+
+To extract sequences from MP3 files, you must use the `-mp3` flag and have **ffprobe** installed on your system.
+
+```
+synapseq -extract -mp3 input.mp3 output.spsq
+synapseq -extract -mp3 input.mp3 -
+```
+
+**Requirements:**
+
+- WAV extraction: No additional dependencies
+- MP3 extraction: Requires **ffprobe** (part of the FFmpeg suite)
+
+#### `-play`
+
+Plays a sequence in real-time using **ffplay**. The audio is streamed directly to ffplay without creating any intermediate files.
+
+**Requirements:** This feature requires **ffplay** (part of the FFmpeg suite) to be installed on your system.
+
+Syntax:
+
+```
+synapseq -play [input-file]
+```
+
+Examples:
+
+```
+synapseq -play sample-binaural.spsq
+synapseq -play https://example.com/sequences/my-sequence.spsq
+```
+
+You can also use stdin:
+
+```
+cat example.spsq | synapseq -play -
+```
+
+**Custom ffplay path:**
+
+If ffplay is not in your system PATH, you can specify its location using `-ffplay-path`:
+
+```
+synapseq -play -ffplay-path /custom/path/to/ffplay sample.spsq
+```
+
+**Note:** The `-play` option streams audio in real-time and does not create any output file. Press `CTRL+C` to stop playback.
+
+#### `-mp3`
+
+Converts a sequence to MP3 format using **ffmpeg**. By default, creates an output file with the same name as the input but with `.mp3` extension.
+
+**Requirements:** This feature requires **ffmpeg** to be installed on your system.
+
+Syntax:
+
+```
+synapseq -mp3 [input-file] [output-file]
+```
+
+Examples:
+
+```
+# Auto-generate output filename (sample.spsq -> sample.mp3)
+synapseq -mp3 sample.spsq
+
+# Specify custom output filename
+synapseq -mp3 sample.spsq output.mp3
+
+# From URL
+synapseq -mp3 https://example.com/sequence.spsq custom-name.mp3
+```
+
+You can also use stdin:
+
+```
+cat example.spsq | synapseq -mp3 - output.mp3
+```
+
+**Custom ffmpeg path:**
+
+If ffmpeg is not in your system PATH, you can specify its location using `-ffmpeg-path`:
+
+```
+synapseq -mp3 -ffmpeg-path /custom/path/to/ffmpeg sample.spsq output.mp3
+```
+
+**Audio Quality:**
+
+The MP3 output is generated with the following settings:
+
+- Codec: libmp3lame
+- Bitrate: 320 kbps (high quality)
+- Sample rate: Matches the sequence (default 44100 Hz)
+- Channels: Stereo (2 channels)
 
 #### `-convert`
 
@@ -985,6 +1103,57 @@ You can also use stdin or HTTP/HTTPS URLs:
 ```
 cat sequence.yaml | synapseq -yaml - output.wav
 synapseq -yaml https://example.com/sequence.yaml output.wav
+```
+
+#### `-ffmpeg-path`
+
+Specifies a custom path to the ffmpeg executable. Use this option if ffmpeg is not in your system PATH or if you want to use a specific version.
+
+Syntax:
+
+```
+synapseq -mp3 -ffmpeg-path [path-to-ffmpeg] [input-file] [output-file]
+```
+
+Example:
+
+```
+synapseq -mp3 -ffmpeg-path /usr/local/bin/ffmpeg sample.spsq output.mp3
+synapseq -mp3 -ffmpeg-path C:\Tools\ffmpeg.exe sample.spsq output.mp3
+```
+
+#### `-ffplay-path`
+
+Specifies a custom path to the ffplay executable. Use this option if ffplay is not in your system PATH or if you want to use a specific version.
+
+Syntax:
+
+```
+synapseq -play -ffplay-path [path-to-ffplay] [input-file]
+```
+
+Example:
+
+```
+synapseq -play -ffplay-path /usr/local/bin/ffplay sample.spsq
+synapseq -play -ffplay-path C:\Tools\ffplay.exe sample.spsq
+```
+
+#### `-ffprobe-path`
+
+Specifies a custom path to the ffprobe executable. Use this option if ffprobe is not in your system PATH or if you want to use a specific version. This is only needed when extracting sequences from MP3 files.
+
+Syntax:
+
+```
+synapseq -extract -mp3 -ffprobe-path [path-to-ffprobe] [input-file] [output-file]
+```
+
+Example:
+
+```
+synapseq -extract -mp3 -ffprobe-path /usr/local/bin/ffprobe input.mp3 output.spsq
+synapseq -extract -mp3 -ffprobe-path C:\Tools\ffprobe.exe input.mp3 output.spsq
 ```
 
 #### `-help`
@@ -1046,6 +1215,50 @@ synapseq -uninstall-file-association
 ```
 
 **Note:** This command is safe to run even if file associations were never installed.
+
+### Installing FFmpeg
+
+To use the `-play`, `-mp3`, and `-extract -mp3` features, you need to have FFmpeg installed on your system.
+
+**Download FFmpeg:**
+
+- Official website: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+
+**Installation by platform:**
+
+- **macOS** (using Homebrew):
+
+  ```bash
+  brew install ffmpeg
+  ```
+
+- **Linux** (Ubuntu/Debian):
+
+  ```bash
+  sudo apt update
+  sudo apt install ffmpeg
+  ```
+
+- **Linux** (Fedora):
+
+  ```bash
+  sudo dnf install ffmpeg
+  ```
+
+- **Windows**:
+  - Download the pre-built binaries from [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+  - Extract to a folder (e.g., `C:\ffmpeg`)
+  - Add the `bin` folder to your system PATH, or use the `-ffmpeg-path`, `-ffplay-path`, and `-ffprobe-path` options
+
+**Verify installation:**
+
+```bash
+ffmpeg -version
+ffplay -version
+ffprobe -version
+```
+
+If these commands return version information, FFmpeg is correctly installed and available in your PATH.
 
 ## Notes
 
