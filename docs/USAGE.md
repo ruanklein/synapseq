@@ -1204,17 +1204,23 @@ Installs Windows file association and context menu integration for SynapSeq. Thi
 
 **File Association:**
 
-- Double-click any `.spsq` file to automatically generate a WAV file in the same directory with the same name
+- Double-click any `.spsq` file to automatically play the sequence in real-time using ffplay
 - Assigns the SynapSeq icon to `.spsq` files in Windows Explorer
 
 **Context Menu for .spsq files:**
 
-- **"SynapSeq: Test sequence"**: Validates the sequence syntax without generating audio output
 - **"SynapSeq: Edit sequence"**: Opens the sequence file in Notepad for editing
+- **"SynapSeq: Test sequence"**: Validates the sequence syntax without generating audio output
+- **"SynapSeq: Convert to WAV"**: Generates a WAV file in the same directory
+- **"SynapSeq: Convert to MP3"**: Generates an MP3 file using ffmpeg (requires ffmpeg installed)
 
 **Context Menu for .wav files:**
 
 - **"SynapSeq: Extract sequence"**: Extracts the embedded `.spsq` sequence from SynapSeq-generated WAV files
+
+**Context Menu for .mp3 files:**
+
+- **"SynapSeq: Extract sequence"**: Extracts the embedded `.spsq` sequence from SynapSeq-generated MP3 files (requires ffprobe installed)
 
 Example:
 
@@ -1265,10 +1271,12 @@ To use the `-play`, `-mp3`, and `-extract -mp3` features, you need to have FFmpe
   sudo dnf install ffmpeg
   ```
 
-- **Windows**:
-  - Download the pre-built binaries from [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
-  - Extract to a folder (e.g., `C:\ffmpeg`)
-  - Add the `bin` folder to your system PATH, or use the `-ffmpeg-path`, `-ffplay-path`, and `-ffprobe-path` options
+- **Windows** (using winget):
+
+  ```powershell
+  winget update
+  winget install ffmpeg
+  ```
 
 **Verify installation:**
 
