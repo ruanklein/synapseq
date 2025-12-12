@@ -294,7 +294,7 @@ alpha-four
         <input
           type="file"
           id="fileInput"
-          accept=".spsq"
+          accept=".spsq,.json"
           onchange="handleFileUpload(event)"
         />
       </div>
@@ -405,6 +405,20 @@ alpha-four
         errorContainer.classList.remove("visible");
       }
 
+      function detectFormat(content) {
+        // Try to parse as JSON
+        const trimmed = content.trim();
+        if (trimmed.startsWith("{")) {
+          try {
+            JSON.parse(trimmed);
+            return "json";
+          } catch (e) {
+            // Not valid JSON, treat as text
+          }
+        }
+        return "text";
+      }
+
       async function handlePlay() {
         if (!synapseq || !synapseq.isReady()) {
           setStatus("WASM not initialized yet", "error");
@@ -414,16 +428,19 @@ alpha-four
         hideError();
 
         try {
-          const spsq = document.getElementById("spsqEditor").value;
+          const content = document.getElementById("spsqEditor").value;
 
-          if (!spsq.trim()) {
+          if (!content.trim()) {
             showError("Please enter SPSQ code or upload a file");
             setStatus("Ready", "success");
             return;
           }
 
+          // Detect format automatically
+          const format = detectFormat(content);
+
           // Always reload the sequence to ensure we use the current textarea content
-          await synapseq.load(spsq);
+          await synapseq.load(content, format);
 
           // Play the sequence
           await synapseq.play();
@@ -445,8 +462,9 @@ alpha-four
         if (!file) return;
 
         // Validate file extension
-        if (!file.name.toLowerCase().endsWith(".spsq")) {
-          showError("Invalid file type. Please upload a .spsq file");
+        const fileName = file.name.toLowerCase();
+        if (!fileName.endsWith(".spsq") && !fileName.endsWith(".json")) {
+          showError("Invalid file type. Please upload a .spsq or .json file");
           event.target.value = "";
           return;
         }
@@ -454,18 +472,25 @@ alpha-four
         hideError();
 
         try {
-          await synapseq.load(file);
-
-          // Read file content to display in textarea
+          // Read file content first to detect format
           const reader = new FileReader();
-          reader.onload = (e) => {
-            document.getElementById("spsqEditor").value = e.target.result;
-            updateLineNumbers();
-            setStatus("File loaded: " + file.name, "success");
+          reader.onload = async (e) => {
+            const content = e.target.result;
+            const format = detectFormat(content);
+
+            try {
+              await synapseq.load(content, format);
+              document.getElementById("spsqEditor").value = content;
+              updateLineNumbers();
+              setStatus(`File loaded: ${file.name} (${format})`, "success");
+            } catch (error) {
+              showError("Failed to load file: " + error.message);
+              setStatus("File read error", "error");
+            }
           };
           reader.readAsText(file);
         } catch (error) {
-          showError("Failed to load file: " + error.message);
+          showError("Failed to read file: " + error.message);
           setStatus("File read error", "error");
         }
 

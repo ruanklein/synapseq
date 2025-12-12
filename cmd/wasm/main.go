@@ -16,6 +16,7 @@ import (
 	"github.com/ruanklein/synapseq/v3/internal/audio"
 	"github.com/ruanklein/synapseq/v3/internal/info"
 	"github.com/ruanklein/synapseq/v3/internal/sequence"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
 // streamPcm(onChunk, onDone, onError, spsqUint8Array)
@@ -47,15 +48,41 @@ func streamPcm(this js.Value, args []js.Value) interface{} {
 					}
 				}()
 
-				if len(args) < 4 {
-					reject.Invoke("missing SPSQ input buffer")
+				if len(args) < 5 {
+					reject.Invoke("missing file data")
 					return
 				}
-				spsq := args[3]
-				raw := make([]byte, spsq.Length())
-				js.CopyBytesToGo(raw, spsq)
 
-				seq, err := sequence.LoadTextSequence(raw)
+				content := args[3]
+				format := args[4].String()
+
+				var formatType t.FileFormat
+				switch format {
+				case "text":
+					formatType = t.FormatText
+				case "json":
+					formatType = t.FormatJSON
+				case "xml":
+					formatType = t.FormatXML
+				case "yaml":
+					formatType = t.FormatYAML
+				default:
+					reject.Invoke("unsupported sequence format: " + format)
+					return
+				}
+
+				raw := make([]byte, content.Length())
+				js.CopyBytesToGo(raw, content)
+
+				var seq *t.Sequence
+				var err error
+
+				if formatType == t.FormatText {
+					seq, err = sequence.LoadTextSequence(raw)
+				} else {
+					seq, err = sequence.LoadStructuredSequence(raw, formatType)
+				}
+
 				if err != nil {
 					onError.Invoke(err.Error())
 					reject.Invoke(err.Error())

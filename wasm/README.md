@@ -6,6 +6,7 @@ A JavaScript wrapper library for SynapSeq WASM, providing an elegant object-orie
 
 - Real-time streaming audio generation
 - Generate binaural/monaural/isochronic tones from SPSQ sequences
+- Support for both text (SPSQ) and JSON formats
 - WebAssembly-powered for high performance
 - AudioWorklet-based streaming for low-latency playback
 - Integrated Web Worker for non-blocking audio generation (no external worker file needed!)
@@ -41,7 +42,7 @@ Simply include the `synapseq.js` file in your HTML:
 // Create a new SynapSeq instance
 const synapseq = new SynapSeq();
 
-// Load a sequence
+// Load a sequence in text format (SPSQ)
 const spsqCode = `
 # Presets
 alpha
@@ -56,12 +57,14 @@ alpha
 `;
 
 async function play() {
-  // Load from string
+  // Load from string (text format is default)
   await synapseq.load(spsqCode);
   await synapseq.play();
 
-  // Or...
-  // Load from File object
+  // Or load JSON format
+  // await synapseq.load(jsonString, "json");
+
+  // Or load from File object (format auto-detected)
   // const fileInput = document.getElementById("fileInput");
   // await synapseq.load(fileInput.files[0]);
 }
@@ -108,6 +111,45 @@ Creates a new SynapSeq instance and initializes the embedded Web Worker.
   - `wasmExecPath` (string) - Path or URL to the wasm_exec.js file (default: `'wasm_exec.js'`)
 
 **Returns:** `SynapSeq` instance
+
+---
+
+#### `load(input, format)`
+
+Loads a sequence from a string or File object. Supports both text (SPSQ) and JSON formats.
+
+**Parameters:**
+
+- `input` (string|File) - Sequence content as string or File object
+- `format` (string) - Optional format: `'text'` (default) or `'json'`
+
+**Returns:** `Promise<void>`
+
+**Throws:** Error if input is invalid
+
+**Examples:**
+
+```javascript
+// Load from SPSQ text string (default format)
+const spsqCode = `
+# Presets
+alpha
+  tone 250 isochronic 10
+
+# Timeline
+00:00:00 alpha
+`;
+await synapseq.load(spsqCode);
+// or explicitly:
+await synapseq.load(spsqCode, "text");
+
+// Load from File object (.spsq file)
+const fileInput = document.getElementById("fileInput");
+await synapseq.load(fileInput.files[0], "text");
+
+// Load from File object (.json file)
+await synapseq.load(fileInput.files[0], "json");
+```
 
 ---
 
@@ -444,10 +486,6 @@ setInterval(() => {
   }
 }, 100);
 ```
-
-## SynapSeq Syntax
-
-SPSQ (SynapSeq Sequence) is the offical format used in SynapSeq. See [full documentation.](../docs/USAGE.md) for complete details.
 
 ## Browser Compatibility
 

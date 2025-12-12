@@ -8,7 +8,7 @@
  * @class SynapSeq
  * @example
  * const synapse = new SynapSeq();
- * await synapse.load(spsqContent);
+ * await synapse.load(content);
  * await synapse.play();
  */
 class SynapSeq {
@@ -52,6 +52,12 @@ class SynapSeq {
      * @type {string|null}
      */
     this._sequence = null;
+
+    /**
+     * @private
+     * @type {string|null}
+     */
+    this._format = "text";
 
     /**
      * @private
@@ -186,7 +192,8 @@ class SynapSeq {
           }
 
           try {
-            const spsqBytes = e.data.spsqBytes;
+            const contentBytes = e.data.contentBytes;
+            const format = e.data.format || "text";
 
             const onChunk = (chunk) => {
               self.postMessage(
@@ -211,7 +218,13 @@ class SynapSeq {
               });
             };
 
-            await synapseqStreamPcm(onChunk, onDone, onError, spsqBytes);
+            await synapseqStreamPcm(
+              onChunk,
+              onDone,
+              onError,
+              contentBytes,
+              format
+            );
           } catch (error) {
             self.postMessage({
               type: "error",
@@ -457,8 +470,8 @@ class SynapSeq {
   }
 
   /**
-   * Loads a SPSQ sequence from string or File object
-   * @param {string|File} input - SPSQ sequence content or File object
+   * Loads a sequence from string or File object
+   * @param {string|File} input - Sequence content or File object
    * @returns {Promise<void>}
    * @throws {Error} If input is invalid or worker is not ready
    * @example
@@ -467,9 +480,11 @@ class SynapSeq {
    *
    * // Load from File object
    * const file = document.getElementById('fileInput').files[0];
-   * await synapse.load(file);
+   * await synapse.load(file, "text");
+   * // or for JSON format
+   * await synapse.load(file, "json");
    */
-  async load(input) {
+  async load(input, format = "text") {
     // Wait for worker to be ready
     if (!this._workerReady) {
       await this._initPromise;
@@ -478,6 +493,12 @@ class SynapSeq {
     if (!input) {
       throw new Error("Input is required");
     }
+
+    if (format !== "text" && format !== "json") {
+      throw new Error("Unsupported format: " + format);
+    }
+
+    this._format = format;
 
     // Handle File object
     if (input instanceof File) {
@@ -509,7 +530,7 @@ class SynapSeq {
   }
 
   /**
-   * Extracts sample rate from SPSQ text
+   * Extracts sample rate from sequence content
    * @private
    * @param {string} spsq - SPSQ sequence text
    * @returns {number} Sample rate in Hz
@@ -527,6 +548,21 @@ class SynapSeq {
       }
     }
     return 44100; // Default sample rate
+  }
+
+  /**
+   * Extracts sample rate from JSON sequence content
+   * @private
+   * @param {string} jsonStr - JSON string of the sequence
+   * @returns {number} Sample rate in Hz
+   */
+  _extractSampleRateFromJSON(jsonStr) {
+    try {
+      const obj = JSON.parse(jsonStr);
+      return obj?.options?.samplerate ?? 44100;
+    } catch {
+      return 44100;
+    }
   }
 
   /**
@@ -550,12 +586,17 @@ class SynapSeq {
 
     try {
       // Get sample rate directly from SPSQ text (no need to call WASM)
-      const sampleRate = this._extractSampleRateFromText(this._sequence);
+      let sampleRate;
+      if (this._format === "json") {
+        sampleRate = this._extractSampleRateFromJSON(this._sequence);
+      } else {
+        sampleRate = this._extractSampleRateFromText(this._sequence);
+      }
       this._sampleRate = sampleRate;
 
       // Encode sequence to bytes for streaming
       const encoder = new TextEncoder();
-      const spsqBytes = encoder.encode(this._sequence);
+      const contentBytes = encoder.encode(this._sequence);
 
       await this._initializeAudioContext(sampleRate);
 
@@ -588,10 +629,11 @@ class SynapSeq {
       this._playStartTime = this._audioContext.currentTime;
       this._dispatchEvent("generating");
 
-      // Start streaming (reuse spsqBytes from above)
+      // Start streaming (reuse contentBytes from above)
       this._worker.postMessage({
         type: "stream",
-        spsqBytes: spsqBytes,
+        contentBytes: contentBytes,
+        format: this._format,
       });
 
       this._dispatchEvent("playing");

@@ -1,4 +1,4 @@
-//go:build !wasm
+//go:build wasm
 
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
@@ -13,8 +13,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/goccy/go-yaml"
@@ -37,52 +35,20 @@ func initializeTracks() [t.NumberOfChannels]t.Track {
 	return tracks
 }
 
-// resolveBackgroundPath resolves the background audio path
-func resolveBackgroundPath(path, basePath string) (string, error) {
-	if path == "-" {
-		return "", fmt.Errorf("stdin (-) is not supported for background audio")
-	}
-
-	if s.IsRemoteFile(path) {
-		return path, nil
-	}
-
-	if strings.HasPrefix(path, "~") {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		expanded := filepath.Join(homeDir, strings.TrimPrefix(path, "~"))
-		return filepath.Clean(expanded), nil
-	}
-
-	if filepath.IsAbs(path) {
-		return filepath.Clean(path), nil
-	}
-
-	fullPath := filepath.Join(basePath, path)
-	return filepath.Clean(fullPath), nil
-}
-
-// LoadStructuredSequence loads and parses a json/xml/yaml sequence file
-func LoadStructuredSequence(filename string, format t.FileFormat) (*t.Sequence, error) {
-	data, err := s.GetFile(filename, format)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load structured sequence file: %v", err)
-	}
-
+// LoadStructuredSequence loads and parses a json/xml/yaml sequence file content
+func LoadStructuredSequence(rawContent []byte, format t.FileFormat) (*t.Sequence, error) {
 	var input t.SynapSeqInput
 	switch format {
 	case t.FormatJSON:
-		if err := json.Unmarshal(data, &input); err != nil {
+		if err := json.Unmarshal(rawContent, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling JSON: %v", err)
 		}
 	case t.FormatXML:
-		if err := xml.Unmarshal(data, &input); err != nil {
+		if err := xml.Unmarshal(rawContent, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling XML: %v", err)
 		}
 	case t.FormatYAML:
-		if err := yaml.Unmarshal(data, &input); err != nil {
+		if err := yaml.Unmarshal(rawContent, &input); err != nil {
 			return nil, fmt.Errorf("error unmarshalling YAML: %v", err)
 		}
 	default:
@@ -93,17 +59,9 @@ func LoadStructuredSequence(filename string, format t.FileFormat) (*t.Sequence, 
 		return nil, fmt.Errorf("not enough sequence data found in input file")
 	}
 
-	var backgroundPath string
-	if input.Options.Background != "" {
-		var err error
-
-		path := input.Options.Background
-		basePath := filepath.Dir(filename)
-
-		backgroundPath, err = resolveBackgroundPath(path, basePath)
-		if err != nil {
-			return nil, err
-		}
+	backgroundPath := input.Options.Background
+	if backgroundPath != "" && !s.IsRemoteFile(backgroundPath) {
+		return nil, fmt.Errorf("background audio must be a remote file URL in WASM builds")
 	}
 
 	gainLevel := t.GainLevelOff
