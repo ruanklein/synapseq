@@ -116,6 +116,12 @@ For detailed information on all features and advanced usage, see the [USAGE.md](
 
 SynapSeq can also be used as a Go library in your own projects. See the [Go Library Documentation](https://pkg.go.dev/github.com/ruanklein/synapseq/v3/core) for instructions on how to integrate SynapSeq into your Go applications.
 
+## WebAssembly (JavaScript)
+
+SynapSeq is also available as a WebAssembly library for use in web browsers. The JavaScript wrapper provides a simple API for loading and playing sequences directly in the browser with real-time audio streaming.
+
+For detailed documentation, examples, and API reference, see the [WebAssembly Documentation](wasm/README.md).
+
 ## FAQ
 
 For answers to common questions about SynapSeq and brainwave entrainment, see the [FAQ](docs/FAQ.md).
