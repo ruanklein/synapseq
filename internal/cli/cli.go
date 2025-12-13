@@ -105,14 +105,16 @@ func Help() {
 	fmt.Printf("  -ffplay-path  		Path to ffplay executable (default: ffplay)\n")
 	fmt.Printf("  -ffprobe-path  		Path to ffprobe executable (default: ffprobe)\n\n")
 
-	fmt.Printf("Hub options:\n")
-	fmt.Printf("  -hub-update      		Update index of available sequences\n")
-	fmt.Printf("  -hub-clean      		Clean up local cache\n")
-	fmt.Printf("  -hub-list       		List available sequences\n")
-	fmt.Printf("  -hub-search     		Search sequences\n")
-	fmt.Printf("  -hub-download       		Download sequence and dependencies\n")
-	fmt.Printf("  -hub-info       		Show information about a sequence\n")
-	fmt.Printf("  -hub-get       		Get sequence\n\n")
+	if info.HUB_ENABLED {
+		fmt.Printf("Hub options:\n")
+		fmt.Printf("  -hub-update      		Update index of available sequences\n")
+		fmt.Printf("  -hub-clean      		Clean up local cache\n")
+		fmt.Printf("  -hub-list       		List available sequences\n")
+		fmt.Printf("  -hub-search     		Search sequences\n")
+		fmt.Printf("  -hub-download       		Download sequence and dependencies\n")
+		fmt.Printf("  -hub-info       		Show information about a sequence\n")
+		fmt.Printf("  -hub-get       		Get sequence\n\n")
+	}
 
 	if runtime.GOOS == "windows" {
 		fmt.Printf("Windows-specific options:\n")
