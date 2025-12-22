@@ -67,6 +67,8 @@ synapseq -uninstall-file-association
 
 For more details, see the [-install-file-association](./docs/USAGE.md#-install-file-association-windows-only) command documentation.
 
+**Note**: You need install the `ffmpeg` tool to use this feature. See the [Installing FFmpeg](docs/USAGE.md#installing-ffmpeg) section for instructions.
+
 ### macOS/Linux
 
 #### Homebrew
