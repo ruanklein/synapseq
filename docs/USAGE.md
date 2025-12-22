@@ -863,7 +863,7 @@ synapseq -hub-download synapseq.samples.genesis ./downloads
 
 #### `-hub-get`
 
-Generates a WAV file directly from a Hub sequence without downloading it first.
+Generates audio output directly from a Hub sequence without downloading it first.
 
 This command fetches the sequence from the Hub, loads it into memory, and generates the audio output. This is useful for quickly rendering sequences without cluttering your local filesystem.
 
@@ -873,26 +873,47 @@ Syntax:
 synapseq -hub-get [sequence-id] [output-file]
 ```
 
-If no output file is specified or `-` is used, the audio is streamed to stdout in RAW format.
-
-Example:
+**Basic Usage (WAV output):**
 
 ```
 synapseq -hub-get synapseq.samples.genesis output.wav
 ```
 
-Stream to stdout:
+**Stream to stdout:**
+
+If no output file is specified or `-` is used, the audio is streamed to stdout in RAW format.
 
 ```
 synapseq -hub-get synapseq.samples.genesis -
 synapseq -hub-get synapseq.samples.genesis
 ```
 
+**Play in real-time:**
+
+You can combine `-hub-get` with `-play` to stream and play a Hub sequence directly without creating any files.
+
+```
+synapseq -hub-get synapseq.samples.genesis -play
+```
+
+**Convert to MP3:**
+
+You can combine `-hub-get` with `-mp3` to convert a Hub sequence directly to MP3 format.
+
+```
+synapseq -hub-get synapseq.samples.genesis -mp3
+synapseq -hub-get synapseq.samples.genesis -mp3 custom-output.mp3
+```
+
+**Quiet mode:**
+
 You can use `-quiet` to suppress verbose output:
 
 ```
 synapseq -quiet -hub-get synapseq.samples.genesis output.wav
 ```
+
+**Error handling:**
 
 If the sequence is not found:
 
@@ -922,14 +943,111 @@ Hub cache cleaned successfully.
 
 #### `-extract`
 
-Extracts the original sequence and metadata embedded in a WAV file. Requires an input WAV file and an output file (text or stdout).
+Extracts the original sequence and metadata embedded in a WAV or MP3 file. Requires an input file and an output file (text or stdout).
 
-Examples:
+**For WAV files:**
 
 ```
 synapseq -extract input.wav output.spsq
 synapseq -extract input.wav -
 ```
+
+**For MP3 files:**
+
+To extract sequences from MP3 files, you must use the `-mp3` flag and have **ffprobe** installed on your system.
+
+```
+synapseq -extract -mp3 input.mp3 output.spsq
+synapseq -extract -mp3 input.mp3 -
+```
+
+**Requirements:**
+
+- WAV extraction: No additional dependencies
+- MP3 extraction: Requires **ffprobe** (part of the FFmpeg suite)
+
+#### `-play`
+
+Plays a sequence in real-time using **ffplay**. The audio is streamed directly to ffplay without creating any intermediate files.
+
+**Requirements:** This feature requires **ffplay** (part of the FFmpeg suite) to be installed on your system.
+
+Syntax:
+
+```
+synapseq -play [input-file]
+```
+
+Examples:
+
+```
+synapseq -play sample-binaural.spsq
+synapseq -play https://example.com/sequences/my-sequence.spsq
+```
+
+You can also use stdin:
+
+```
+cat example.spsq | synapseq -play -
+```
+
+**Custom ffplay path:**
+
+If ffplay is not in your system PATH, you can specify its location using `-ffplay-path`:
+
+```
+synapseq -play -ffplay-path /custom/path/to/ffplay sample.spsq
+```
+
+**Note:** The `-play` option streams audio in real-time and does not create any output file. Press `CTRL+C` to stop playback.
+
+#### `-mp3`
+
+Converts a sequence to MP3 format using **ffmpeg**. By default, creates an output file with the same name as the input but with `.mp3` extension.
+
+**Requirements:** This feature requires **ffmpeg** to be installed on your system.
+
+Syntax:
+
+```
+synapseq -mp3 [input-file] [output-file]
+```
+
+Examples:
+
+```
+# Auto-generate output filename (sample.spsq -> sample.mp3)
+synapseq -mp3 sample.spsq
+
+# Specify custom output filename
+synapseq -mp3 sample.spsq output.mp3
+
+# From URL
+synapseq -mp3 https://example.com/sequence.spsq custom-name.mp3
+```
+
+You can also use stdin:
+
+```
+cat example.spsq | synapseq -mp3 - output.mp3
+```
+
+**Custom ffmpeg path:**
+
+If ffmpeg is not in your system PATH, you can specify its location using `-ffmpeg-path`:
+
+```
+synapseq -mp3 -ffmpeg-path /custom/path/to/ffmpeg sample.spsq output.mp3
+```
+
+**Audio Quality:**
+
+The MP3 output is generated with the following settings:
+
+- Codec: libmp3lame
+- Bitrate: 320 kbps (high quality)
+- Sample rate: Matches the sequence (default 44100 Hz)
+- Channels: Stereo (2 channels)
 
 #### `-convert`
 
@@ -987,9 +1105,80 @@ cat sequence.yaml | synapseq -yaml - output.wav
 synapseq -yaml https://example.com/sequence.yaml output.wav
 ```
 
+#### `-ffmpeg-path`
+
+Specifies a custom path to the ffmpeg executable. Use this option if ffmpeg is not in your system PATH or if you want to use a specific version.
+
+Syntax:
+
+```
+synapseq -mp3 -ffmpeg-path [path-to-ffmpeg] [input-file] [output-file]
+```
+
+Example:
+
+```
+synapseq -mp3 -ffmpeg-path /usr/local/bin/ffmpeg sample.spsq output.mp3
+synapseq -mp3 -ffmpeg-path C:\Tools\ffmpeg.exe sample.spsq output.mp3
+```
+
+#### `-ffplay-path`
+
+Specifies a custom path to the ffplay executable. Use this option if ffplay is not in your system PATH or if you want to use a specific version.
+
+Syntax:
+
+```
+synapseq -play -ffplay-path [path-to-ffplay] [input-file]
+```
+
+Example:
+
+```
+synapseq -play -ffplay-path /usr/local/bin/ffplay sample.spsq
+synapseq -play -ffplay-path C:\Tools\ffplay.exe sample.spsq
+```
+
+#### `-ffprobe-path`
+
+Specifies a custom path to the ffprobe executable. Use this option if ffprobe is not in your system PATH or if you want to use a specific version. This is only needed when extracting sequences from MP3 files.
+
+Syntax:
+
+```
+synapseq -extract -mp3 -ffprobe-path [path-to-ffprobe] [input-file] [output-file]
+```
+
+Example:
+
+```
+synapseq -extract -mp3 -ffprobe-path /usr/local/bin/ffprobe input.mp3 output.spsq
+synapseq -extract -mp3 -ffprobe-path C:\Tools\ffprobe.exe input.mp3 output.spsq
+```
+
 #### `-help`
 
 Show the help and exit.
+
+#### `-unsafe-no-metadata`
+
+Prevents embedding the original SPSQ sequence and metadata into the generated WAV or MP3 file.
+
+Syntax:
+
+```
+synapseq -unsafe-no-metadata [input-file] [output-file]
+```
+
+Examples:
+
+```
+# Generate WAV without metadata
+synapseq -unsafe-no-metadata sample.spsq output.wav
+
+# Generate MP3 without metadata
+synapseq -unsafe-no-metadata -mp3 sample.spsq output.mp3
+```
 
 #### `-quiet`
 
@@ -1015,17 +1204,23 @@ Installs Windows file association and context menu integration for SynapSeq. Thi
 
 **File Association:**
 
-- Double-click any `.spsq` file to automatically generate a WAV file in the same directory with the same name
+- Double-click any `.spsq` file to automatically play the sequence in real-time using ffplay
 - Assigns the SynapSeq icon to `.spsq` files in Windows Explorer
 
 **Context Menu for .spsq files:**
 
-- **"SynapSeq: Test sequence"**: Validates the sequence syntax without generating audio output
 - **"SynapSeq: Edit sequence"**: Opens the sequence file in Notepad for editing
+- **"SynapSeq: Test sequence"**: Validates the sequence syntax without generating audio output
+- **"SynapSeq: Convert to WAV"**: Generates a WAV file in the same directory
+- **"SynapSeq: Convert to MP3"**: Generates an MP3 file using ffmpeg (requires ffmpeg installed)
 
 **Context Menu for .wav files:**
 
 - **"SynapSeq: Extract sequence"**: Extracts the embedded `.spsq` sequence from SynapSeq-generated WAV files
+
+**Context Menu for .mp3 files:**
+
+- **"SynapSeq: Extract sequence"**: Extracts the embedded `.spsq` sequence from SynapSeq-generated MP3 files (requires ffprobe installed)
 
 Example:
 
@@ -1047,6 +1242,52 @@ synapseq -uninstall-file-association
 
 **Note:** This command is safe to run even if file associations were never installed.
 
+### Installing FFmpeg
+
+To use the `-play`, `-mp3`, and `-extract -mp3` features, you need to have FFmpeg installed on your system.
+
+**Download FFmpeg:**
+
+- Official website: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+
+**Installation by platform:**
+
+- **macOS** (using Homebrew):
+
+  ```bash
+  brew install ffmpeg
+  ```
+
+- **Linux** (Ubuntu/Debian):
+
+  ```bash
+  sudo apt update
+  sudo apt install ffmpeg
+  ```
+
+- **Linux** (Fedora):
+
+  ```bash
+  sudo dnf install ffmpeg
+  ```
+
+- **Windows** (using winget):
+
+  ```powershell
+  winget update
+  winget install ffmpeg
+  ```
+
+**Verify installation:**
+
+```bash
+ffmpeg -version
+ffplay -version
+ffprobe -version
+```
+
+If these commands return version information, FFmpeg is correctly installed and available in your PATH.
+
 ## Notes
 
 ### File Size Limits
@@ -1067,46 +1308,6 @@ SynapSeq enforces different file size limits depending on the file type:
   - Applies to: files loaded with `@background` option
   - Files larger than 10 MB will be read up to the 10 MB limit; the rest will be ignored
 
-### Channel Limits
+### Track Limits
 
-The total number of tones and noises per timestamp cannot exceed **16 channels**. This limit applies to all formats (text and structured).
-
-### Content-Type Validation for HTTP/HTTPS URLs
-
-When loading files from web URLs, SynapSeq validates the `Content-Type` header returned by the server. If the Content-Type does not match the expected format, the request will be rejected.
-
-#### Text Format Files (.spsq)
-
-For sequence files and preset files loaded via HTTP/HTTPS, the server must return:
-
-- `text/plain`
-
-#### Structured Format Files
-
-**JSON files** must return one of:
-
-- `application/json`
-- `text/json`
-- Any Content-Type ending with `+json` (e.g., `application/vnd.api+json`)
-
-**XML files** must return one of:
-
-- `application/xml`
-- `text/xml`
-- Any Content-Type ending with `+xml` (e.g., `application/atom+xml`)
-
-**YAML files** must return one of:
-
-- `application/x-yaml`
-- `application/yaml`
-- `text/yaml`
-- `text/x-yaml`
-- Any Content-Type ending with `+yaml` or `+yml`
-
-#### Background Audio Files (.wav)
-
-For background audio files loaded via HTTP/HTTPS, the server must return one of:
-
-- `audio/wav`
-- `audio/x-wav`
-- `audio/wave`
+The total number of tones and noises per preset cannot exceed **16 tracks**. This limit applies to all formats (text and structured).

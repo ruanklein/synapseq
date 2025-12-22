@@ -8,7 +8,7 @@
  * @class SynapSeq
  * @example
  * const synapse = new SynapSeq();
- * await synapse.load(spsqContent);
+ * await synapse.load(content);
  * await synapse.play();
  */
 class SynapSeq {
@@ -55,21 +55,15 @@ class SynapSeq {
 
     /**
      * @private
+     * @type {string|null}
+     */
+    this._format = "text";
+
+    /**
+     * @private
      * @type {Worker|null}
      */
     this._worker = null;
-
-    /**
-     * @private
-     * @type {HTMLAudioElement|null}
-     */
-    this._audio = null;
-
-    /**
-     * @private
-     * @type {Blob|null}
-     */
-    this._audioBlob = null;
 
     /**
      * @private
@@ -100,6 +94,36 @@ class SynapSeq {
      * @type {Promise<void>|null}
      */
     this._initPromise = null;
+
+    /**
+     * @private
+     * @type {AudioContext|null}
+     */
+    this._audioContext = null;
+
+    /**
+     * @private
+     * @type {AudioWorkletNode|null}
+     */
+    this._audioWorkletNode = null;
+
+    /**
+     * @private
+     * @type {boolean}
+     */
+    this._isStreaming = false;
+
+    /**
+     * @private
+     * @type {number}
+     */
+    this._sampleRate = 44100;
+
+    /**
+     * @private
+     * @type {number}
+     */
+    this._playStartTime = 0;
 
     this._initializeWorker();
   }
@@ -158,7 +182,7 @@ class SynapSeq {
           return;
         }
 
-        if (e.data.type === "generate") {
+        if (e.data.type === "stream") {
           if (!wasmReady) {
             self.postMessage({
               type: "error",
@@ -168,23 +192,38 @@ class SynapSeq {
           }
 
           try {
-            const spsqBytes = e.data.spsqBytes;
-            const result = await synapseqGenerate(spsqBytes);
+            const contentBytes = e.data.contentBytes;
+            const format = e.data.format || "text";
 
-            if (result.error) {
+            const onChunk = (chunk) => {
+              self.postMessage(
+                {
+                  type: "chunk",
+                  chunk: chunk,
+                },
+                [chunk.buffer]
+              );
+            };
+
+            const onDone = () => {
+              self.postMessage({
+                type: "stream-done",
+              });
+            };
+
+            const onError = (error) => {
               self.postMessage({
                 type: "error",
-                error: result.error,
+                error: error,
               });
-              return;
-            }
+            };
 
-            self.postMessage(
-              {
-                type: "success",
-                wav: result.wav,
-              },
-              [result.wav.buffer]
+            await synapseqStreamPcm(
+              onChunk,
+              onDone,
+              onError,
+              contentBytes,
+              format
             );
           } catch (error) {
             self.postMessage({
@@ -222,8 +261,10 @@ class SynapSeq {
             this._hash = data.hash || "";
 
             resolve();
-          } else if (data.type === "success") {
-            this._handleAudioGenerated(data.wav);
+          } else if (data.type === "chunk") {
+            this._handleAudioChunk(data.chunk);
+          } else if (data.type === "stream-done") {
+            this._handleStreamDone();
           } else if (data.type === "error") {
             this._handleError(new Error(data.error));
           }
@@ -257,41 +298,154 @@ class SynapSeq {
   }
 
   /**
-   * Handles successful audio generation from worker
+   * Handles audio chunk from streaming
    * @private
-   * @param {Uint8Array} wavBytes - Generated WAV file bytes
+   * @param {Uint8Array} chunk - PCM audio chunk as Uint8Array (stereo interleaved)
    */
-  _handleAudioGenerated(wavBytes) {
-    try {
-      this._audioBlob = new Blob([wavBytes], { type: "audio/wav" });
-      const url = URL.createObjectURL(this._audioBlob);
-
-      // Reuse the audio element created during user interaction
-      if (!this._audio) {
-        this._audio = new Audio();
-
-        this._audio.addEventListener("ended", () => {
-          this._dispatchEvent("ended");
-        });
-
-        this._audio.addEventListener("error", (e) => {
-          this._handleError(new Error("Audio playback error"));
-        });
-      }
-
-      // Set the source and play
-      this._audio.src = url;
-      this._audio
-        .play()
-        .then(() => {
-          this._dispatchEvent("playing");
-        })
-        .catch((error) => {
-          this._handleError(error);
-        });
-    } catch (error) {
-      this._handleError(error);
+  _handleAudioChunk(chunk) {
+    if (!this._audioWorkletNode) {
+      return;
     }
+
+    // Convert Uint8Array (Int16 bytes, stereo interleaved) to separate Float32Arrays
+    const numSamples = chunk.length / 4; // 4 bytes per stereo sample (2 bytes per channel)
+    const leftChannel = new Float32Array(numSamples);
+    const rightChannel = new Float32Array(numSamples);
+
+    for (let i = 0; i < numSamples; i++) {
+      // Read left channel Int16 (little-endian)
+      const leftByte1 = chunk[i * 4];
+      const leftByte2 = chunk[i * 4 + 1];
+      const leftInt16 = leftByte1 | (leftByte2 << 8);
+      const signedLeft = leftInt16 > 32767 ? leftInt16 - 65536 : leftInt16;
+      leftChannel[i] = signedLeft / 32768.0;
+
+      // Read right channel Int16 (little-endian)
+      const rightByte1 = chunk[i * 4 + 2];
+      const rightByte2 = chunk[i * 4 + 3];
+      const rightInt16 = rightByte1 | (rightByte2 << 8);
+      const signedRight = rightInt16 > 32767 ? rightInt16 - 65536 : rightInt16;
+      rightChannel[i] = signedRight / 32768.0;
+    }
+
+    // Send both channels to AudioWorklet
+    this._audioWorkletNode.port.postMessage({
+      type: "chunk",
+      left: leftChannel,
+      right: rightChannel,
+    });
+  }
+
+  /**
+   * Handles stream completion
+   * @private
+   */
+  _handleStreamDone() {
+    if (this._audioWorkletNode) {
+      this._audioWorkletNode.port.postMessage({
+        type: "done",
+      });
+    }
+  }
+
+  /**
+   * Initializes AudioContext and AudioWorklet for streaming
+   * @private
+   * @param {number} sampleRate - Sample rate for the AudioContext
+   * @returns {Promise<void>}
+   */
+  async _initializeAudioContext(sampleRate) {
+    // Close existing context if sample rate changed
+    if (this._audioContext && this._audioContext.sampleRate !== sampleRate) {
+      await this._audioContext.close();
+      this._audioContext = null;
+    }
+
+    if (this._audioContext) {
+      return;
+    }
+
+    this._audioContext = new (window.AudioContext || window.webkitAudioContext)(
+      { sampleRate: sampleRate }
+    );
+
+    // Create AudioWorklet processor inline
+    const processorCode = `
+      class StreamProcessor extends AudioWorkletProcessor {
+        constructor() {
+          super();
+          this.leftChunks = [];
+          this.rightChunks = [];
+          this.currentLeftChunk = null;
+          this.currentRightChunk = null;
+          this.currentIndex = 0;
+          this.done = false;
+          
+          this.port.onmessage = (e) => {
+            if (e.data.type === 'chunk') {
+              this.leftChunks.push(e.data.left);
+              this.rightChunks.push(e.data.right);
+            } else if (e.data.type === 'done') {
+              this.done = true;
+            } else if (e.data.type === 'stop') {
+              this.leftChunks = [];
+              this.rightChunks = [];
+              this.currentLeftChunk = null;
+              this.currentRightChunk = null;
+              this.currentIndex = 0;
+              this.done = false;
+            }
+          };
+        }
+        
+        process(inputs, outputs, parameters) {
+          const output = outputs[0];
+          
+          if (!output || output.length === 0) {
+            return true;
+          }
+          
+          const leftChannel = output[0];
+          const rightChannel = output.length > 1 ? output[1] : output[0];
+          
+          for (let i = 0; i < leftChannel.length; i++) {
+            if (!this.currentLeftChunk || this.currentIndex >= this.currentLeftChunk.length) {
+              if (this.leftChunks.length > 0) {
+                this.currentLeftChunk = this.leftChunks.shift();
+                this.currentRightChunk = this.rightChunks.shift();
+                this.currentIndex = 0;
+              } else if (this.done) {
+                this.port.postMessage({ type: 'ended' });
+                return false;
+              } else {
+                leftChannel[i] = 0;
+                rightChannel[i] = 0;
+                continue;
+              }
+            }
+            
+            if (this.currentLeftChunk && this.currentIndex < this.currentLeftChunk.length) {
+              leftChannel[i] = this.currentLeftChunk[this.currentIndex];
+              rightChannel[i] = this.currentRightChunk[this.currentIndex];
+              this.currentIndex++;
+            } else {
+              leftChannel[i] = 0;
+              rightChannel[i] = 0;
+            }
+          }
+          
+          return true;
+        }
+      }
+      
+      registerProcessor('stream-processor', StreamProcessor);
+    `;
+
+    const blob = new Blob([processorCode], { type: "application/javascript" });
+    const url = URL.createObjectURL(blob);
+
+    await this._audioContext.audioWorklet.addModule(url);
+    URL.revokeObjectURL(url);
   }
 
   /**
@@ -316,8 +470,8 @@ class SynapSeq {
   }
 
   /**
-   * Loads a SPSQ sequence from string or File object
-   * @param {string|File} input - SPSQ sequence content or File object
+   * Loads a sequence from string or File object
+   * @param {string|File} input - Sequence content or File object
    * @returns {Promise<void>}
    * @throws {Error} If input is invalid or worker is not ready
    * @example
@@ -326,9 +480,11 @@ class SynapSeq {
    *
    * // Load from File object
    * const file = document.getElementById('fileInput').files[0];
-   * await synapse.load(file);
+   * await synapse.load(file, "text");
+   * // or for JSON format
+   * await synapse.load(file, "json");
    */
-  async load(input) {
+  async load(input, format = "text") {
     // Wait for worker to be ready
     if (!this._workerReady) {
       await this._initPromise;
@@ -337,6 +493,12 @@ class SynapSeq {
     if (!input) {
       throw new Error("Input is required");
     }
+
+    if (format !== "text" && format !== "json") {
+      throw new Error("Unsupported format: " + format);
+    }
+
+    this._format = format;
 
     // Handle File object
     if (input instanceof File) {
@@ -368,6 +530,42 @@ class SynapSeq {
   }
 
   /**
+   * Extracts sample rate from sequence content
+   * @private
+   * @param {string} spsq - SPSQ sequence text
+   * @returns {number} Sample rate in Hz
+   */
+  _extractSampleRateFromText(spsq) {
+    const lines = spsq.split("\n");
+    for (const line of lines) {
+      const trimmed = line.trim();
+      // Look for @samplerate directive
+      if (trimmed.startsWith("@samplerate")) {
+        const match = trimmed.match(/@samplerate\s+(\d+)/);
+        if (match) {
+          return parseInt(match[1], 10);
+        }
+      }
+    }
+    return 44100; // Default sample rate
+  }
+
+  /**
+   * Extracts sample rate from JSON sequence content
+   * @private
+   * @param {string} jsonStr - JSON string of the sequence
+   * @returns {number} Sample rate in Hz
+   */
+  _extractSampleRateFromJSON(jsonStr) {
+    try {
+      const obj = JSON.parse(jsonStr);
+      return obj?.options?.samplerate ?? 44100;
+    } catch {
+      return 44100;
+    }
+  }
+
+  /**
    * Plays the loaded sequence
    * @returns {Promise<void>}
    * @throws {Error} If no sequence is loaded or worker is not ready
@@ -383,116 +581,108 @@ class SynapSeq {
       throw new Error("No sequence loaded. Call load() first.");
     }
 
-    // If audio exists and is paused, resume playback
-    if (this._audio && this._audio.paused && this._audioBlob) {
-      try {
-        await this._audio.play();
-        this._dispatchEvent("playing");
-        return;
-      } catch (error) {
-        throw new Error("Failed to resume playback: " + error.message);
+    // Stop any current playback
+    this.stop();
+
+    try {
+      // Get sample rate directly from SPSQ text (no need to call WASM)
+      let sampleRate;
+      if (this._format === "json") {
+        sampleRate = this._extractSampleRateFromJSON(this._sequence);
+      } else {
+        sampleRate = this._extractSampleRateFromText(this._sequence);
       }
+      this._sampleRate = sampleRate;
+
+      // Encode sequence to bytes for streaming
+      const encoder = new TextEncoder();
+      const contentBytes = encoder.encode(this._sequence);
+
+      await this._initializeAudioContext(sampleRate);
+
+      // Create AudioWorklet node with stereo output
+      this._audioWorkletNode = new AudioWorkletNode(
+        this._audioContext,
+        "stream-processor",
+        {
+          outputChannelCount: [2],
+        }
+      );
+
+      // Listen for end event
+      this._audioWorkletNode.port.onmessage = (e) => {
+        if (e.data.type === "ended") {
+          this._dispatchEvent("ended");
+          this.stop();
+        }
+      };
+
+      // Connect to destination
+      this._audioWorkletNode.connect(this._audioContext.destination);
+
+      // Resume AudioContext if suspended
+      if (this._audioContext.state === "suspended") {
+        await this._audioContext.resume();
+      }
+
+      this._isStreaming = true;
+      this._playStartTime = this._audioContext.currentTime;
+      this._dispatchEvent("generating");
+
+      // Start streaming (reuse contentBytes from above)
+      this._worker.postMessage({
+        type: "stream",
+        contentBytes: contentBytes,
+        format: this._format,
+      });
+
+      this._dispatchEvent("playing");
+    } catch (error) {
+      throw new Error("Failed to start streaming: " + error.message);
     }
-
-    // Create audio element immediately to satisfy mobile autoplay policies
-    // This must happen during the user interaction (click event)
-    if (this._audio) {
-      this._audio.pause();
-    }
-    this._audio = new Audio();
-
-    // Setup event listeners before generation
-    this._audio.addEventListener("ended", () => {
-      this._dispatchEvent("ended");
-    });
-
-    this._audio.addEventListener("error", (e) => {
-      this._handleError(new Error("Audio playback error"));
-    });
-
-    // Generate new audio
-    this._dispatchEvent("generating");
-
-    const encoder = new TextEncoder();
-    const spsqBytes = encoder.encode(this._sequence);
-
-    this._worker.postMessage({
-      type: "generate",
-      spsqBytes: spsqBytes,
-    });
   }
 
   /**
-   * Pauses the currently playing sequence
-   * @returns {void}
-   * @throws {Error} If no audio is playing
-   * @example
-   * synapse.pause();
-   */
-  pause() {
-    if (!this._audio) {
-      throw new Error("No audio is playing");
-    }
-
-    if (!this._audio.paused) {
-      this._audio.pause();
-      this._dispatchEvent("paused");
-    }
-  }
-
-  /**
-   * Stops the currently playing sequence and resets playback position
+   * Stops the currently playing sequence
    * @returns {void}
    * @example
    * synapse.stop();
    */
   stop() {
-    if (this._audio) {
-      this._audio.pause();
-      this._audio.currentTime = 0;
-      this._audio = null;
-      this._audioBlob = null;
+    if (this._isStreaming && this._audioWorkletNode) {
+      this._audioWorkletNode.port.postMessage({ type: "stop" });
+      this._audioWorkletNode.disconnect();
+      this._audioWorkletNode = null;
+      this._isStreaming = false;
+      this._playStartTime = 0;
       this._dispatchEvent("stopped");
     }
   }
 
   /**
    * Gets the current playback position in seconds
-   * @returns {number} Current time in seconds, or 0 if not playing
+   * @returns {number} Current time in seconds since playback started
    * @example
    * const currentTime = synapse.getCurrentTime();
    */
   getCurrentTime() {
-    return this._audio ? this._audio.currentTime : 0;
-  }
-
-  /**
-   * Gets the total duration of the loaded audio in seconds
-   * @returns {number} Duration in seconds, or 0 if no audio is loaded
-   * @example
-   * const duration = synapse.getDuration();
-   */
-  getDuration() {
-    return this._audio ? this._audio.duration : 0;
+    if (!this._isStreaming || !this._audioContext) {
+      return 0;
+    }
+    return this._audioContext.currentTime - this._playStartTime;
   }
 
   /**
    * Gets the current playback state
-   * @returns {string} One of: 'idle', 'generating', 'playing', 'paused', 'stopped'
+   * @returns {string} One of: 'idle', 'playing', 'stopped'
    * @example
    * const state = synapse.getState();
    */
   getState() {
-    if (!this._audio) {
-      return "idle";
+    if (this._isStreaming) {
+      return "playing";
     }
-    if (this._audio.src === "" || this._audio.readyState < 3) {
-      return "generating";
-    }
-    if (this._audio.paused) {
-      return this._audio.currentTime > 0 ? "paused" : "stopped";
-    }
-    return "playing";
+    return "idle";
   }
 
   /**
@@ -508,6 +698,17 @@ class SynapSeq {
   }
 
   /**
+   * Gets the sample rate of the loaded sequence
+   * @returns {number} Sample rate in Hz
+   * @example
+   * const sampleRate = synapse.getSampleRate();
+   * console.log('Sample Rate:', sampleRate, 'Hz');
+   */
+  getSampleRate() {
+    return this._sampleRate;
+  }
+
+  /**
    * Checks if the worker is ready
    * @returns {boolean} True if worker is initialized and ready
    * @example
@@ -517,20 +718,6 @@ class SynapSeq {
    */
   isReady() {
     return this._workerReady;
-  }
-
-  /**
-   * Gets the generated audio blob
-   * @returns {Blob|null} The audio blob or null if not generated
-   * @example
-   * const blob = synapse.getAudioBlob();
-   * if (blob) {
-   *   const url = URL.createObjectURL(blob);
-   *   // Use the URL as needed
-   * }
-   */
-  getAudioBlob() {
-    return this._audioBlob;
   }
 
   /**
@@ -583,6 +770,11 @@ class SynapSeq {
   destroy() {
     this.stop();
 
+    if (this._audioContext) {
+      this._audioContext.close();
+      this._audioContext = null;
+    }
+
     if (this._worker) {
       this._worker.terminate();
       this._worker = null;
@@ -616,14 +808,6 @@ class SynapSeq {
    * synapse.onplaying = () => console.log('Now playing');
    */
   onplaying = null;
-
-  /**
-   * Event handler called when playback is paused
-   * @type {Function|null}
-   * @example
-   * synapse.onpaused = () => console.log('Paused');
-   */
-  onpaused = null;
 
   /**
    * Event handler called when playback is stopped

@@ -18,6 +18,7 @@ import (
 	"text/tabwriter"
 
 	synapseq "github.com/ruanklein/synapseq/v3/core"
+	"github.com/ruanklein/synapseq/v3/internal/cli"
 	"github.com/ruanklein/synapseq/v3/internal/hub"
 	s "github.com/ruanklein/synapseq/v3/internal/shared"
 	t "github.com/ruanklein/synapseq/v3/internal/types"
@@ -50,7 +51,7 @@ func hubRunClean(quiet bool) error {
 }
 
 // hubRunGet retrieves and processes a sequence from the Hub
-func hubRunGet(sequenceId, outputFile string, quiet bool) error {
+func hubRunGet(sequenceId, outputFile string, opts *cli.CLIOptions) error {
 	var wg sync.WaitGroup
 
 	if !hub.ManifestExists() {
@@ -71,7 +72,11 @@ func hubRunGet(sequenceId, outputFile string, quiet bool) error {
 	}
 
 	if outputFile == "" {
-		outputFile = entry.Name + ".wav"
+		if opts.Mp3 {
+			outputFile = entry.Name + ".mp3"
+		} else {
+			outputFile = entry.Name + ".wav"
+		}
 	}
 
 	appCtx, err := synapseq.NewAppContext(inputFile, outputFile, "text")
@@ -79,7 +84,7 @@ func hubRunGet(sequenceId, outputFile string, quiet bool) error {
 		return fmt.Errorf("failed to create application context. Error\n  %v", err)
 	}
 
-	if !quiet && outputFile != "-" {
+	if !opts.Quiet && outputFile != "-" {
 		appCtx = appCtx.WithVerbose(os.Stdout)
 	}
 
@@ -87,21 +92,18 @@ func hubRunGet(sequenceId, outputFile string, quiet bool) error {
 		return fmt.Errorf("failed to load sequence. Error\n  %v", err)
 	}
 
-	if outputFile == "-" {
-		if err := appCtx.Stream(os.Stdout); err != nil {
-			return fmt.Errorf("failed to stream sequence. Error\n  %v", err)
-		}
-		return nil
+	outputOpts := &outputOptions{
+		OutputFile:       outputFile,
+		Quiet:            opts.Quiet,
+		Play:             opts.Play,
+		Mp3:              opts.Mp3,
+		UnsafeNoMetadata: opts.UnsafeNoMetadata,
+		FFplayPath:       opts.FFplayPath,
+		FFmpegPath:       opts.FFmpegPath,
 	}
 
-	if !quiet {
-		for _, c := range appCtx.Comments() {
-			fmt.Printf("> %s\n", c)
-		}
-	}
-
-	if err := appCtx.WAV(); err != nil {
-		return fmt.Errorf("failed to generate WAV file. Error\n  %v", err)
+	if err := processSequenceOutput(appCtx, outputOpts); err != nil {
+		return fmt.Errorf("failed to process sequence output. Error\n  %v", err)
 	}
 
 	wg.Wait()

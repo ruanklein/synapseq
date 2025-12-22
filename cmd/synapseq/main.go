@@ -56,7 +56,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 		if len(args) == 1 {
 			outputFile = args[0]
 		}
-		return hubRunGet(opts.HubGet, outputFile, opts.Quiet)
+		return hubRunGet(opts.HubGet, outputFile, opts)
 	}
 
 	// --hub-list
@@ -103,14 +103,42 @@ func run(opts *cli.CLIOptions, args []string) error {
 		return fmt.Errorf("invalid number of flags\nUse -help for usage information")
 	}
 
+	// Determine output format
+	outputFormat := "wav"
+	if opts.Mp3 {
+		outputFormat = "mp3"
+	}
+
 	inputFile := args[0]
-	outputFile := getDefaultOutputFile(inputFile, "wav")
+	outputFile := getDefaultOutputFile(inputFile, outputFormat)
 	if len(args) == 2 {
 		outputFile = args[1]
 	}
 
 	// --- Handle Extract mode
 	if opts.ExtractTextSequence {
+		if opts.Mp3 {
+			if outputFile == "-" {
+				content, err := externalExtractTextSequence(opts.FFprobePath, inputFile)
+				if err != nil {
+					return fmt.Errorf("failed to extract text sequence. Error\n  %w", err)
+				}
+				fmt.Println(content)
+				return nil
+			}
+
+			outputFile = getDefaultOutputFile(inputFile, "spsq")
+			if err := externalSaveExtractedTextSequence(opts.FFprobePath, inputFile, outputFile); err != nil {
+				return fmt.Errorf("failed to extract text sequence. Error\n  %w", err)
+			}
+
+			if !opts.Quiet {
+				fmt.Println("Extraction completed successfully.")
+			}
+
+			return nil
+		}
+
 		if outputFile == "-" {
 			content, err := synapseq.Extract(inputFile)
 			if err != nil {
@@ -140,7 +168,7 @@ func run(opts *cli.CLIOptions, args []string) error {
 	}
 
 	if !opts.Quiet && outputFile != "-" {
-		appCtx = appCtx.WithVerbose(os.Stdout)
+		appCtx = appCtx.WithVerbose(os.Stderr)
 	}
 
 	// Load sequence file
@@ -177,27 +205,18 @@ func run(opts *cli.CLIOptions, args []string) error {
 		return nil
 	}
 
-	// --- Handle Stream mode (output = "-")
-	if outputFile == "-" {
-		return appCtx.Stream(os.Stdout)
+	// --- Process output using centralized handler
+	outputOpts := &outputOptions{
+		OutputFile:       outputFile,
+		Quiet:            opts.Quiet,
+		Play:             opts.Play,
+		Mp3:              opts.Mp3,
+		UnsafeNoMetadata: opts.UnsafeNoMetadata,
+		FFplayPath:       opts.FFplayPath,
+		FFmpegPath:       opts.FFmpegPath,
 	}
 
-	// --- Unsafe mode
-	if opts.UnsafeNoMetadata {
-		appCtx, err = appCtx.WithUnsafeNoMetadata()
-		if err != nil {
-			return err
-		}
-	}
-
-	// --- Render to WAV (default mode)
-	if !opts.Quiet {
-		for _, c := range appCtx.Comments() {
-			fmt.Printf("> %s\n", c)
-		}
-	}
-
-	return appCtx.WAV()
+	return processSequenceOutput(appCtx, outputOpts)
 }
 
 // detectFormat detects the input format based on CLI options

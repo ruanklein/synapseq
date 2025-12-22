@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.5.0]
+
+### New Features
+
+- **Playback Support**: Added `-play` flag to enable "real-time" playback of generated audio sequences through the external tool `ffplay`. This allows users to listen to sequences directly without generating WAV files.
+- **Export to MP3**: Added `-mp3` flag to export generated audio sequences as MP3 files using the `ffmpeg` tool. This provides a compressed audio format option alongside WAV output.
+- **WASM Support**: SynapSeq can now be compiled to WebAssembly (WASM) for use in web browsers and other WASM-compatible environments. This enables running SynapSeq directly in the browser for interactive audio generation. See the [WebAssembly Documentation](wasm/README.md) for details on usage and integration.
+- **Go Library Enhancements**: The SynapSeq Go library has been updated to include new functions to get sequence data; sample rate, content, presetlist, volume, gainlevel and background path from a sequence. This allows developers to access more detailed information about sequences when integrating SynapSeq into their Go applications.
+
+### Improvements
+
+- **Windows Native Integration**: Improved the `-install-file-association` feature to change default behavior when opening `.spsq` files. Now, double-clicking a `.spsq` file will open it in SynapSeq for playback with `-play` instead of generating a WAV file. This provides a more immediate listening experience. Users can still generate WAV files by using the context menu options.
+- **Added export to MP3 in context menu (Windows)**: When file associations are installed, the context menu now includes an option to "Convert to MP3", allowing users to quickly generate MP3 files from `.spsq` files via right-click.
+
 ## [3.4.0]
 
 ### New Features

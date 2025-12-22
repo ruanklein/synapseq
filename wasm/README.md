@@ -4,8 +4,11 @@ A JavaScript wrapper library for SynapSeq WASM, providing an elegant object-orie
 
 ## Features
 
+- Real-time streaming audio generation
 - Generate binaural/monaural/isochronic tones from SPSQ sequences
+- Support for both text (SPSQ) and JSON formats
 - WebAssembly-powered for high performance
+- AudioWorklet-based streaming for low-latency playback
 - Integrated Web Worker for non-blocking audio generation (no external worker file needed!)
 - Single-file library with embedded worker
 - Support for local and remote WASM files
@@ -39,7 +42,7 @@ Simply include the `synapseq.js` file in your HTML:
 // Create a new SynapSeq instance
 const synapseq = new SynapSeq();
 
-// Load a sequence
+// Load a sequence in text format (SPSQ)
 const spsqCode = `
 # Presets
 alpha
@@ -54,12 +57,14 @@ alpha
 `;
 
 async function play() {
-  // Load from string
+  // Load from string (text format is default)
   await synapseq.load(spsqCode);
   await synapseq.play();
 
-  // Or...
-  // Load from File object
+  // Or load JSON format
+  // await synapseq.load(jsonString, "json");
+
+  // Or load from File object (format auto-detected)
   // const fileInput = document.getElementById("fileInput");
   // await synapseq.load(fileInput.files[0]);
 }
@@ -109,9 +114,48 @@ Creates a new SynapSeq instance and initializes the embedded Web Worker.
 
 ---
 
+#### `load(input, format)`
+
+Loads a sequence from a string or File object. Supports both text (SPSQ) and JSON formats.
+
+**Parameters:**
+
+- `input` (string|File) - Sequence content as string or File object
+- `format` (string) - Optional format: `'text'` (default) or `'json'`
+
+**Returns:** `Promise<void>`
+
+**Throws:** Error if input is invalid
+
+**Examples:**
+
+```javascript
+// Load from SPSQ text string (default format)
+const spsqCode = `
+# Presets
+alpha
+  tone 250 isochronic 10
+
+# Timeline
+00:00:00 alpha
+`;
+await synapseq.load(spsqCode);
+// or explicitly:
+await synapseq.load(spsqCode, "text");
+
+// Load from File object (.spsq file)
+const fileInput = document.getElementById("fileInput");
+await synapseq.load(fileInput.files[0], "text");
+
+// Load from File object (.json file)
+await synapseq.load(fileInput.files[0], "json");
+```
+
+---
+
 #### `play()`
 
-Plays the loaded sequence. Generates audio if not already generated, or resumes if paused.
+Plays the loaded sequence. Streams and generates audio in real-time.
 
 **Returns:** `Promise<void>`
 
@@ -121,22 +165,6 @@ Plays the loaded sequence. Generates audio if not already generated, or resumes 
 
 ```javascript
 await synapseq.play();
-```
-
----
-
-#### `pause()`
-
-Pauses the currently playing sequence.
-
-**Returns:** `void`
-
-**Throws:** Error if no audio is playing
-
-**Example:**
-
-```javascript
-synapseq.pause();
 ```
 
 ---
@@ -157,7 +185,7 @@ synapseq.stop();
 
 #### `getCurrentTime()`
 
-Gets the current playback position in seconds.
+Gets the current playback position in seconds since playback started.
 
 **Returns:** `number` - Current time in seconds (0 if not playing)
 
@@ -170,17 +198,17 @@ console.log(`Current position: ${currentTime}s`);
 
 ---
 
-#### `getDuration()`
+#### `getSampleRate()`
 
-Gets the total duration of the loaded audio in seconds.
+Gets the sample rate of the loaded sequence.
 
-**Returns:** `number` - Duration in seconds (0 if no audio loaded)
+**Returns:** `number` - Sample rate in Hz
 
 **Example:**
 
 ```javascript
-const duration = synapseq.getDuration();
-console.log(`Total duration: ${duration}s`);
+const sampleRate = synapseq.getSampleRate();
+console.log(`Sample rate: ${sampleRate}Hz`);
 ```
 
 ---
@@ -189,7 +217,7 @@ console.log(`Total duration: ${duration}s`);
 
 Gets the current playback state.
 
-**Returns:** `string` - One of: `'idle'`, `'generating'`, `'playing'`, `'paused'`, `'stopped'`
+**Returns:** `string` - One of: `'idle'`, `'playing'`, `'stopped'`
 
 **Example:**
 
@@ -228,6 +256,51 @@ Checks if the Web Worker is initialized and ready.
 if (synapseq.isReady()) {
   await synapseq.load(sequence);
 }
+```
+
+---
+
+#### `getVersion()`
+
+Gets the SynapSeq version from the WASM module.
+
+**Returns:** `Promise<string>` - The version string
+
+**Example:**
+
+```javascript
+const version = await synapseq.getVersion();
+console.log(`SynapSeq Version: ${version}`);
+```
+
+---
+
+#### `getBuildDate()`
+
+Gets the build date of the SynapSeq WASM module.
+
+**Returns:** `Promise<string>` - The build date string
+
+**Example:**
+
+```javascript
+const buildDate = await synapseq.getBuildDate();
+console.log(`Build Date: ${buildDate}`);
+```
+
+---
+
+#### `getHash()`
+
+Gets the hash of the SynapSeq WASM build.
+
+**Returns:** `Promise<string>` - The hash string
+
+**Example:**
+
+```javascript
+const hash = await synapseq.getHash();
+console.log(`Build Hash: ${hash}`);
 ```
 
 ---
@@ -281,18 +354,6 @@ Called when playback starts.
 ```javascript
 synapseq.onplaying = () => {
   console.log("Now playing");
-};
-```
-
----
-
-#### `onpaused`
-
-Called when playback is paused.
-
-```javascript
-synapseq.onpaused = () => {
-  console.log("Playback paused");
 };
 ```
 
@@ -359,26 +420,21 @@ synapseq.onplaying = () => {
   console.log("Playing");
   document.getElementById("status").textContent = "Playing";
   document.getElementById("playBtn").disabled = true;
-  document.getElementById("pauseBtn").disabled = false;
-};
-
-synapseq.onpaused = () => {
-  console.log("Paused");
-  document.getElementById("status").textContent = "Paused";
-  document.getElementById("playBtn").disabled = false;
-  document.getElementById("pauseBtn").disabled = true;
+  document.getElementById("stopBtn").disabled = false;
 };
 
 synapseq.onstopped = () => {
   console.log("Stopped");
   document.getElementById("status").textContent = "Stopped";
   document.getElementById("playBtn").disabled = false;
-  document.getElementById("pauseBtn").disabled = true;
+  document.getElementById("stopBtn").disabled = true;
 };
 
 synapseq.onended = () => {
   console.log("Finished");
   document.getElementById("status").textContent = "Finished";
+  document.getElementById("playBtn").disabled = false;
+  document.getElementById("stopBtn").disabled = true;
 };
 
 synapseq.onerror = (detail) => {
@@ -415,10 +471,6 @@ alpha-two
 }
 
 // Control functions
-function pause() {
-  synapseq.pause();
-}
-
 function stop() {
   synapseq.stop();
 }
@@ -426,17 +478,14 @@ function stop() {
 // Progress tracking
 setInterval(() => {
   const current = synapseq.getCurrentTime();
-  const duration = synapseq.getDuration();
-  if (duration > 0) {
-    const progress = (current / duration) * 100;
-    document.getElementById("progressBar").style.width = progress + "%";
+  const sampleRate = synapseq.getSampleRate();
+  if (current > 0) {
+    document.getElementById("time").textContent = `Time: ${current.toFixed(
+      1
+    )}s @ ${sampleRate}Hz`;
   }
 }, 100);
 ```
-
-## SynapSeq Syntax
-
-SPSQ (SynapSeq Sequence) is the offical format used in SynapSeq. See [full documentation.](../docs/USAGE.md) for complete details.
 
 ## Browser Compatibility
 

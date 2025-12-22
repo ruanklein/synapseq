@@ -58,6 +58,8 @@ func CleanSynapSeqWindowsRegistry() error {
 	_ = deleteRegistryTree(registry.CURRENT_USER, `Software\Classes\SynapSeq.File`)
 	_ = deleteRegistryTree(registry.CURRENT_USER,
 		`Software\Classes\SystemFileAssociations\.wav\shell\SynapSeqExtract`)
+	_ = deleteRegistryTree(registry.CURRENT_USER,
+		`Software\Classes\SystemFileAssociations\.mp3\shell\SynapSeqExtract`)
 
 	return nil
 }
@@ -118,7 +120,7 @@ func InstallWindowsFileAssociation() error {
 	}
 	defer cmdKey.Close()
 
-	openCmd := fmt.Sprintf(`"%s" "%%1"`, exePath)
+	openCmd := `cmd.exe /C synapseq -play "%1" & echo. & pause`
 	cmdKey.SetStringValue("", openCmd)
 
 	return nil
@@ -133,6 +135,35 @@ func InstallWindowsContextMenu() error {
 		return fmt.Errorf("failed to get exe path: %w", err)
 	}
 	exePath := filepath.Clean(exe)
+
+	// ===============================
+	// Edit Sequence
+	// ===============================
+	editKey, _, err := registry.CreateKey(
+		registry.CURRENT_USER,
+		base+`\EditSequence`,
+		registry.SET_VALUE,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create EditSequence menu: %w", err)
+	}
+	defer editKey.Close()
+
+	editKey.SetStringValue("", "SynapSeq: Edit sequence")
+	editKey.SetStringValue("Icon", exePath+",0")
+
+	editCmdKey, _, err := registry.CreateKey(
+		registry.CURRENT_USER,
+		base+`\EditSequence\command`,
+		registry.SET_VALUE,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create EditSequence command: %w", err)
+	}
+	defer editCmdKey.Close()
+
+	editCmd := `notepad.exe "%1"`
+	editCmdKey.SetStringValue("", editCmd)
 
 	// ===============================
 	// Test Sequence
@@ -164,38 +195,67 @@ func InstallWindowsContextMenu() error {
 	testCmdKey.SetStringValue("", testCmd)
 
 	// ===============================
-	// Edit Sequence
+	// Convert to WAV
 	// ===============================
-	editKey, _, err := registry.CreateKey(
+	wavKey, _, err := registry.CreateKey(
 		registry.CURRENT_USER,
-		base+`\EditSequence`,
+		base+`\ConvertToWAV`,
 		registry.SET_VALUE,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create EditSequence menu: %w", err)
+		return fmt.Errorf("failed to create ConvertToWAV menu: %w", err)
 	}
-	defer editKey.Close()
+	defer wavKey.Close()
 
-	editKey.SetStringValue("", "SynapSeq: Edit sequence")
-	editKey.SetStringValue("Icon", exePath+",0")
+	wavKey.SetStringValue("", "SynapSeq: Convert to WAV")
+	wavKey.SetStringValue("Icon", exePath+",0")
 
-	editCmdKey, _, err := registry.CreateKey(
+	wavCmdKey, _, err := registry.CreateKey(
 		registry.CURRENT_USER,
-		base+`\EditSequence\command`,
+		base+`\ConvertToWAV\command`,
 		registry.SET_VALUE,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create EditSequence command: %w", err)
+		return fmt.Errorf("failed to create ConvertToWAV command: %w", err)
 	}
-	defer editCmdKey.Close()
+	defer wavCmdKey.Close()
 
-	editCmd := `notepad.exe "%1"`
-	editCmdKey.SetStringValue("", editCmd)
+	wavCmd := `cmd.exe /C synapseq "%1" & echo. & pause`
+	wavCmdKey.SetStringValue("", wavCmd)
+
+	// ===============================
+	// Convert to MP3
+	// ===============================
+	mp3Key, _, err := registry.CreateKey(
+		registry.CURRENT_USER,
+		base+`\ConvertToMP3`,
+		registry.SET_VALUE,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create ConvertToMP3 menu: %w", err)
+	}
+	defer mp3Key.Close()
+
+	mp3Key.SetStringValue("", "SynapSeq: Convert to MP3")
+	mp3Key.SetStringValue("Icon", exePath+",0")
+
+	mp3CmdKey, _, err := registry.CreateKey(
+		registry.CURRENT_USER,
+		base+`\ConvertToMP3\command`,
+		registry.SET_VALUE,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create ConvertToMP3 command: %w", err)
+	}
+	defer mp3CmdKey.Close()
+
+	mp3Cmd := `cmd.exe /C synapseq -mp3 "%1" & echo. & pause`
+	mp3CmdKey.SetStringValue("", mp3Cmd)
 
 	return nil
 }
 
-// InstallWindowsExtractMenu adds an "Extract sequence" option to the Windows context menu for .wav files
+// InstallWindowsExtractMenu adds an "Extract sequence" option to the Windows context menu for .wav and .mp3 files
 func InstallWindowsExtractMenu() error {
 	exe, err := os.Executable()
 	if err != nil {
@@ -203,35 +263,67 @@ func InstallWindowsExtractMenu() error {
 	}
 	exePath := filepath.Clean(exe)
 
-	base := `Software\Classes\SystemFileAssociations\.wav\shell\SynapSeqExtract`
+	// ===============================
+	// Extract from WAV
+	// ===============================
+	wavBase := `Software\Classes\SystemFileAssociations\.wav\shell\SynapSeqExtract`
 
-	// Main key
-	k, _, err := registry.CreateKey(
+	wavKey, _, err := registry.CreateKey(
 		registry.CURRENT_USER,
-		base,
+		wavBase,
 		registry.SET_VALUE,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create wav extract menu: %w", err)
 	}
-	defer k.Close()
+	defer wavKey.Close()
 
-	k.SetStringValue("", "SynapSeq: Extract sequence")
-	k.SetStringValue("Icon", exePath+",0")
+	wavKey.SetStringValue("", "SynapSeq: Extract sequence")
+	wavKey.SetStringValue("Icon", exePath+",0")
 
-	// Command key
-	cmdKey, _, err := registry.CreateKey(
+	wavCmdKey, _, err := registry.CreateKey(
 		registry.CURRENT_USER,
-		base+`\command`,
+		wavBase+`\command`,
 		registry.SET_VALUE,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create extract command: %w", err)
+		return fmt.Errorf("failed to create wav extract command: %w", err)
 	}
-	defer cmdKey.Close()
+	defer wavCmdKey.Close()
 
-	extractCmd := `cmd.exe /C synapseq -extract "%1" & echo. & pause`
-	cmdKey.SetStringValue("", extractCmd)
+	wavExtractCmd := `cmd.exe /C synapseq -extract "%1" & echo. & pause`
+	wavCmdKey.SetStringValue("", wavExtractCmd)
+
+	// ===============================
+	// Extract from MP3
+	// ===============================
+	mp3Base := `Software\Classes\SystemFileAssociations\.mp3\shell\SynapSeqExtract`
+
+	mp3Key, _, err := registry.CreateKey(
+		registry.CURRENT_USER,
+		mp3Base,
+		registry.SET_VALUE,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create mp3 extract menu: %w", err)
+	}
+	defer mp3Key.Close()
+
+	mp3Key.SetStringValue("", "SynapSeq: Extract sequence")
+	mp3Key.SetStringValue("Icon", exePath+",0")
+
+	mp3CmdKey, _, err := registry.CreateKey(
+		registry.CURRENT_USER,
+		mp3Base+`\command`,
+		registry.SET_VALUE,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create mp3 extract command: %w", err)
+	}
+	defer mp3CmdKey.Close()
+
+	mp3ExtractCmd := `cmd.exe /C synapseq -extract -mp3 "%1" & echo. & pause`
+	mp3CmdKey.SetStringValue("", mp3ExtractCmd)
 
 	return nil
 }

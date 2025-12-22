@@ -13,7 +13,6 @@
   <a href="COPYING.txt"><img src="https://img.shields.io/badge/license-GPL%20v2-blue.svg?logo=open-source-initiative&logoColor=white" alt="License"></a>
   <a href="#winget"><img src="https://img.shields.io/badge/Winget-Install-blue?logo=gnometerminal&logoColor=cyan" alt="Winget"></a>
   <a href="#homebrew"><img src="https://img.shields.io/badge/Homebrew-Install-brightgreen?logo=homebrew&logoColor=white" alt="Homebrew"></a>
-  <a href="#scoop"><img src="https://img.shields.io/badge/Scoop-Install-blue?logo=gnometerminal&logoColor=00AEEF" alt="Scoop"></a>
   <a href="https://github.com/ruanklein/synapseq/commits"><img src="https://img.shields.io/github/commit-activity/m/ruanklein/synapseq?color=ff69b4&logo=git" alt="Commit Activity"></a>
 </p>
 </p>
@@ -44,21 +43,6 @@ If you use Winget, you can install SynapSeq directly from the official Microsoft
 
 ```powershell
 winget install synapseq
-```
-
-Check installation:
-
-```powershell
-synapseq -h
-```
-
-#### Scoop
-
-If you use Scoop, you can install SynapSeq directly from the official bucket:
-
-```powershell
-scoop bucket add synapseq https://github.com/ruanklein/scoop-synapseq
-scoop install synapseq
 ```
 
 Check installation:
@@ -115,6 +99,12 @@ For detailed information on all features and advanced usage, see the [USAGE.md](
 ## Go Library
 
 SynapSeq can also be used as a Go library in your own projects. See the [Go Library Documentation](https://pkg.go.dev/github.com/ruanklein/synapseq/v3/core) for instructions on how to integrate SynapSeq into your Go applications.
+
+## WebAssembly (JavaScript)
+
+SynapSeq is also available as a WebAssembly library for use in web browsers. The JavaScript wrapper provides a simple API for loading and playing sequences directly in the browser with real-time audio streaming.
+
+For detailed documentation, examples, and API reference, see the [WebAssembly Documentation](wasm/README.md).
 
 ## FAQ
 

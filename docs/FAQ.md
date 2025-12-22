@@ -296,7 +296,7 @@ Yes! You can load `.spsq`, `.json`, `.xml`, or `.yaml` files directly from HTTP/
 synapseq https://example.com/my-sequence.spsq output.wav
 ```
 
-You can also load background WAVs and `@presetlist` files from the web. Just make sure the server returns the correct Content-Type headers. See [USAGE](USAGE.md#notes) for details.
+You can also load background WAVs and `@presetlist` files from the web. See [USAGE](USAGE.md#notes) for details.
 
 ### Are there any file size limits?
 
@@ -306,7 +306,7 @@ Yes, SynapSeq enforces maximum file sizes to ensure performance and memory safet
 - JSON/XML/YAML files: **128 KB**
 - Background WAV files: **10 MB**
 
-Larger files will be truncated or rejected. For web-based files, SynapSeq also validates the server’s Content-Type.
+Larger files will be truncated or rejected.
 
 ### How do transitions between presets work?
 

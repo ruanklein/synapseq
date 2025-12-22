@@ -16,11 +16,26 @@ import (
 	"github.com/ruanklein/synapseq/v3/internal/audio"
 	"github.com/ruanklein/synapseq/v3/internal/info"
 	"github.com/ruanklein/synapseq/v3/internal/sequence"
+	t "github.com/ruanklein/synapseq/v3/internal/types"
 )
 
-// generateWav(spsqUint8Array) -> { wav: Uint8Array } or { error: "msg" }
-func generateWav(this js.Value, args []js.Value) interface{} {
-	promise := js.Global().Get("Promise").New(js.FuncOf(
+// streamPcm(onChunk, onDone, onError, spsqUint8Array)
+func streamPcm(this js.Value, args []js.Value) interface{} {
+	if len(args) < 3 {
+		return js.Global().Get("Promise").New(js.FuncOf(
+			func(_ js.Value, pArgs []js.Value) interface{} {
+				reject := pArgs[1]
+				reject.Invoke("missing callbacks")
+				return nil
+			},
+		))
+	}
+
+	onChunk := args[0]
+	onDone := args[1]
+	onError := args[2]
+
+	return js.Global().Get("Promise").New(js.FuncOf(
 		func(_ js.Value, pArgs []js.Value) interface{} {
 
 			resolve := pArgs[0]
@@ -33,17 +48,43 @@ func generateWav(this js.Value, args []js.Value) interface{} {
 					}
 				}()
 
-				if len(args) == 0 {
-					reject.Invoke("missing SPSQ input buffer")
+				if len(args) < 5 {
+					reject.Invoke("missing file data")
 					return
 				}
 
-				input := args[0]
-				raw := make([]byte, input.Length())
-				js.CopyBytesToGo(raw, input)
+				content := args[3]
+				format := args[4].String()
 
-				seq, err := sequence.LoadTextSequence(raw)
+				var formatType t.FileFormat
+				switch format {
+				case "text":
+					formatType = t.FormatText
+				case "json":
+					formatType = t.FormatJSON
+				case "xml":
+					formatType = t.FormatXML
+				case "yaml":
+					formatType = t.FormatYAML
+				default:
+					reject.Invoke("unsupported sequence format: " + format)
+					return
+				}
+
+				raw := make([]byte, content.Length())
+				js.CopyBytesToGo(raw, content)
+
+				var seq *t.Sequence
+				var err error
+
+				if formatType == t.FormatText {
+					seq, err = sequence.LoadTextSequence(raw)
+				} else {
+					seq, err = sequence.LoadStructuredSequence(raw, formatType)
+				}
+
 				if err != nil {
+					onError.Invoke(err.Error())
 					reject.Invoke(err.Error())
 					return
 				}
@@ -55,34 +96,42 @@ func generateWav(this js.Value, args []js.Value) interface{} {
 					BackgroundPath: seq.Options.BackgroundPath,
 				})
 				if err != nil {
+					onError.Invoke(err.Error())
 					reject.Invoke(err.Error())
 					return
 				}
 
-				wavBytes, err := renderer.RenderWav()
+				err = renderer.Render(func(samples []int) error {
+					buf := make([]byte, len(samples)*2)
+					for i, v := range samples {
+						buf[i*2] = byte(v)
+						buf[i*2+1] = byte(v >> 8)
+					}
+
+					arr := js.Global().Get("Uint8Array").New(len(buf))
+					js.CopyBytesToJS(arr, buf)
+
+					onChunk.Invoke(arr)
+					return nil
+				})
+
 				if err != nil {
+					onError.Invoke(err.Error())
 					reject.Invoke(err.Error())
 					return
 				}
 
-				uint8Array := js.Global().Get("Uint8Array").New(len(wavBytes))
-				js.CopyBytesToJS(uint8Array, wavBytes)
-
-				result := js.Global().Get("Object").New()
-				result.Set("wav", uint8Array)
-
-				resolve.Invoke(result)
+				onDone.Invoke()
+				resolve.Invoke(true)
 			}()
 
 			return nil
 		},
 	))
-
-	return promise
 }
 
 func main() {
-	js.Global().Set("synapseqGenerate", js.FuncOf(generateWav))
+	js.Global().Set("synapseqStreamPcm", js.FuncOf(streamPcm))
 	js.Global().Set("synapseqVersion", js.ValueOf(info.VERSION))
 	js.Global().Set("synapseqBuildDate", js.ValueOf(info.BUILD_DATE))
 	js.Global().Set("synapseqHash", js.ValueOf(info.GIT_COMMIT))

@@ -56,6 +56,16 @@ type CLIOptions struct {
 	InstallFileAssociation bool
 	// Clean Windows file association removal
 	UninstallFileAssociation bool
+	// Play (with ffplay)
+	Play bool
+	// Mp3 output format (with ffmpeg)
+	Mp3 bool
+	// Path to ffplay executable
+	FFplayPath string
+	// Path to ffmpeg executable
+	FFmpegPath string
+	// Path to ffprobe executable
+	FFprobePath string
 }
 
 // Help prints the help message
@@ -88,14 +98,23 @@ func Help() {
 	fmt.Printf("  -version       		Show version information\n")
 	fmt.Printf("  -help         		Show this help message\n\n")
 
-	fmt.Printf("Hub options:\n")
-	fmt.Printf("  -hub-update      		Update index of available sequences\n")
-	fmt.Printf("  -hub-clean      		Clean up local cache\n")
-	fmt.Printf("  -hub-list       		List available sequences\n")
-	fmt.Printf("  -hub-search     		Search sequences\n")
-	fmt.Printf("  -hub-download       		Download sequence and dependencies\n")
-	fmt.Printf("  -hub-info       		Show information about a sequence\n")
-	fmt.Printf("  -hub-get       		Get sequence\n\n")
+	fmt.Printf("External tool options:\n")
+	fmt.Printf("  -play          		Play audio using ffplay\n")
+	fmt.Printf("  -mp3 				Output MP3 format (requires ffmpeg)\n")
+	fmt.Printf("  -ffmpeg-path  		Path to ffmpeg executable (default: ffmpeg)\n")
+	fmt.Printf("  -ffplay-path  		Path to ffplay executable (default: ffplay)\n")
+	fmt.Printf("  -ffprobe-path  		Path to ffprobe executable (default: ffprobe)\n\n")
+
+	if info.HUB_ENABLED {
+		fmt.Printf("Hub options:\n")
+		fmt.Printf("  -hub-update      		Update index of available sequences\n")
+		fmt.Printf("  -hub-clean      		Clean up local cache\n")
+		fmt.Printf("  -hub-list       		List available sequences\n")
+		fmt.Printf("  -hub-search     		Search sequences\n")
+		fmt.Printf("  -hub-download       		Download sequence and dependencies\n")
+		fmt.Printf("  -hub-info       		Show information about a sequence\n")
+		fmt.Printf("  -hub-get       		Get sequence\n\n")
+	}
 
 	if runtime.GOOS == "windows" {
 		fmt.Printf("Windows-specific options:\n")
@@ -147,6 +166,13 @@ func ParseFlags() (*CLIOptions, []string, error) {
 	fs.BoolVar(&opts.UnsafeNoMetadata, "unsafe-no-metadata", false, "Do not embed metadata in output WAV file")
 	fs.BoolVar(&opts.ConvertToText, "convert", false, "Convert to text from json/xml/yaml")
 	fs.BoolVar(&opts.ShowHelp, "help", false, "Show help")
+
+	// External tool options
+	fs.BoolVar(&opts.Play, "play", false, "Play audio using ffplay")
+	fs.BoolVar(&opts.Mp3, "mp3", false, "Output MP3 format (requires ffmpeg)")
+	fs.StringVar(&opts.FFmpegPath, "ffmpeg-path", "", "Path to ffmpeg executable")
+	fs.StringVar(&opts.FFplayPath, "ffplay-path", "", "Path to ffplay executable")
+	fs.StringVar(&opts.FFprobePath, "ffprobe-path", "", "Path to ffprobe executable")
 
 	// Windows-specific options
 	fs.BoolVar(&opts.InstallFileAssociation, "install-file-association", false, "Associate .spsq files with SynapSeq (Windows only)")

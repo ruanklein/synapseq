@@ -71,31 +71,6 @@ Notes:
 
 Structured formats (JSON, XML, YAML): maximum 128 KB per input. Larger inputs are rejected.
 
-## Accepted Content-Types for web URLs
-
-When loading from HTTP/HTTPS, the server must return one of the allowed Content-Type headers:
-
-- JSON:
-
-  - application/json
-  - text/json
-  - Any type ending with +json (e.g., application/vnd.api+json)
-
-- XML:
-
-  - application/xml
-  - text/xml
-  - Any type ending with +xml (e.g., application/atom+xml)
-
-- YAML:
-  - application/x-yaml
-  - application/yaml
-  - text/yaml
-  - text/x-yaml
-  - Any type ending with +yaml or +yml
-
-If the Content-Type does not match the expected list for the selected format, SynapSeq will reject the request.
-
 ## Background audio support
 
 Background audio files can be specified in the `options.background` field. The following sources are supported:
@@ -104,6 +79,6 @@ Background audio files can be specified in the `options.background` field. The f
 - **Home directory**: paths starting with `~` (e.g., `~/Music/background.wav`)
 - **HTTP/HTTPS URLs**: remote WAV files (e.g., `https://example.com/audio/background.wav`)
 
-Remote background files are downloaded once and cached for the duration of the sequence generation. Make sure the remote server returns an appropriate Content-Type header (e.g., `audio/wav`, `audio/wave`, `audio/x-wav`).
+Remote background files are downloaded once and cached for the duration of the sequence generation.
 
 See `sample-background-spin.json`, `sample-background-spin.xml`, and `sample-background-spin.yaml` for examples of the spin effect, and `sample-background-pulse.json`, `sample-background-pulse.xml`, and `sample-background-pulse.yaml` for examples of the pulse effect.
