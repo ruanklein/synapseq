@@ -48,7 +48,13 @@ For more details on Hub commands, see [USAGE](USAGE.md#hub).
 
 ### How can I play my sequence?
 
-SynapSeq does not support real-time playback. It generates a WAV file for offline listening. If you want to stream audio directly, you can use the RAW output by redirecting to stdout and piping to an external player (e.g., sox/play or ffplay):
+SynapSeq supports real-time playback using **ffplay**. If `ffplay` is available in your system PATH, you can use the `-play` flag to stream audio directly without generating a file:
+
+```
+synapseq -play my-sequence.spsq
+```
+
+Alternatively, SynapSeq generates a WAV file for offline listening. You can also use RAW output by redirecting to stdout and piping to an external player (e.g., sox/play or ffplay):
 
 ```
 synapseq my-sequence.spsq - | play -t raw -r 44100 -e signed-integer -b 16 -c 2 -
@@ -56,7 +62,35 @@ synapseq my-sequence.spsq - | play -t raw -r 44100 -e signed-integer -b 16 -c 2 
 
 ### What audio formats does SynapSeq support?
 
-SynapSeq outputs 16-bit stereo WAV files by default. You can also pipe raw audio to other tools for playback or conversion.
+SynapSeq outputs 16-bit stereo WAV files by default. You can also export directly to MP3 format using the `-mp3` flag, or pipe raw audio to other tools for playback or conversion.
+
+### How can I export to MP3 format?
+
+Starting from version 3.5.0, SynapSeq supports direct MP3 export using the `-mp3` flag. This feature requires **ffmpeg** to be installed and available in your system PATH.
+
+**Basic usage:**
+
+```
+synapseq -mp3 my-sequence.spsq
+```
+
+This generates `my-sequence.mp3` in the same directory as the source file.
+
+**Specify custom output filename:**
+
+```
+synapseq -mp3 my-sequence.spsq output.mp3
+```
+
+This generates `output.mp3` with the specified name.
+
+**Technical details:**
+
+- MP3 export uses ffmpeg with high-quality encoding settings (320 kbps VBR)
+- The audio is encoded directly from the internal audio stream without creating an intermediate WAV file
+- If ffmpeg is not available, SynapSeq will show an error message
+
+**Note:** MP3 is a lossy format, which means some audio quality is sacrificed for smaller file sizes. For archival or maximum fidelity, consider keeping the WAV output. However, for most brainwave entrainment purposes, high-quality MP3 (320 kbps) is sufficient.
 
 ### How can I improve the Windows experience with SynapSeq?
 
@@ -75,28 +109,6 @@ synapseq -uninstall-file-association
 This integration modifies the Windows registry (HKEY_CURRENT_USER only) and does not require administrator privileges. It provides a native Windows experience similar to other desktop applications.
 
 For more details, see the [-install-file-association](USAGE.md#-install-file-association-windows-only) command documentation.
-
-### I enabled Windows integration, but when I double-click a .spsq file, the terminal window opens and closes very quickly and no WAV file is generated. What's wrong?
-
-This usually happens when there is a **syntax error** in your `.spsq` file. When you double-click a file, SynapSeq tries to generate the WAV, but if the sequence contains errors, the program exits immediately and displays the error message in the terminal window, which closes too quickly to read.
-
-**To diagnose the problem:**
-
-1. Right-click on the `.spsq` file
-2. Select **"SynapSeq: Test sequence"** from the context menu
-3. A terminal window will open and stay open, showing any syntax errors in your sequence
-
-This option validates your sequence without generating audio, making it easy to identify and fix syntax problems like:
-
-- Missing indentation
-- Invalid preset names
-- Incorrect timeline format
-- Unsupported options or parameters
-- Typos in element definitions
-
-Once you fix the errors reported by the test, double-clicking the file should work correctly and generate the WAV file.
-
-**Tip:** You can also use **"SynapSeq: Edit sequence"** from the context menu to quickly open and edit the file in Notepad.
 
 ### Can I use my own background sounds?
 
@@ -210,9 +222,11 @@ Add the `@background` option at the top of your file:
 
 You can also control its amplitude and apply effects like spin or pulse in your presets.
 
-### How can I extract my session from a generated WAV file?
+### How can I extract my session from a generated WAV or MP3 file?
 
-Starting from version 3.2.0, SynapSeq embeds the original sequence and metadata into the generated WAV files. You can extract your session at any time using the `-extract` parameter:
+Starting from version 3.2.0, SynapSeq embeds the original sequence and metadata into the generated audio files. You can extract your session at any time using the `-extract` parameter:
+
+**Extracting from WAV files:**
 
 ```
 synapseq -extract input.wav output.spsq
@@ -224,7 +238,21 @@ You can also use `-` as the output to print the extracted sequence to stdout:
 synapseq -extract input.wav -
 ```
 
-This prints the full `.spsq` source code, including all presets and timeline, exactly as embedded in the WAV.
+**Extracting from MP3 files:**
+
+Starting from version 3.5.0, you can also extract sequences from MP3 files:
+
+```
+synapseq -mp3 -extract input.mp3 output.spsq
+```
+
+Or print to stdout:
+
+```
+synapseq -mp3 -extract input.mp3 -
+```
+
+This prints the full `.spsq` source code, including all presets and timeline, exactly as embedded in the audio file.
 
 This allows you to recover your `.spsq` session or share it with others, even if you no longer have the original sequence file.
 
@@ -469,7 +497,15 @@ Yes, you can sell audio tracks generated with SynapSeq. However, you are respons
 
 ### How do I convert the WAV output to MP3 or other formats? Will I lose quality?
 
-WAV files generated by SynapSeq are uncompressed and high quality (16-bit stereo). Converting to MP3 or other lossy formats will reduce audio quality due to compression. For best results:
+Starting from version 3.5.0, SynapSeq can export directly to MP3 format using the `-mp3` flag (requires ffmpeg):
+
+```
+synapseq -mp3 my-sequence.spsq output.mp3
+```
+
+This is the recommended method for MP3 export, as it uses optimized encoding settings and avoids creating intermediate files.
+
+Alternatively, you can manually convert WAV files to other formats. WAV files generated by SynapSeq are uncompressed and high quality (16-bit stereo). Converting to MP3 or other lossy formats will reduce audio quality due to compression. For best results:
 
 - Use a high bitrate (at least 256 kbps, ideally 320 kbps) when converting to MP3.
 - Prefer lossless formats (e.g., FLAC) if you want to preserve all details.
@@ -479,7 +515,7 @@ WAV files generated by SynapSeq are uncompressed and high quality (16-bit stereo
 ffmpeg -i output.wav -codec:a libmp3lame -b:a 320k output.mp3
 ```
 
-**Technical note**: MP3 compression removes subtle details and may introduce artifacts, especially in brainwave audio. Always keep your original WAV files for best fidelity.
+**Technical note**: MP3 compression removes subtle details and may introduce artifacts, especially in brainwave audio. For archival purposes or maximum fidelity, consider keeping WAV files alongside MP3 versions.
 
 ### The output audio is too quiet or distorted. How can I fix this?
 
