@@ -1,6 +1,6 @@
 # SynapSeq Sequence Files
 
-**Note:** All sample sequences are now available at the [SynapSeq Hub](https://synapseq-hub.ruan.sh/). You can browse sequences through the web interface and download or generate audio files using the CLI.
+**Note:** All sample sequences are now available at the [SynapSeq Hub](https://hub.synapseq.org/). You can browse sequences through the web interface and download or generate audio files using the CLI.
 
 To get started with Hub:
 

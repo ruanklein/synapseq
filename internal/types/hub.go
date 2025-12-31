@@ -11,9 +11,9 @@ package types
 
 const (
 	// Hub Base URL for the Hub repository
-	HubBaseURL = "https://synapseq-hub.ruan.sh"
+	HubBaseURL = "https://hub.synapseq.org"
 	// HubManifestURL is the URL to fetch the Hub manifest
-	HubManifestURL = "https://synapseq-hub.ruan.sh/manifest.json"
+	HubManifestURL = "https://hub.synapseq.org/manifest.json"
 	// HubTrackEndpoint is the endpoint for tracking downloads
 	HubTrackEndpoint = "https://us-central1-synapseq-hub.cloudfunctions.net/trackDownload"
 )
