@@ -4,7 +4,7 @@
   <a href="https://synapseq.org/">Site</a> |
   <a href="#installation">Installation</a> |
   <a href="https://hub.synapseq.org/">Examples</a> |
-  <a href="docs/USAGE.md">Documentation</a>
+  <a href="https://synapseq.org/docs">Documentation</a>
 </p>
 
 <p align="center">
@@ -49,9 +49,7 @@ On Windows, you can enable native file association and context menu integration 
 synapseq -install-file-association
 ```
 
-For more details, see the [-install-file-association](./docs/USAGE.md#-install-file-association-windows-only) command documentation.
-
-**Note**: You need install the `ffmpeg` tool to use this feature. See the [Installing FFmpeg](docs/USAGE.md#installing-ffmpeg) section for instructions.
+For more details, see the [documentation](https://synapseq.org/docs)
 
 ### macOS/Linux
 
@@ -75,11 +73,11 @@ You can download the latest precompiled binaries for Windows, macOS, or Linux fr
 
 ## Compilation
 
-For users who prefer to compile from source, please follow the [Compilation](docs/COMPILE.md) instructions.
+For users who prefer to compile from source, please follow the [Compilation](COMPILE.md) instructions.
 
 ## Documentation
 
-For detailed information on all features and advanced usage, see the [USAGE.md](docs/USAGE.md) file.
+For detailed information on all features and advanced usage, see the [SynapSeq Docs](https://synapseq.org/docs) site.
 
 ## Go Library
 
