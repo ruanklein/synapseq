@@ -2,452 +2,762 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>SynapSeq - Playground</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SynapSeq - Synapse-Sequenced Brainwave Generator</title>
     <meta
       name="description"
-      content="Lightweight engine that sequences audio tones to guide brainwave states like relaxation, focus, and meditation using a simple text-based format."
+      content="SynapSeq is a lightweight engine that sequences audio tones to guide brainwave states like relaxation, focus, and meditation using a simple text-based format."
     />
-
-    <!-- Favicons -->
-    <link rel="shortcut icon" href="assets/favicon.ico" />
-    <meta name="msapplication-TileColor" content="#FFFFFF" />
-    <meta
-      name="msapplication-TileImage"
-      content="assets/favicon-114-precomposed.png"
-    />
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="wasm/synapseq.js"></script>
-
-    <!-- Styles -->
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- Header -->
-    <header>
-      <div class="header-content">
-        <a href="#" class="logo">
-          <img
-            src="assets/logo.png"
-            alt="SynapSeq"
-            style="width: 2rem; height: 2rem; border-radius: 50%"
-          />
-          <span class="logo-gradient">SynapSeq</span>
-        </a>
-        <nav class="nav-links">
-          <a href="https://github.com/ruanklein/synapseq" target="_blank"
-            >GitHub</a
-          >
-          <a
-            href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
-            target="_blank"
-            >Docs</a
-          >
-          <a
-            href="https://github.com/ruanklein/synapseq/blob/main/docs/FAQ.md"
-            target="_blank"
-            >FAQ</a
-          >
-          <a href="https://synapseq-hub.ruan.sh/" target="_blank">Hub</a>
-          <button
-            class="theme-toggle"
-            id="themeToggle"
-            aria-label="Toggle theme"
-          >
-            <i
-              data-lucide="lightbulb"
-              style="width: 1.25rem; height: 1.25rem"
-            ></i>
-          </button>
-        </nav>
-        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-          <span></span>
-          <span></span>
-          <span></span>
+    <!-- Navigation -->
+    <nav class="nav-bar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <img src="assets/logo.png" alt="SynapSeq Logo" class="logo-image" />
+          <span class="logo-text">SynapSeq</span>
+        </div>
+        <div class="nav-links">
+          <a href="#hero" class="nav-link">
+            <i data-lucide="home"></i>
+            <span>Home</span>
+          </a>
+          <a href="#hub" class="nav-link">
+            <i data-lucide="archive"></i>
+            <span>Hub</span>
+          </a>
+          <a href="#faq" class="nav-link">
+            <i data-lucide="help-circle"></i>
+            <span>FAQ</span>
+          </a>
+          <a href="#download" class="nav-link">
+            <i data-lucide="download"></i>
+            <span>Download</span>
+          </a>
+        </div>
+        <button class="menu-button" id="menuButton">
+          <i data-lucide="menu"></i>
         </button>
       </div>
-    </header>
+      <div class="mobile-menu" id="mobileMenu">
+        <a href="#hero" class="mobile-link">
+          <i data-lucide="home"></i>
+          <span>Home</span>
+        </a>
+        <a href="#hub" class="mobile-link">
+          <i data-lucide="archive"></i>
+          <span>Hub</span>
+        </a>
+        <a href="#faq" class="mobile-link">
+          <i data-lucide="help-circle"></i>
+          <span>FAQ</span>
+        </a>
+        <a href="#download" class="mobile-link">
+          <i data-lucide="download"></i>
+          <span>Download</span>
+        </a>
+      </div>
+    </nav>
 
-    <div class="header-spacer"></div>
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-logo">
+            <img src="assets/logo.png" alt="SynapSeq" class="hero-logo-image" />
+          </div>
+          <h1 class="hero-title">
+            <span class="gradient-text">SynapSeq</span>
+          </h1>
+          <p class="hero-subtitle">Synapse-Sequenced Brainwave Generator</p>
+          <p class="hero-description">
+            A lightweight engine that sequences audio tones to guide brainwave
+            states like relaxation, focus, and meditation using a simple
+            text-based format.
+          </p>
+          <div class="hero-buttons">
+            <a href="#download" class="btn-primary">
+              <i data-lucide="download"></i>
+              Get Started
+            </a>
+            <a
+              href="https://github.com/ruanklein/synapseq"
+              target="_blank"
+              class="btn-secondary"
+            >
+              <i data-lucide="github"></i>
+              View on GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <main>
-      <!-- Playground Section -->
-      <section class="container">
-        <div class="playground">
-          <div class="playground-header">
-            <div>
-              <h2 class="playground-title">
-                <i
-                  data-lucide="audio-waveform"
-                  style="width: 1.3rem; height: 1.3rem"
-                ></i>
-                Try it now
-              </h2>
-              <p class="hub-hint">
-                Want more sequences?
-                <a href="https://synapseq-hub.ruan.sh/" target="_blank"
-                  >Visit our Hub!</a
-                >
-              </p>
+    <!-- Hub Section -->
+    <section id="hub" class="hub-section">
+      <div class="container">
+        <div class="section-header">
+          <i data-lucide="brain" class="section-icon"></i>
+          <h2 class="section-title">SynapSeq Hub</h2>
+          <p class="section-description">
+            The curated archive for official and community-created
+            <span class="code-inline">.spsq</span> sequences
+          </p>
+        </div>
+        <div class="hub-content">
+          <div class="hub-card">
+            <div class="hub-card-icon">
+              <i data-lucide="sparkles"></i>
             </div>
+            <h3 class="hub-card-title">Structured Compositions</h3>
+            <p class="hub-card-description">
+              Professionally crafted sequences designed to guide specific
+              brainwave states for optimal mental performance.
+            </p>
+          </div>
+          <div class="hub-card">
+            <div class="hub-card-icon">
+              <i data-lucide="users"></i>
+            </div>
+            <h3 class="hub-card-title">Community Driven</h3>
+            <p class="hub-card-description">
+              Access official and community-created sequences for relaxation,
+              focus, meditation, and creative exploration.
+            </p>
+          </div>
+          <div class="hub-card">
+            <div class="hub-card-icon">
+              <i data-lucide="zap"></i>
+            </div>
+            <h3 class="hub-card-title">Easy to Use</h3>
+            <p class="hub-card-description">
+              Simple text-based format makes it easy to create, share, and
+              discover new brainwave sequences.
+            </p>
+          </div>
+        </div>
+        <div class="hub-cta">
+          <a
+            href="https://ruanklein.github.io/synapseq-hub/"
+            target="_blank"
+            class="btn-hub"
+          >
+            <i data-lucide="external-link"></i>
+            Explore the Hub
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section">
+      <div class="container">
+        <div class="section-header">
+          <i data-lucide="help-circle" class="section-icon"></i>
+          <h2 class="section-title">Frequently Asked Questions</h2>
+          <p class="section-description">
+            Everything you need to know about SynapSeq
+          </p>
+        </div>
+
+        <div class="faq-content">
+          <!-- About SynapSeq -->
+          <div class="faq-category">
+            <h3 class="faq-category-title">About SynapSeq</h3>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>What is SynapSeq?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    SynapSeq is an efficient engine for brainwave entrainment,
+                    designed to generate audio sequences that guide brainwave
+                    states using a simple, human-readable text format. It is a
+                    command-line tool (CLI) that can be easily integrated into
+                    other projects and workflows. SynapSeq helps users create
+                    custom soundscapes for meditation, relaxation, focus, and
+                    altered states of consciousness.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>How do I install SynapSeq?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    You can install SynapSeq easily using
+                    <strong>Winget</strong> (Windows),
+                    <strong>Homebrew</strong> (macOS/Linux), or by downloading a
+                    precompiled binary.
+                  </p>
+                  <p>
+                    The latest precompiled binaries for Windows, macOS, or Linux
+                    can be found on the
+                    <a
+                      href="https://github.com/ruanklein/synapseq/releases/latest"
+                      target="_blank"
+                      >Releases page</a
+                    >.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Where can I find sequences created for SynapSeq?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    You can explore a wide variety of ready-to-use sequences at
+                    the
+                    <a href="https://hub.synapseq.org" target="_blank"
+                      >SynapSeq Hub</a
+                    >, a centralized repository of community-contributed
+                    sequences for meditation, focus, relaxation, and more.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>How do I use SynapSeq?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    Write your sequence in a <code>.spsq</code> file using the
+                    documented syntax, then run:
+                  </p>
+                  <p><code>synapseq my-sequence.spsq output.wav</code></p>
+                  <p>
+                    You can also play sequences directly without generating a
+                    file using the <code>-play</code> flag (requires
+                    <strong>ffplay</strong> to be installed):
+                  </p>
+                  <p><code>synapseq -play my-sequence.spsq</code></p>
+                  <p>
+                    See the
+                    <a
+                      href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
+                      target="_blank"
+                      >USAGE documentation</a
+                    >
+                    for detailed syntax and examples.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>What audio formats does SynapSeq support?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    SynapSeq outputs 16-bit stereo WAV files by default. You can
+                    also export directly to MP3 format using the
+                    <code>-mp3</code> flag, or pipe raw audio to other tools for
+                    playback or conversion.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Is there a graphical interface for SynapSeq?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    At the moment, there are no plans to develop an official
+                    Graphical User Interface (GUI) for SynapSeq. The community
+                    is free to create GUIs that use SynapSeq as their engine.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Brainwave Entrainment -->
+          <div class="faq-category">
+            <h3 class="faq-category-title">Brainwave Entrainment</h3>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>What are binaural beats?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    Binaural beats occur when two slightly different frequencies
+                    are played in each ear. The brain perceives a third "beat"
+                    at the difference frequency, which can help entrain
+                    brainwaves to a desired state.
+                    <strong>Headphones are required</strong> for binaural beats
+                    to work.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>What are monaural beats?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    Monaural beats are created by mixing two frequencies
+                    together before playback. The resulting beat is physically
+                    present in the audio and can be perceived without
+                    headphones, though headphones may enhance the effect.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>What are isochronic tones?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    Isochronic tones are single tones that pulse on and off at
+                    regular intervals. This rhythmic stimulation can entrain
+                    brainwaves and is effective with or without headphones.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Which method is best for meditation or focus?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <ul>
+                    <li>
+                      <strong>Binaural beats</strong>: Best for deep meditation,
+                      relaxation, and creativity.
+                    </li>
+                    <li>
+                      <strong>Monaural beats</strong>: Good for general
+                      entrainment, can be used without headphones.
+                    </li>
+                    <li>
+                      <strong>Isochronic tones</strong>: Effective for
+                      alertness, focus, and can be used with speakers.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Do I need headphones?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <ul>
+                    <li>
+                      <strong>Binaural beats</strong>: Yes, headphones are
+                      required.
+                    </li>
+                    <li>
+                      <strong>Monaural beats</strong>: Optional, but recommended
+                      for best results.
+                    </li>
+                    <li><strong>Isochronic tones</strong>: Not required.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>What frequencies should I use?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <ul>
+                    <li>
+                      <strong>Delta (0.5–4 Hz)</strong>: Deep sleep, healing
+                    </li>
+                    <li>
+                      <strong>Theta (4–8 Hz)</strong>: Meditation, creativity
+                    </li>
+                    <li>
+                      <strong>Alpha (8–13 Hz)</strong>: Relaxed alertness,
+                      learning
+                    </li>
+                    <li>
+                      <strong>Beta (13–30 Hz)</strong>: Focus, active thinking
+                    </li>
+                    <li><strong>Gamma (30+ Hz)</strong>: Peak concentration</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span
+                  >Is it safe to use SynapSeq and brainwave entrainment?</span
+                >
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    For most people, brainwave entrainment is considered safe
+                    when used responsibly. However, some individuals (such as
+                    those with epilepsy, heart conditions, or neurological
+                    disorders) should consult a medical professional before
+                    using any entrainment software.
+                  </p>
+                  <p><strong>General tips:</strong></p>
+                  <ul>
+                    <li>Do not use while driving or operating machinery.</li>
+                    <li>
+                      Stop immediately if you feel discomfort, dizziness, or
+                      unusual sensations.
+                    </li>
+                    <li>
+                      Use moderate volume and avoid excessive session lengths.
+                    </li>
+                    <li>
+                      Brainwave entrainment is not a substitute for medical
+                      treatment.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>I didn't feel anything. What could be wrong?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    Brainwave entrainment is a subtle process that varies from
+                    person to person. Several factors can affect your
+                    experience:
+                  </p>
+                  <p><strong>Equipment & Technical Issues:</strong></p>
+                  <ul>
+                    <li>
+                      Headphones required for binaural beats (decent quality)
+                    </li>
+                    <li>Use appropriate frequencies for your goal</li>
+                    <li>
+                      Avoid low-quality formats (use high-bitrate MP3 or keep
+                      WAV)
+                    </li>
+                    <li>Check amplitude and volume settings</li>
+                  </ul>
+                  <p><strong>Tips for better results:</strong></p>
+                  <ul>
+                    <li>
+                      Experiment with different methods (binaural, monaural,
+                      isochronic)
+                    </li>
+                    <li>Try different frequencies and durations</li>
+                    <li>Combine with meditation or relaxation techniques</li>
+                    <li>Be patient and approach with an open mind</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Can brainwave entrainment simulate drugs?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    <strong>No</strong>. There is no scientific evidence that
+                    brainwave entrainment can reproduce or simulate the effects
+                    of drugs, medications, or psychoactive substances. Brainwave
+                    entrainment can help with relaxation, focus, meditation, and
+                    sleep, but cannot induce drug-like states.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>What does science say about brainwave entrainment?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    Scientific research on brainwave entrainment has produced
+                    mixed results. Some studies suggest benefits for relaxation,
+                    focus, meditation, and sleep, but effects are generally
+                    modest and vary from person to person. There is no broad
+                    scientific consensus that brainwave entrainment produces
+                    strong or universal effects.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Usage & Licensing -->
+          <div class="faq-category">
+            <h3 class="faq-category-title">Usage & Licensing</h3>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Can I integrate SynapSeq into my own project?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    Yes. SynapSeq can be integrated in two main ways: either as
+                    a standalone CLI tool or as a native Go library. SynapSeq is
+                    licensed under <strong>GPL v2</strong>.
+                  </p>
+                  <p>
+                    You may freely use the CLI or Go library in any project, but
+                    if you modify or distribute the SynapSeq source code itself,
+                    your changes must also be released under GPL v2.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Can I sell audio tracks generated with SynapSeq?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    Yes, you can sell audio tracks generated with SynapSeq.
+                    However, you are responsible for ensuring that your sequence
+                    files and any background sounds used do not infringe on
+                    third-party copyrights.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>How do I convert WAV to MP3? Will I lose quality?</span>
+                <i data-lucide="chevron-down" class="faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <div>
+                  <p>
+                    SynapSeq can export directly to MP3 format using the
+                    <code>-mp3</code> flag. <strong>Important:</strong> You must
+                    have <strong>ffmpeg</strong> installed and available in your
+                    system PATH for this to work.
+                  </p>
+                  <p><code>synapseq -mp3 my-sequence.spsq output.mp3</code></p>
+                  <p>
+                    <strong>Note:</strong> MP3 is a lossy format that reduces
+                    audio quality due to compression. For archival purposes or
+                    maximum fidelity, consider keeping WAV files alongside MP3
+                    versions. Use high bitrate (at least 320 kbps) for best
+                    results.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-footer">
+          <p>
+            For more detailed information, check the
+            <a
+              href="https://github.com/ruanklein/synapseq/blob/main/docs/FAQ.md"
+              target="_blank"
+              >complete FAQ</a
+            >
+            and
             <a
               href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
               target="_blank"
-              class="docs-link"
+              >documentation</a
+            >.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="download-section">
+      <div class="container">
+        <div class="section-header">
+          <i data-lucide="download" class="section-icon"></i>
+          <h2 class="section-title">Get SynapSeq</h2>
+          <p class="section-description">
+            Choose your platform and start generating brainwave sequences
+          </p>
+        </div>
+        <div class="download-content">
+          <!-- Windows -->
+          <div class="download-card">
+            <div class="download-card-header">
+              <i data-lucide="monitor"></i>
+              <h3>Windows</h3>
+            </div>
+            <div class="download-card-body">
+              <p class="download-method">
+                Recommended: Windows Package Manager
+              </p>
+              <div class="code-block">
+                <code>winget install synapseq</code>
+                <button class="copy-btn" data-copy="winget install synapseq">
+                  <i data-lucide="copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- macOS / Linux -->
+          <div class="download-card">
+            <div class="download-card-header">
+              <i data-lucide="laptop"></i>
+              <h3>macOS / Linux</h3>
+            </div>
+            <div class="download-card-body">
+              <p class="download-method">Recommended: Homebrew</p>
+              <div class="code-block">
+                <code>brew tap ruanklein/synapseq</code>
+                <button
+                  class="copy-btn"
+                  data-copy="brew tap ruanklein/synapseq"
+                >
+                  <i data-lucide="copy"></i>
+                </button>
+              </div>
+              <div class="code-block">
+                <code>brew install synapseq</code>
+                <button class="copy-btn" data-copy="brew install synapseq">
+                  <i data-lucide="copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual Download -->
+          <div class="download-card download-card-full">
+            <div class="download-card-header">
+              <i data-lucide="package"></i>
+              <h3>Manual Download</h3>
+            </div>
+            <div class="download-card-body">
+              <p class="download-method">
+                Download the latest release for your platform
+              </p>
+              <a
+                href="https://github.com/ruanklein/synapseq/releases"
+                target="_blank"
+                class="btn-download"
+              >
+                <i data-lucide="external-link"></i>
+                View Releases on GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resources -->
+        <div class="resources-section">
+          <h3 class="resources-title">Resources</h3>
+          <div class="resources-grid">
+            <a
+              href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
+              target="_blank"
+              class="resource-card"
             >
-              <i data-lucide="book-open" style="width: 1rem; height: 1rem"></i>
-              Documentation
+              <i data-lucide="book-open"></i>
+              <span>Documentation</span>
             </a>
           </div>
-
-          <!-- Error Alert Container -->
-          <div id="errorAlertContainer" class="alert-container">
-            <div class="alert-header">
-              <div class="alert-icon">
-                <i
-                  data-lucide="alert-circle"
-                  style="width: 1.5rem; height: 1.5rem"
-                ></i>
-              </div>
-              <div class="alert-title">
-                <h3 id="errorAlertTitle">Syntax Error</h3>
-                <p class="alert-subtitle" id="errorAlertSubtitle">
-                  There's an issue with your sequence
-                </p>
-              </div>
-              <button
-                id="errorAlertClose"
-                class="alert-close"
-                aria-label="Close alert"
-              >
-                <i data-lucide="x" style="width: 1.25rem; height: 1.25rem"></i>
-              </button>
-            </div>
-            <div class="alert-body">
-              <div class="alert-message" id="errorAlertMessage"></div>
-              <div class="alert-help" id="errorAlertHelp">
-                <i data-lucide="info" style="width: 1rem; height: 1rem"></i>
-                <span
-                  >Check the
-                  <a
-                    href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
-                    target="_blank"
-                    >documentation</a
-                  >
-                  for syntax help</span
-                >
-              </div>
-            </div>
-          </div>
-
-          <!-- Success Alert Container -->
-          <div id="successAlertContainer" class="alert-container">
-            <div class="alert-header">
-              <div class="alert-icon">
-                <i
-                  data-lucide="check-circle"
-                  style="width: 1.5rem; height: 1.5rem"
-                ></i>
-              </div>
-              <div class="alert-title">
-                <h3 id="successAlertTitle">Saved</h3>
-                <p class="alert-subtitle" id="successAlertSubtitle">
-                  Sequence auto-saved
-                </p>
-              </div>
-              <button
-                id="successAlertClose"
-                class="alert-close"
-                aria-label="Close alert"
-              >
-                <i data-lucide="x" style="width: 1.25rem; height: 1.25rem"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="editor-player">
-            <div class="editor-history-container">
-              <!-- Editor Section -->
-              <div class="editor-section">
-                <div id="editorContainer" class="editor-container">
-                  <div id="lineNumbers" class="line-numbers">1</div>
-                  <div class="editor-wrapper">
-                    <div id="syntaxHighlight" class="syntax-highlight"></div>
-                    <!-- Autocomplete balloon -->
-                    <div id="autocompleteBalloon" class="autocomplete-balloon">
-                      <div class="autocomplete-options"></div>
-                      <div class="autocomplete-hint">
-                        <kbd>↑</kbd><kbd>↓</kbd> to navigate, <kbd>Tab</kbd> to
-                        autocomplete
-                      </div>
-                    </div>
-                    <textarea
-                      id="spsqEditor"
-                      class="editor-textarea"
-                      rows="15"
-                      spellcheck="false"
-                      placeholder="# Try editing this example sequence!
-# Presets
-alpha
-  noise pink amplitude 30
-  tone 250 binaural 10 amplitude 15
-
-# Timeline
-00:00:00 silence
-00:00:15 alpha
-00:01:00 silence"
-                    >
-# Presets
-alpha
-  noise pink amplitude 30
-  tone 250 binaural 10 amplitude 15
-
-# Timeline
-00:00:00 silence
-00:00:15 alpha
-00:04:00 alpha
-00:05:00 silence</textarea
-                    >
-                  </div>
-                </div>
-
-                <!-- Mobile Autocomplete Bar -->
-                <div id="mobileAutocompleteBar" class="mobile-autocomplete-bar">
-                  <div class="mobile-autocomplete-chips"></div>
-                </div>
-              </div>
-
-              <!-- Sequence History Panel -->
-              <aside class="sequence-history-panel">
-                <div class="history-header">
-                  <h3>
-                    <i
-                      data-lucide="history"
-                      style="width: 1rem; height: 1rem"
-                    ></i>
-                    Recent Sequences
-                  </h3>
-                  <button
-                    id="clearHistoryBtn"
-                    class="clear-history-btn"
-                    aria-label="Clear all history"
-                  >
-                    <i
-                      data-lucide="trash-2"
-                      style="width: 1rem; height: 1rem"
-                    ></i>
-                  </button>
-                </div>
-
-                <div class="history-content">
-                  <div id="sequenceHistoryEmpty" class="history-empty">
-                    <i
-                      data-lucide="inbox"
-                      style="width: 2rem; height: 2rem"
-                    ></i>
-                    <p>No sequences saved yet</p>
-                    <span>Play a sequence to save it here</span>
-                  </div>
-                  <div id="sequenceHistoryList" class="history-list"></div>
-                </div>
-              </aside>
-            </div>
-
-            <!-- Player Controls Section -->
-            <div class="player-controls-section">
-              <!-- Control Buttons -->
-              <div class="player-controls">
-                <div class="controls-left">
-                  <button
-                    id="playBtn"
-                    class="btn-control btn-control-play"
-                    disabled
-                  >
-                    <i
-                      data-lucide="play"
-                      style="width: 1.25rem; height: 1.25rem"
-                    ></i>
-                    <span class="btn-label">Play</span>
-                    <i
-                      class="menu-chevron"
-                      style="
-                        width: 1rem;
-                        height: 1rem;
-                        opacity: 0;
-                        pointer-events: none;
-                      "
-                    ></i>
-                  </button>
-                </div>
-                <div class="controls-right">
-                  <div class="file-menu-container">
-                    <button
-                      id="fileMenuBtn"
-                      class="btn-control btn-control-upload"
-                    >
-                      <i
-                        data-lucide="folder"
-                        style="width: 1.25rem; height: 1.25rem"
-                      ></i>
-                      <span class="btn-label">File</span>
-                      <i
-                        data-lucide="chevron-down"
-                        class="menu-chevron"
-                        style="width: 1rem; height: 1rem"
-                      ></i>
-                    </button>
-                    <div id="fileMenu" class="file-menu">
-                      <button class="file-menu-item" id="uploadMenuItem">
-                        <i
-                          data-lucide="upload"
-                          style="width: 1.125rem; height: 1.125rem"
-                        ></i>
-                        <span>Upload sequence</span>
-                      </button>
-                      <button class="file-menu-item" id="saveMenuItem">
-                        <i
-                          data-lucide="download"
-                          style="width: 1.125rem; height: 1.125rem"
-                        ></i>
-                        <span>Save sequence</span>
-                      </button>
-                    </div>
-                  </div>
-                  <input
-                    type="file"
-                    id="fileInput"
-                    class="file-input-hidden"
-                    accept=".spsq"
-                  />
-                </div>
-              </div>
-
-              <!-- Status Message -->
-              <div id="statusMessage" class="player-status">
-                Loading WASM...
-              </div>
-            </div>
-          </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
 
     <!-- Footer -->
-    <footer>
+    <footer class="footer">
       <div class="container">
-        <div class="footer-links">
-          <a href="https://github.com/ruanklein/synapseq" target="_blank"
-            >GitHub</a
-          >
-          <a
-            href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
-            target="_blank"
-            >Documentation</a
-          >
-          <a
-            href="https://github.com/ruanklein/synapseq/blob/main/docs/FAQ.md"
-            target="_blank"
-            >FAQ</a
-          >
-          <a href="https://synapseq-hub.ruan.sh/" target="_blank"
-            >SynapSeq Hub</a
-          >
+        <div class="footer-content">
+          <div class="footer-info">
+            <div class="footer-logo">
+              <img
+                src="assets/logo.png"
+                alt="SynapSeq"
+                class="footer-logo-image"
+              />
+              <span>SynapSeq</span>
+            </div>
+            <p class="footer-tagline">Guiding brainwave states through sound</p>
+          </div>
+          <div class="footer-links">
+            <a
+              href="https://github.com/ruanklein/synapseq"
+              target="_blank"
+              class="footer-link"
+            >
+              <i data-lucide="github"></i>
+              Repository
+            </a>
+            <a href="https://ruan.sh" target="_blank" class="footer-link">
+              <i data-lucide="globe"></i>
+              ruan.sh
+            </a>
+          </div>
         </div>
-        <p style="margin-bottom: 10px">
-          SynapSeq - Synapse-Sequenced Brainwave Generator
-        </p>
-        <p>&copy; 2025 <a href="https://ruan.sh" target="_blank">ruan.sh</a></p>
+        <div class="footer-bottom">
+          <p>&copy; 2025 SynapSeq. Open source project.</p>
+        </div>
       </div>
     </footer>
 
-    <!-- Spotlight Overlay -->
-    <div id="spotlightOverlay" class="spotlight-overlay">
-      <div class="spotlight-backdrop"></div>
-      <button id="spotlightClose" class="spotlight-close" aria-label="Close">
-        <i data-lucide="x" style="width: 1.5rem; height: 1.5rem"></i>
-      </button>
-      <div class="spotlight-content">
-        <div class="spotlight-message">
-          <i data-lucide="sparkles" style="width: 3rem; height: 3rem"></i>
-          <h3>Sequence Loaded!</h3>
-          <div class="spotlight-sequence-name" id="spotlightSequenceName"></div>
-          <p>Your brainwave session is ready to begin</p>
-          <button id="spotlightPlayBtn" class="spotlight-play-btn">
-            <i data-lucide="play" style="width: 1.5rem; height: 1.5rem"></i>
-            Start Session
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-      <div class="loading-content">
-        <div class="loading-coffee-container">
-          <i data-lucide="coffee" class="loading-coffee"></i>
-          <div class="loading-steam">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-        <div class="loading-text">Brewing your audio...</div>
-        <div class="loading-subtext">
-          Crafting the perfect brainwave frequencies
-        </div>
-      </div>
-    </div>
-
-    <!-- Playback Overlay -->
-    <div id="playbackOverlay" class="playback-overlay">
-      <div class="playback-backdrop"></div>
-      <div class="playback-content">
-        <!-- Animated Icon -->
-        <div class="playback-animation">
-          <i data-lucide="waves" class="playback-wave-icon"></i>
-          <div class="playback-rings">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-
-        <!-- Current Preset -->
-        <div class="playback-preset">
-          <div class="playback-preset-label">Now Playing</div>
-          <div class="playback-preset-name" id="playbackPresetName">—</div>
-        </div>
-
-        <!-- Progress Bar -->
-        <div class="playback-progress">
-          <div class="playback-progress-bar">
-            <div id="playbackProgressBar" class="playback-progress-fill"></div>
-          </div>
-          <div class="playback-time">
-            <span id="playbackCurrentTime" class="playback-time-current"
-              >00:00</span
-            >
-            <span class="playback-time-separator">/</span>
-            <span id="playbackTotalTime" class="playback-time-total"
-              >00:00</span
-            >
-          </div>
-        </div>
-
-        <!-- Stop Button -->
-        <button id="playbackStopBtn" class="playback-stop-btn">
-          <i data-lucide="square" style="width: 1.5rem; height: 1.5rem"></i>
-          <span>Stop</span>
-        </button>
-      </div>
-    </div>
-    <script src="script.js"></script>
+    <script src="main.js"></script>
   </body>
 </html>
