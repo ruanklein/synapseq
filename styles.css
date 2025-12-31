@@ -87,6 +87,22 @@ body {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
 }
 
+@media (min-width: 1024px) {
+  .nav-container {
+    justify-content: center;
+    position: relative;
+  }
+
+  .nav-logo {
+    position: absolute;
+    left: 1.5rem;
+  }
+
+  .hide-on-desktop {
+    display: none;
+  }
+}
+
 .nav-logo {
   display: flex;
   align-items: center;
@@ -202,7 +218,7 @@ body {
   color: var(--color-cyan-400);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .nav-links {
     display: flex;
   }

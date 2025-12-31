@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SynapSeq Playground - Try it Online</title>
+    <meta
+      name="description"
+      content="Interactive playground for creating and testing SynapSeq brainwave sequences in your browser"
+    />
+    <link rel="icon" type="image/x-icon" href="../assets/favicon.ico" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://synapseq.org/lib/synapseq.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <a href="../index.html" class="back-btn">
+            <i data-lucide="arrow-left"></i>
+            <span class="hide-mobile">Back to Home</span>
+          </a>
+          <div class="header-title">
+            <i data-lucide="play-circle"></i>
+            <h1><span class="hide-mobile">SynapSeq </span>Playground</h1>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Layout -->
+      <div class="main-layout">
+        <!-- Editor Panel -->
+        <div class="editor-panel">
+          <div class="editor-header">
+            <h2>SynapSeq Editor</h2>
+            <button class="upload-btn" id="uploadBtn">
+              <i data-lucide="upload"></i>
+              <span>Upload .spsq</span>
+            </button>
+            <input type="file" id="fileInput" accept=".spsq" />
+          </div>
+
+          <div class="code-editor">
+            <div class="line-numbers" id="lineNumbers">1</div>
+            <textarea
+              class="code-input"
+              id="codeInput"
+              placeholder="# Write your SynapSeq sequence here..."
+              spellcheck="false"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+          <h2>Controls</h2>
+
+          <div class="controls">
+            <!-- Control Buttons -->
+            <div class="control-buttons">
+              <button class="btn btn-play" id="playBtn">
+                <i data-lucide="play"></i>
+                <span>Play</span>
+              </button>
+              <button class="btn btn-stop" id="stopBtn" disabled>
+                <i data-lucide="square"></i>
+                <span>Stop</span>
+              </button>
+            </div>
+
+            <!-- Status -->
+            <div class="status">
+              <div class="status-label">Status</div>
+              <div class="status-value">
+                <span class="status-icon idle" id="statusIcon"></span>
+                <span id="statusText">Ready</span>
+              </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-section">
+              <div class="progress-label">
+                <span>Progress</span>
+                <span class="progress-time" id="progressTime">0:00</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage">
+              <i data-lucide="alert-circle"></i>
+              <p id="errorText"></p>
+            </div>
+
+            <!-- Info Box -->
+            <div class="info-box">
+              <i data-lucide="info"></i>
+              <p>
+                Write your SPSQ sequence and click Play to hear it in real-time.
+                Use headphones for binaural beats.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="container">
+          <div class="footer-content">
+            <div class="footer-info">
+              <div class="footer-logo">
+                <img
+                  src="../assets/logo.png"
+                  alt="SynapSeq"
+                  class="footer-logo-image"
+                />
+                <span>SynapSeq</span>
+              </div>
+              <p class="footer-tagline">Guiding brainwave states through sound</p>
+            </div>
+            <div class="footer-links">
+              <a
+                href="https://github.com/ruanklein/synapseq"
+                target="_blank"
+                class="footer-link"
+              >
+                <i data-lucide="github"></i>
+                Repository
+              </a>
+              <a href="https://ruan.sh" target="_blank" class="footer-link">
+                <i data-lucide="globe"></i>
+                ruan.sh
+              </a>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <p>&copy; 2025 SynapSeq. Open source project.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+  <script src="main.js"></script>
+</html>
