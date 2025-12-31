@@ -31,6 +31,11 @@ function loadGoogleCharts() {
 }
 
 function drawTransitionCharts() {
+  // Check if chart containers exist before drawing
+  if (!document.getElementById("chart-steady")) {
+    return; // Exit early if containers don't exist
+  }
+
   // Chart options with dark theme
   const darkOptions = {
     backgroundColor: "transparent",
@@ -366,4 +371,145 @@ if (backHome) {
     // If we're on the docs page, allow normal navigation
     // This is just ensuring the link works as expected
   });
+}
+
+// Dynamic page loading system
+const pageMap = {
+  introduction: "pages/introduction.html",
+  "brainwave-entrainment": "pages/brainwave-entrainment.html",
+  syntax: "pages/syntax.html",
+  // All elements are in syntax.html
+  tone: "pages/syntax.html",
+  noise: "pages/syntax.html",
+  background: "pages/syntax.html",
+  waveform: "pages/syntax.html",
+  presets: "pages/syntax.html",
+  timeline: "pages/syntax.html",
+  transitions: "pages/syntax.html",
+  comments: "pages/syntax.html",
+  "global-options": "pages/global-options.html",
+  "command-line": "pages/command-line.html",
+  compilation: "pages/compilation.html",
+  programming: "pages/programming.html",
+  notes: "pages/notes.html",
+  // Sub-sections will fall back to their parent sections
+  "option-background": "pages/global-options.html",
+  "option-gainlevel": "pages/global-options.html",
+  "option-volume": "pages/global-options.html",
+  "option-samplerate": "pages/global-options.html",
+  "option-presetlist": "pages/global-options.html",
+  "hub-commands": "pages/command-line.html",
+  extract: "pages/command-line.html",
+  "playing-mode": "pages/command-line.html",
+  "export-options": "pages/command-line.html",
+  "structured-formats": "pages/command-line.html",
+  "ffmpeg-paths": "pages/command-line.html",
+  "other-options": "pages/command-line.html",
+  "windows-options": "pages/command-line.html",
+  "installing-ffmpeg": "pages/command-line.html",
+  "synapseq-js": "pages/programming.html",
+  "go-library": "pages/programming.html",
+};
+
+async function loadPage(pageId) {
+  const pageUrl = pageMap[pageId];
+  if (!pageUrl) return false;
+
+  const contentContainer = document.getElementById("dynamic-content");
+  if (!contentContainer) return false;
+
+  try {
+    const response = await fetch(pageUrl);
+    if (!response.ok) return false;
+
+    const html = await response.text();
+
+    // Extract base page name from URL for section ID
+    const basePageId = pageUrl.split("/").pop().replace(".html", "");
+
+    // Wrap content in section with doc-section class for proper styling
+    contentContainer.innerHTML = `<section id="${basePageId}" class="doc-section">${html}</section>`;
+
+    // Re-initialize Lucide icons for new content
+    lucide.createIcons();
+
+    // Re-initialize copy buttons for new content
+    initCopyButtons();
+
+    // Re-initialize expandable examples for new content
+    initExpandableExamples();
+
+    // Re-initialize Google Charts if needed (only if chart containers exist)
+    if (typeof drawTransitionCharts === "function") {
+      setTimeout(() => {
+        if (document.getElementById("chart-steady")) {
+          drawTransitionCharts();
+        }
+      }, 100);
+    }
+
+    // Scroll to specific element if it exists (for sub-sections)
+    setTimeout(() => {
+      const element = document.getElementById(pageId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        // If no specific element, scroll to top
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 100);
+
+    return true;
+  } catch (error) {
+    console.error(`Failed to load page: ${pageId}`, error);
+    return false;
+  }
+}
+
+// Handle navigation clicks
+function initDynamicNavigation() {
+  const navLinks = document.querySelectorAll(".sidebar-nav a[href^='#']");
+
+  navLinks.forEach((link) => {
+    link.addEventListener("click", async (e) => {
+      const href = link.getAttribute("href");
+      const pageId = href.substring(1); // Remove '#'
+
+      // Try to load dynamic page
+      const loaded = await loadPage(pageId);
+
+      if (loaded) {
+        e.preventDefault();
+        // Update URL without triggering page reload
+        history.pushState(null, "", href);
+
+        // Update active nav item
+        navLinks.forEach((l) => l.classList.remove("active"));
+        link.classList.add("active");
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      // If not loaded, allow default anchor behavior
+    });
+  });
+
+  // Handle browser back/forward
+  window.addEventListener("popstate", () => {
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      loadPage(hash);
+    }
+  });
+
+  // Load initial page from URL hash
+  const initialHash = window.location.hash.substring(1);
+  if (initialHash && pageMap[initialHash]) {
+    loadPage(initialHash);
+  }
+}
+
+// Initialize dynamic navigation when DOM is ready
+if (document.getElementById("dynamic-content")) {
+  initDynamicNavigation();
 }

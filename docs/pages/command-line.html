@@ -1,0 +1,1277 @@
+<h1><i data-lucide="terminal"></i> Command Line</h1>
+
+        <div class="syntax-box">
+          <div class="syntax-label">Syntax</div>
+          <code>synapseq [options] [input file] [output file]</code>
+        </div>
+
+        <h2>Basic Usage</h2>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Generate WAV from sequence</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq sample-binaural.spsq sample-binaural.wav"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq sample-binaural.spsq sample-binaural.wav</code></pre>
+        </div>
+
+        <h3>Using stdin</h3>
+        <p>You can use <code>-</code> to open sequence from stdin:</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Pipe from stdin</span>
+            <button
+              class="copy-btn"
+              data-code="cat example.spsq | synapseq - output.wav"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>cat example.spsq | synapseq - output.wav</code></pre>
+        </div>
+
+        <h3>Using URLs</h3>
+        <p>
+          You can also use HTTP or HTTPS URLs to load sequences directly from
+          the web:
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Load from URL</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq https://example.com/sequences/my-sequence.spsq output.wav"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq https://example.com/sequences/my-sequence.spsq output.wav</code></pre>
+        </div>
+
+        <h3>RAW Output Format</h3>
+        <p>
+          On *nix systems, you can play a sequence in RAW format using other
+          audio tools:
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Pipe to play (sox)</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq sample-binaural.spsq - | play -t raw -r 44100 -e signed-integer -b 16 -c 2 -"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq sample-binaural.spsq - | play -t raw -r 44100 -e signed-integer -b 16 -c 2 -</code></pre>
+        </div>
+
+        <div class="option-card">
+          <h4>RAW Audio Parameters</h4>
+          <p>
+            If you want to use another tool to process the output, keep in mind
+            that the audio is emitted in RAW format with the following
+            parameters:
+          </p>
+          <ul style="margin-top: 0.75rem">
+            <li><strong>Type:</strong> RAW</li>
+            <li>
+              <strong>Sample Rate:</strong> 44100 Hz (default, configurable with
+              <code>@samplerate</code>)
+            </li>
+            <li><strong>Encoding:</strong> Signed Integer</li>
+            <li><strong>Bit Depth:</strong> 16</li>
+            <li><strong>Channels:</strong> 2 (stereo)</li>
+          </ul>
+        </div>
+
+        <h2 id="hub-commands">Hub Commands</h2>
+        <p>
+          SynapSeq Hub is a centralized repository of community-contributed
+          sequences. You can browse, search, download, and generate audio files
+          directly from the Hub.
+        </p>
+        <p style="margin-top: 0.5rem">
+          Explore sequences at
+          <a
+            href="https://hub.synapseq.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            >SynapSeq Hub Repository</a
+          >.
+        </p>
+
+        <div class="info-box">
+          <i data-lucide="alert-circle"></i>
+          <span
+            ><strong>Important:</strong> Before using any Hub command, you must
+            first run <code>-hub-update</code> to fetch the latest
+            manifest.</span
+          >
+        </div>
+
+        <h3>Privacy & Analytics</h3>
+        <div class="option-card">
+          <p>
+            When you download sequences using <code>-hub-get</code>,
+            <code>-hub-info</code>, or <code>-hub-download</code>, SynapSeq
+            sends <strong>anonymous usage statistics</strong>.
+          </p>
+
+          <h4>What is collected:</h4>
+          <ul>
+            <li>Sequence ID (which sequence was downloaded)</li>
+            <li>SynapSeq version</li>
+            <li>Platform (Windows, macOS, Linux)</li>
+            <li>Architecture (amd64, arm64)</li>
+            <li>Action performed (get, info, or download)</li>
+          </ul>
+
+          <h4>What is NOT collected:</h4>
+          <ul>
+            <li>No personal information (names, emails, usernames)</li>
+            <li>No IP addresses or location data</li>
+            <li>No file paths or local directory structure</li>
+            <li>No browsing history or system information</li>
+          </ul>
+
+          <p style="margin-top: 1rem">
+            The tracking is done asynchronously and
+            <strong>never blocks or delays</strong> your downloads. All tracking
+            logic is open source and can be fully inspected.
+          </p>
+
+          <p style="margin-top: 1rem">
+            <strong>Compiling without Hub functionality:</strong> You can
+            compile a Hub-disabled version using the <code>nohub</code> build
+            tag. See the Compilation Guide for instructions.
+          </p>
+        </div>
+
+        <h3><code>-hub-update</code></h3>
+        <p>Updates the local index of available sequences from the Hub.</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Update Hub manifest</span>
+            <button class="copy-btn" data-code="synapseq -hub-update">
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -hub-update</code></pre>
+        </div>
+
+        <h3><code>-hub-list</code></h3>
+        <p>Lists all available sequences in the Hub.</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>List all sequences</span>
+            <button class="copy-btn" data-code="synapseq -hub-list">
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -hub-list</code></pre>
+        </div>
+
+        <h3><code>-hub-search</code></h3>
+        <p>
+          Searches for sequences in the Hub by keyword. The search is
+          case-insensitive and matches against the sequence ID, name, author,
+          and category.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Search for sequences</span>
+            <button class="copy-btn" data-code="synapseq -hub-search focus">
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -hub-search focus</code></pre>
+        </div>
+
+        <h3><code>-hub-download</code></h3>
+        <p>
+          Downloads a sequence and all its dependencies to a local directory.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Download sequence</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -hub-download synapseq.samples.genesis ./downloads"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -hub-download synapseq.samples.genesis ./downloads</code></pre>
+        </div>
+        <p
+          style="
+            margin-top: 0.5rem;
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+          "
+        >
+          If no target directory is specified, the current directory
+          (<code>.</code>) is used.
+        </p>
+
+        <h3><code>-hub-get</code></h3>
+        <p>
+          Generates audio output directly from a Hub sequence without
+          downloading it first.
+        </p>
+
+        <h4>Basic Usage (WAV output)</h4>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Generate WAV from Hub</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -hub-get synapseq.samples.genesis output.wav"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -hub-get synapseq.samples.genesis output.wav</code></pre>
+        </div>
+
+        <h4>Stream to stdout</h4>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Stream RAW audio</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -hub-get synapseq.samples.genesis -"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -hub-get synapseq.samples.genesis -</code></pre>
+        </div>
+
+        <h4>Play in real-time</h4>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Stream and play</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -hub-get synapseq.samples.genesis -play"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -hub-get synapseq.samples.genesis -play</code></pre>
+        </div>
+
+        <h4>Convert to MP3</h4>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Generate MP3 from Hub</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -hub-get synapseq.samples.genesis -mp3"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -hub-get synapseq.samples.genesis -mp3</code></pre>
+        </div>
+
+        <h3><code>-hub-clean</code></h3>
+        <p>
+          Cleans the local Hub cache, removing all cached manifest data and
+          downloaded temporary files.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Clean Hub cache</span>
+            <button class="copy-btn" data-code="synapseq -hub-clean">
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -hub-clean</code></pre>
+        </div>
+        <p
+          style="
+            margin-top: 0.5rem;
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+          "
+        >
+          <strong>Note:</strong> After cleaning the cache, you'll need to run
+          <code>-hub-update</code> again.
+        </p>
+
+        <h2>Additional Options</h2>
+
+        <h3 id="extract">Extract</h3>
+        <p>
+          Extracts the original sequence and metadata embedded in a WAV or MP3
+          file.
+        </p>
+
+        <h4>Extract from WAV</h4>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Extract from WAV</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -extract input.wav output.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -extract input.wav output.spsq</code></pre>
+        </div>
+
+        <h4>Extract from MP3</h4>
+        <p>
+          To extract sequences from MP3 files, you must use the
+          <code>-mp3</code> flag and have <strong>ffprobe</strong> installed.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Extract from MP3</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -extract -mp3 input.mp3 output.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -extract -mp3 input.mp3 output.spsq</code></pre>
+        </div>
+
+        <h3 id="playing-mode">Playing Mode</h3>
+        <p>
+          Plays a sequence in real-time using <strong>ffplay</strong>. The audio
+          is streamed directly without creating intermediate files.
+        </p>
+        <div class="info-box">
+          <i data-lucide="info"></i>
+          <span
+            ><strong>Requirements:</strong> This feature requires
+            <strong>ffplay</strong> (part of the FFmpeg suite) to be
+            installed.</span
+          >
+        </div>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Play sequence</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -play sample-binaural.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -play sample-binaural.spsq</code></pre>
+        </div>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Play from URL</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -play https://example.com/sequences/my-sequence.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -play https://example.com/sequences/my-sequence.spsq</code></pre>
+        </div>
+
+        <h3 id="export-options">Export Options</h3>
+        <p>
+          SynapSeq can export sequences to different audio formats using
+          <strong>ffmpeg</strong>.
+        </p>
+        <div class="info-box">
+          <i data-lucide="info"></i>
+          <span
+            ><strong>Requirements:</strong> MP3 export feature requires
+            <strong>ffmpeg</strong> to be installed.</span
+          >
+        </div>
+
+        <h4>MP3 Export</h4>
+        <p>
+          Converts a sequence to MP3 format. By default, creates an output file
+          with the same name as the input but with <code>.mp3</code> extension.
+        </p>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Auto-generate filename</span>
+            <button class="copy-btn" data-code="synapseq -mp3 sample.spsq">
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -mp3 sample.spsq</code></pre>
+        </div>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Custom output filename</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -mp3 sample.spsq output.mp3"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -mp3 sample.spsq output.mp3</code></pre>
+        </div>
+
+        <div class="option-card">
+          <h4>MP3 Audio Quality</h4>
+          <ul>
+            <li><strong>Codec:</strong> libmp3lame</li>
+            <li><strong>Bitrate:</strong> 320 kbps (high quality)</li>
+            <li>
+              <strong>Sample rate:</strong> Matches the sequence (default 44100
+              Hz)
+            </li>
+            <li><strong>Channels:</strong> Stereo (2 channels)</li>
+          </ul>
+        </div>
+
+        <h4>WAV Export</h4>
+        <p>
+          Generates standard WAV (uncompressed) audio files. This is the default
+          export format when no format flag is specified.
+        </p>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Export to WAV</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq sample.spsq output.wav"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq sample.spsq output.wav</code></pre>
+        </div>
+
+        <div class="option-card">
+          <h4>WAV Audio Quality</h4>
+          <ul>
+            <li><strong>Format:</strong> Uncompressed PCM</li>
+            <li><strong>Bit depth:</strong> 16-bit</li>
+            <li>
+              <strong>Sample rate:</strong> Matches the sequence (default 44100
+              Hz)
+            </li>
+            <li><strong>Channels:</strong> Stereo (2 channels)</li>
+          </ul>
+        </div>
+
+        <h3 id="structured-formats">Structured Formats</h3>
+        <p>
+          SynapSeq supports reading sequences from structured data formats
+          (JSON, XML, YAML) as an alternative to the native <code>.spsq</code>
+          format. These formats use a common schema that represents all sequence
+          components.
+        </p>
+
+        <h4>Converting to SPSQ</h4>
+        <p>
+          Use the <code>-convert</code> flag to convert a structured format
+          (JSON, XML, YAML) back into <code>.spsq</code> format.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Convert JSON to SPSQ</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -convert -json input.json output.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -convert -json input.json output.spsq</code></pre>
+        </div>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Convert XML to SPSQ</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -convert -xml input.xml output.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -convert -xml input.xml output.spsq</code></pre>
+        </div>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Convert YAML to SPSQ</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -convert -yaml input.yaml output.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -convert -yaml input.yaml output.spsq</code></pre>
+        </div>
+
+        <h4>File Structure</h4>
+        <p>All structured formats follow this schema:</p>
+
+        <div class="code-example">
+          <div class="code-header">
+            <span>Common Schema Structure</span>
+          </div>
+          <pre><code>Root object
+├── description: array of strings (converted from lines starting with "##" in .spsq)
+├── options
+│   ├── samplerate: integer (e.g., 44100)
+│   ├── volume: integer 0–100
+│   ├── background: string (optional) — path to background audio file (WAV)
+│   │                Can be a local file path, home directory path (~), or HTTP/HTTPS URL
+│   └── gainlevel: string (optional) — one of: low, medium, high, veryhigh (default: veryhigh)
+└── sequence: array of entries
+    └── entry
+        ├── time: integer milliseconds (first must be 0, strictly increasing)
+        ├── transition: steady | ease-out | ease-in | smooth
+        └── track
+            ├── tones: array of tone objects
+            │   └── tone
+            │       ├── mode: binaural | monaural | isochronic | pure
+            │       ├── carrier: Hz (float)
+            │       ├── resonance: Hz (float) — for beats
+            │       ├── amplitude: 0–100 (float)
+            │       └── waveform: sine | square | triangle | sawtooth
+            ├── noises: array of noise objects
+            │   └── noise
+            │       ├── mode: white | pink | brown
+            │       └── amplitude: 0–100 (float)
+            └── background: object (optional) — background audio modulation
+                ├── amplitude: 0–100 (float)
+                ├── waveform: sine | square | triangle | sawtooth
+                └── effect: object (optional)
+                    ├── intensity: 0–100 (float) — effect depth
+                    ├── spin: object (optional) — spatial rotation effect
+                    │   ├── width: Hz (float) — rotation width
+                    │   └── rate: Hz (float) — rotation speed
+                    └── pulse: object (optional) — rhythmic pulsing effect
+                        └── resonance: Hz (float) — pulse frequency</code></pre>
+        </div>
+
+        <h4 id="format-json">JSON Format</h4>
+        <p>
+          Use the <code>-json</code> flag to parse the input file as JSON
+          format.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Process JSON sequence</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -json sequence.json output.wav"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -json sequence.json output.wav</code></pre>
+        </div>
+
+        <div class="expandable-example">
+          <div class="expandable-header">
+            <div class="expandable-title">
+              <i data-lucide="file-code"></i>
+              <span>Full JSON Example - Binaural Beats Alpha Sequence</span>
+            </div>
+            <i data-lucide="chevron-down" class="expand-icon"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner">
+              <div class="code-example">
+                <div class="code-header">
+                  <span>binaural-alpha.json</span>
+                  <button class="copy-btn" data-copy-expandable="json-example">
+                    <i data-lucide="copy"></i>
+                  </button>
+                </div>
+                <pre><code id="json-example">{
+    "description": [
+        "Alpha brainwave entrainment sequence (8-11Hz)",
+        "Progressive 7-minute binaural beats with pink noise"
+    ],
+    "options": {
+        "samplerate": 44100,
+        "volume": 100
+    },
+    "sequence": [
+        {
+            "time": 0,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 8,
+                        "amplitude": 0,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 0
+                    }
+                ]
+            }
+        },
+        {
+            "time": 15000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 8,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 30
+                    }
+                ]
+            }
+        },
+        {
+            "time": 60000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 8,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 30
+                    }
+                ]
+            }
+        },
+        {
+            "time": 150000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 9,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 25
+                    }
+                ]
+            }
+        },
+        {
+            "time": 240000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 10,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 20
+                    }
+                ]
+            }
+        },
+        {
+            "time": 330000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 11,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 15
+                    }
+                ]
+            }
+        },
+        {
+            "time": 420000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 11,
+                        "amplitude": 0,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 0
+                    }
+                ]
+            }
+        }
+    ]
+}</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4 id="format-xml">XML Format</h4>
+        <p>
+          Use the <code>-xml</code> flag to parse the input file as XML format.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Process XML sequence</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -xml sequence.xml output.wav"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -xml sequence.xml output.wav</code></pre>
+        </div>
+
+        <div class="expandable-example">
+          <div class="expandable-header">
+            <div class="expandable-title">
+              <i data-lucide="file-code"></i>
+              <span>Full XML Example - Binaural Beats Alpha Sequence</span>
+            </div>
+            <i data-lucide="chevron-down" class="expand-icon"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner">
+              <div class="code-example">
+                <div class="code-header">
+                  <span>binaural-alpha.xml</span>
+                  <button class="copy-btn" data-copy-expandable="xml-example">
+                    <i data-lucide="copy"></i>
+                  </button>
+                </div>
+                <pre><code id="xml-example">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;SynapSeqInput&gt;
+  &lt;description&gt;
+    &lt;line&gt;Alpha brainwave entrainment sequence (8-11Hz)&lt;/line&gt;
+    &lt;line&gt;Progressive 7-minute binaural beats with pink noise&lt;/line&gt;
+  &lt;/description&gt;
+  &lt;options&gt;
+    &lt;samplerate&gt;44100&lt;/samplerate&gt;
+    &lt;volume&gt;100&lt;/volume&gt;
+  &lt;/options&gt;
+  &lt;sequence&gt;
+    &lt;entry time="0" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="8" amplitude="0" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="0"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="15000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="8" amplitude="15" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="30"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="60000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="8" amplitude="15" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="30"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="150000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="9" amplitude="15" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="25"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="240000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="10" amplitude="15" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="20"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="330000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="11" amplitude="15" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="15"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="420000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="11" amplitude="0" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="0"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+  &lt;/sequence&gt;
+&lt;/SynapSeqInput&gt;</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4 id="format-yaml">YAML Format</h4>
+        <p>
+          Use the <code>-yaml</code> flag to parse the input file as YAML
+          format.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Process YAML sequence</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -yaml sequence.yaml output.wav"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -yaml sequence.yaml output.wav</code></pre>
+        </div>
+
+        <div class="expandable-example">
+          <div class="expandable-header">
+            <div class="expandable-title">
+              <i data-lucide="file-code"></i>
+              <span>Full YAML Example - Binaural Beats Alpha Sequence</span>
+            </div>
+            <i data-lucide="chevron-down" class="expand-icon"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner">
+              <div class="code-example">
+                <div class="code-header">
+                  <span>binaural-alpha.yaml</span>
+                  <button class="copy-btn" data-copy-expandable="yaml-example">
+                    <i data-lucide="copy"></i>
+                  </button>
+                </div>
+                <pre><code id="yaml-example">description:
+  - "Alpha brainwave entrainment sequence (8-11Hz)"
+  - "Progressive 7-minute binaural beats with pink noise"
+options:
+  samplerate: 44100
+  volume: 100
+sequence:
+  - time: 0
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 8
+          amplitude: 0
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 0
+  - time: 15000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 8
+          amplitude: 15
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 30
+  - time: 60000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 8
+          amplitude: 15
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 30
+  - time: 150000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 9
+          amplitude: 15
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 25
+  - time: 240000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 10
+          amplitude: 15
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 20
+  - time: 330000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 11
+          amplitude: 15
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 15
+  - time: 420000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 11
+          amplitude: 0
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 0</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 id="ffmpeg-paths"><code>-ffmpeg-path</code></h3>
+        <p>Specifies a custom path to the ffmpeg executable.</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Custom ffmpeg path</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -mp3 -ffmpeg-path /usr/local/bin/ffmpeg sample.spsq output.mp3"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -mp3 -ffmpeg-path /usr/local/bin/ffmpeg sample.spsq output.mp3</code></pre>
+        </div>
+
+        <h3><code>-ffplay-path</code></h3>
+        <p>Specifies a custom path to the ffplay executable.</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Custom ffplay path</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -play -ffplay-path /usr/local/bin/ffplay sample.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -play -ffplay-path /usr/local/bin/ffplay sample.spsq</code></pre>
+        </div>
+
+        <h3><code>-ffprobe-path</code></h3>
+        <p>
+          Specifies a custom path to the ffprobe executable. Only needed when
+          extracting sequences from MP3 files.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Custom ffprobe path</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -extract -mp3 -ffprobe-path /usr/local/bin/ffprobe input.mp3 output.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -extract -mp3 -ffprobe-path /usr/local/bin/ffprobe input.mp3 output.spsq</code></pre>
+        </div>
+
+        <h3 id="other-options"><code>-help</code></h3>
+        <p>Show the help and exit.</p>
+
+        <h3><code>-unsafe-no-metadata</code></h3>
+        <p>
+          Prevents embedding the original SPSQ sequence and metadata into the
+          generated WAV or MP3 file.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Generate without metadata</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -unsafe-no-metadata sample.spsq output.wav"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -unsafe-no-metadata sample.spsq output.wav</code></pre>
+        </div>
+
+        <h3><code>-quiet</code></h3>
+        <p>
+          Quiet mode. Used to hide terminal output. Errors and comments will be
+          displayed.
+        </p>
+
+        <h3><code>-test</code></h3>
+        <p>
+          Test mode. Used to validate the syntax of a <code>.spsq</code> file or
+          structured formats (JSON, XML, YAML) without generating any output
+          file.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Test sequence syntax</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -test sample-binaural.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -test sample-binaural.spsq</code></pre>
+        </div>
+
+        <h3><code>-version</code></h3>
+        <p>Show the version.</p>
+
+        <h3 id="windows-options">
+          <code>-install-file-association</code> (Windows only)
+        </h3>
+        <p>
+          Installs Windows file association and context menu integration for
+          SynapSeq.
+        </p>
+
+        <div class="option-card">
+          <h4>Features:</h4>
+
+          <p><strong>File Association:</strong></p>
+          <ul>
+            <li>
+              Double-click any <code>.spsq</code> file to automatically play the
+              sequence
+            </li>
+            <li>
+              Assigns the SynapSeq icon to <code>.spsq</code> files in Windows
+              Explorer
+            </li>
+          </ul>
+
+          <p style="margin-top: 1rem">
+            <strong>Context Menu for .spsq files:</strong>
+          </p>
+          <ul>
+            <li>
+              <strong>"SynapSeq: Edit sequence"</strong> - Opens in Notepad
+            </li>
+            <li>
+              <strong>"SynapSeq: Test sequence"</strong> - Validates syntax
+            </li>
+            <li>
+              <strong>"SynapSeq: Convert to WAV"</strong> - Generates WAV file
+            </li>
+            <li>
+              <strong>"SynapSeq: Convert to MP3"</strong> - Generates MP3 file
+            </li>
+          </ul>
+
+          <p style="margin-top: 1rem">
+            <strong>Context Menu for .wav/.mp3 files:</strong>
+          </p>
+          <ul>
+            <li>
+              <strong>"SynapSeq: Extract sequence"</strong> - Extracts embedded
+              <code>.spsq</code>
+            </li>
+          </ul>
+        </div>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Install file association</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -install-file-association"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -install-file-association</code></pre>
+        </div>
+
+        <p
+          style="
+            margin-top: 0.5rem;
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+          "
+        >
+          <strong>Note:</strong> This command modifies the Windows registry
+          (HKEY_CURRENT_USER only). Administrator privileges are not required.
+        </p>
+
+        <h3><code>-uninstall-file-association</code> (Windows only)</h3>
+        <p>
+          Removes all Windows file associations and context menu entries created
+          by SynapSeq.
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Uninstall file association</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -uninstall-file-association"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -uninstall-file-association</code></pre>
+        </div>
+
+        <h2 id="installing-ffmpeg">Installing FFmpeg</h2>
+        <p>
+          To use the <code>-play</code>, <code>-mp3</code>, and
+          <code>-extract -mp3</code> features, you need to have FFmpeg installed
+          on your system.
+        </p>
+
+        <p style="margin-top: 1rem">
+          <strong>Download FFmpeg:</strong>
+          <a
+            href="https://ffmpeg.org/download.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >https://ffmpeg.org/download.html</a
+          >
+        </p>
+
+        <div class="option-card">
+          <h4>Installation by platform:</h4>
+
+          <p><strong>macOS</strong> (using Homebrew):</p>
+          <div class="code-example terminal">
+            <div class="code-header">
+              <span>Install on macOS</span>
+              <button class="copy-btn" data-code="brew install ffmpeg">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre><code>brew install ffmpeg</code></pre>
+          </div>
+
+          <p><strong>Linux</strong> (Ubuntu/Debian):</p>
+          <div class="code-example terminal">
+            <div class="code-header">
+              <span>Install on Ubuntu/Debian</span>
+              <button
+                class="copy-btn"
+                data-code="sudo apt update&#10;sudo apt install ffmpeg"
+              >
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre><code>sudo apt update
+sudo apt install ffmpeg</code></pre>
+          </div>
+
+          <p><strong>Linux</strong> (Fedora):</p>
+          <div class="code-example terminal">
+            <div class="code-header">
+              <span>Install on Fedora</span>
+              <button class="copy-btn" data-code="sudo dnf install ffmpeg">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre><code>sudo dnf install ffmpeg</code></pre>
+          </div>
+
+          <p><strong>Windows</strong> (using winget):</p>
+          <div class="code-example terminal">
+            <div class="code-header">
+              <span>Install on Windows</span>
+              <button
+                class="copy-btn"
+                data-code="winget update&#10;winget install ffmpeg"
+              >
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre><code>winget update
+winget install ffmpeg</code></pre>
+          </div>
+
+          <h4 style="margin-top: 1.5rem">Verify installation:</h4>
+          <div class="code-example terminal">
+            <div class="code-header">
+              <span>Check FFmpeg installation</span>
+              <button
+                class="copy-btn"
+                data-code="ffmpeg -version&#10;ffplay -version&#10;ffprobe -version"
+              >
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre><code>ffmpeg -version
+ffplay -version
+ffprobe -version</code></pre>
+          </div>
+          <p style="margin-top: 0.5rem">
+            If these commands return version information, FFmpeg is correctly
+            installed and available in your PATH.
+          </p>
+        </div>

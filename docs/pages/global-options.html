@@ -1,0 +1,121 @@
+<h1><i data-lucide="settings"></i> Global Options</h1>
+        <p>
+          Global options are set at the top of your file and start with
+          <code>@</code>.
+        </p>
+
+        <div class="option-card" id="option-background">
+          <h3><code>@background</code></h3>
+          <p>Set a background audio file to loop throughout your sequence.</p>
+          <div class="code-example">
+            <div class="code-header">
+              <span>Examples</span>
+              <button
+                class="copy-btn"
+                data-code="@background /path/to/background.wav&#10;@background ~/Downloads/rain.wav&#10;@background https://example.com/sounds/rain.wav"
+              >
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre><code>@background /path/to/background.wav
+@background ~/Downloads/rain.wav
+@background https://example.com/sounds/rain.wav</code></pre>
+          </div>
+          <div class="requirements">
+            <strong>Requirements:</strong>
+            <ul>
+              <li>Format: .wav files (8-bit/16-bit/24-bit)</li>
+              <li>Channels: 2 (stereo)</li>
+              <li>Sample rate must match sequence sample rate</li>
+              <li>Maximum file size: 10 MB</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="option-card" id="option-gainlevel">
+          <h3><code>@gainlevel</code></h3>
+          <p>Set the attenuation level of the background sound.</p>
+          <div class="code-example">
+            <div class="code-header">
+              <span>Example</span>
+              <button class="copy-btn" data-code="@gainlevel medium">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre><code>@gainlevel medium</code></pre>
+          </div>
+          <div class="gain-levels">
+            <div class="gain-level">
+              <code>off</code>
+              <span>No attenuation (0dB) - full volume</span>
+            </div>
+            <div class="gain-level">
+              <code>high</code>
+              <span>Light attenuation (-3dB)</span>
+            </div>
+            <div class="gain-level">
+              <code>medium</code>
+              <span>Moderate attenuation (-9dB)</span>
+            </div>
+            <div class="gain-level">
+              <code>low</code>
+              <span>Strong attenuation (-18dB)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="option-card" id="option-volume">
+          <h3><code>@volume</code></h3>
+          <p>Set the overall output volume (0-100).</p>
+          <div class="code-example">
+            <div class="code-header">
+              <span>Example</span>
+              <button class="copy-btn" data-code="@volume 75">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre><code>@volume 75</code></pre>
+          </div>
+          <p class="default-value">Default: 100</p>
+        </div>
+
+        <div class="option-card" id="option-samplerate">
+          <h3><code>@samplerate</code></h3>
+          <p>Set the sample rate of the output.</p>
+          <div class="code-example">
+            <div class="code-header">
+              <span>Example</span>
+              <button class="copy-btn" data-code="@samplerate 44100">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre><code>@samplerate 44100</code></pre>
+          </div>
+          <p class="default-value">Default: 44100</p>
+        </div>
+
+        <div class="option-card" id="option-presetlist">
+          <h3><code>@presetlist</code></h3>
+          <p>Import presets from external files for reusability.</p>
+          <div class="code-example">
+            <div class="code-header">
+              <span>Examples</span>
+              <button
+                class="copy-btn"
+                data-code="@presetlist /path/to/my-presets.spsq&#10;@presetlist ~/sequences/relaxation-presets.spsq&#10;@presetlist https://example.com/presets/focus-presets.spsq"
+              >
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+            <pre><code>@presetlist /path/to/my-presets.spsq
+@presetlist ~/sequences/relaxation-presets.spsq
+@presetlist https://example.com/presets/focus-presets.spsq</code></pre>
+          </div>
+          <div class="info-box">
+            <i data-lucide="info"></i>
+            <span
+              >Only preset definitions are imported. Timeline sections and
+              global options in preset files will trigger errors.</span
+            >
+          </div>
+        </div>

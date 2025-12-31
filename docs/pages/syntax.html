@@ -1,0 +1,599 @@
+<h1>Understanding the Syntax</h1>
+<p>
+  SynapSeq uses a specific syntax to create sequences. The syntax is based on
+  the following elements:
+</p>
+
+<ul class="element-list">
+  <li><code>tone</code> - A single frequency (carrier frequency)</li>
+  <li><code>noise</code> - A random signal for background sound</li>
+  <li>
+    <code>background</code> - A user-defined sound played in the background
+  </li>
+  <li><code>waveform</code> - The shape of the tone</li>
+  <li><code>silence</code> - A period with no sound</li>
+  <li>
+    <code>track</code> - A directive used inside presets that inherit from
+    templates
+  </li>
+</ul>
+
+<h2 id="tone"><i data-lucide="activity"></i> Tone Element</h2>
+<p>
+  The fundamental building block for creating brainwave entrainment sequences.
+</p>
+
+<div class="syntax-box">
+  <div class="syntax-label">Syntax</div>
+  <code
+    >tone [carrier frequency] [type] [frequency offset] amplitude [amplitude
+    value]</code
+  >
+</div>
+
+<h3>Examples</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>Binaural Beat</span>
+    <button class="copy-btn" data-code="tone 400 binaural 10 amplitude 10">
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>tone 400 binaural 10 amplitude 10</code></pre>
+</div>
+
+<div class="code-example">
+  <div class="code-header">
+    <span>Monaural Beat</span>
+    <button class="copy-btn" data-code="tone 300 monaural 10 amplitude 10">
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>tone 300 monaural 10 amplitude 10</code></pre>
+</div>
+
+<div class="code-example">
+  <div class="code-header">
+    <span>Isochronic Tone</span>
+    <button class="copy-btn" data-code="tone 200 isochronic 10 amplitude 10">
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>tone 200 isochronic 10 amplitude 10</code></pre>
+</div>
+
+<div class="code-example">
+  <div class="code-header">
+    <span>Carrier Only (No Method)</span>
+    <button class="copy-btn" data-code="tone 100 amplitude 10">
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>tone 100 amplitude 10</code></pre>
+</div>
+<h2 id="noise"><i data-lucide="waves"></i> Noise Element</h2>
+<p>Add background ambiance with different types of noise.</p>
+
+<div class="syntax-box">
+  <div class="syntax-label">Syntax</div>
+  <code>noise [type] amplitude [amplitude value]</code>
+</div>
+
+<h3>Examples</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>White Noise</span>
+    <button class="copy-btn" data-code="noise white amplitude 5">
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>noise white amplitude 5</code></pre>
+</div>
+
+<div class="code-example">
+  <div class="code-header">
+    <span>Pink Noise</span>
+    <button class="copy-btn" data-code="noise pink amplitude 15">
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>noise pink amplitude 15</code></pre>
+</div>
+
+<div class="code-example">
+  <div class="code-header">
+    <span>Brown Noise</span>
+    <button class="copy-btn" data-code="noise brown amplitude 30">
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>noise brown amplitude 30</code></pre>
+</div>
+<h2 id="background"><i data-lucide="music"></i> Background Element</h2>
+<p>Use custom audio files as background with optional effects.</p>
+
+<div class="syntax-box">
+  <div class="syntax-label">Basic Syntax</div>
+  <code>background amplitude [amplitude value]</code>
+</div>
+
+<h3>Effects</h3>
+
+<div class="effect-card">
+  <h4><i data-lucide="rotate-cw"></i> Spin Effect</h4>
+  <p>Creates a sensation of circular sound movement between your ears.</p>
+  <div class="code-example">
+    <div class="code-header">
+      <span>Spin Example</span>
+      <button
+        class="copy-btn"
+        data-code="background spin 300 rate 7.5 intensity 30 amplitude 50"
+      >
+        <i data-lucide="copy"></i>
+      </button>
+    </div>
+    <pre><code>background spin 300 rate 7.5 intensity 30 amplitude 50</code></pre>
+  </div>
+</div>
+
+<div class="effect-card">
+  <h4><i data-lucide="activity"></i> Pulse Effect</h4>
+  <p>Creates a rhythmic pulsing sensation by modulating the amplitude.</p>
+  <div class="code-example">
+    <div class="code-header">
+      <span>Pulse Example</span>
+      <button
+        class="copy-btn"
+        data-code="background pulse 7.5 intensity 40 amplitude 50"
+      >
+        <i data-lucide="copy"></i>
+      </button>
+    </div>
+    <pre><code>background pulse 7.5 intensity 40 amplitude 50</code></pre>
+  </div>
+</div>
+
+<div class="info-box">
+  <i data-lucide="info"></i>
+  <span>Each preset can have only one background.</span>
+</div>
+<h2 id="waveform"><i data-lucide="square"></i> Waveform Element</h2>
+<p>Define the shape of tones and background effects.</p>
+
+<div class="waveform-types">
+  <div class="waveform-card">
+    <span class="waveform-name">sine</span>
+    <span class="waveform-desc">Smooth, pure tone (default)</span>
+  </div>
+  <div class="waveform-card">
+    <span class="waveform-name">square</span>
+    <span class="waveform-desc">Sharp, digital sound</span>
+  </div>
+  <div class="waveform-card">
+    <span class="waveform-name">triangle</span>
+    <span class="waveform-desc">Softer than square</span>
+  </div>
+  <div class="waveform-card">
+    <span class="waveform-name">sawtooth</span>
+    <span class="waveform-desc">Bright, buzzing tone</span>
+  </div>
+</div>
+
+<h3>Examples</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>Square Waveform Tone</span>
+    <button
+      class="copy-btn"
+      data-code="waveform square tone 400 isochronic 10 amplitude 2.5"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>waveform square tone 400 isochronic 10 amplitude 2.5</code></pre>
+</div>
+
+<div class="code-example">
+  <div class="code-header">
+    <span>Triangle Background with Spin</span>
+    <button
+      class="copy-btn"
+      data-code="waveform triangle background spin 500 rate 5.5 intensity 30 amplitude 10"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>waveform triangle background spin 500 rate 5.5 intensity 30 amplitude 10</code></pre>
+</div>
+<h1><i data-lucide="layers"></i> Presets</h1>
+<p>
+  Presets are reusable configurations that define a specific state or sound
+  combination.
+</p>
+
+<div class="syntax-box">
+  <div class="syntax-label">Syntax</div>
+  <code
+    >[preset name]<br />
+    [elements] ...</code
+  >
+</div>
+
+<h3>Example</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>Alpha Preset</span>
+    <button
+      class="copy-btn"
+      data-code="alpha&#10;  noise brown amplitude 40&#10;  tone 100 binaural 8 amplitude 15"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>alpha
+  noise brown amplitude 40
+  tone 100 binaural 8 amplitude 15</code></pre>
+</div>
+
+<h2 id="presets">Templating Presets</h2>
+<p>
+  Create reusable base templates that can be inherited and modified by other
+  presets.
+</p>
+
+<h3>Declaring a Template</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>Template Declaration</span>
+    <button
+      class="copy-btn"
+      data-code="base-focus as template&#10;  noise white amplitude 25&#10;  tone 180 binaural 8 amplitude 10"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>base-focus as template
+  noise white amplitude 25
+  tone 180 binaural 8 amplitude 10</code></pre>
+</div>
+
+<h3>Creating Derived Presets</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>Derived Presets</span>
+    <button
+      class="copy-btn"
+      data-code="focus-phase1 from base-focus&#10;  track 1 amplitude 20&#10;  track 2 tone 200&#10;&#10;focus-phase2 from base-focus&#10;  track 1 amplitude 30&#10;  track 2 tone 220"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>focus-phase1 from base-focus
+  track 1 amplitude 20
+  track 2 tone 200
+
+focus-phase2 from base-focus
+  track 1 amplitude 30
+  track 2 tone 220</code></pre>
+</div>
+
+<div class="info-box">
+  <i data-lucide="info"></i>
+  <span
+    ><strong>Note:</strong> Template presets cannot be used directly in the
+    timeline. They serve as a base for derived presets.</span
+  >
+</div>
+
+<h3>Accepted Track Parameters</h3>
+<ul class="param-list">
+  <li><code>tone &lt;value&gt;</code> - carrier frequency (Hz)</li>
+  <li>
+    <code>binaural &lt;value&gt;</code> / <code>monaural &lt;value&gt;</code> /
+    <code>isochronic &lt;value&gt;</code> - beat frequency (Hz)
+  </li>
+  <li><code>amplitude &lt;value&gt;</code> - loudness (0–100%)</li>
+  <li>
+    <code>intensity &lt;value&gt;</code> - effect intensity (for spin/pulse)
+  </li>
+  <li>
+    <code>spin &lt;value&gt;</code> - spin width effect for background track
+  </li>
+  <li><code>pulse &lt;value&gt;</code> - pulse effect for background track</li>
+</ul>
+<h1 id="timeline"><i data-lucide="clock"></i> Timeline</h1>
+<p>The timeline controls when presets play and how they transition.</p>
+
+<div class="syntax-box">
+  <div class="syntax-label">Syntax</div>
+  <code>hh:mm:ss [preset name]</code>
+</div>
+
+<h3>Example</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>Timeline Example</span>
+    <button
+      class="copy-btn"
+      data-code="00:00:00 silence&#10;00:00:15 alpha1&#10;00:01:00 alpha1&#10;00:02:00 alpha2&#10;00:03:00 silence"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>00:00:00 silence
+00:00:15 alpha1
+00:01:00 alpha1
+00:02:00 alpha2
+00:03:00 silence</code></pre>
+</div>
+
+<h2>Fade In/Out</h2>
+<p>
+  Use the <code>silence</code> keyword to create smooth fade-ins and fade-outs.
+</p>
+
+<h2>Transitions Between Different Types</h2>
+<p>
+  In SynapSeq V3+, transitions between presets are smooth for elements of the
+  same type. For different types (e.g., binaural to isochronic), you must
+  explicitly define the transition.
+</p>
+
+<h3>Method 1: Using Silence</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>Fade Between Different Types</span>
+    <button
+      class="copy-btn"
+      data-code="00:00:00 silence&#10;00:00:15 ps1&#10;00:02:00 ps1&#10;# Fade-out&#10;00:02:30 silence&#10;# Fade-in&#10;00:03:00 ps2"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>00:00:00 silence
+00:00:15 ps1
+00:02:00 ps1
+# Fade-out
+00:02:30 silence
+# Fade-in
+00:03:00 ps2</code></pre>
+</div>
+
+<h3>Method 2: Manual Amplitude Control</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>Amplitude Crossfade</span>
+    <button
+      class="copy-btn"
+      data-code="alpha1&#10;  tone 300 binaural 10 amplitude 10&#10;  tone 300 isochronic 10 amplitude 0&#10;&#10;alpha2&#10;  tone 300 binaural 10 amplitude 0&#10;  tone 300 isochronic 10 amplitude 10"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>alpha1
+  tone 300 binaural 10 amplitude 10
+  tone 300 isochronic 10 amplitude 0
+
+alpha2
+  tone 300 binaural 10 amplitude 0
+  tone 300 isochronic 10 amplitude 10</code></pre>
+</div>
+<h1><i data-lucide="git-branch"></i> Transitions</h1>
+<p>Control how parameters change between presets over time.</p>
+
+<div class="syntax-box">
+  <div class="syntax-label">Syntax</div>
+  <code>hh:mm:ss [preset name] [transition type]</code>
+</div>
+
+<h2 id="transitions">Transition Types</h2>
+
+<div class="transition-card">
+  <h3><span class="transition-badge">steady</span> Steady (Default)</h3>
+  <p>Constant rate of change throughout the entire transition period.</p>
+  <div class="chart-container">
+    <div id="chart-steady" class="transition-chart"></div>
+    <div class="chart-legend">
+      <div class="legend-item">
+        <span class="legend-label">Progress:</span>
+        <span class="legend-values">0% —— 25% —— 50% —— 75% —— 100%</span>
+        <span class="legend-desc">(uniform change)</span>
+      </div>
+    </div>
+  </div>
+  <div class="characteristics">
+    <h4>Characteristics:</h4>
+    <ul>
+      <li>Uniform progression from start to finish</li>
+      <li>Neutral, mechanical feel</li>
+      <li>Predictable and consistent</li>
+    </ul>
+  </div>
+  <p class="transition-use">
+    <strong>Best for:</strong> Testing, debugging, predictable linear changes
+  </p>
+  <p class="transition-benefit">
+    <i data-lucide="brain"></i> Provides a steady, predictable stimulus that
+    works well as a baseline reference, though it may be more noticeable to the
+    brain than natural transitions.
+  </p>
+</div>
+
+<div class="transition-card">
+  <h3><span class="transition-badge">ease-out</span> Ease-Out (Logarithmic)</h3>
+  <p>
+    Starts with rapid change and gradually slows down, creating a smooth
+    landing.
+  </p>
+  <div class="chart-container">
+    <div id="chart-ease-out" class="transition-chart"></div>
+    <div class="chart-legend">
+      <div class="legend-item">
+        <span class="legend-label">Progress:</span>
+        <span class="legend-values">0% —— 60% —— 80% —— 90% —— 100%</span>
+        <span class="legend-desc">(fast start, gentle ending)</span>
+      </div>
+    </div>
+  </div>
+  <div class="characteristics">
+    <h4>Characteristics:</h4>
+    <ul>
+      <li>Most change happens early in the transition</li>
+      <li>Gradually decelerates as it approaches the target</li>
+      <li>Like a car smoothly braking to a stop</li>
+    </ul>
+  </div>
+  <p class="transition-use">
+    <strong>Best for:</strong> High to low frequencies (beta → theta),
+    relaxation, meditation entry
+  </p>
+  <p class="transition-benefit">
+    <i data-lucide="brain"></i> Mimics the natural process of falling asleep or
+    entering relaxation. The rapid initial change captures the brain's attention
+    and begins the shift, while the gentle ending allows the nervous system to
+    stabilize comfortably in the new state without resistance.
+  </p>
+</div>
+
+<div class="transition-card">
+  <h3><span class="transition-badge">ease-in</span> Ease-In (Exponential)</h3>
+  <p>
+    Starts gently and accelerates toward the end, creating a smooth departure.
+  </p>
+  <div class="chart-container">
+    <div id="chart-ease-in" class="transition-chart"></div>
+    <div class="chart-legend">
+      <div class="legend-item">
+        <span class="legend-label">Progress:</span>
+        <span class="legend-values">0% —— 10% —— 20% —— 40% —— 100%</span>
+        <span class="legend-desc">(gentle start, fast ending)</span>
+      </div>
+    </div>
+  </div>
+  <div class="characteristics">
+    <h4>Characteristics:</h4>
+    <ul>
+      <li>Starts slowly and gradually accelerates</li>
+      <li>Most change happens near the end</li>
+      <li>Like a car smoothly accelerating from a stop</li>
+    </ul>
+  </div>
+  <p class="transition-use">
+    <strong>Best for:</strong> Low to high frequencies (theta → beta),
+    awakening, activation
+  </p>
+  <p class="transition-benefit">
+    <i data-lucide="brain"></i> Mirrors the natural awakening process. The
+    gentle start avoids shocking the nervous system when emerging from deep
+    states, while the accelerating finish firmly establishes the new alert state
+    without leaving residual drowsiness.
+  </p>
+</div>
+
+<div class="transition-card">
+  <h3><span class="transition-badge">smooth</span> Smooth (Sigmoid)</h3>
+  <p>
+    Most natural feeling with gentle starts and endings, faster change in the
+    middle.
+  </p>
+  <div class="chart-container">
+    <div id="chart-smooth" class="transition-chart"></div>
+    <div class="chart-legend">
+      <div class="legend-item">
+        <span class="legend-label">Progress:</span>
+        <span class="legend-values">0% —— 20% —— 50% —— 80% —— 100%</span>
+        <span class="legend-desc">(slow → fast → slow, S-shaped)</span>
+      </div>
+    </div>
+  </div>
+  <div class="characteristics">
+    <h4>Characteristics:</h4>
+    <ul>
+      <li>Starts slowly (ease-in)</li>
+      <li>Accelerates in the middle</li>
+      <li>Ends slowly (ease-out)</li>
+      <li>S-shaped curve, most natural and organic</li>
+    </ul>
+  </div>
+  <p class="transition-use">
+    <strong>Best for:</strong> General-purpose transitions, maximum comfort,
+    therapeutic sessions
+  </p>
+  <p class="transition-benefit">
+    <i data-lucide="brain"></i> Provides the most comfortable and
+    natural-feeling transition. The gentle start and end minimize perception of
+    change, while the middle acceleration ensures the transition completes
+    smoothly. This approach mimics natural processes and feels organic to the
+    nervous system, making it ideal for therapeutic and meditative applications.
+  </p>
+</div>
+
+<h3>Example</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>Using Transitions</span>
+    <button
+      class="copy-btn"
+      data-code="00:00:00 silence&#10;00:00:30 awake&#10;# Entering meditation - use EASE-OUT&#10;00:01:00 awake ease-out&#10;00:06:00 deep&#10;# Awakening - use EASE-IN&#10;00:10:30 deep ease-in&#10;00:15:00 awake&#10;00:16:00 silence"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>00:00:00 silence
+00:00:30 awake
+# Entering meditation - use EASE-OUT
+00:01:00 awake ease-out
+00:06:00 deep
+# Awakening - use EASE-IN
+00:10:30 deep ease-in
+00:15:00 awake
+00:16:00 silence</code></pre>
+</div>
+<h2 id="comments"><i data-lucide="message-square"></i> Comments</h2>
+<p>Comments help document your sequences and are ignored during processing.</p>
+
+<div class="syntax-box">
+  <div class="syntax-label">Syntax</div>
+  <code># [comment]</code>
+</div>
+
+<h3>Regular Comments</h3>
+<div class="code-example">
+  <div class="code-header">
+    <span>Single # Comment</span>
+    <button
+      class="copy-btn"
+      data-code="# This comment is ignored&#10;alpha&#10;  tone 440 binaural 8 amplitude 5"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code># This comment is ignored
+alpha
+  tone 440 binaural 8 amplitude 5</code></pre>
+</div>
+
+<h3>Printed Comments</h3>
+<p>Use double <code>##</code> to print comments in the output.</p>
+<div class="code-example">
+  <div class="code-header">
+    <span>Double ## Comment</span>
+    <button
+      class="copy-btn"
+      data-code="## This comment will be printed in the output&#10;alpha&#10;  tone 440 binaural 8 amplitude 5"
+    >
+      <i data-lucide="copy"></i>
+    </button>
+  </div>
+  <pre><code>## This comment will be printed in the output
+alpha
+  tone 440 binaural 8 amplitude 5</code></pre>
+</div>
+
+<div class="info-box warning">
+  <i data-lucide="alert-triangle"></i>
+  <span
+    >Comments must occupy an entire line. Inline comments will cause syntax
+    errors.</span
+  >
+</div>

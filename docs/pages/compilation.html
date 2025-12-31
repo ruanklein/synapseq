@@ -1,0 +1,354 @@
+<h1><i data-lucide="wrench"></i> Compilation</h1>
+        <p class="lead">
+          You need to install Go (v1.25 or later) and make on your system before
+          compiling SynapSeq.
+        </p>
+
+        <h2 id="installing-go">Installing Go</h2>
+
+        <h3>macOS</h3>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Using Homebrew</span>
+          </div>
+          <pre><code>brew install go</code></pre>
+        </div>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Using MacPorts</span>
+          </div>
+          <pre><code>sudo port install go</code></pre>
+        </div>
+
+        <h3>Linux (Ubuntu/Debian)</h3>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Terminal</span>
+          </div>
+          <pre><code># Update package list
+sudo apt update
+
+# Install Go
+sudo apt install golang-go make
+
+# Or install a newer version using snap
+sudo snap install go --classic</code></pre>
+        </div>
+
+        <h3>Linux (CentOS/RHEL/Fedora)</h3>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Terminal</span>
+          </div>
+          <pre><code># For Fedora
+sudo dnf install golang make
+
+# For CentOS/RHEL
+sudo yum install golang make</code></pre>
+        </div>
+
+        <h3>Windows</h3>
+        <p>
+          For Windows users, we recommend using
+          <strong>Git Bash</strong> instead of PowerShell or CMD, as the
+          Makefile requires Unix-like shell commands.
+        </p>
+
+        <p>
+          <strong>Step 1:</strong> Install
+          <a
+            href="https://git-scm.com/download/win"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Git for Windows</a
+          >
+          (includes Git Bash).
+        </p>
+        <p style="margin-left: 1rem; color: var(--text-tertiary)">
+          After installation, you'll have both Git Bash and PowerShell
+          available.
+        </p>
+
+        <p>
+          <strong>Step 2:</strong> Install
+          <a href="https://scoop.sh/" target="_blank" rel="noopener noreferrer"
+            >Scoop</a
+          >.
+        </p>
+        <p style="margin-left: 1rem">Open PowerShell and run:</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>PowerShell</span>
+          </div>
+          <pre><code>Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression</code></pre>
+        </div>
+
+        <p><strong>Step 3:</strong> Install Go and Make using Scoop.</p>
+        <p style="margin-left: 1rem">In PowerShell, run:</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>PowerShell</span>
+          </div>
+          <pre><code>scoop update
+scoop install go make</code></pre>
+        </div>
+
+        <p>
+          <strong>Step 4:</strong> Open Git Bash and verify that everything is
+          available:
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Git Bash</span>
+          </div>
+          <pre><code>go version
+make --version</code></pre>
+        </div>
+
+        <h2 id="compiling-synapseq">Compiling SynapSeq</h2>
+        <p>First, clone the repository:</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Terminal</span>
+          </div>
+          <pre><code>git clone https://github.com/ruanklein/synapseq.git
+cd synapseq</code></pre>
+        </div>
+
+        <p>SynapSeq can be compiled using the provided Makefile.</p>
+
+        <h3>For POSIX systems (macOS/Linux)</h3>
+        <p>Simply run:</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Terminal</span>
+          </div>
+          <pre><code>make</code></pre>
+        </div>
+        <p>
+          This will automatically compile SynapSeq for your current operating
+          system and architecture, creating a binary in the
+          <code>bin/</code> directory.
+        </p>
+
+        <h3>For Windows</h3>
+        <p>
+          Windows users should use the platform-specific targets to ensure
+          proper <code>.exe</code> extension, application icon, and
+          Windows-specific command-line options:
+        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Git Bash</span>
+          </div>
+          <pre><code>make build-windows-amd64    # Windows 64-bit (Intel/AMD) - Recommended
+make build-windows-arm64    # Windows 64-bit (ARM)</code></pre>
+        </div>
+        <div class="info-box warning">
+          <i data-lucide="alert-triangle"></i>
+          <span
+            >Do not use <code>make build</code> on Windows, as it will create a
+            binary without the <code>.exe</code> extension, missing the
+            application icon and Windows-specific features.</span
+          >
+        </div>
+
+        <h3>For cross-compilation to other platforms</h3>
+        <p>You can build for different platforms and architectures:</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Terminal</span>
+          </div>
+          <pre><code># Linux
+make build-linux-amd64      # Linux 64-bit (Intel/AMD)
+make build-linux-arm64      # Linux 64-bit (ARM)
+
+# macOS
+make build-macos            # macOS ARM64 (Apple Silicon)</code></pre>
+        </div>
+        <div class="info-box">
+          <i data-lucide="info"></i>
+          <span
+            >For Windows builds: The Makefile automatically generates Windows
+            resource files (including application icon and metadata) when
+            building for Windows. This requires the
+            <code>goversioninfo</code> tool, which will be automatically
+            downloaded during the build process.</span
+          >
+        </div>
+
+        <h3>For WebAssembly (Browser)</h3>
+        <p>You can compile SynapSeq to WebAssembly for use in web browsers:</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Terminal</span>
+          </div>
+          <pre><code>make build-wasm</code></pre>
+        </div>
+        <p>
+          This will generate the WebAssembly files in the
+          <code>wasm/</code> directory:
+        </p>
+        <ul>
+          <li><code>synapseq.wasm</code> - The WebAssembly binary</li>
+          <li>
+            <code>wasm_exec.js</code> - Go WASM runtime (copied from Go
+            installation)
+          </li>
+        </ul>
+
+        <h2 id="installing-binary">Installing the Binary</h2>
+        <p>After compilation, you can install the binary system-wide:</p>
+
+        <h3>macOS/Linux</h3>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Terminal</span>
+          </div>
+          <pre><code>sudo make install</code></pre>
+        </div>
+        <p>
+          This will install the SynapSeq binary to
+          <code>/usr/local/bin/synapseq</code>.
+        </p>
+
+        <h3>Windows</h3>
+        <p>Using Git Bash (run as Administrator):</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Git Bash (Administrator)</span>
+          </div>
+          <pre><code>mkdir -p "/c/Program Files/SynapSeq"
+cp bin/synapseq-windows-amd64.exe "/c/Program Files/SynapSeq/synapseq.exe"</code></pre>
+        </div>
+
+        <h4>Adding to PATH</h4>
+        <p>
+          After copying the executable, add
+          <code>C:\Program Files\SynapSeq</code> to your PATH environment
+          variable.
+        </p>
+        <ol
+          style="
+            margin-left: 1.5rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+          "
+        >
+          <li>
+            Open <strong>Start Menu</strong> and search for "Environment
+            Variables"
+          </li>
+          <li>
+            Click <strong>"Edit the system environment variables"</strong>
+          </li>
+          <li>Click <strong>"Environment Variables..."</strong> button</li>
+          <li>
+            Under <strong>"User variables"</strong> or
+            <strong>"System variables"</strong>, find and select
+            <strong>"Path"</strong>
+          </li>
+          <li>Click <strong>"Edit..."</strong></li>
+          <li>Click <strong>"New"</strong></li>
+          <li>Add: <code>C:\Program Files\SynapSeq</code></li>
+          <li>Click <strong>"OK"</strong> on all dialogs</li>
+        </ol>
+        <p>After adding to PATH, restart Git Bash or PowerShell and verify:</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Terminal</span>
+          </div>
+          <pre><code>synapseq -h</code></pre>
+        </div>
+
+        <h2 id="compiling-without-hub">Compiling without Hub Support</h2>
+        <p>
+          If you prefer to use SynapSeq without any Hub features (including
+          analytics tracking), you can compile a Hub-disabled version using the
+          <code>nohub</code> build tag. This completely removes all Hub-related
+          code from the binary, resulting in a smaller executable with no
+          network connections to the SynapSeq Hub infrastructure.
+        </p>
+
+        <h3>To compile without Hub support:</h3>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Terminal</span>
+          </div>
+          <pre><code># Build for POSIX system (macOS/Linux)
+make build-nohub
+
+# Or build for specific platforms and architectures
+make build-windows-nohub-amd64    # Windows 64-bit (Intel/AMD)
+make build-windows-nohub-arm64    # Windows 64-bit (ARM)
+make build-linux-nohub-amd64      # Linux 64-bit (Intel/AMD)
+make build-linux-nohub-arm64      # Linux 64-bit (ARM)
+make build-macos-nohub            # macOS ARM64 (Apple Silicon)</code></pre>
+        </div>
+
+        <h3>What's different in the Hub-disabled build:</h3>
+        <ul>
+          <li>All <code>-hub-*</code> commands will return an error message</li>
+          <li>No network connections to the Hub infrastructure</li>
+          <li>No analytics or tracking of any kind</li>
+          <li>Smaller binary size (Hub code is excluded)</li>
+          <li>All other SynapSeq features work normally</li>
+        </ul>
+
+        <h3>Installing the Hub-disabled binary:</h3>
+        <p>After compilation, you can install it system-wide:</p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>macOS/Linux</span>
+          </div>
+          <pre><code>sudo make install-nohub</code></pre>
+        </div>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Windows (Git Bash as Administrator)</span>
+          </div>
+          <pre><code>mkdir -p "/c/Program Files/SynapSeq"
+cp bin/synapseq-windows-amd64-nohub.exe "/c/Program Files/SynapSeq/synapseq-nohub.exe"</code></pre>
+        </div>
+
+        <h2 id="additional-make-commands">Additional Make Commands</h2>
+        <p>Other available make targets:</p>
+
+        <h3>Testing</h3>
+        <ul>
+          <li><code>make test</code> - Run all tests</li>
+        </ul>
+
+        <h3>Cleanup</h3>
+        <ul>
+          <li>
+            <code>make clean</code> - Remove all compiled binaries and generated
+            files
+          </li>
+        </ul>
+
+        <h3>WebAssembly</h3>
+        <ul>
+          <li>
+            <code>make build-wasm</code> - Build WebAssembly version for
+            browsers
+          </li>
+        </ul>
+
+        <h3>Utilities</h3>
+        <ul>
+          <li><code>make all</code> - Same as <code>make build</code></li>
+          <li>
+            <code>make prepare</code> - Create <code>bin/</code> directory
+          </li>
+          <li>
+            <code>make windows-res-amd64</code> - Generate Windows resource file
+            (icon and metadata) for x64 build
+          </li>
+          <li>
+            <code>make windows-res-arm64</code> - Generate Windows resource file
+            (icon and metadata) for ARM64 build
+          </li>
+        </ul>
