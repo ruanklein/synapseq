@@ -513,15 +513,3 @@ To use this library, you need these files:
 ## License
 
 GNU GPL v2 - See [COPYING.txt](../COPYING.txt) for details.
-
-## Links
-
-- [SynapSeq GitHub Repository](https://github.com/ruanklein/synapseq)
-- [Full Documentation](../README.md)
-- [Usage Guide](../docs/USAGE.md)
-
----
-
-**SynapSeq** - Synapse-Sequenced Brainwave Generator
-
-Copyright (c) 2025 [ruan.sh](https://ruan.sh)

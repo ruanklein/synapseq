@@ -223,4 +223,4 @@ The `sounds/` directory contains:
 
 ## Creating Your Own Sequences
 
-Use these samples as starting points. Modify frequencies, amplitudes, timelines, and effects to suit your specific needs. See [USAGE](../docs/USAGE.md) for complete syntax reference.
+Use these samples as starting points. Modify frequencies, amplitudes, timelines, and effects to suit your specific needs. See [SynapSeq Docs](https://synapseq.org/docs) for complete syntax reference.
