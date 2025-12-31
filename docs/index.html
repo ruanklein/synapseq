@@ -89,10 +89,9 @@
         <div class="nav-section">
           <div class="nav-section-title">CLI Options</div>
           <a href="#hub-commands" class="nav-item nav-sub">Hub Commands</a>
-          <a href="#extract" class="nav-item nav-sub">-extract</a>
-          <a href="#play" class="nav-item nav-sub">-play</a>
-          <a href="#mp3" class="nav-item nav-sub">-mp3</a>
-          <a href="#convert" class="nav-item nav-sub">-convert</a>
+          <a href="#extract" class="nav-item nav-sub">Extract</a>
+          <a href="#playing-mode" class="nav-item nav-sub">Playing Mode</a>
+          <a href="#export-options" class="nav-item nav-sub">Export Options</a>
           <a href="#structured-formats" class="nav-item nav-sub"
             >Structured Formats</a
           >
@@ -104,13 +103,6 @@
           <a href="#installing-ffmpeg" class="nav-item nav-sub"
             >Installing FFmpeg</a
           >
-        </div>
-
-        <div class="nav-section">
-          <div class="nav-section-title">Structured Formats</div>
-          <a href="#format-json" class="nav-item nav-sub">JSON</a>
-          <a href="#format-xml" class="nav-item nav-sub">XML</a>
-          <a href="#format-yaml" class="nav-item nav-sub">YAML</a>
         </div>
 
         <a href="#notes" class="nav-item">
@@ -1366,7 +1358,7 @@ alpha
 
         <h2>Additional Options</h2>
 
-        <h3 id="extract"><code>-extract</code></h3>
+        <h3 id="extract">Extract</h3>
         <p>
           Extracts the original sequence and metadata embedded in a WAV or MP3
           file.
@@ -1404,7 +1396,7 @@ alpha
           <pre><code>synapseq -extract -mp3 input.mp3 output.spsq</code></pre>
         </div>
 
-        <h3 id="play"><code>-play</code></h3>
+        <h3 id="playing-mode">Playing Mode</h3>
         <p>
           Plays a sequence in real-time using <strong>ffplay</strong>. The audio
           is streamed directly without creating intermediate files.
@@ -1444,19 +1436,24 @@ alpha
           <pre><code>synapseq -play https://example.com/sequences/my-sequence.spsq</code></pre>
         </div>
 
-        <h3 id="mp3"><code>-mp3</code></h3>
+        <h3 id="export-options">Export Options</h3>
         <p>
-          Converts a sequence to MP3 format using <strong>ffmpeg</strong>. By
-          default, creates an output file with the same name as the input but
-          with <code>.mp3</code> extension.
+          SynapSeq can export sequences to different audio formats using
+          <strong>ffmpeg</strong>.
         </p>
         <div class="info-box">
           <i data-lucide="info"></i>
           <span
-            ><strong>Requirements:</strong> This feature requires
+            ><strong>Requirements:</strong> MP3 export feature requires
             <strong>ffmpeg</strong> to be installed.</span
           >
         </div>
+
+        <h4>MP3 Export</h4>
+        <p>
+          Converts a sequence to MP3 format. By default, creates an output file
+          with the same name as the input but with <code>.mp3</code> extension.
+        </p>
 
         <div class="code-example terminal">
           <div class="code-header">
@@ -1494,10 +1491,50 @@ alpha
           </ul>
         </div>
 
-        <h3 id="convert"><code>-convert</code></h3>
+        <h4>WAV Export</h4>
         <p>
-          Converts a structured format (JSON, XML, YAML) back into
-          <code>.spsq</code> format.
+          Generates standard WAV (uncompressed) audio files. This is the default
+          export format when no format flag is specified.
+        </p>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Export to WAV</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq sample.spsq output.wav"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq sample.spsq output.wav</code></pre>
+        </div>
+
+        <div class="option-card">
+          <h4>WAV Audio Quality</h4>
+          <ul>
+            <li><strong>Format:</strong> Uncompressed PCM</li>
+            <li><strong>Bit depth:</strong> 16-bit</li>
+            <li>
+              <strong>Sample rate:</strong> Matches the sequence (default 44100
+              Hz)
+            </li>
+            <li><strong>Channels:</strong> Stereo (2 channels)</li>
+          </ul>
+        </div>
+
+        <h3 id="structured-formats">Structured Formats</h3>
+        <p>
+          SynapSeq supports reading sequences from structured data formats
+          (JSON, XML, YAML) as an alternative to the native <code>.spsq</code>
+          format. These formats use a common schema that represents all sequence
+          components.
+        </p>
+
+        <h4>Converting to SPSQ</h4>
+        <p>
+          Use the <code>-convert</code> flag to convert a structured format
+          (JSON, XML, YAML) back into <code>.spsq</code> format.
         </p>
         <div class="code-example terminal">
           <div class="code-header">
@@ -1512,13 +1549,31 @@ alpha
           <pre><code>synapseq -convert -json input.json output.spsq</code></pre>
         </div>
 
-        <h3 id="structured-formats">Structured Formats</h3>
-        <p>
-          SynapSeq supports reading sequences from structured data formats
-          (JSON, XML, YAML) as an alternative to the native <code>.spsq</code>
-          format. These formats use a common schema that represents all sequence
-          components.
-        </p>
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Convert XML to SPSQ</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -convert -xml input.xml output.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -convert -xml input.xml output.spsq</code></pre>
+        </div>
+
+        <div class="code-example terminal">
+          <div class="code-header">
+            <span>Convert YAML to SPSQ</span>
+            <button
+              class="copy-btn"
+              data-code="synapseq -convert -yaml input.yaml output.spsq"
+            >
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <pre><code>synapseq -convert -yaml input.yaml output.spsq</code></pre>
+        </div>
 
         <h4>File Structure</h4>
         <p>All structured formats follow this schema:</p>
