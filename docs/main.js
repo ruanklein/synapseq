@@ -16,7 +16,138 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Scroll spy for active navigation
   initScrollSpy();
+
+  // Load Google Charts
+  loadGoogleCharts();
 });
+
+// Load and draw transition charts
+function loadGoogleCharts() {
+  google.charts.load("current", { packages: ["corechart"] });
+  google.charts.setOnLoadCallback(drawTransitionCharts);
+}
+
+function drawTransitionCharts() {
+  // Chart options with dark theme
+  const darkOptions = {
+    backgroundColor: "transparent",
+    legend: { position: "none" },
+    hAxis: {
+      title: "Time (seconds)",
+      titleTextStyle: { color: "#cbd5e1", fontSize: 11 },
+      textStyle: { color: "#94a3b8", fontSize: 10 },
+      gridlines: { color: "#334155", count: 5 },
+      minorGridlines: { color: "transparent" },
+      baselineColor: "#475569",
+    },
+    vAxis: {
+      title: "Frequency (Hz)",
+      titleTextStyle: { color: "#cbd5e1", fontSize: 11 },
+      textStyle: { color: "#94a3b8", fontSize: 10 },
+      gridlines: { color: "#334155" },
+      minorGridlines: { color: "transparent" },
+      baselineColor: "#475569",
+      viewWindow: { min: 0, max: 25 },
+    },
+    chartArea: {
+      left: 60,
+      top: 20,
+      right: 20,
+      bottom: 50,
+      backgroundColor: "transparent",
+    },
+    curveType: "function",
+    lineWidth: 3,
+    pointSize: 0,
+    colors: ["#22d3ee"],
+    animation: {
+      duration: 1000,
+      easing: "out",
+      startup: true,
+    },
+  };
+
+  // Steady transition (linear)
+  const steadyData = google.visualization.arrayToDataTable([
+    ["Time", "Frequency"],
+    [0, 20],
+    [1, 17.5],
+    [2, 15],
+    [3, 12.5],
+    [4, 10],
+    [5, 7.5],
+    [6, 5],
+  ]);
+
+  const steadyChart = new google.visualization.LineChart(
+    document.getElementById("chart-steady")
+  );
+  steadyChart.draw(steadyData, darkOptions);
+
+  // Ease-out transition (logarithmic)
+  const easeOutData = google.visualization.arrayToDataTable([
+    ["Time", "Frequency"],
+    [0, 20],
+    [0.5, 14],
+    [1, 10.5],
+    [2, 8],
+    [3, 6.5],
+    [4, 5.8],
+    [5, 5.3],
+    [6, 5],
+  ]);
+
+  const easeOutChart = new google.visualization.LineChart(
+    document.getElementById("chart-ease-out")
+  );
+  const easeOutOptions = { ...darkOptions, colors: ["#60a5fa"] };
+  easeOutChart.draw(easeOutData, easeOutOptions);
+
+  // Ease-in transition (exponential)
+  const easeInData = google.visualization.arrayToDataTable([
+    ["Time", "Frequency"],
+    [0, 20],
+    [1, 19.5],
+    [2, 18.5],
+    [3, 16],
+    [4, 12],
+    [5, 8],
+    [6, 5],
+  ]);
+
+  const easeInChart = new google.visualization.LineChart(
+    document.getElementById("chart-ease-in")
+  );
+  const easeInOptions = { ...darkOptions, colors: ["#4ade80"] };
+  easeInChart.draw(easeInData, easeInOptions);
+
+  // Smooth transition (sigmoid)
+  const smoothData = google.visualization.arrayToDataTable([
+    ["Time", "Frequency"],
+    [0, 20],
+    [0.5, 19.5],
+    [1, 18.5],
+    [2, 15],
+    [3, 10],
+    [4, 6.5],
+    [5, 5.5],
+    [6, 5],
+  ]);
+
+  const smoothChart = new google.visualization.LineChart(
+    document.getElementById("chart-smooth")
+  );
+  const smoothOptions = { ...darkOptions, colors: ["#a78bfa"] };
+  smoothChart.draw(smoothData, smoothOptions);
+
+  // Redraw charts on window resize
+  window.addEventListener("resize", () => {
+    steadyChart.draw(steadyData, darkOptions);
+    easeOutChart.draw(easeOutData, easeOutOptions);
+    easeInChart.draw(easeInData, easeInOptions);
+    smoothChart.draw(smoothData, smoothOptions);
+  });
+}
 
 // Mobile Menu
 function initMobileMenu() {
