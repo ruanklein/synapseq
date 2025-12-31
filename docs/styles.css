@@ -590,6 +590,10 @@ body {
 }
 
 .code-example code {
+  display: block;
+  padding: 0;
+  background: none;
+  border: none;
   font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 0.875rem;
   line-height: 1.6;
