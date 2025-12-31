@@ -909,6 +909,114 @@ body {
   color: var(--color-blue-400);
 }
 
+.manual-downloads {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .manual-downloads {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+.manual-download-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--color-gray-900);
+  border: 1px solid var(--color-gray-700);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  gap: 0.75rem;
+}
+
+.manual-download-item:hover {
+  border-color: var(--color-blue-600);
+  background: rgba(59, 130, 246, 0.05);
+  transform: translateY(-2px);
+}
+
+.manual-download-item > i {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--color-cyan-400);
+}
+
+.manual-download-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-gray-100);
+}
+
+.btn-download-small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-blue-600);
+  color: var(--color-white);
+  text-decoration: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-blue-500);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-download-small:hover {
+  background: var(--color-blue-500);
+  border-color: var(--color-blue-400);
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+}
+
+.download-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-gray-700);
+}
+
+@media (min-width: 768px) {
+  .download-links {
+    flex-direction: row;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+}
+
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: transparent;
+  color: var(--color-gray-400);
+  text-decoration: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-gray-700);
+  transition: all 0.2s ease;
+}
+
+.download-link:hover {
+  background: var(--color-gray-800);
+  border-color: var(--color-cyan-600);
+  color: var(--color-cyan-400);
+}
+
 @media (min-width: 768px) {
   .download-content {
     grid-template-columns: repeat(2, 1fr);
@@ -924,50 +1032,89 @@ body {
   background: rgba(15, 23, 42, 0.5);
   border: 1px solid var(--color-gray-700);
   border-radius: 1rem;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   text-align: center;
+}
+
+.resources-header {
+  max-width: 42rem;
+  margin: 0 auto 2rem;
 }
 
 .resources-title {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-gray-100);
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.resources-description {
+  font-size: 1rem;
+  color: var(--color-gray-400);
+  line-height: 1.6;
 }
 
 .resources-grid {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 1rem;
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .resources-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
 }
 
 .resource-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 0.75rem;
-  padding: 1rem 1.5rem;
+  padding: 1.5rem;
   background: var(--color-gray-900);
   border: 1px solid var(--color-gray-700);
   border-radius: 0.75rem;
   color: var(--color-gray-300);
   text-decoration: none;
-  font-weight: 500;
   transition: all 0.2s ease;
-  min-width: 200px;
 }
 
 .resource-card:hover {
   background: var(--color-gray-800);
   border-color: var(--color-cyan-600);
-  color: var(--color-cyan-400);
   transform: translateY(-2px);
 }
 
-@media (min-width: 640px) {
-  .resources-grid {
-    gap: 1rem;
-  }
+.resource-card > i {
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-cyan-400);
+}
+
+.resource-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.resource-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-gray-100);
+}
+
+.resource-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+}
+
+.resource-card:hover .resource-title {
+  color: var(--color-cyan-400);
 }
 
 /* Footer */
