@@ -782,6 +782,8 @@ body {
   border-radius: 1rem;
   padding: 2rem;
   transition: all 0.2s ease;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .download-card:hover {
@@ -808,6 +810,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow: hidden;
 }
 
 .download-method {
@@ -844,11 +847,15 @@ body {
   padding: 0.875rem 1rem;
   font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 0.875rem;
+  overflow: hidden;
 }
 
 .code-block code {
   color: var(--color-blue-300);
   flex: 1;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .copy-btn {
