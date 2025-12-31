@@ -583,6 +583,76 @@ body {
   height: 14px;
 }
 
+/* Expandable Example */
+.expandable-example {
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+
+.expandable-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid transparent;
+}
+
+.expandable-header:hover {
+  background: var(--bg-base);
+}
+
+.expandable-example.active .expandable-header {
+  border-bottom-color: var(--border-color);
+  background: var(--bg-base);
+}
+
+.expandable-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.expandable-title i {
+  color: var(--accent-from);
+}
+
+.expand-icon {
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+}
+
+.expandable-example.active .expand-icon {
+  transform: rotate(180deg);
+}
+
+.expandable-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expandable-example.active .expandable-content {
+  max-height: 10000px;
+}
+
+.expandable-inner {
+  padding: 0;
+}
+
+.expandable-inner .code-example {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+}
+
 .code-example pre {
   margin: 0;
   padding: 1.25rem;

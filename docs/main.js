@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Copy buttons
   initCopyButtons();
 
+  // Expandable examples
+  initExpandableExamples();
+
   // Smooth scroll
   initSmoothScroll();
 
@@ -212,18 +215,29 @@ function initCopyButtons() {
   copyButtons.forEach((button) => {
     button.addEventListener("click", async () => {
       const code = button.getAttribute("data-code");
+      const expandableId = button.getAttribute("data-copy-expandable");
 
-      if (!code) return;
+      let textToCopy = "";
 
-      try {
-        // Decode HTML entities
-        const decodedCode = code
+      if (expandableId) {
+        // Copy from expandable example code block
+        const codeBlock = document.getElementById(expandableId);
+        if (codeBlock) {
+          textToCopy = codeBlock.textContent;
+        }
+      } else if (code) {
+        // Decode HTML entities from data-code attribute
+        textToCopy = code
           .replace(/&#10;/g, "\n")
           .replace(/&lt;/g, "<")
           .replace(/&gt;/g, ">")
           .replace(/&amp;/g, "&");
+      }
 
-        await navigator.clipboard.writeText(decodedCode);
+      if (!textToCopy) return;
+
+      try {
+        await navigator.clipboard.writeText(textToCopy);
 
         // Visual feedback
         const icon = button.querySelector("i");
@@ -240,6 +254,31 @@ function initCopyButtons() {
         }, 2000);
       } catch (err) {
         console.error("Failed to copy:", err);
+      }
+    });
+  });
+}
+
+// Expandable Examples
+function initExpandableExamples() {
+  const expandables = document.querySelectorAll(".expandable-example");
+
+  expandables.forEach((expandable) => {
+    const header = expandable.querySelector(".expandable-header");
+
+    header.addEventListener("click", () => {
+      const isActive = expandable.classList.contains("active");
+
+      // Close all other expandables
+      expandables.forEach((exp) => {
+        exp.classList.remove("active");
+      });
+
+      // Toggle current expandable
+      if (!isActive) {
+        expandable.classList.add("active");
+        // Reinitialize icons after DOM change
+        setTimeout(() => lucide.createIcons(), 100);
       }
     });
   });

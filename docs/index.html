@@ -93,9 +93,9 @@
           <a href="#play" class="nav-item nav-sub">-play</a>
           <a href="#mp3" class="nav-item nav-sub">-mp3</a>
           <a href="#convert" class="nav-item nav-sub">-convert</a>
-          <a href="#json" class="nav-item nav-sub">-json</a>
-          <a href="#xml" class="nav-item nav-sub">-xml</a>
-          <a href="#yaml" class="nav-item nav-sub">-yaml</a>
+          <a href="#structured-formats" class="nav-item nav-sub"
+            >Structured Formats</a
+          >
           <a href="#ffmpeg-paths" class="nav-item nav-sub">FFmpeg Paths</a>
           <a href="#other-options" class="nav-item nav-sub">Other Options</a>
           <a href="#windows-options" class="nav-item nav-sub"
@@ -104,6 +104,13 @@
           <a href="#installing-ffmpeg" class="nav-item nav-sub"
             >Installing FFmpeg</a
           >
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Structured Formats</div>
+          <a href="#format-json" class="nav-item nav-sub">JSON</a>
+          <a href="#format-xml" class="nav-item nav-sub">XML</a>
+          <a href="#format-yaml" class="nav-item nav-sub">YAML</a>
         </div>
 
         <a href="#notes" class="nav-item">
@@ -1505,8 +1512,62 @@ alpha
           <pre><code>synapseq -convert -json input.json output.spsq</code></pre>
         </div>
 
-        <h3 id="json"><code>-json</code></h3>
-        <p>Parse the input file as JSON format.</p>
+        <h3 id="structured-formats">Structured Formats</h3>
+        <p>
+          SynapSeq supports reading sequences from structured data formats
+          (JSON, XML, YAML) as an alternative to the native <code>.spsq</code>
+          format. These formats use a common schema that represents all sequence
+          components.
+        </p>
+
+        <h4>File Structure</h4>
+        <p>All structured formats follow this schema:</p>
+
+        <div class="code-example">
+          <div class="code-header">
+            <span>Common Schema Structure</span>
+          </div>
+          <pre><code>Root object
+├── description: array of strings (converted from lines starting with "##" in .spsq)
+├── options
+│   ├── samplerate: integer (e.g., 44100)
+│   ├── volume: integer 0–100
+│   ├── background: string (optional) — path to background audio file (WAV)
+│   │                Can be a local file path, home directory path (~), or HTTP/HTTPS URL
+│   └── gainlevel: string (optional) — one of: low, medium, high, veryhigh (default: veryhigh)
+└── sequence: array of entries
+    └── entry
+        ├── time: integer milliseconds (first must be 0, strictly increasing)
+        ├── transition: steady | ease-out | ease-in | smooth
+        └── track
+            ├── tones: array of tone objects
+            │   └── tone
+            │       ├── mode: binaural | monaural | isochronic | pure
+            │       ├── carrier: Hz (float)
+            │       ├── resonance: Hz (float) — for beats
+            │       ├── amplitude: 0–100 (float)
+            │       └── waveform: sine | square | triangle | sawtooth
+            ├── noises: array of noise objects
+            │   └── noise
+            │       ├── mode: white | pink | brown
+            │       └── amplitude: 0–100 (float)
+            └── background: object (optional) — background audio modulation
+                ├── amplitude: 0–100 (float)
+                ├── waveform: sine | square | triangle | sawtooth
+                └── effect: object (optional)
+                    ├── intensity: 0–100 (float) — effect depth
+                    ├── spin: object (optional) — spatial rotation effect
+                    │   ├── width: Hz (float) — rotation width
+                    │   └── rate: Hz (float) — rotation speed
+                    └── pulse: object (optional) — rhythmic pulsing effect
+                        └── resonance: Hz (float) — pulse frequency</code></pre>
+        </div>
+
+        <h4 id="format-json">JSON Format</h4>
+        <p>
+          Use the <code>-json</code> flag to parse the input file as JSON
+          format.
+        </p>
         <div class="code-example terminal">
           <div class="code-header">
             <span>Process JSON sequence</span>
@@ -1520,8 +1581,191 @@ alpha
           <pre><code>synapseq -json sequence.json output.wav</code></pre>
         </div>
 
-        <h3 id="xml"><code>-xml</code></h3>
-        <p>Parse the input file as XML format.</p>
+        <div class="expandable-example">
+          <div class="expandable-header">
+            <div class="expandable-title">
+              <i data-lucide="file-code"></i>
+              <span>Full JSON Example - Binaural Beats Alpha Sequence</span>
+            </div>
+            <i data-lucide="chevron-down" class="expand-icon"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner">
+              <div class="code-example">
+                <div class="code-header">
+                  <span>binaural-alpha.json</span>
+                  <button class="copy-btn" data-copy-expandable="json-example">
+                    <i data-lucide="copy"></i>
+                  </button>
+                </div>
+                <pre><code id="json-example">{
+    "description": [
+        "Alpha brainwave entrainment sequence (8-11Hz)",
+        "Progressive 7-minute binaural beats with pink noise"
+    ],
+    "options": {
+        "samplerate": 44100,
+        "volume": 100
+    },
+    "sequence": [
+        {
+            "time": 0,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 8,
+                        "amplitude": 0,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 0
+                    }
+                ]
+            }
+        },
+        {
+            "time": 15000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 8,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 30
+                    }
+                ]
+            }
+        },
+        {
+            "time": 60000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 8,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 30
+                    }
+                ]
+            }
+        },
+        {
+            "time": 150000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 9,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 25
+                    }
+                ]
+            }
+        },
+        {
+            "time": 240000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 10,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 20
+                    }
+                ]
+            }
+        },
+        {
+            "time": 330000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 11,
+                        "amplitude": 15,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 15
+                    }
+                ]
+            }
+        },
+        {
+            "time": 420000,
+            "transition": "steady",
+            "track": {
+                "tones": [
+                    {
+                        "mode": "binaural",
+                        "carrier": 250,
+                        "resonance": 11,
+                        "amplitude": 0,
+                        "waveform": "sine"
+                    }
+                ],
+                "noises": [
+                    {
+                        "mode": "pink",
+                        "amplitude": 0
+                    }
+                ]
+            }
+        }
+    ]
+}</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4 id="format-xml">XML Format</h4>
+        <p>
+          Use the <code>-xml</code> flag to parse the input file as XML format.
+        </p>
         <div class="code-example terminal">
           <div class="code-header">
             <span>Process XML sequence</span>
@@ -1535,8 +1779,88 @@ alpha
           <pre><code>synapseq -xml sequence.xml output.wav</code></pre>
         </div>
 
-        <h3 id="yaml"><code>-yaml</code></h3>
-        <p>Parse the input file as YAML format.</p>
+        <div class="expandable-example">
+          <div class="expandable-header">
+            <div class="expandable-title">
+              <i data-lucide="file-code"></i>
+              <span>Full XML Example - Binaural Beats Alpha Sequence</span>
+            </div>
+            <i data-lucide="chevron-down" class="expand-icon"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner">
+              <div class="code-example">
+                <div class="code-header">
+                  <span>binaural-alpha.xml</span>
+                  <button class="copy-btn" data-copy-expandable="xml-example">
+                    <i data-lucide="copy"></i>
+                  </button>
+                </div>
+                <pre><code id="xml-example">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;SynapSeqInput&gt;
+  &lt;description&gt;
+    &lt;line&gt;Alpha brainwave entrainment sequence (8-11Hz)&lt;/line&gt;
+    &lt;line&gt;Progressive 7-minute binaural beats with pink noise&lt;/line&gt;
+  &lt;/description&gt;
+  &lt;options&gt;
+    &lt;samplerate&gt;44100&lt;/samplerate&gt;
+    &lt;volume&gt;100&lt;/volume&gt;
+  &lt;/options&gt;
+  &lt;sequence&gt;
+    &lt;entry time="0" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="8" amplitude="0" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="0"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="15000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="8" amplitude="15" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="30"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="60000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="8" amplitude="15" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="30"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="150000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="9" amplitude="15" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="25"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="240000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="10" amplitude="15" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="20"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="330000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="11" amplitude="15" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="15"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+    &lt;entry time="420000" transition="steady"&gt;
+      &lt;track&gt;
+          &lt;tone mode="binaural" carrier="250" resonance="11" amplitude="0" waveform="sine"&gt;&lt;/tone&gt;
+          &lt;noise mode="pink" amplitude="0"&gt;&lt;/noise&gt;
+      &lt;/track&gt;
+    &lt;/entry&gt;
+  &lt;/sequence&gt;
+&lt;/SynapSeqInput&gt;</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4 id="format-yaml">YAML Format</h4>
+        <p>
+          Use the <code>-yaml</code> flag to parse the input file as YAML
+          format.
+        </p>
         <div class="code-example terminal">
           <div class="code-header">
             <span>Process YAML sequence</span>
@@ -1548,6 +1872,119 @@ alpha
             </button>
           </div>
           <pre><code>synapseq -yaml sequence.yaml output.wav</code></pre>
+        </div>
+
+        <div class="expandable-example">
+          <div class="expandable-header">
+            <div class="expandable-title">
+              <i data-lucide="file-code"></i>
+              <span>Full YAML Example - Binaural Beats Alpha Sequence</span>
+            </div>
+            <i data-lucide="chevron-down" class="expand-icon"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner">
+              <div class="code-example">
+                <div class="code-header">
+                  <span>binaural-alpha.yaml</span>
+                  <button class="copy-btn" data-copy-expandable="yaml-example">
+                    <i data-lucide="copy"></i>
+                  </button>
+                </div>
+                <pre><code id="yaml-example">description:
+  - "Alpha brainwave entrainment sequence (8-11Hz)"
+  - "Progressive 7-minute binaural beats with pink noise"
+options:
+  samplerate: 44100
+  volume: 100
+sequence:
+  - time: 0
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 8
+          amplitude: 0
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 0
+  - time: 15000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 8
+          amplitude: 15
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 30
+  - time: 60000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 8
+          amplitude: 15
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 30
+  - time: 150000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 9
+          amplitude: 15
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 25
+  - time: 240000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 10
+          amplitude: 15
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 20
+  - time: 330000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 11
+          amplitude: 15
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 15
+  - time: 420000
+    transition: steady
+    track:
+      tones:
+        - mode: binaural
+          carrier: 250
+          resonance: 11
+          amplitude: 0
+          waveform: sine
+      noises:
+        - mode: pink
+          amplitude: 0</code></pre>
+              </div>
+            </div>
+          </div>
         </div>
 
         <h3 id="ffmpeg-paths"><code>-ffmpeg-path</code></h3>
