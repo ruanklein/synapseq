@@ -64,6 +64,8 @@ body {
   color: var(--text-primary);
   line-height: 1.7;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Back to Home Link */
@@ -1061,6 +1063,17 @@ body {
   color: var(--text-tertiary);
   font-size: 0.875rem;
   margin: 0.25rem 0;
+}
+
+/* Main Content Area */
+main.docs-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+main.docs-content > #dynamic-content {
+  flex: 1;
 }
 
 /* Footer */
