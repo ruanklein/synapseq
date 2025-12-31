@@ -27,7 +27,7 @@ See [USAGE](USAGE.md) for detailed syntax and examples.
 
 ### Where can I find sequences created for SynapSeq?
 
-You can explore a wide variety of ready-to-use sequences at the [SynapSeq Hub](https://synapseq-hub.ruan.sh/), a centralized repository of community-contributed sequences for meditation, focus, relaxation, and more.
+You can explore a wide variety of ready-to-use sequences at the [SynapSeq Hub](https://hub.synapseq.org/), a centralized repository of community-contributed sequences for meditation, focus, relaxation, and more.
 
 You can browse sequences through the web interface or use the CLI to search, download, and generate audio directly:
 

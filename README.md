@@ -1,8 +1,9 @@
 <h1 align="center">SynapSeq</h1>
 
 <p align="center">
+  <a href="https://synapseq.org/">Site</a> |
   <a href="#installation">Installation</a> |
-  <a href="https://synapseq-hub.ruan.sh/">Examples</a> |
+  <a href="https://hub.synapseq.org/">Examples</a> |
   <a href="docs/USAGE.md">Documentation</a> |
   <a href="docs/FAQ.md">FAQ</a>
 </p>
@@ -20,16 +21,6 @@
 <p align="center"><strong>Synapse-Sequenced Brainwave Generator</strong></p>
 
 SynapSeq is a lightweight engine that sequences audio tones to guide brainwave states like relaxation, focus, and meditation using a simple text-based format.
-
-<p align="center">
-  <a href="https://synapseq.ruan.sh/">
-    <img src="https://img.shields.io/badge/🧪_Try_Now-Live_Demo-00d4ff?style=for-the-badge&labelColor=0f172a" alt="Try SynapSeq in your browser">
-  </a>
-</p>
-
-<p align="center">
-  <strong>✨ No installation required • Works instantly in your browser • Try sample sequences</strong>
-</p>
 
 ## Installation
 
