@@ -298,6 +298,17 @@ body {
   line-height: 1.7;
 }
 
+.doc-section ul {
+  color: var(--text-secondary);
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  line-height: 1.7;
+}
+
+.doc-section ul li {
+  margin-bottom: 0.5rem;
+}
+
 .lead {
   font-size: 1.125rem;
   color: var(--text-secondary);

@@ -105,6 +105,11 @@
           >
         </div>
 
+        <a href="#programming" class="nav-item">
+          <i data-lucide="code"></i>
+          <span>Programming</span>
+        </a>
+
         <a href="#notes" class="nav-item">
           <i data-lucide="info"></i>
           <span>Notes</span>
@@ -2324,6 +2329,476 @@ ffprobe -version</code></pre>
             If these commands return version information, FFmpeg is correctly
             installed and available in your PATH.
           </p>
+        </div>
+      </section>
+
+      <!-- Programming -->
+      <section id="programming" class="doc-section">
+        <h1><i data-lucide="code"></i> Programming</h1>
+        <p class="lead">
+          SynapSeq provides libraries for integrating brainwave entrainment into
+          your applications. Generate and play sequences programmatically in the
+          browser or build custom tools in Go.
+        </p>
+
+        <h2>SynapSeq.js - WebAssembly Library</h2>
+        <p>
+          A JavaScript wrapper library for SynapSeq WASM, providing an elegant
+          object-oriented API for generating and playing SynapSeq sequences
+          directly in the browser.
+        </p>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Real-time streaming audio generation</li>
+          <li>
+            Generate binaural/monaural/isochronic tones from SPSQ sequences
+          </li>
+          <li>Support for both text (SPSQ) and JSON formats</li>
+          <li>WebAssembly-powered for high performance</li>
+          <li>AudioWorklet-based streaming for low-latency playback</li>
+          <li>Integrated Web Worker for non-blocking audio generation</li>
+          <li>Single-file library with embedded worker</li>
+          <li>Support for local and remote WASM files</li>
+          <li>Full JSDoc documentation</li>
+          <li>Promise-based async operations</li>
+          <li>Built-in audio playback controls</li>
+        </ul>
+
+        <h3>Installation</h3>
+        <p>Simply include the <code>synapseq.js</code> file in your HTML:</p>
+
+        <div class="code-example">
+          <div class="code-header">
+            <span>HTML</span>
+          </div>
+          <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;script src="synapseq.js"&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;script&gt;
+      // Your code here
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </div>
+
+        <h3>Quick Start</h3>
+
+        <div class="code-example">
+          <div class="code-header">
+            <span>Basic Usage</span>
+          </div>
+          <pre><code>// Create a new SynapSeq instance
+const synapseq = new SynapSeq();
+
+// Load a sequence in text format (SPSQ)
+const spsqCode = `
+# Presets
+alpha
+  noise pink amplitude 30
+  tone 250 isochronic 10 amplitude 15
+
+# Timeline
+00:00:00 silence
+00:00:15 alpha
+00:04:45 alpha
+00:05:00 silence
+`;
+
+async function play() {
+  // Load from string (text format is default)
+  await synapseq.load(spsqCode);
+  await synapseq.play();
+
+  // Or load JSON format
+  // await synapseq.load(jsonString, "json");
+
+  // Or load from File object (format auto-detected)
+  // const fileInput = document.getElementById("fileInput");
+  // await synapseq.load(fileInput.files[0]);
+}
+
+play();</code></pre>
+        </div>
+
+        <h4>Using Custom Paths</h4>
+        <p>
+          You can specify custom paths for WASM files, enabling CDN usage or
+          custom directory structures:
+        </p>
+
+        <div class="code-example">
+          <div class="code-header">
+            <span>Custom Paths</span>
+          </div>
+          <pre><code>// Local custom paths
+const synapseq = new SynapSeq({
+  wasmPath: "./dist/synapseq.wasm",
+  wasmExecPath: "./dist/wasm_exec.js",
+});
+
+// Remote CDN
+const synapseq = new SynapSeq({
+  wasmPath: "https://cdn.example.com/synapseq/synapseq.wasm",
+  wasmExecPath: "https://cdn.example.com/synapseq/wasm_exec.js",
+});
+
+// Mixed (local lib, remote WASM)
+const synapseq = new SynapSeq({
+  wasmPath: "https://cdn.example.com/synapseq.wasm",
+  // wasmExecPath defaults to local 'wasm_exec.js'
+});</code></pre>
+        </div>
+
+        <h3>API Reference</h3>
+
+        <h4>Constructor</h4>
+        <div class="option-card">
+          <h5><code>new SynapSeq(options)</code></h5>
+          <p>
+            Creates a new SynapSeq instance and initializes the embedded Web
+            Worker.
+          </p>
+          <p><strong>Parameters:</strong></p>
+          <ul>
+            <li>
+              <code>options</code> (Object) - Optional configuration object
+              <ul>
+                <li>
+                  <code>wasmPath</code> (string) - Path or URL to the WASM file
+                  (default: <code>'synapseq.wasm'</code>)
+                </li>
+                <li>
+                  <code>wasmExecPath</code> (string) - Path or URL to the
+                  wasm_exec.js file (default: <code>'wasm_exec.js'</code>)
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <p><strong>Returns:</strong> SynapSeq instance</p>
+        </div>
+
+        <h4>Methods</h4>
+
+        <div class="option-card">
+          <h5><code>load(input, format)</code></h5>
+          <p>
+            Loads a sequence from a string or File object. Supports both text
+            (SPSQ) and JSON formats.
+          </p>
+          <p><strong>Parameters:</strong></p>
+          <ul>
+            <li>
+              <code>input</code> (string|File) - Sequence content as string or
+              File object
+            </li>
+            <li>
+              <code>format</code> (string) - Optional format:
+              <code>'text'</code> (default) or <code>'json'</code>
+            </li>
+          </ul>
+          <p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+          <p><strong>Throws:</strong> Error if input is invalid</p>
+        </div>
+
+        <div class="code-example">
+          <div class="code-header">
+            <span>Load Examples</span>
+          </div>
+          <pre><code>// Load from SPSQ text string (default format)
+const spsqCode = `
+# Presets
+alpha
+  tone 250 isochronic 10
+
+# Timeline
+00:00:00 alpha
+`;
+await synapseq.load(spsqCode);
+// or explicitly:
+await synapseq.load(spsqCode, "text");
+
+// Load from File object (.spsq file)
+const fileInput = document.getElementById("fileInput");
+await synapseq.load(fileInput.files[0], "text");
+
+// Load from File object (.json file)
+await synapseq.load(fileInput.files[0], "json");</code></pre>
+        </div>
+
+        <div class="option-card">
+          <h5><code>play()</code></h5>
+          <p>
+            Plays the loaded sequence. Streams and generates audio in real-time.
+          </p>
+          <p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+          <p><strong>Throws:</strong> Error if no sequence is loaded</p>
+        </div>
+
+        <div class="option-card">
+          <h5><code>stop()</code></h5>
+          <p>
+            Stops the currently playing sequence and resets playback position.
+          </p>
+          <p><strong>Returns:</strong> void</p>
+        </div>
+
+        <div class="option-card">
+          <h5><code>getCurrentTime()</code></h5>
+          <p>
+            Gets the current playback position in seconds since playback
+            started.
+          </p>
+          <p>
+            <strong>Returns:</strong> number - Current time in seconds (0 if not
+            playing)
+          </p>
+        </div>
+
+        <div class="option-card">
+          <h5><code>getSampleRate()</code></h5>
+          <p>Gets the sample rate of the loaded sequence.</p>
+          <p><strong>Returns:</strong> number - Sample rate in Hz</p>
+        </div>
+
+        <div class="option-card">
+          <h5><code>getState()</code></h5>
+          <p>Gets the current playback state.</p>
+          <p>
+            <strong>Returns:</strong> string - One of: <code>'idle'</code>,
+            <code>'playing'</code>, <code>'stopped'</code>
+          </p>
+        </div>
+
+        <div class="option-card">
+          <h5><code>isLoaded()</code></h5>
+          <p>Checks if a sequence is currently loaded.</p>
+          <p>
+            <strong>Returns:</strong> boolean - True if a sequence is loaded
+          </p>
+        </div>
+
+        <div class="option-card">
+          <h5><code>isReady()</code></h5>
+          <p>Checks if the Web Worker is initialized and ready.</p>
+          <p><strong>Returns:</strong> boolean - True if worker is ready</p>
+        </div>
+
+        <div class="option-card">
+          <h5><code>getVersion()</code></h5>
+          <p>Gets the SynapSeq version from the WASM module.</p>
+          <p>
+            <strong>Returns:</strong> Promise&lt;string&gt; - The version string
+          </p>
+        </div>
+
+        <div class="option-card">
+          <h5><code>getBuildDate()</code></h5>
+          <p>Gets the build date of the SynapSeq WASM module.</p>
+          <p>
+            <strong>Returns:</strong> Promise&lt;string&gt; - The build date
+            string
+          </p>
+        </div>
+
+        <div class="option-card">
+          <h5><code>getHash()</code></h5>
+          <p>Gets the hash of the SynapSeq WASM build.</p>
+          <p>
+            <strong>Returns:</strong> Promise&lt;string&gt; - The hash string
+          </p>
+        </div>
+
+        <div class="option-card">
+          <h5><code>destroy()</code></h5>
+          <p>Cleans up resources and terminates the Web Worker.</p>
+          <p><strong>Returns:</strong> void</p>
+        </div>
+
+        <h4>Event Handlers</h4>
+        <p>
+          All event handlers are optional callback functions that can be
+          assigned to handle different states.
+        </p>
+
+        <div class="option-card">
+          <h5><code>onloaded</code></h5>
+          <p>Called when a sequence is successfully loaded.</p>
+          <div class="code-example">
+            <pre><code>synapseq.onloaded = () => {
+  console.log("Sequence loaded and ready to play");
+};</code></pre>
+          </div>
+        </div>
+
+        <div class="option-card">
+          <h5><code>ongenerating</code></h5>
+          <p>Called when audio generation starts.</p>
+          <div class="code-example">
+            <pre><code>synapseq.ongenerating = () => {
+  console.log("Generating audio...");
+};</code></pre>
+          </div>
+        </div>
+
+        <div class="option-card">
+          <h5><code>onplaying</code></h5>
+          <p>Called when playback starts.</p>
+          <div class="code-example">
+            <pre><code>synapseq.onplaying = () => {
+  console.log("Now playing");
+};</code></pre>
+          </div>
+        </div>
+
+        <div class="option-card">
+          <h5><code>onstopped</code></h5>
+          <p>Called when playback is stopped.</p>
+          <div class="code-example">
+            <pre><code>synapseq.onstopped = () => {
+  console.log("Playback stopped");
+};</code></pre>
+          </div>
+        </div>
+
+        <div class="option-card">
+          <h5><code>onended</code></h5>
+          <p>Called when playback ends naturally.</p>
+          <div class="code-example">
+            <pre><code>synapseq.onended = () => {
+  console.log("Playback finished");
+};</code></pre>
+          </div>
+        </div>
+
+        <div class="option-card">
+          <h5><code>onerror</code></h5>
+          <p>Called when an error occurs.</p>
+          <p><strong>Parameters:</strong></p>
+          <ul>
+            <li>
+              <code>detail</code> (Object) - Contains
+              <code>error</code> property with the Error object
+            </li>
+          </ul>
+          <div class="code-example">
+            <pre><code>synapseq.onerror = (detail) => {
+  console.error("Error occurred:", detail.error);
+};</code></pre>
+          </div>
+        </div>
+
+        <h3>Complete Example</h3>
+
+        <div class="code-example">
+          <div class="code-header">
+            <span>Full Implementation</span>
+          </div>
+          <pre><code>// Create instance
+const synapseq = new SynapSeq();
+
+// Setup event handlers
+synapseq.onloaded = () => {
+  console.log("Sequence loaded!");
+  document.getElementById("playBtn").disabled = false;
+};
+
+synapseq.ongenerating = () => {
+  console.log("Generating audio...");
+  document.getElementById("status").textContent = "Generating...";
+};
+
+synapseq.onplaying = () => {
+  console.log("Playing");
+  document.getElementById("status").textContent = "Playing";
+  document.getElementById("playBtn").disabled = true;
+  document.getElementById("stopBtn").disabled = false;
+};
+
+synapseq.onstopped = () => {
+  console.log("Stopped");
+  document.getElementById("status").textContent = "Stopped";
+  document.getElementById("playBtn").disabled = false;
+  document.getElementById("stopBtn").disabled = true;
+};
+
+synapseq.onended = () => {
+  console.log("Finished");
+  document.getElementById("status").textContent = "Finished";
+  document.getElementById("playBtn").disabled = false;
+  document.getElementById("stopBtn").disabled = true;
+};
+
+synapseq.onerror = (detail) => {
+  console.error("Error:", detail.error);
+  alert("Error: " + detail.error.message);
+};
+
+// Load and play
+async function start() {
+  const spsqCode = `
+# Presets
+alpha-one
+  noise pink amplitude 30
+  tone 250 isochronic 8 amplitude 15
+
+alpha-two
+  noise pink amplitude 25
+  tone 250 isochronic 10 amplitude 15
+
+# Timeline
+00:00:00 silence
+00:00:15 alpha-one
+00:02:00 alpha-two
+00:03:00 alpha-two
+00:04:00 silence
+  `;
+
+  try {
+    await synapseq.load(spsqCode);
+    await synapseq.play();
+  } catch (error) {
+    console.error("Failed to start:", error);
+  }
+}
+
+// Control functions
+function stop() {
+  synapseq.stop();
+}
+
+// Progress tracking
+setInterval(() => {
+  const current = synapseq.getCurrentTime();
+  const sampleRate = synapseq.getSampleRate();
+  if (current > 0) {
+    document.getElementById("time").textContent = 
+      `Time: ${current.toFixed(1)}s @ ${sampleRate}Hz`;
+  }
+}, 100);</code></pre>
+        </div>
+
+        <h2>Go Library</h2>
+        <p>
+          For server-side applications and custom tooling, SynapSeq provides a
+          comprehensive Go library with full access to the audio generation
+          engine.
+        </p>
+
+        <div class="info-box">
+          <i data-lucide="book-open"></i>
+          <span>
+            Complete Go library documentation is available at
+            <a
+              href="https://pkg.go.dev/github.com/ruanklein/synapseq/v3"
+              target="_blank"
+              rel="noopener noreferrer"
+              >pkg.go.dev/github.com/ruanklein/synapseq/v3</a
+            >
+          </span>
         </div>
       </section>
 
