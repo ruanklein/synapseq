@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.5.1]
+
+### Bug Fixes
+
+- Fixed Hub urls to point to the new domain `hub.synapseq.org` instead of the old `synapseq-hub.ruan.sh`.
+
+### Improvements
+
+- Updated documentation links to reflect the new Hub domain `hub.synapseq.org`.
+- Updated documentation links to reflect the new SynapSeq main site `synapseq.org`.
+
 ## [3.5.0]
 
 ### New Features
