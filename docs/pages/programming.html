@@ -50,7 +50,7 @@
       <i data-lucide="copy"></i>
     </button>
   </div>
-  <pre><code>&lt;!DOCTYPE html&gt;
+  <pre><code class="language-html">&lt;!DOCTYPE html&gt;
 &lt;html&gt;
   &lt;head&gt;
     &lt;script src="https://synapseq.org/lib/synapseq.js"&gt;&lt;/script&gt;
@@ -111,7 +111,7 @@ play();'
       <i data-lucide="copy"></i>
     </button>
   </div>
-  <pre><code>
+  <pre><code class="language-javascript">
 // Create a new SynapSeq instance
 const synapseq = new SynapSeq({
   wasmPath: "https://synapseq.org/lib/synapseq.wasm",
@@ -176,7 +176,7 @@ const synapseq = new SynapSeq({
       <i data-lucide="copy"></i>
     </button>
   </div>
-  <pre><code>// Local custom paths
+  <pre><code class="language-javascript">// Local custom paths
 const synapseq = new SynapSeq({
   wasmPath: "./dist/synapseq.wasm",
   wasmExecPath: "./dist/wasm_exec.js",
@@ -267,7 +267,7 @@ await synapseq.load(fileInput.files[0], "json");'
       <i data-lucide="copy"></i>
     </button>
   </div>
-  <pre><code>// Load from SPSQ text string (default format)
+  <pre><code class="language-javascript">// Load from SPSQ text string (default format)
 const spsqCode = `
 # Presets
 alpha
@@ -371,7 +371,7 @@ await synapseq.load(fileInput.files[0], "json");</code></pre>
   <h5><code>onloaded</code></h5>
   <p>Called when a sequence is successfully loaded.</p>
   <div class="code-example">
-    <pre><code>synapseq.onloaded = () => {
+    <pre><code class="language-javascript">synapseq.onloaded = () => {
   console.log("Sequence loaded and ready to play");
 };</code></pre>
   </div>
@@ -381,7 +381,7 @@ await synapseq.load(fileInput.files[0], "json");</code></pre>
   <h5><code>ongenerating</code></h5>
   <p>Called when audio generation starts.</p>
   <div class="code-example">
-    <pre><code>synapseq.ongenerating = () => {
+    <pre><code class="language-javascript">synapseq.ongenerating = () => {
   console.log("Generating audio...");
 };</code></pre>
   </div>
@@ -391,7 +391,7 @@ await synapseq.load(fileInput.files[0], "json");</code></pre>
   <h5><code>onplaying</code></h5>
   <p>Called when playback starts.</p>
   <div class="code-example">
-    <pre><code>synapseq.onplaying = () => {
+    <pre><code class="language-javascript">synapseq.onplaying = () => {
   console.log("Now playing");
 };</code></pre>
   </div>
@@ -401,7 +401,7 @@ await synapseq.load(fileInput.files[0], "json");</code></pre>
   <h5><code>onstopped</code></h5>
   <p>Called when playback is stopped.</p>
   <div class="code-example">
-    <pre><code>synapseq.onstopped = () => {
+    <pre><code class="language-javascript">synapseq.onstopped = () => {
   console.log("Playback stopped");
 };</code></pre>
   </div>
@@ -411,7 +411,7 @@ await synapseq.load(fileInput.files[0], "json");</code></pre>
   <h5><code>onended</code></h5>
   <p>Called when playback ends naturally.</p>
   <div class="code-example">
-    <pre><code>synapseq.onended = () => {
+    <pre><code class="language-javascript">synapseq.onended = () => {
   console.log("Playback finished");
 };</code></pre>
   </div>
@@ -428,7 +428,7 @@ await synapseq.load(fileInput.files[0], "json");</code></pre>
     </li>
   </ul>
   <div class="code-example">
-    <pre><code>synapseq.onerror = (detail) => {
+    <pre><code class="language-javascript">synapseq.onerror = (detail) => {
   console.error("Error occurred:", detail.error);
 };</code></pre>
   </div>
@@ -527,7 +527,7 @@ setInterval(() => {
       <i data-lucide="copy"></i>
     </button>
   </div>
-  <pre><code>// Create instance
+  <pre><code class="language-javascript">// Create instance
 const synapseq = new SynapSeq();
 
 // Setup event handlers

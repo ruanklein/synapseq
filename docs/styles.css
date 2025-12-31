@@ -547,7 +547,7 @@ body {
   border-radius: 0.75rem;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  background: var(--color-gray-900);
+  background: #000000;
 }
 
 .code-example.terminal {
@@ -559,7 +559,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   border-bottom: 1px solid var(--border-color);
 }
 

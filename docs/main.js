@@ -439,6 +439,13 @@ async function loadPage(pageId) {
     // Re-initialize expandable examples for new content
     initExpandableExamples();
 
+    // Re-initialize syntax highlighting for code blocks
+    if (typeof hljs !== "undefined") {
+      document.querySelectorAll("pre code").forEach((block) => {
+        hljs.highlightElement(block);
+      });
+    }
+
     // Re-initialize Google Charts if needed (only if chart containers exist)
     if (typeof drawTransitionCharts === "function") {
       setTimeout(() => {
