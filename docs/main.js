@@ -246,6 +246,8 @@ function initCopyButtons() {
 
         // Visual feedback
         const icon = button.querySelector("i");
+        if (!icon) return; // Exit if icon not found
+
         const originalIcon = icon.getAttribute("data-lucide");
 
         // Change to check icon
