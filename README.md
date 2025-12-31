@@ -1,8 +1,7 @@
 <h1 align="center">SynapSeq</h1>
 
 <p align="center">
-  <a href="https://synapseq.org/">Site</a> |
-  <a href="#installation">Installation</a> |
+  <a href="https://synapseq.org/">Home</a> |
   <a href="https://hub.synapseq.org/">Examples</a> |
   <a href="https://synapseq.org/docs">Documentation</a>
 </p>
@@ -11,8 +10,6 @@
   <p align="center">
   <a href="https://github.com/ruanklein/synapseq/releases/latest"><img src="https://img.shields.io/github/v/release/ruanklein/synapseq?color=blue&logo=github" alt="Release"></a>
   <a href="COPYING.txt"><img src="https://img.shields.io/badge/license-GPL%20v2-blue.svg?logo=open-source-initiative&logoColor=white" alt="License"></a>
-  <a href="#winget"><img src="https://img.shields.io/badge/Winget-Install-blue?logo=gnometerminal&logoColor=cyan" alt="Winget"></a>
-  <a href="#homebrew"><img src="https://img.shields.io/badge/Homebrew-Install-brightgreen?logo=homebrew&logoColor=white" alt="Homebrew"></a>
   <a href="https://github.com/ruanklein/synapseq/commits"><img src="https://img.shields.io/github/commit-activity/m/ruanklein/synapseq?color=ff69b4&logo=git" alt="Commit Activity"></a>
 </p>
 </p>
@@ -21,97 +18,13 @@
 
 SynapSeq is a lightweight engine that sequences audio tones to guide brainwave states like relaxation, focus, and meditation using a simple text-based format.
 
-## Installation
-
-SynapSeq can be installed via package managers or by downloading precompiled binaries.
-
-### Windows
-
-#### Winget
-
-If you use Winget, you can install SynapSeq directly from the official Microsoft repository:
-
-```powershell
-winget install synapseq
-```
-
-Check installation:
-
-```powershell
-synapseq -h
-```
-
-#### Windows Native Integration
-
-On Windows, you can enable native file association and context menu integration for a better user experience:
-
-```powershell
-synapseq -install-file-association
-```
-
-For more details, see the [documentation](https://synapseq.org/docs)
-
-### macOS/Linux
-
-#### Homebrew
-
-Just install via Homebrew:
-
-```bash
-brew install ruanklein/synapseq/synapseq
-```
-
-Check installation:
-
-```bash
-synapseq -h
-```
-
-### Precompiled Binaries
-
-You can download the latest precompiled binaries for Windows, macOS, or Linux from the [Releases](https://github.com/ruanklein/synapseq/releases/latest) page.
-
-## Compilation
-
-For users who prefer to compile from source, please follow the [Compilation](COMPILE.md) instructions.
-
-## Documentation
-
-For detailed information on all features and advanced usage, see the [SynapSeq Docs](https://synapseq.org/docs) site.
-
-## Go Library
-
-SynapSeq can also be used as a Go library in your own projects. See the [Go Library Documentation](https://pkg.go.dev/github.com/ruanklein/synapseq/v3/core) for instructions on how to integrate SynapSeq into your Go applications.
-
-## WebAssembly (JavaScript)
-
-SynapSeq is also available as a WebAssembly library for use in web browsers. The JavaScript wrapper provides a simple API for loading and playing sequences directly in the browser with real-time audio streaming.
-
-For detailed documentation, examples, and API reference, see the [WebAssembly Documentation](wasm/README.md).
-
-## FAQ
-
-For answers to common questions about SynapSeq and brainwave entrainment, see in the [official site](https://synapseq.org).
+🌐 **Visit [synapseq.org](https://synapseq.org/) for installation instructions, documentation, FAQ, and more!**
 
 ## Contributing
 
 We welcome contributions!
 
 Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute code, bug fixes, and documentation to the project.
-
-### Contributing Sequence Files
-
-If you'd like to share your own `.spsq` sequence files with the community, please contribute them to the [SynapSeq Hub Repository](https://github.com/ruanklein/synapseq-hub). All sequence files contributed to the Hub are licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
-
-### Code of Conduct
-
-Please note that all contributors are expected to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
-
-- Be respectful and considerate in all interactions.
-- Harassment or abusive behavior will not be tolerated.
-- Help us maintain a friendly and inclusive community.
-
-If you experience or witness unacceptable behavior, please report it as described in the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
