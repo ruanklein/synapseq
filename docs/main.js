@@ -33,7 +33,7 @@ function drawTransitionCharts() {
     backgroundColor: "transparent",
     legend: { position: "none" },
     hAxis: {
-      title: "Time (seconds)",
+      title: "Time (minutes)",
       titleTextStyle: { color: "#cbd5e1", fontSize: 11 },
       textStyle: { color: "#94a3b8", fontSize: 10 },
       gridlines: { color: "#334155", count: 5 },
