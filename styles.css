@@ -91,6 +91,12 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.nav-logo:hover {
+  opacity: 0.8;
 }
 
 .logo-image {
@@ -212,7 +218,7 @@ body {
 
 /* Hero Section */
 .hero-section {
-  min-height: 85vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -711,6 +717,23 @@ body {
   font-size: 0.875rem;
   color: var(--color-gray-400);
   font-weight: 500;
+}
+
+.download-info {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  margin-top: -0.5rem;
+}
+
+.download-info a {
+  color: var(--color-cyan-400);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.download-info a:hover {
+  color: var(--color-cyan-300);
+  text-decoration: underline;
 }
 
 .code-block {

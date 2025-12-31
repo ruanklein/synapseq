@@ -16,10 +16,10 @@
     <!-- Navigation -->
     <nav class="nav-bar">
       <div class="nav-container">
-        <div class="nav-logo">
+        <a href="#hero" class="nav-logo">
           <img src="assets/logo.png" alt="SynapSeq Logo" class="logo-image" />
           <span class="logo-text">SynapSeq</span>
-        </div>
+        </a>
         <div class="nav-links">
           <a href="#hero" class="nav-link">
             <i data-lucide="home"></i>
@@ -607,23 +607,6 @@
             </div>
           </div>
         </div>
-
-        <div class="faq-footer">
-          <p>
-            For more detailed information, check the
-            <a
-              href="https://github.com/ruanklein/synapseq/blob/main/docs/FAQ.md"
-              target="_blank"
-              >complete FAQ</a
-            >
-            and
-            <a
-              href="https://github.com/ruanklein/synapseq/blob/main/docs/USAGE.md"
-              target="_blank"
-              >documentation</a
-            >.
-          </p>
-        </div>
       </div>
     </section>
 
@@ -654,6 +637,14 @@
                   <i data-lucide="copy"></i>
                 </button>
               </div>
+              <p class="download-info">
+                Don't know what winget is?
+                <a
+                  href="https://learn.microsoft.com/windows/package-manager/winget/"
+                  target="_blank"
+                  >Click here</a
+                >
+              </p>
             </div>
           </div>
 
@@ -666,20 +657,18 @@
             <div class="download-card-body">
               <p class="download-method">Recommended: Homebrew</p>
               <div class="code-block">
-                <code>brew tap ruanklein/synapseq</code>
+                <code>brew install ruanklein/synapseq/synapseq</code>
                 <button
                   class="copy-btn"
-                  data-copy="brew tap ruanklein/synapseq"
+                  data-copy="brew install ruanklein/synapseq/synapseq"
                 >
                   <i data-lucide="copy"></i>
                 </button>
               </div>
-              <div class="code-block">
-                <code>brew install synapseq</code>
-                <button class="copy-btn" data-copy="brew install synapseq">
-                  <i data-lucide="copy"></i>
-                </button>
-              </div>
+              <p class="download-info">
+                Don't have Homebrew installed?
+                <a href="https://brew.sh" target="_blank">Get it here</a>
+              </p>
             </div>
           </div>
 
