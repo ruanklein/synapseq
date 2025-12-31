@@ -1067,8 +1067,22 @@ a:hover {
   }
 
   .back-home {
-    top: 5rem;
-    left: 1rem;
+    top: 1rem;
+    left: auto;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .back-home span {
+    display: none;
+  }
+
+  .back-home i {
+    width: 20px;
+    height: 20px;
   }
 
   .mobile-menu-toggle {
