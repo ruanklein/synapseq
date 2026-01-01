@@ -243,11 +243,13 @@ shareBtn.addEventListener("click", () => {
   }
 
   try {
-    // Encode sequence to base64
-    const encodedSequence = btoa(sequence);
+    // Encode sequence to base64 and make it URL-safe
+    const encodedSequence = encodeURIComponent(btoa(sequence));
 
     // Create shareable URL
     const url = new URL(window.location.href);
+    // Remove any existing hash
+    url.hash = "";
     url.searchParams.set("sequence", encodedSequence);
 
     // Copy to clipboard
@@ -283,8 +285,8 @@ function loadSequenceFromURL() {
 
   if (sequenceBase64) {
     try {
-      // Decode from base64
-      const decodedSequence = atob(sequenceBase64);
+      // Decode from URL-safe base64
+      const decodedSequence = atob(decodeURIComponent(sequenceBase64));
       codeInput.value = decodedSequence;
       updateLineNumbers();
       hideError();
