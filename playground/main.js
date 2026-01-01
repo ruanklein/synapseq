@@ -20,6 +20,31 @@ const errorText = document.getElementById("errorText");
 let synapseq = null;
 let progressInterval = null;
 let sequenceDuration = 0;
+let wakeLock = null;
+
+// Wake Lock functions
+async function requestWakeLock() {
+  try {
+    if ("wakeLock" in navigator) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      console.log("Wake Lock activated");
+    }
+  } catch (err) {
+    console.warn("Wake Lock not available:", err);
+  }
+}
+
+async function releaseWakeLock() {
+  if (wakeLock) {
+    try {
+      await wakeLock.release();
+      wakeLock = null;
+      console.log("Wake Lock released");
+    } catch (err) {
+      console.warn("Failed to release Wake Lock:", err);
+    }
+  }
+}
 
 // Initialize SynapSeq
 function initSynapSeq() {
@@ -45,6 +70,7 @@ function initSynapSeq() {
     uploadBtn.disabled = true;
     codeInput.readOnly = true;
     startProgressTracking();
+    requestWakeLock();
   };
 
   synapseq.onstopped = () => {
@@ -55,6 +81,7 @@ function initSynapSeq() {
     codeInput.readOnly = false;
     stopProgressTracking();
     resetProgress();
+    releaseWakeLock();
   };
 
   synapseq.onended = () => {
@@ -65,6 +92,7 @@ function initSynapSeq() {
     codeInput.readOnly = false;
     stopProgressTracking();
     resetProgress();
+    releaseWakeLock();
   };
 
   synapseq.onerror = (detail) => {
@@ -75,6 +103,7 @@ function initSynapSeq() {
     uploadBtn.disabled = false;
     codeInput.readOnly = false;
     stopProgressTracking();
+    releaseWakeLock();
   };
 }
 
