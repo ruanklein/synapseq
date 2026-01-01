@@ -263,13 +263,19 @@ fileInput.addEventListener("change", async (e) => {
 });
 
 // Share button - Copy URL with base64 encoded sequence
-shareBtn.addEventListener("click", () => {
+shareBtn.addEventListener("click", async () => {
   const sequence = codeInput.value.trim();
 
   if (!sequence) {
     showError("Cannot share an empty sequence");
     return;
   }
+
+  // Show loading state
+  const originalHTML = shareBtn.innerHTML;
+  shareBtn.innerHTML = '<i data-lucide="loader-2"></i><span>Creating...</span>';
+  shareBtn.disabled = true;
+  lucide.createIcons();
 
   try {
     // Encode sequence to base64 and make it URL-safe
@@ -281,24 +287,46 @@ shareBtn.addEventListener("click", () => {
     url.hash = "";
     url.searchParams.set("sequence", encodedSequence);
 
-    // Copy to clipboard
-    navigator.clipboard
-      .writeText(url.toString())
-      .then(() => {
-        // Visual feedback - change button text temporarily
-        const originalHTML = shareBtn.innerHTML;
-        shareBtn.innerHTML = '<i data-lucide="check"></i><span>Copied!</span>';
-        lucide.createIcons();
+    const longUrl = url.toString();
 
-        setTimeout(() => {
-          shareBtn.innerHTML = originalHTML;
-          lucide.createIcons();
-        }, 2000);
-      })
-      .catch((error) => {
-        showError("Failed to copy link to clipboard");
-      });
+    // Try to shorten the URL using is.gd API
+    let finalUrl = longUrl;
+
+    try {
+      const response = await fetch(
+        `https://is.gd/create.php?format=json&url=${encodeURIComponent(
+          longUrl
+        )}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Shortened URL data:", data);
+        if (data.shorturl) {
+          finalUrl = data.shorturl;
+        }
+      }
+    } catch (shortenError) {
+      // If shortening fails, use the long URL
+      console.warn("Failed to shorten URL, using full URL:", shortenError);
+    }
+
+    // Copy to clipboard
+    await navigator.clipboard.writeText(finalUrl);
+
+    // Visual feedback - change button text temporarily
+    shareBtn.innerHTML = '<i data-lucide="check"></i><span>Copied!</span>';
+    shareBtn.disabled = false;
+    lucide.createIcons();
+
+    setTimeout(() => {
+      shareBtn.innerHTML = originalHTML;
+      lucide.createIcons();
+    }, 2000);
   } catch (error) {
+    shareBtn.innerHTML = originalHTML;
+    shareBtn.disabled = false;
+    lucide.createIcons();
     showError("Failed to create shareable link");
   }
 });
