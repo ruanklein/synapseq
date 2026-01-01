@@ -7,6 +7,7 @@ const lineNumbers = document.getElementById("lineNumbers");
 const playBtn = document.getElementById("playBtn");
 const stopBtn = document.getElementById("stopBtn");
 const uploadBtn = document.getElementById("uploadBtn");
+const shareBtn = document.getElementById("shareBtn");
 const fileInput = document.getElementById("fileInput");
 const statusIcon = document.getElementById("statusIcon");
 const statusText = document.getElementById("statusText");
@@ -230,6 +231,45 @@ fileInput.addEventListener("change", async (e) => {
 
   // Reset input
   fileInput.value = "";
+});
+
+// Share button - Copy URL with base64 encoded sequence
+shareBtn.addEventListener("click", () => {
+  const sequence = codeInput.value.trim();
+
+  if (!sequence) {
+    showError("Cannot share an empty sequence");
+    return;
+  }
+
+  try {
+    // Encode sequence to base64
+    const encodedSequence = btoa(sequence);
+
+    // Create shareable URL
+    const url = new URL(window.location.href);
+    url.searchParams.set("sequence", encodedSequence);
+
+    // Copy to clipboard
+    navigator.clipboard
+      .writeText(url.toString())
+      .then(() => {
+        // Visual feedback - change button text temporarily
+        const originalHTML = shareBtn.innerHTML;
+        shareBtn.innerHTML = '<i data-lucide="check"></i><span>Copied!</span>';
+        lucide.createIcons();
+
+        setTimeout(() => {
+          shareBtn.innerHTML = originalHTML;
+          lucide.createIcons();
+        }, 2000);
+      })
+      .catch((error) => {
+        showError("Failed to copy link to clipboard");
+      });
+  } catch (error) {
+    showError("Failed to create shareable link");
+  }
 });
 
 // Initialize

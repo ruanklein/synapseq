@@ -35,10 +35,16 @@
         <div class="editor-panel">
           <div class="editor-header">
             <h2>SynapSeq Editor</h2>
-            <button class="upload-btn" id="uploadBtn">
-              <i data-lucide="upload"></i>
-              <span>Upload .spsq</span>
-            </button>
+            <div class="editor-actions">
+              <button class="upload-btn" id="uploadBtn">
+                <i data-lucide="upload"></i>
+                <span>Upload .spsq</span>
+              </button>
+              <button class="share-btn" id="shareBtn">
+                <i data-lucide="share-2"></i>
+                <span>Share</span>
+              </button>
+            </div>
             <input type="file" id="fileInput" accept=".spsq" />
           </div>
 
@@ -121,7 +127,9 @@
                 />
                 <span>SynapSeq</span>
               </div>
-              <p class="footer-tagline">Guiding brainwave states through sound</p>
+              <p class="footer-tagline">
+                Guiding brainwave states through sound
+              </p>
             </div>
             <div class="footer-links">
               <a
