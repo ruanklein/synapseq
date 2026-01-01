@@ -334,6 +334,29 @@ body {
   transform: translateY(-2px);
 }
 
+/* CTA Button - Larger and more prominent */
+.btn-cta {
+  padding: 1.125rem 2.5rem;
+  font-size: 1.125rem;
+  box-shadow: 0 8px 16px rgba(74, 222, 128, 0.25);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.btn-cta:hover {
+  box-shadow: 0 12px 24px rgba(74, 222, 128, 0.35);
+  transform: translateY(-3px) scale(1.02);
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 8px 16px rgba(74, 222, 128, 0.25);
+  }
+  50% {
+    box-shadow: 0 8px 20px rgba(74, 222, 128, 0.4);
+  }
+}
+
 .btn-secondary {
   display: inline-flex;
   align-items: center;
