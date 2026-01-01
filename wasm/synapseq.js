@@ -838,3 +838,8 @@ class SynapSeq {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = SynapSeq;
 }
+
+// Also expose to window for browser usage
+if (typeof window !== "undefined") {
+  window.SynapSeq = SynapSeq;
+}
