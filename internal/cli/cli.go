@@ -123,7 +123,7 @@ func Help() {
 	}
 
 	fmt.Printf("For detailed documentation:\n")
-	fmt.Printf("  %s\n", info.REPOSITORY)
+	fmt.Printf("  %s\n", info.SITE_URL)
 }
 
 // ShowVersion prints the version information

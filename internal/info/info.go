@@ -16,6 +16,8 @@ const (
 	REPOSITORY = "https://github.com/ruanklein/synapseq"
 	// Hub repository URL
 	HUB_REPOSITORY = "https://github.com/ruanklein/synapseq-hub"
+	// Site URL
+	SITE_URL = "https://synapseq.org"
 )
 
 var (
