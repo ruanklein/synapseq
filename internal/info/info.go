@@ -9,15 +9,15 @@ package info
 
 const (
 	// Author information
-	AUTHOR = "Ruan"
+	AUTHOR = "The SynapSeq Foundation"
 	// Author website URL
-	AUTHOR_URL = "https://ruan.sh"
+	AUTHOR_URL = "https://synapseq.org"
 	// Repository URL
-	REPOSITORY = "https://github.com/ruanklein/synapseq"
+	REPOSITORY = "https://github.com/synapseq-foundation/synapseq"
 	// Hub repository URL
-	HUB_REPOSITORY = "https://github.com/ruanklein/synapseq-hub"
-	// Site URL
-	SITE_URL = "https://synapseq.org"
+	HUB_REPOSITORY = "https://github.com/synapseq-foundation/synapseq-hub"
+	// Documentation URL
+	DOC_URL = "https://synapseq.org/docs"
 )
 
 var (

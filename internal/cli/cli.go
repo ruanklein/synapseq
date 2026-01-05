@@ -71,7 +71,7 @@ type CLIOptions struct {
 // Help prints the help message
 func Help() {
 	fmt.Printf("SynapSeq - Synapse-Sequenced Brainwave Generator, version %s\n", info.VERSION)
-	fmt.Printf("(c) 2025 %s, %s\n", info.AUTHOR, info.AUTHOR_URL)
+	fmt.Printf("(c) 2025-2026 %s, %s\n", info.AUTHOR, info.AUTHOR_URL)
 	fmt.Printf("Released under the GNU GPL v2. See file COPYING for details.\n\n")
 
 	fmt.Printf("Usage: synapseq [options] <input> <output>\n\n")
@@ -84,7 +84,7 @@ func Help() {
 
 	fmt.Printf("OUTPUT formats:\n")
 	fmt.Printf("    WAV file:            path/to/output.wav\n")
-	fmt.Printf("    Standard output:     - (raw PCM, 24-bit stereo)\n\n")
+	fmt.Printf("    Standard output:     - (raw PCM, 16-bit stereo)\n\n")
 
 	fmt.Printf("Main options:\n")
 	fmt.Printf("  -json          		Read input as JSON format\n")
@@ -123,7 +123,7 @@ func Help() {
 	}
 
 	fmt.Printf("For detailed documentation:\n")
-	fmt.Printf("  %s\n", info.SITE_URL)
+	fmt.Printf("  %s\n", info.DOC_URL)
 }
 
 // ShowVersion prints the version information
