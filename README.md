@@ -8,9 +8,9 @@
 
 <p align="center">
   <p align="center">
-  <a href="https://github.com/ruanklein/synapseq/releases/latest"><img src="https://img.shields.io/github/v/release/ruanklein/synapseq?color=blue&logo=github" alt="Release"></a>
+  <a href="https://github.com/synapseq-foundation/synapseq/releases/latest"><img src="https://img.shields.io/github/v/release/synapseq-foundation/synapseq?color=blue&logo=github" alt="Release"></a>
   <a href="COPYING.txt"><img src="https://img.shields.io/badge/license-GPL%20v2-blue.svg?logo=open-source-initiative&logoColor=white" alt="License"></a>
-  <a href="https://github.com/ruanklein/synapseq/commits"><img src="https://img.shields.io/github/commit-activity/m/ruanklein/synapseq?color=ff69b4&logo=git" alt="Commit Activity"></a>
+  <a href="https://github.com/synapseq-foundation/synapseq/commits"><img src="https://img.shields.io/github/commit-activity/m/synapseq-foundation/synapseq?color=ff69b4&logo=git" alt="Commit Activity"></a>
 </p>
 </p>
 
@@ -65,7 +65,7 @@ We'd love to hear from you! Here's how to get in touch:
 
 ### Issues (Bug Reports & Feature Requests)
 
-Use [GitHub Issues](https://github.com/ruanklein/synapseq/issues) for:
+Use [GitHub Issues](https://github.com/synapseq-foundation/synapseq/issues) for:
 
 - Bug reports and technical problems
 - Feature requests and enhancement suggestions
@@ -73,7 +73,7 @@ Use [GitHub Issues](https://github.com/ruanklein/synapseq/issues) for:
 
 ### Discussions (Questions & Community)
 
-Use [GitHub Discussions](https://github.com/ruanklein/synapseq/discussions) for:
+Use [GitHub Discussions](https://github.com/synapseq-foundation/synapseq/discussions) for:
 
 - General questions and support (e.g., "How do I use `@presetlist`?")
 - Help with your sequences (e.g., "My sequence isn't working, can you help?")
@@ -88,3 +88,7 @@ Use [GitHub Discussions](https://github.com/ruanklein/synapseq/discussions) for:
 - **Need help or have questions?** → Start a Discussion
 - **Want to share your sequences?** → Post in Discussions
 - **General feedback or ideas?** → Start a Discussion
+
+## Credits
+
+Check out the [CREDITS](CREDITS.md) to see a list of all contributors and special thanks!

@@ -2,8 +2,13 @@
 
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
+ * https://synapseq.org
  *
- * Copyright (c) ...
+ * Copyright (c) 2025-2026 SynapSeq Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2.
+ * See the file COPYING.txt for details.
  */
 
 package external_test
@@ -12,8 +17,8 @@ import (
 	"fmt"
 	"log"
 
-	synapseq "github.com/ruanklein/synapseq/v3/core"
-	"github.com/ruanklein/synapseq/v3/external"
+	synapseq "github.com/synapseq-foundation/synapseq/v3/core"
+	"github.com/synapseq-foundation/synapseq/v3/external"
 )
 
 func ExampleNewFFPlay() {

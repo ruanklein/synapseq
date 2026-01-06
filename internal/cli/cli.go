@@ -1,8 +1,12 @@
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
+ * https://synapseq.org
  *
- * Copyright (c) 2025 Ruan <https://ruan.sh/>
- * Licensed under GNU GPL v2. See COPYING.txt for details.
+ * Copyright (c) 2025-2026 SynapSeq Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2.
+ * See the file COPYING.txt for details.
  */
 
 package cli
@@ -13,7 +17,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/ruanklein/synapseq/v3/internal/info"
+	"github.com/synapseq-foundation/synapseq/v3/internal/info"
 )
 
 // CLIOptions holds command-line options
@@ -71,7 +75,7 @@ type CLIOptions struct {
 // Help prints the help message
 func Help() {
 	fmt.Printf("SynapSeq - Synapse-Sequenced Brainwave Generator, version %s\n", info.VERSION)
-	fmt.Printf("(c) 2025 %s, %s\n", info.AUTHOR, info.AUTHOR_URL)
+	fmt.Printf("(c) 2025-2026 %s, %s\n", info.AUTHOR, info.AUTHOR_URL)
 	fmt.Printf("Released under the GNU GPL v2. See file COPYING for details.\n\n")
 
 	fmt.Printf("Usage: synapseq [options] <input> <output>\n\n")
@@ -84,7 +88,7 @@ func Help() {
 
 	fmt.Printf("OUTPUT formats:\n")
 	fmt.Printf("    WAV file:            path/to/output.wav\n")
-	fmt.Printf("    Standard output:     - (raw PCM, 24-bit stereo)\n\n")
+	fmt.Printf("    Standard output:     - (raw PCM, 16-bit stereo)\n\n")
 
 	fmt.Printf("Main options:\n")
 	fmt.Printf("  -json          		Read input as JSON format\n")
@@ -123,7 +127,7 @@ func Help() {
 	}
 
 	fmt.Printf("For detailed documentation:\n")
-	fmt.Printf("  %s\n", info.REPOSITORY)
+	fmt.Printf("  %s\n", info.DOC_URL)
 }
 
 // ShowVersion prints the version information

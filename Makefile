@@ -14,7 +14,7 @@ MAJOR_VERSION 			 := $(shell echo $(VERSION) | cut -d. -f1)
 MINOR_VERSION 			 := $(shell echo $(VERSION) | cut -d. -f2)
 PATCH_VERSION 			 := $(shell echo $(VERSION) | cut -d. -f3)
 GO_VERSION_INFO_CMD 	 := github.com/josephspurrier/goversioninfo/cmd/goversioninfo@v1.5.0
-GO_VERSION_INFO_CMD_ARGS := -company="Ruan <ruan.sh>" \
+GO_VERSION_INFO_CMD_ARGS := -company="SynapSeq Foundation <synapseq.org>" \
 							-description="Synapse-Sequenced Brainwave Generator" \
 					  		-copyright="GPL v2" \
 					  		-original-name="$(BIN_NAME).exe" \
@@ -27,9 +27,9 @@ GO_VERSION_INFO_CMD_ARGS := -company="Ruan <ruan.sh>" \
 							-ver-patch=$(PATCH_VERSION) -product-ver-patch=$(PATCH_VERSION) \
 							-ver-build=0 -product-ver-build=0
 # Go configuration
-GO_METADATA     := -X github.com/ruanklein/synapseq/v3/internal/info.VERSION=$(VERSION) \
-				  -X github.com/ruanklein/synapseq/v3/internal/info.BUILD_DATE=$(DATE) \
-				  -X github.com/ruanklein/synapseq/v3/internal/info.GIT_COMMIT=$(COMMIT)
+GO_METADATA     := -X github.com/synapseq-foundation/synapseq/v3/internal/info.VERSION=$(VERSION) \
+				  -X github.com/synapseq-foundation/synapseq/v3/internal/info.BUILD_DATE=$(DATE) \
+				  -X github.com/synapseq-foundation/synapseq/v3/internal/info.GIT_COMMIT=$(COMMIT)
 GO_BUILD_FLAGS  := -ldflags="-s -w $(GO_METADATA)"
 MAIN 		    := ./cmd/synapseq
 

@@ -23,7 +23,7 @@ SynapSeq supports multiple input formats:
 	    "log"
 	    "os"
 
-	    synapseq "github.com/ruanklein/synapseq/v3/core"
+	    synapseq "github.com/synapseq-foundation/synapseq/v3/core"
 	)
 
 	func main() {
@@ -62,6 +62,6 @@ rather than modifying the original context.
 # More Information
 
 For complete documentation and examples, see:
-https://github.com/ruanklein/synapseq
+https://github.com/synapseq-foundation/synapseq
 */
 package core

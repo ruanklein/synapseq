@@ -7,7 +7,7 @@ This project grows stronger with community support, whether through code, docs, 
 
 The `main` branch contains the latest Go (V3) codebase.  
 All pull requests (PRs) should target the `development` branch.  
-Sequence files (`.spsq`) -> contribute to the [SynapSeq Hub Repository](https://github.com/ruanklein/synapseq-hub)
+Sequence files (`.spsq`) -> contribute to the [SynapSeq Hub Repository](https://github.com/synapseq-foundation/synapseq-hub)
 
 The legacy C code (V2, inherited from SBaGen) is available in the `v2` branch. If you wish to view, modify, or fork the old version, use that branch.
 
@@ -89,7 +89,7 @@ SynapSeq V3 follows the **Git Flow** branching model:
 
 ## Contributing Sequence Files (`.spsq`)
 
-If you'd like to share your own `.spsq` sequence files with the community, please contribute them to the [SynapSeq Hub Repository](https://github.com/ruanklein/synapseq-hub).
+If you'd like to share your own `.spsq` sequence files with the community, please contribute them to the [SynapSeq Hub Repository](https://github.com/synapseq-foundation/synapseq-hub).
 
 **Important:** All sequence files contributed to the Hub are licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative Commons Attribution-ShareAlike 4.0 International). By contributing your sequences, you agree to share them under this license, allowing others to use, modify, and share your work with proper attribution.
 

@@ -1,21 +1,27 @@
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
+ * https://synapseq.org
  *
- * Copyright (c) 2025 Ruan <https://ruan.sh/>
- * Licensed under GNU GPL v2. See COPYING.txt for details.
+ * Copyright (c) 2025-2026 SynapSeq Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2.
+ * See the file COPYING.txt for details.
  */
 
 package info
 
 const (
 	// Author information
-	AUTHOR = "Ruan"
+	AUTHOR = "SynapSeq Foundation"
 	// Author website URL
-	AUTHOR_URL = "https://ruan.sh"
+	AUTHOR_URL = "https://synapseq.org"
 	// Repository URL
-	REPOSITORY = "https://github.com/ruanklein/synapseq"
+	REPOSITORY = "https://github.com/synapseq-foundation/synapseq"
 	// Hub repository URL
-	HUB_REPOSITORY = "https://github.com/ruanklein/synapseq-hub"
+	HUB_REPOSITORY = "https://github.com/synapseq-foundation/synapseq-hub"
+	// Documentation URL
+	DOC_URL = "https://synapseq.org/docs"
 )
 
 var (

@@ -2,9 +2,13 @@
 
 /*
  * SynapSeq - Synapse-Sequenced Brainwave Generator
+ * https://synapseq.org
  *
- * Copyright (c) 2025 Ruan <https://ruan.sh/>
- * Licensed under GNU GPL v2. See COPYING.txt for details.
+ * Copyright (c) 2025-2026 SynapSeq Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2.
+ * See the file COPYING.txt for details.
  */
 
 package main
@@ -12,7 +16,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ruanklein/synapseq/v3/internal/fileassoc"
+	"github.com/synapseq-foundation/synapseq/v3/internal/fileassoc"
 )
 
 // installWindowsFileAssociation sets up the file association for .spsq files on Windows
