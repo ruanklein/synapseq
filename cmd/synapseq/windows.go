@@ -16,7 +16,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ruanklein/synapseq/v3/internal/fileassoc"
+	"github.com/synapseq-foundation/synapseq/v3/internal/fileassoc"
 )
 
 // installWindowsFileAssociation sets up the file association for .spsq files on Windows

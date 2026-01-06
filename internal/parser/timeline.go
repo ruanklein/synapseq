@@ -16,8 +16,8 @@ import (
 	"strconv"
 	"strings"
 
-	s "github.com/ruanklein/synapseq/v3/internal/shared"
-	t "github.com/ruanklein/synapseq/v3/internal/types"
+	s "github.com/synapseq-foundation/synapseq/v3/internal/shared"
+	t "github.com/synapseq-foundation/synapseq/v3/internal/types"
 )
 
 // parseTime parses a time string in HH:MM:SS format to milliseconds

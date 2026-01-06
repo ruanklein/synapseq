@@ -16,7 +16,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ruanklein/synapseq/v3/internal/cli"
+	"github.com/synapseq-foundation/synapseq/v3/internal/cli"
 )
 
 // hubRunUpdate is disabled when built with -tags=nohub

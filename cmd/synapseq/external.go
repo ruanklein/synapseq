@@ -14,8 +14,8 @@
 package main
 
 import (
-	synapseq "github.com/ruanklein/synapseq/v3/core"
-	"github.com/ruanklein/synapseq/v3/external"
+	synapseq "github.com/synapseq-foundation/synapseq/v3/core"
+	"github.com/synapseq-foundation/synapseq/v3/external"
 )
 
 // externalPlay invokes utility tool to play from streaming audio input

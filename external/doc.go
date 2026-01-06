@@ -32,8 +32,8 @@ ffplay using streaming PCM audio.
 	    "log"
 	    "os"
 
-	    synapseq "github.com/ruanklein/synapseq/v3/core"
-	    "github.com/ruanklein/synapseq/v3/external"
+	    synapseq "github.com/synapseq-foundation/synapseq/v3/core"
+	    "github.com/synapseq-foundation/synapseq/v3/external"
 	)
 
 	func main() {
@@ -70,8 +70,8 @@ using Constant Bit Rate (CBR) at 320 kbps.
 	import (
 	    "log"
 
-	    synapseq "github.com/ruanklein/synapseq/v3/core"
-	    "github.com/ruanklein/synapseq/v3/external"
+	    synapseq "github.com/synapseq-foundation/synapseq/v3/core"
+	    "github.com/synapseq-foundation/synapseq/v3/external"
 	)
 
 	func main() {
@@ -109,7 +109,7 @@ MP3 file using ffprobe.
 	    "fmt"
 	    "log"
 
-	    "github.com/ruanklein/synapseq/v3/external"
+	    "github.com/synapseq-foundation/synapseq/v3/external"
 	)
 
 	func main() {
@@ -138,7 +138,7 @@ from an encoded audio file to a new file.
 	import (
 	    "log"
 
-	    "github.com/ruanklein/synapseq/v3/external"
+	    "github.com/synapseq-foundation/synapseq/v3/external"
 	)
 
 	func main() {
@@ -219,6 +219,6 @@ command errors.
 # More Information
 
 Full documentation and examples are available at:
-https://github.com/ruanklein/synapseq
+https://github.com/synapseq-foundation/synapseq
 */
 package external

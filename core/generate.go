@@ -17,9 +17,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/ruanklein/synapseq/v3/internal/audio"
-	"github.com/ruanklein/synapseq/v3/internal/info"
-	t "github.com/ruanklein/synapseq/v3/internal/types"
+	"github.com/synapseq-foundation/synapseq/v3/internal/audio"
+	"github.com/synapseq-foundation/synapseq/v3/internal/info"
+	t "github.com/synapseq-foundation/synapseq/v3/internal/types"
 )
 
 // generate generates the audio renderer based on the loaded sequence

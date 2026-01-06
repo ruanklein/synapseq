@@ -17,10 +17,10 @@ import (
 	"fmt"
 	"syscall/js"
 
-	"github.com/ruanklein/synapseq/v3/internal/audio"
-	"github.com/ruanklein/synapseq/v3/internal/info"
-	"github.com/ruanklein/synapseq/v3/internal/sequence"
-	t "github.com/ruanklein/synapseq/v3/internal/types"
+	"github.com/synapseq-foundation/synapseq/v3/internal/audio"
+	"github.com/synapseq-foundation/synapseq/v3/internal/info"
+	"github.com/synapseq-foundation/synapseq/v3/internal/sequence"
+	t "github.com/synapseq-foundation/synapseq/v3/internal/types"
 )
 
 // streamPcm(onChunk, onDone, onError, spsqUint8Array)

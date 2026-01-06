@@ -21,9 +21,9 @@ import (
 
 	"github.com/gopxl/beep/v2"
 	bwav "github.com/gopxl/beep/v2/wav"
-	"github.com/ruanklein/synapseq/v3/internal/info"
-	s "github.com/ruanklein/synapseq/v3/internal/shared"
-	t "github.com/ruanklein/synapseq/v3/internal/types"
+	"github.com/synapseq-foundation/synapseq/v3/internal/info"
+	s "github.com/synapseq-foundation/synapseq/v3/internal/shared"
+	t "github.com/synapseq-foundation/synapseq/v3/internal/types"
 )
 
 // Use constStreamer from renderer_test.go

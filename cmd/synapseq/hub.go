@@ -21,11 +21,11 @@ import (
 	"sync"
 	"text/tabwriter"
 
-	synapseq "github.com/ruanklein/synapseq/v3/core"
-	"github.com/ruanklein/synapseq/v3/internal/cli"
-	"github.com/ruanklein/synapseq/v3/internal/hub"
-	s "github.com/ruanklein/synapseq/v3/internal/shared"
-	t "github.com/ruanklein/synapseq/v3/internal/types"
+	synapseq "github.com/synapseq-foundation/synapseq/v3/core"
+	"github.com/synapseq-foundation/synapseq/v3/internal/cli"
+	"github.com/synapseq-foundation/synapseq/v3/internal/hub"
+	s "github.com/synapseq-foundation/synapseq/v3/internal/shared"
+	t "github.com/synapseq-foundation/synapseq/v3/internal/types"
 )
 
 // hubRunUpdate updates the local Hub manifest

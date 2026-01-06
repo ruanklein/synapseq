@@ -18,8 +18,8 @@ import (
 	"os"
 	"strconv"
 
-	synapseq "github.com/ruanklein/synapseq/v3/core"
-	"github.com/ruanklein/synapseq/v3/internal/info"
+	synapseq "github.com/synapseq-foundation/synapseq/v3/core"
+	"github.com/synapseq-foundation/synapseq/v3/internal/info"
 )
 
 // FFmpeg represents the ffmpeg external tool

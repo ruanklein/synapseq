@@ -15,7 +15,7 @@ import (
 	"strings"
 	"testing"
 
-	t "github.com/ruanklein/synapseq/v3/internal/types"
+	t "github.com/synapseq-foundation/synapseq/v3/internal/types"
 )
 
 func TestConvertToText_BasicSequence(ts *testing.T) {

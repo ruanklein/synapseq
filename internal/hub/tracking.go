@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ruanklein/synapseq/v3/internal/info"
-	t "github.com/ruanklein/synapseq/v3/internal/types"
+	"github.com/synapseq-foundation/synapseq/v3/internal/info"
+	t "github.com/synapseq-foundation/synapseq/v3/internal/types"
 )
 
 // TrackDownload sends an anonymous download event to the SynapSeq Hub analytics endpoint.

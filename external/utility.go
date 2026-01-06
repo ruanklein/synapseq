@@ -19,7 +19,7 @@ import (
 	"os/exec"
 	"runtime"
 
-	synapseq "github.com/ruanklein/synapseq/v3/core"
+	synapseq "github.com/synapseq-foundation/synapseq/v3/core"
 )
 
 // newUtility creates a new baseUtility instance after validating the utility path

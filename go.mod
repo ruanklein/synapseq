@@ -1,4 +1,4 @@
-module github.com/ruanklein/synapseq/v3
+module github.com/synapseq-foundation/synapseq/v3
 
 go 1.25.0
 

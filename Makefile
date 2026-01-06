@@ -27,9 +27,9 @@ GO_VERSION_INFO_CMD_ARGS := -company="SynapSeq Foundation <synapseq.org>" \
 							-ver-patch=$(PATCH_VERSION) -product-ver-patch=$(PATCH_VERSION) \
 							-ver-build=0 -product-ver-build=0
 # Go configuration
-GO_METADATA     := -X github.com/ruanklein/synapseq/v3/internal/info.VERSION=$(VERSION) \
-				  -X github.com/ruanklein/synapseq/v3/internal/info.BUILD_DATE=$(DATE) \
-				  -X github.com/ruanklein/synapseq/v3/internal/info.GIT_COMMIT=$(COMMIT)
+GO_METADATA     := -X github.com/synapseq-foundation/synapseq/v3/internal/info.VERSION=$(VERSION) \
+				  -X github.com/synapseq-foundation/synapseq/v3/internal/info.BUILD_DATE=$(DATE) \
+				  -X github.com/synapseq-foundation/synapseq/v3/internal/info.GIT_COMMIT=$(COMMIT)
 GO_BUILD_FLAGS  := -ldflags="-s -w $(GO_METADATA)"
 MAIN 		    := ./cmd/synapseq
 

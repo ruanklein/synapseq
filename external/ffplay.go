@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"strconv"
 
-	synapseq "github.com/ruanklein/synapseq/v3/core"
+	synapseq "github.com/synapseq-foundation/synapseq/v3/core"
 )
 
 // FFplay represents the ffplay external tool

@@ -17,7 +17,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/ruanklein/synapseq/v3/internal/info"
+	"github.com/synapseq-foundation/synapseq/v3/internal/info"
 )
 
 // CLIOptions holds command-line options

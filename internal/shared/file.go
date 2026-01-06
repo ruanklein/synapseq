@@ -19,7 +19,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	t "github.com/ruanklein/synapseq/v3/internal/types"
+	t "github.com/synapseq-foundation/synapseq/v3/internal/types"
 )
 
 // readFile reads a file from the given reader up to maxSize bytes

@@ -15,7 +15,7 @@ import (
 	"math"
 	"testing"
 
-	t "github.com/ruanklein/synapseq/v3/internal/types"
+	t "github.com/synapseq-foundation/synapseq/v3/internal/types"
 )
 
 func TestInitWaveformTables_LengthAndBounds(ts *testing.T) {

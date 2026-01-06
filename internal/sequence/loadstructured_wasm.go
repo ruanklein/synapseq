@@ -21,8 +21,8 @@ import (
 
 	"github.com/goccy/go-yaml"
 
-	s "github.com/ruanklein/synapseq/v3/internal/shared"
-	t "github.com/ruanklein/synapseq/v3/internal/types"
+	s "github.com/synapseq-foundation/synapseq/v3/internal/shared"
+	t "github.com/synapseq-foundation/synapseq/v3/internal/types"
 )
 
 // initializeTracks initializes an array of off tracks

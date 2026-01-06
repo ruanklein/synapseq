@@ -19,8 +19,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	synapseq "github.com/ruanklein/synapseq/v3/core"
-	"github.com/ruanklein/synapseq/v3/internal/cli"
+	synapseq "github.com/synapseq-foundation/synapseq/v3/core"
+	"github.com/synapseq-foundation/synapseq/v3/internal/cli"
 )
 
 // main is the entry point of the SynapSeq application
